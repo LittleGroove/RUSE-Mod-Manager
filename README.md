@@ -6,13 +6,61 @@ Supports both **R.U.S.E. Compat** (community multiplayer build) and the **public
 
 ---
 
+## Just want to use mods? Start here (Players)
+
+If you only want to **download mods and play**, you don't need to read the rest of this page. Follow these five steps:
+
+### 1. Download it
+
+Go to the **[Latest release →](https://github.com/LittleGroove/RUSE-Mod-Manager/releases/latest)** and download **`RUSE_ModManager_v<X.Y.Z>.exe`**.
+
+That single `.exe` *is* the whole program. There is **no installer** and **nothing to set up** — Python is not required.
+
+### 2. Put it in a folder Windows lets it write to (important)
+
+The Mod Manager needs to **create files and folders next to itself** (it makes a `mods/` folder, a `profile/` folder, a `settings.json`, backups of your game files, etc.). If Windows blocks writing to that location, the app will fail or behave strangely.
+
+**Do this:** make a normal folder somewhere you own and drop the exe inside it. Good places:
+
+- `C:\Games\RUSE Mod Manager\`
+- Your Desktop, e.g. `C:\Users\<You>\Desktop\RUSE Mod Manager\`
+- `C:\Users\<You>\Documents\RUSE Mod Manager\`
+- Any folder on another drive, e.g. `D:\RUSE Mod Manager\`
+
+**Avoid these — Windows protects them and will block writes:**
+
+- `C:\Program Files\` or `C:\Program Files (x86)\`
+- `C:\Windows\` or anywhere inside it
+- The root of your C: drive (`C:\` directly)
+- Running it straight out of the `.zip` / "Downloads" preview without extracting first
+
+> **Tip:** Give the exe its **own dedicated folder**. The program creates several files and folders right beside itself, so keeping it isolated stays tidy. You do **not** need administrator rights, and you should **not** "Run as administrator."
+
+### 3. Run it
+
+Double-click the exe. If Windows SmartScreen shows a blue "Windows protected your PC" box, click **More info → Run anyway** (this appears because the app isn't code-signed, not because anything is wrong).
+
+### 4. Point it at your game (one time)
+
+Open the **Settings** tab and set **Game Root** to your R.U.S.E. `Data/` folder. The Mod Manager automatically makes a safe backup of your original game files the first time — your originals are never lost.
+
+### 5. Add mods and play
+
+- Put any `.rmod` mod files you've downloaded into the **`mods/`** folder (or use the **+** button on the Mod Manager tab).
+- Tick the mods you want, drag them into the order you like, and click **Deploy**.
+- Changed your mind? Click **Restore Original Files** to put the game back exactly as it was.
+
+That's it — launch R.U.S.E. and your mods are active. Everything below is reference detail for power users, modders, and developers.
+
+---
+
 ## Download
 
 **[Latest release →](https://github.com/LittleGroove/RUSE-Mod-Manager/releases/latest)**
 
 Grab `RUSE_ModManager_v<X.Y.Z>.exe` for a single self-contained executable, or `RUSE_Mod_Manager_v<X.Y.Z>.zip` for the full bundle (exe + empty `mods/` folder + preset `profile/` folders).
 
-No installer, no Python required — just unzip and run.
+No installer, no Python required — just unzip and run. See the **[Players quick start](#just-want-to-use-mods-start-here-players)** above for where to put the exe so Windows doesn't block it.
 
 ---
 
