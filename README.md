@@ -6,6 +6,8 @@ It is also a full **mod creation suite**: convert old mods, or build new ones fr
 
 Supports both **R.U.S.E. Compat** (Ubisoft build) and the **public Steam release**.
 
+**[Latest release →](https://github.com/LittleGroove/RUSE-Mod-Manager/releases/latest)**
+
 ---
 
 ## Contents
