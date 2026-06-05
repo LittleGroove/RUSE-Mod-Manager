@@ -2,7 +2,7 @@
 
 A standalone Windows application that fundamentally redefines modding for **R.U.S.E.** Instead of distributing full replacement `.dat` files that break each other, mods are **surgical patch files** that describe only what they change, so multiple mods coexist and stack cleanly.
 
-Supports both **R.U.S.E. Compat** (Ubisoft build) and the **public Steam release**.
+Supports both **R.U.S.E. Compat** (community multiplayer build) and the **public Steam release**.
 
 ---
 
