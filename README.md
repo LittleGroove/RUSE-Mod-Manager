@@ -6,8 +6,6 @@ It is also a full **mod creation suite**: convert old mods, or build new ones fr
 
 Supports both **R.U.S.E. Compat** (Ubisoft build) and the **public Steam release**.
 
-**[Latest release →](https://github.com/LittleGroove/RUSE-Mod-Manager/releases/latest)**
-
 ---
 
 ## Contents
@@ -51,17 +49,19 @@ The Mod Manager **creates files and folders next to itself** (a `mods/` folder, 
 
 **Do this:** make a normal folder you own and drop the exe inside it. Good places:
 
-- `C:\Games\RUSE Mod Manager\`
-- Your Desktop, e.g. `C:\Users\<You>\Desktop\RUSE Mod Manager\`
-- `C:\Users\<You>\Documents\RUSE Mod Manager\`
+- `C:\Games\RUSE Mod Manager\` — safest, never touched by OneDrive
 - Any folder on another drive, e.g. `D:\RUSE Mod Manager\`
+- Your Desktop or Documents — **only if OneDrive isn't managing them** (see the OneDrive note below)
 
 **Avoid these — Windows protects them and will block writes:**
 
 - `C:\Program Files\` or `C:\Program Files (x86)\`
 - `C:\Windows\` or anywhere inside it
 - The root of your C: drive (`C:\` directly)
+- Anywhere inside **OneDrive** (e.g. a Desktop or Documents folder that OneDrive has "taken over") — OneDrive can make files online-only/read-only and block the app from writing next to itself
 - Running it straight out of the `.zip` preview without extracting first
+
+> **⚠ OneDrive can break the app.** On most modern Windows PCs, OneDrive quietly "takes over" your **Desktop** and **Documents** (and sometimes your whole user folder), redirecting them into the cloud. An exe placed there may be unable to create its `mods/`, `output/`, backups and `settings.json`, so the app fails or behaves strangely. **Fix:** either put the exe somewhere OneDrive doesn't touch (e.g. `C:\Games\RUSE Mod Manager\` or another drive like `D:\…`), **or** stop OneDrive from managing those folders — see Microsoft's guide, [Back up your folders with OneDrive](https://support.microsoft.com/en-us/office/back-up-your-folders-with-onedrive-d61a7930-a6fb-4b95-b28a-6552e77c3057) (open OneDrive settings → **Sync and backup** → **Manage backup**, and toggle the folders **off**). To remove OneDrive entirely, see [Turn off, disable, or uninstall OneDrive](https://support.microsoft.com/en-us/office/turn-off-disable-or-uninstall-onedrive-f32a17ce-3336-40fe-9c38-6efb09f944b0).
 
 > **Tip:** Give the exe its **own dedicated folder**. You do **not** need administrator rights, and you should **not** "Run as administrator."
 
