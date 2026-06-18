@@ -560,29 +560,57 @@ class UnitsEditorWindow(tk.Frame):
         self._buildings.sort(key=lambda b: (b["nation"], b["type_batiment"], b["name"].lower()))
 
     def _building_options(self, faction: str) -> list:
-        """Display labels for the building dropdown, filtered by selected faction. First entry is
-        'All buildings' (no filter); subsequent entries label each building by name + TypeBatiment
-        (so the user can tell apart sibling factories like ExperimentalFactoryGR vs Usine_Atomique_GER
-        which both serve Factory=12)."""
+        """Labels for the toolbar filter dropdown, and the matching filter map (self._filter_specs:
+        label -> ('type', tb) | ('building', b)).  Three groups:
+          • 'All buildings'  — no filter
+          • BUILDING TYPES   — filter every faction's units of one TypeBatiment (e.g. 'Any Armor — all
+                               factions (TB=10)').  This is the issue #2 request: filter by TB# across
+                               factions (and ANDed with the Faction box when one is chosen).
+          • SPECIFIC buildings — the exact factory (Nat + TypeBatiment), to tell apart siblings like
+                               ExperimentalFactoryGR vs Usine_Atomique_GER which both serve TB=12.
+        All groups are scoped to the chosen faction."""
+        self._filter_specs = {}
         opts = ["All buildings"]
+        # Building-type entries: one per distinct TypeBatiment present in the (faction-scoped) buildings.
+        types = sorted({b["type_batiment"] for b in self._buildings
+                        if faction == "All" or b["nation"] == faction})
+        for tb in types:
+            label = self._type_label(tb)
+            self._filter_specs[label] = ("type", tb)
+            opts.append(label)
+        # Specific-building entries.
         for b in self._buildings:
             if faction != "All" and b["nation"] != faction:
                 continue
-            opts.append(self._building_label(b))
+            label = self._building_label(b)
+            self._filter_specs[label] = ("building", b)
+            opts.append(label)
         return opts
+
+    @staticmethod
+    def _type_label(tb) -> str:
+        name = _FACTORY_TYPE.get(tb)
+        if name:
+            return t("Any {name} — all factions (TB={tb})", name=name, tb=tb)
+        return t("Any building type TB={tb} — all factions", tb=tb)
 
     @staticmethod
     def _building_label(b) -> str:
         return f"{b['nation']}: {b['name']} (TB={b['type_batiment']})"
 
     def _building_by_label(self, label: str):
-        """Return the building dict for a dropdown label, or None for 'All buildings'/unknown."""
+        """Return the building dict for a SPECIFIC-building label, or None for anything else
+        (used by the per-unit Factory dropdown, which only lists specific buildings)."""
         if not label or label == "All buildings":
             return None
         for b in self._buildings:
             if self._building_label(b) == label:
                 return b
         return None
+
+    def _filter_spec(self, label: str):
+        """Resolve the toolbar filter dropdown's label to ('type', tb) | ('building', b) | None."""
+        return getattr(self, "_filter_specs", {}).get(label)
 
     def _buildings_in_nation(self, nation_label: str) -> list:
         """Buildings belonging to a nation (used by the per-unit Factory dropdown). Includes the
@@ -748,7 +776,7 @@ class UnitsEditorWindow(tk.Frame):
         # Hidden back-compat var — older tests/probes set this to a category name (e.g. "Armor") to
         # narrow the unit list. We honor it as a fallback in _apply_filter.
         self._type_var = tk.StringVar(value="All")
-        tk.Label(bar, text=t("Building:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(bar, text=t("Building / Type:"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(side="left")
         self._building_var = tk.StringVar(value="All buildings")
         self._building_combo = ttk.Combobox(bar, textvariable=self._building_var,
@@ -1034,7 +1062,7 @@ class UnitsEditorWindow(tk.Frame):
 
     def _apply_filter(self, keep_sel=False):
         fac = self._faction_var.get()
-        bldg = self._building_by_label(self._building_var.get())
+        spec = self._filter_spec(self._building_var.get())
         cat = self._type_var.get()   # legacy/back-compat category filter
         q = self._search_var.get().strip().lower()
         lang = self._list_lang_code
@@ -1044,16 +1072,24 @@ class UnitsEditorWindow(tk.Frame):
         for d in self._descs:
             if fac != "All" and d["nation"] != fac:
                 continue
-            if bldg is not None:
-                # Building filter takes priority over the abstract category — show only units the
-                # engine would actually display in this building's menu (Nat + Factory join).
-                if d["nation"] != bldg["nation"]:
-                    continue
+            if spec is not None:
+                # Building/type filter takes priority over the abstract category — show only the units
+                # the engine would actually display in that menu (the Factory == TypeBatiment join).
+                # The Faction box is applied above, so a building-type filter spans every faction
+                # unless a faction is also chosen (then it's ANDed).
+                kind, val = spec
                 if d["kind"] == "building":
-                    continue   # buildings aren't 'in' another building's menu
+                    continue   # buildings aren't 'in' a build menu
                 fac_v = self._prop_value(d["inst"], "Factory")
-                if fac_v is None or fac_v.raw != bldg["type_batiment"]:
+                if fac_v is None:
                     continue
+                if kind == "type":
+                    if fac_v.raw != val:           # val is the TypeBatiment (TB#), any faction
+                        continue
+                else:                               # ('building', b): exact Nat + TypeBatiment
+                    b = val
+                    if d["nation"] != b["nation"] or fac_v.raw != b["type_batiment"]:
+                        continue
             elif cat != "All" and d["category"] != cat:
                 continue
             loc = self._loc_name(d, lang)
