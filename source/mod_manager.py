@@ -3817,48 +3817,29 @@ class ModManagerApp(tk.Tk):
         is its parent.  We therefore keep no child that pins our temp dir (clean removal), the
         relaunch reliably outlives us, and we exit through the clean window-close path.  The chosen
         language is read by the new instance from the just-(fsync'd) settings.json — durable and
-        visible before we hand off — so it always applies.  Logged to relaunch_debug.log for sanity."""
+        visible before we hand off — so it always applies."""
         import subprocess
-        log = _LAUNCH_DIR / "relaunch_debug.log"
-
-        def _pylog(msg):
-            try:
-                with open(log, "a", encoding="utf-8") as f:
-                    f.write("py pid=%d  %s\n" % (os.getpid(), msg))
-            except Exception:
-                pass
-
         # Persist FIRST (durably) so the relaunched instance reads the new language/state.
         try:
             self._save_settings()
             self._save_mgr_state()
         except Exception:
             pass
-        try:
-            log.write_text("", encoding="utf-8")   # fresh log per restart attempt
-        except Exception:
-            pass
         env = dict(os.environ)
         env["RUSE_MM_LANG"] = self._settings.get("default_language", "us")
-        _pylog("restart requested; frozen=%s platform=%s lang=%s"
-               % (getattr(sys, "frozen", False), sys.platform, env["RUSE_MM_LANG"]))
         try:
             if getattr(sys, "frozen", False) and sys.platform == "win32":
                 exe = str(Path(sys.executable).resolve())
                 # Hand the launch to the running shell so the new instance is EXPLORER's child,
                 # outside our job — nothing we own pins our _MEI temp dir, and it outlives our exit.
                 subprocess.Popen(["explorer.exe", exe], close_fds=True)
-                _pylog("relaunch handed to explorer: %s" % exe)
             else:
                 args = ([sys.executable] if getattr(sys, "frozen", False)
                         else [sys.executable, str(Path(__file__).resolve())])
                 subprocess.Popen(args, cwd=str(_LAUNCH_DIR), close_fds=True, env=env)
-                _pylog("relaunch direct (dev/non-win): %s" % args)
         except Exception as e:
-            _pylog("relaunch FAILED: %r" % e)
             messagebox.showerror(t("Restart failed"), str(e), parent=self)
             return
-        _pylog("parent quitting now")
         self.quit()
 
     # ── Shortcuts ─────────────────────────────────────────────────────────────
