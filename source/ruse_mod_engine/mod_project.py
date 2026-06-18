@@ -66,6 +66,12 @@ _META_NAME = "project.json"
 # Convert tab reads so a mod folder carries its own author/version/description.
 DESCRIPTION_NAME = "description.txt"
 
+# Modder's free-text NOTES live beside project.json in the project ROOT (NOT in any .dat — they are
+# project metadata only).  notes.json maps a STABLE identity key (e.g. "unit:<ClassNameForDebug>",
+# "ammo:<AmmunitionId>", "ai_card:<name>") to the note text, so a note follows the thing it annotates
+# across edits/rebuilds.  See ModProject.get_note / set_note.
+NOTES_NAME = "notes.json"
+
 
 def parse_description(text):
     """Parse a description.txt body into ``{"author", "description", "version"}``.
@@ -172,6 +178,8 @@ class ModProject:
         self._dirty = set()
         # dat_keys whose working copy has been grabbed into the mod folder
         self._files = set()
+        # modder's free-text notes (identity key -> text), lazy-loaded from notes.json on first use
+        self._notes = None
 
     # ── construction ──────────────────────────────────────────────────────────
 
@@ -245,6 +253,47 @@ class ModProject:
         """Write author / description / version to the project's description.txt."""
         self.description_path().write_text(
             format_description(author, description, version), encoding="utf-8")
+
+    # ── notes.json (modder's free-text annotations, project metadata) ─────────────
+
+    def notes_path(self) -> Path:
+        """Path to the project's notes.json (in the project ROOT, beside project.json)."""
+        return self.folder / NOTES_NAME
+
+    def _notes_dict(self) -> dict:
+        """The notes map, lazy-loaded once (empty if the file is missing/unparseable)."""
+        if self._notes is None:
+            try:
+                p = self.notes_path()
+                self._notes = json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
+                if not isinstance(self._notes, dict):
+                    self._notes = {}
+            except Exception:
+                self._notes = {}
+        return self._notes
+
+    def get_note(self, key: str) -> str:
+        """The note text for `key`, or "" if none."""
+        return self._notes_dict().get(key, "")
+
+    def set_note(self, key: str, text: str):
+        """Set (or clear, if blank) the note for `key` and persist notes.json immediately.  Notes
+        save independently of the .dat files — annotating doesn't require a data edit."""
+        notes = self._notes_dict()
+        text = (text or "").strip()
+        if text:
+            if notes.get(key) == text:
+                return                     # unchanged — skip the write
+            notes[key] = text
+        else:
+            if key not in notes:
+                return                     # already absent — skip the write
+            notes.pop(key, None)
+        try:
+            self.notes_path().write_text(json.dumps(notes, indent=2, ensure_ascii=False),
+                                         encoding="utf-8")
+        except Exception:
+            pass
 
     # ── paths ───────────────────────────────────────────────────────────────────
 

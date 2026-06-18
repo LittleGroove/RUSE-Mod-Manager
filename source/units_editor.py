@@ -28,6 +28,7 @@ from ruse_mod_engine import ndfbin as ndfbin_mod  # noqa: E402
 from ruse_mod_engine import dic as dic_mod  # noqa: E402
 from ruse_mod_engine import clone as clone_mod  # noqa: E402
 from i18n import t  # noqa: E402
+import ui_util  # noqa: E402  — pixel-accurate, language-aware widget sizing
 
 # ── Theme (mirrors mod_manager.py palette) ──────────────────────────────────────
 _R_BG        = "#08101c"
@@ -123,6 +124,37 @@ _NUM_TIDS = {ndfbin_mod.T.Bool, ndfbin_mod.T.Int8, ndfbin_mod.T.Int16, ndfbin_mo
 _OTHER_SKIP = {"DescriptorId", "TrackingId", "AmmunitionId", "IconeType", "Key",
                "ClassNameForDebug", "UpgradeRequire", "IsUpgrade"}
 _COVERED = {p for _, p, _ in _FIELDS} | _OTHER_SKIP
+
+# Display-only metric conversion for distance/speed fields (issue #6).  The raw game value is NOT
+# changed — we just show what it means in standard units underneath the field:
+#   distance: 260 raw = 1 metre   (so the 3 decimals of km ARE the metres: 3.568 km = 3568 m)
+#   speed:    130 raw = 1 km/h    (linear)
+_DIST_PER_M = 260.0
+_SPEED_PER_KPH = 130.0
+_UNIT_CONV = {
+    "VitesseLineaire": "speed", "VitesseCombat": "speed",
+    "MaxAcceleration": "accel", "MaxDeceleration": "accel",   # same /260, but per time² → m/s²
+    "DetectionBase": "distance", "PorteeVisionVolant": "distance",
+    "PorteeAttackReflexAir": "distance", "PorteeAttackReflexSol": "distance",
+    "PorteeMaximale": "distance", "PorteeMinimale": "distance", "RayonPinned": "distance",
+}
+
+
+def _conv_text(prop, raw):
+    """The '≈ …' metric label for a distance/speed field, '' for a non-numeric (mid-edit) value, or
+    None when `prop` isn't a distance/speed field (issue #6).  Display only."""
+    kind = _UNIT_CONV.get(prop)
+    if not kind:
+        return None
+    try:
+        v = float(str(raw).strip())
+    except (TypeError, ValueError):
+        return ""
+    if kind == "speed":
+        return t("≈ {kph:.2f} km/h", kph=v / _SPEED_PER_KPH)
+    if kind == "accel":
+        return t("≈ {a:.3f} m/s²", a=v / _DIST_PER_M)
+    return t("≈ {km:.3f} km", km=v / _DIST_PER_M / 1000.0)
 
 
 def _nation_from_value(raw) -> str:
@@ -408,8 +440,10 @@ class UnitsEditorWindow(tk.Frame):
         tk.Label(win, text=t("Migrate to:"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", padx=12, pady=(8, 2))
         options = [n for n in _FACTIONS if n != "All"]   # actual nations only, no filter sentinel
-        ttk.Combobox(win, textvariable=target_var, values=options, width=20,
-                     state="readonly").pack(anchor="w", padx=12)
+        mig_cb = ttk.Combobox(win, textvariable=target_var, values=options, width=20,
+                              state="readonly")
+        mig_cb.pack(anchor="w", padx=12)
+        ui_util.fit_combobox(mig_cb)
         tk.Label(win, text=t("USA = removes the Nationalite property. Other nations set it to the "
                              "matching int. PositionInMenu is auto-reassigned to a free slot in the "
                              "target nation's factory; cross-nation UpgradeRequire is cleared."),
@@ -487,14 +521,21 @@ class UnitsEditorWindow(tk.Frame):
               "a unit's weapon on the Units tab (\"Set weapon's ammo to\").",
               ammo_id=(new_id.raw if new_id else '?')), parent=self)
 
-    def _set_one_weapon_ammo(self, mw, var):
-        """Repoint a single mounted weapon to the ammo chosen in its dropdown."""
-        s = var.get().lstrip("#").strip()
-        a = next((a for a in self._ammo if str(a["id"]) == s), None)
-        if a is None:
-            return
-        self._set_mw_ammo(mw, a["idx"], a["inst"].class_index)
-        self._after_weapon_change()
+    def _commit_weapon_ammo(self):
+        """Apply each weapon's chosen ammo from the inline dropdowns (issue #7 — done on the main
+        Apply, not a per-weapon 'Set ammo' button).  Returns the number of weapons re-pointed."""
+        n = 0
+        for mw, var, orig in getattr(self, "_wpn_ammo_pending", []):
+            cur = var.get()
+            if cur == orig:
+                continue
+            s = cur.lstrip("#").strip()
+            a = next((a for a in self._ammo if str(a["id"]) == s), None)
+            if a is None:
+                continue
+            self._set_mw_ammo(mw, a["idx"], a["inst"].class_index)
+            n += 1
+        return n
 
     def _remove_weapon(self):
         if not self._sel:
@@ -597,6 +638,13 @@ class UnitsEditorWindow(tk.Frame):
     @staticmethod
     def _building_label(b) -> str:
         return f"{b['nation']}: {b['name']} (TB={b['type_batiment']})"
+
+    @staticmethod
+    def _fit_dropdown(combo):
+        """Size these long-value dropdowns (building/type/upgrade names) to fit their content —
+        issue #5.1.  Pixel-accurate and language-aware (see ui_util), so it's correct in every
+        language instead of guessing a character count that truncates Cyrillic/CJK."""
+        ui_util.fit_combobox(combo, maximum=60)
 
     def _building_by_label(self, label: str):
         """Return the building dict for a SPECIFIC-building label, or None for anything else
@@ -771,6 +819,7 @@ class UnitsEditorWindow(tk.Frame):
         fac = ttk.Combobox(bar, textvariable=self._faction_var, values=_FACTIONS,
                            width=12, state="readonly")
         fac.pack(side="left", padx=(4, 10))
+        ui_util.fit_combobox(fac, minimum=8)
         # Changing faction refreshes the building dropdown to that faction's buildings, then refilters.
         fac.bind("<<ComboboxSelected>>", lambda *_: self._on_faction_changed())
         # Hidden back-compat var — older tests/probes set this to a category name (e.g. "Armor") to
@@ -783,6 +832,7 @@ class UnitsEditorWindow(tk.Frame):
                                             values=self._building_options("All"),
                                             width=40, state="readonly")
         self._building_combo.pack(side="left", padx=(4, 10))
+        self._fit_dropdown(self._building_combo)   # full building/type names in the list (issue #5.1)
         self._building_combo.bind("<<ComboboxSelected>>", lambda *_: self._apply_filter())
         # Localisation: pick which language's in-game names appear next to the internal names. Only
         # shown when at least one baseunite.dic language is available in the loaded data.
@@ -796,6 +846,7 @@ class UnitsEditorWindow(tk.Frame):
             lang_combo = ttk.Combobox(bar, textvariable=self._list_lang_var, state="readonly",
                                       values=[dic_mod.lang_label(c) for c in langs], width=14)
             lang_combo.pack(side="left", padx=(4, 10))
+            ui_util.fit_combobox(lang_combo)
             lang_combo.bind("<<ComboboxSelected>>", lambda *_: self._on_list_lang())
         tk.Label(bar, text=t("Search:"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(side="left")
@@ -873,10 +924,7 @@ class UnitsEditorWindow(tk.Frame):
         self._wpn_lb = tk.Listbox(lwrap, width=46, activestyle="none", background=_R_BG_WIDGET,
                                   foreground=_R_TEXT, selectbackground=_R_SEL_BG,
                                   selectforeground=_R_GOLD_BRT, font=_F_MAIN, exportselection=False)
-        self._wpn_lb.pack(side="left", fill="y", expand=True)
-        sb = ttk.Scrollbar(lwrap, orient="vertical", command=self._wpn_lb.yview)
-        self._wpn_lb.configure(yscrollcommand=sb.set)
-        sb.pack(side="left", fill="y")
+        ui_util.with_scrollbars(lwrap, self._wpn_lb)   # horizontal scroll for long weapon labels (#5.4)
         self._wpn_lb.bind("<<ListboxSelect>>", self._on_wpn_select)
 
         right = tk.Frame(body, background=_R_BG_PANEL)
@@ -974,11 +1022,33 @@ class UnitsEditorWindow(tk.Frame):
             # than an abstract category name. Selecting a building writes its TypeBatiment to Factory.
             nation = self._sel["nation"] if self._sel is not None else "All"
             options = [self._building_label(b) for b in self._buildings_in_nation(nation)]
-            ttk.Combobox(row, textvariable=var, values=options, width=self._ENT_W,
-                         state="readonly").grid(row=0, column=2, sticky="e", padx=(0, 4))
+            cb = ttk.Combobox(row, textvariable=var, values=options, width=self._ENT_W,
+                              state="readonly")
+            cb.grid(row=0, column=2, sticky="e", padx=(0, 4))
+            self._fit_dropdown(cb)   # show full building names in the drop-down (issue #5.1)
         else:
             ttk.Entry(row, textvariable=var, width=self._ENT_W).grid(row=0, column=2, sticky="e", padx=(0, 4))
+        # Distance/speed fields: show the value in standard units (km / km·h) live as you type — the
+        # stored value is untouched (issue #6).
+        if prop in _UNIT_CONV:
+            conv = tk.Label(row, text=(_conv_text(prop, cur) or ""), anchor="e",
+                            background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN)
+            conv.grid(row=1, column=0, columnspan=3, sticky="e", padx=(0, 6))
+            var.trace_add("write", lambda *_a, p=prop, v=var, lbl=conv:
+                          lbl.configure(text=(_conv_text(p, v.get()) or "")))
         rows.append((prop, kind, val, var, cur))
+        # Zebra-stripe: alternate row shade so the eye can follow a row to its value box (issue #5.2).
+        ui_util.apply_row_bg(row, ui_util.row_bg(getattr(self, "_zebra_i", 0), _R_BG_PANEL))
+        self._zebra_i = getattr(self, "_zebra_i", 0) + 1
+
+    def _notes_section(self, container, key, hint=None):
+        """A modder's 'Notes' box (issue #5.6) for the thing identified by `key`, auto-saving into the
+        project's notes.json on focus-out / panel rebuild (no extra click)."""
+        ui_util.notes_section(
+            container, lambda text, k=key: self.project.set_note(k, text),
+            panel_bg=_R_BG_PANEL, widget_bg=_R_BG_WIDGET, text_fg=_R_TEXT, dim_fg=_R_TEXT_DIM,
+            gold=_R_GOLD, font=_F_MAIN, font_bold=_F_BOLD,
+            initial=self.project.get_note(key), label=t("Notes"), hint=hint)
 
     def _render_group(self, container, rows, inst, specs):
         any_shown = False
@@ -1050,6 +1120,7 @@ class UnitsEditorWindow(tk.Frame):
         nation than what they just picked."""
         fac = self._faction_var.get()
         self._building_combo.configure(values=self._building_options(fac))
+        self._fit_dropdown(self._building_combo)   # keep the list wide after the values change
         self._building_var.set("All buildings")
         self._apply_filter()
 
@@ -1150,6 +1221,8 @@ class UnitsEditorWindow(tk.Frame):
         for w in self._fields_frame.winfo_children():
             w.destroy()
         self._field_rows = []
+        self._zebra_i = 0   # zebra-stripe counter for the stat/value rows (issue #5.2)
+        self._wpn_ammo_pending = []   # (mounted_weapon, dropdown var, orig) — committed on Apply (#7)
         d = self._sel
         inst = d["inst"]
         self._hdr.configure(text=d["name"] or t("(unnamed)"))
@@ -1174,7 +1247,7 @@ class UnitsEditorWindow(tk.Frame):
         # Inline weapons: each mounted weapon has its OWN ammo, set per weapon.
         nodes = self._unit_weapon_nodes(inst) if d["kind"] == "unit" else []
         if nodes:
-            self._section(self._fields_frame, t("Weapons — set each weapon's ammo"))
+            self._section(self._fields_frame, t("Weapons — pick each weapon's ammo (applied on Apply)"))
             ammo_vals = [f"#{a['id']}" for a in self._ammo]
             for wi, (mw, am, ai) in enumerate(nodes):
                 idv = self._prop_value(am, "AmmunitionId") if am is not None else None
@@ -1193,19 +1266,20 @@ class UnitsEditorWindow(tk.Frame):
                 ctrl = tk.Frame(row, background=_R_BG_PANEL)
                 ctrl.grid(row=0, column=2, sticky="e", padx=(0, 4))
                 var = tk.StringVar(value=f"#{idv.raw}" if idv else "")
-                ttk.Combobox(ctrl, textvariable=var, values=ammo_vals, width=9,
-                             state="readonly").pack(side="left")
-                ttk.Button(ctrl, text=t("Set ammo"),
-                           command=lambda m=mw, v=var: self._set_one_weapon_ammo(m, v)
-                           ).pack(side="left", padx=(4, 0))
+                ammo_cb = ttk.Combobox(ctrl, textvariable=var, values=ammo_vals, width=9,
+                                       state="readonly")
+                ammo_cb.pack(side="left")
+                ui_util.fit_combobox(ammo_cb, minimum=9, maximum=20)
+                # No per-weapon "Set ammo" button — the chosen ammo is applied on the main Apply (#7).
+                self._wpn_ammo_pending.append((mw, var, var.get()))
             rm = tk.Frame(self._fields_frame, background=_R_BG_PANEL)
             rm.pack(fill="x", pady=1)
             ttk.Button(rm, text=t("Remove all weapons from this unit"),
                        command=self._remove_weapon).pack(side="left", padx=2)
             tk.Label(self._fields_frame,
                      text=t("Each weapon fires its own ammo. To make a unique weapon, duplicate an ammo "
-                            "on the Ammo tab, then Set it on the weapon here. Editing a shared ammo below "
-                            "affects every unit using it."),
+                            "on the Ammo tab, pick it for the weapon here, then click Apply. Editing a "
+                            "shared ammo below affects every unit using it."),
                      background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                      wraplength=560, justify="left").pack(anchor="w", padx=2)
             # editable stats for each DISTINCT ammo this unit uses
@@ -1228,6 +1302,11 @@ class UnitsEditorWindow(tk.Frame):
         # Catch-all: any other numeric field on the unit not shown above
         self._section(self._fields_frame, t("Other unit fields (raw)"))
         self._render_other(self._fields_frame, self._field_rows, inst, _COVERED)
+
+        # Modder's notes for this unit (saved in the mod project, not the game data) — issue #5.6.
+        self._notes_section(self._fields_frame, "unit:" + (d["name"] or ""),
+                            hint=t("Private notes for this unit — saved with the mod project, "
+                                   "auto-saved as you click away."))
 
         self._apply_btn.configure(state="normal")
         self._dup_btn.configure(state="normal")
@@ -1282,6 +1361,7 @@ class UnitsEditorWindow(tk.Frame):
         cb = ttk.Combobox(lrow, textvariable=self._name_lang_var, state="readonly",
                           values=[dic_mod.lang_label(c) for c in langs], width=self._ENT_W - 2)
         cb.grid(row=0, column=2, sticky="e", padx=(0, 4))
+        ui_util.fit_combobox(cb)
         cb.bind("<<ComboboxSelected>>", lambda e: self._on_name_lang())
 
         tk.Label(self._fields_frame,
@@ -1358,6 +1438,7 @@ class UnitsEditorWindow(tk.Frame):
         combo = ttk.Combobox(row, textvariable=self._upg_combo_var, values=values, width=self._ENT_W,
                              state="readonly")
         combo.grid(row=0, column=2, sticky="e", padx=(0, 4))
+        self._fit_dropdown(combo)   # full parent-unit names in the drop-down (issue #5.1)
         combo.bind("<<ComboboxSelected>>", lambda *_: self._on_upg_combo_change())
 
     def _on_upg_combo_change(self):
@@ -1424,6 +1505,10 @@ class UnitsEditorWindow(tk.Frame):
         self._section(self._wpn_fields_frame, t("Other ammo fields (raw)"))
         self._render_other(self._wpn_fields_frame, self._wpn_rows, inst,
                            {p for _, p, _ in _AMMO_FIELDS} | _OTHER_SKIP)
+        # Modder's notes for this ammo (e.g. why a duplicated ammo exists) — issue #5.6.
+        self._notes_section(self._wpn_fields_frame, "ammo:" + str(a["id"]),
+                            hint=t("Private notes for this ammo — e.g. what a duplicated ammo is for. "
+                                   "Saved with the mod project, auto-saved as you click away."))
         self._wpn_apply_btn.configure(state="normal")
         self._wpn_dup_btn.configure(state="normal")
         self._wpn_status.configure(text="")
@@ -1553,16 +1638,22 @@ class UnitsEditorWindow(tk.Frame):
                     errors.append(t("Name [{lang}]: could not write into baseunite.dic",
                                     lang=dic_mod.lang_label(lang)))
 
+        # Weapon ammo: apply the inline dropdowns here (issue #7 — no separate "Set ammo" button).
+        wpn_changed = self._commit_weapon_ammo()
+
         if errors:
             messagebox.showerror(t("Invalid value(s)"), "\n".join(errors), parent=self)
-        if changed:
+        if changed or wpn_changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
-        if changed or name_changed:
+        if wpn_changed:
+            self._index_weapons()        # weapon→ammo links changed — refresh the Ammo tab + inline stats
+            self._wpn_apply_filter()
+        if changed or name_changed or wpn_changed:
             self._keep_scroll(self._fields_frame, self._render_fields)  # show set values
             if name_changed:
                 self._apply_filter(keep_sel=True)   # reflect the edited name in the list
             self._notify()
-        total = changed + name_changed
+        total = changed + name_changed + wpn_changed
         self._status.configure(
             text=(t("Applied {total} change(s) · {pending} file(s) pending",
                     total=total, pending=self.project.dirty_count())

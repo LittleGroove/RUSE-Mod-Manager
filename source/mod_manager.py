@@ -48,6 +48,7 @@ _PUBLIC_SRC = _LAUNCH_DIR / "Claude" / "sources" / "RUSE-game-public"
 
 import i18n
 from i18n import t          # every user-facing string is t("English") — see i18n.py
+import ui_util              # pixel-accurate, language-aware widget sizing (see ui_util.py)
 from ruse_mod_engine import applier as applier_mod
 from ruse_mod_engine import mod_project as mp_project_mod
 from ruse_mod_engine import path_map as path_map_mod
@@ -918,18 +919,17 @@ class ModManagerApp(tk.Tk):
 
         tb = ttk.Frame(mf)
         tb.pack(fill="x", padx=4, pady=(4, 0))
-        ttk.Button(tb, text=t("Scan Mods Folder"),
-                   command=self._mgr_scan).pack(side="left", padx=2)
-        ttk.Button(tb, text=t("Add .rmod…"),
-                   command=self._mgr_add).pack(side="left", padx=2)
-        ttk.Button(tb, text=t("Remove Selected"),
-                   command=self._mgr_remove).pack(side="left", padx=2)
-        ttk.Button(tb, text=t("Clear All"),
-                   command=self._mgr_clear).pack(side="left", padx=2)
-        ttk.Button(tb, text=t("Import Order…"),
-                   command=self._mgr_import_order).pack(side="right", padx=2)
-        ttk.Button(tb, text=t("Share Order"),
-                   command=self._mgr_share_order).pack(side="right", padx=2)
+        # Wrapping toolbar: in a narrow window the buttons flow onto a second row instead of the
+        # right-hand ones (Share/Import Order) getting clipped off the edge (issue #5.3).
+        tb_btns = [
+            ttk.Button(tb, text=t("Scan Mods Folder"), command=self._mgr_scan),
+            ttk.Button(tb, text=t("Add .rmod…"), command=self._mgr_add),
+            ttk.Button(tb, text=t("Remove Selected"), command=self._mgr_remove),
+            ttk.Button(tb, text=t("Clear All"), command=self._mgr_clear),
+            ttk.Button(tb, text=t("Import Order…"), command=self._mgr_import_order),
+            ttk.Button(tb, text=t("Share Order"), command=self._mgr_share_order),
+        ]
+        ui_util.flow(tb, tb_btns)
 
         ttk.Label(mf,
                   text=t("TOP loads first  —  BOTTOM overrides.  Use ▲ ▼ to reorder."),
@@ -974,22 +974,20 @@ class ModManagerApp(tk.Tk):
         self._mgr_lb.bind("<space>", self._mgr_toggle)
         self._mgr_lb.bind("<<ListboxSelect>>", self._mgr_on_select)
 
-        # Enable / disable bar
+        # Enable / disable bar — wraps in a narrow window so 'Update .rmod' isn't clipped (issue #5.3).
+        # 'Update .rmod' re-derives the selected EXTERNAL rmod into the current format; it's disabled
+        # unless exactly one external (non-bundled) mod is selected (see _mgr_update_btn_state).
         eb = ttk.Frame(mf)
         eb.pack(fill="x", padx=4, pady=(2, 6))
-        ttk.Button(eb, text=t("☑  Enable Selected"),
-                   command=self._mgr_enable_selected).pack(side="left", padx=(0, 2))
-        ttk.Button(eb, text=t("☐  Disable Selected"),
-                   command=self._mgr_disable_selected).pack(side="left", padx=2)
-        ttk.Separator(eb, orient="vertical").pack(side="left", fill="y", padx=8)
-        ttk.Button(eb, text=t("All Off"),
-                   command=self._mgr_disable_all).pack(side="left", padx=2)
-        # Right-aligned, by itself: re-derive the selected EXTERNAL rmod into the current format.
-        # Disabled unless exactly one external (non-bundled) mod is selected — bundled mods are baked
-        # into the exe and can't be updated externally.  See _mgr_update_btn_state.
         self._mgr_update_btn = ttk.Button(eb, text=t("Update .rmod"),
                                           command=self._mgr_update_rmod, state="disabled")
-        self._mgr_update_btn.pack(side="right", padx=2)
+        eb_btns = [
+            ttk.Button(eb, text=t("☑  Enable Selected"), command=self._mgr_enable_selected),
+            ttk.Button(eb, text=t("☐  Disable Selected"), command=self._mgr_disable_selected),
+            ttk.Button(eb, text=t("All Off"), command=self._mgr_disable_all),
+            self._mgr_update_btn,
+        ]
+        ui_util.flow(eb, eb_btns)
 
         # ── Selected mod detail ───────────────────────────────────────────────
         df = ttk.LabelFrame(hpw, text=t("Selected Mod"))
@@ -3224,19 +3222,22 @@ class ModManagerApp(tk.Tk):
 
         act = ttk.LabelFrame(self._ed_hub, text=t("Mod Windows"))
         act.pack(fill="x", padx=8, pady=6)
-        ttk.Button(act, text=t("  Units & Buildings  "), command=self._ed_open_units
-                   ).pack(side="left", padx=4, pady=6)
-        ttk.Button(act, text=t("  Map Editor  "), command=self._open_map_editor
-                   ).pack(side="left", padx=4, pady=6)
-        ttk.Button(act, text=t("  AI  "), command=self._ed_open_ai
-                   ).pack(side="left", padx=4, pady=6)
-        ttk.Button(act, text=t("  Economy  "), command=self._ed_open_economy
-                   ).pack(side="left", padx=4, pady=6)
-        ttk.Button(act, text=t("  Raw / Asset Editor  "), command=self._ed_open_tools
-                   ).pack(side="left", padx=4, pady=6)
+        # Wrap the editor-open buttons (in a plain inner frame) so none (e.g. Raw / Asset Editor) is
+        # clipped when the window is narrow (issue #5.3).  The help text is on its OWN line below, so
+        # it never affects the button positions.
+        act_bar = ttk.Frame(act)
+        act_bar.pack(fill="x", padx=4, pady=(2, 0))
+        act_btns = [
+            ttk.Button(act_bar, text=t("  Units & Buildings  "), command=self._ed_open_units),
+            ttk.Button(act_bar, text=t("  Map Editor  "), command=self._open_map_editor),
+            ttk.Button(act_bar, text=t("  AI  "), command=self._ed_open_ai),
+            ttk.Button(act_bar, text=t("  Economy  "), command=self._ed_open_economy),
+            ttk.Button(act_bar, text=t("  Raw / Asset Editor  "), command=self._ed_open_tools),
+        ]
+        ui_util.flow(act_bar, act_btns, pady=6)
         ttk.Label(act, text=t("Each window has its own Save button — it saves every accumulated "
                               "change to the mod's .dat."),
-                  foreground=_R_TEXT_DIM).pack(side="left", padx=10)
+                  foreground=_R_TEXT_DIM).pack(anchor="w", padx=8, pady=(2, 4))
 
         proj = ttk.LabelFrame(self._ed_hub, text=t("Project"))
         proj.pack(fill="x", padx=8, pady=(0, 6))
@@ -3244,11 +3245,13 @@ class ModManagerApp(tk.Tk):
                    ).pack(side="left", padx=4, pady=6)
         ttk.Button(proj, text=t("  Convert to rmod  "), command=self._ed_convert_to_rmod
                    ).pack(side="left", padx=4, pady=6)
+        # Pack Close Project (right) BEFORE the help text so it keeps its spot in a narrow window —
+        # the long explanatory label clips instead of pushing Close Project off-screen (issue #5.3).
+        ttk.Button(proj, text=t("  Close Project  "), command=self._ed_close_project
+                   ).pack(side="right", padx=4, pady=6)
         ttk.Label(proj, text=t("Deploy = write the dats into the game. Convert to rmod = export an "
                                "update mod (only your changes) to share."),
                   foreground=_R_TEXT_DIM).pack(side="left", padx=10)
-        ttk.Button(proj, text=t("  Close Project  "), command=self._ed_close_project
-                   ).pack(side="right", padx=4, pady=6)
 
         # ── Bottom: Mod Details (left) + Log (right) — fill the remaining hub space ───
         bottom = ttk.Frame(self._ed_hub)
@@ -3775,6 +3778,7 @@ class ModManagerApp(tk.Tk):
         self._lang_cb = ttk.Combobox(arow, textvariable=self._lang_var, state="readonly", width=22,
                                      values=[name for _c, name in _dic_mod.LANGUAGES])
         self._lang_cb.pack(side="left", padx=8)
+        ui_util.fit_combobox(self._lang_cb)   # fit names like "Chinese (Simplified)" (issue #5.1)
         self._lang_cb.bind("<<ComboboxSelected>>", self._on_default_language)
         # Right side: create Windows shortcuts to this app's .exe.
         sc = ttk.Frame(arow)

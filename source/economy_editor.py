@@ -19,6 +19,7 @@ if REPO not in sys.path:
 from ruse_mod_engine import mod_project as mp_mod  # noqa: E402
 from ruse_mod_engine import ndfbin as ndfbin_mod  # noqa: E402
 from i18n import t  # noqa: E402
+import ui_util  # noqa: E402  — zebra-striping + language-aware sizing
 
 _R_BG, _R_BG_PANEL, _R_BG_WIDGET = "#08101c", "#0e1a2a", "#060d18"
 _R_GOLD, _R_GOLD_BRT, _R_TEXT, _R_TEXT_DIM, _R_SEL_BG = "#c8a020", "#e0c030", "#ccd8e8", "#3e5878", "#1a3060"
@@ -227,6 +228,7 @@ class EconomyEditorWindow(tk.Frame):
             w.destroy()
         self._g_rows = []
         self._derived = []
+        self._zeb = 0   # zebra-stripe counter for this render (issue #5.2)
         covered = {p for _t, flds in _GLOBAL_GROUPS for _l, p, k in flds if k != "derived"}
         for gtitle, fields in _GLOBAL_GROUPS:
             present = []
@@ -251,10 +253,7 @@ class EconomyEditorWindow(tk.Frame):
         self._b_lb = tk.Listbox(left, width=34, activestyle="none", background=_R_BG_WIDGET, foreground=_R_TEXT,
                                 selectbackground=_R_SEL_BG, selectforeground=_R_GOLD_BRT, font=_F_MAIN,
                                 exportselection=False)
-        self._b_lb.pack(side="left", fill="y", expand=True)
-        sb = ttk.Scrollbar(left, orient="vertical", command=self._b_lb.yview)
-        self._b_lb.configure(yscrollcommand=sb.set)
-        sb.pack(side="left", fill="y")
+        ui_util.with_scrollbars(left, self._b_lb)   # horizontal scroll for long building names (#5.4)
         for lbl, _i in self._bldgs:
             self._b_lb.insert(tk.END, lbl)
         right = tk.Frame(body, background=_R_BG_PANEL)
@@ -317,6 +316,8 @@ class EconomyEditorWindow(tk.Frame):
         var = tk.StringVar(value=cur)
         ttk.Entry(r, textvariable=var, width=self._ENT_W).grid(row=0, column=2, sticky="e", padx=(0, 4))
         rows.append((prop, kind, val, var, cur))
+        ui_util.apply_row_bg(r, ui_util.row_bg(getattr(self, "_zeb", 0), _R_BG_PANEL))  # issue #5.2
+        self._zeb = getattr(self, "_zeb", 0) + 1
 
     @staticmethod
     def _raw_kind(val):
@@ -343,6 +344,8 @@ class EconomyEditorWindow(tk.Frame):
                        foreground=_R_GOLD, font=_F_BOLD)
         out.grid(row=0, column=2, sticky="e", padx=(0, 4))
         self._derived.append((key, out))
+        ui_util.apply_row_bg(r, ui_util.row_bg(getattr(self, "_zeb", 0), _R_BG_PANEL))  # issue #5.2
+        self._zeb = getattr(self, "_zeb", 0) + 1
         self._refresh_derived()
 
     def _refresh_derived(self):
@@ -444,6 +447,7 @@ class EconomyEditorWindow(tk.Frame):
         for w in self._b_fields.winfo_children():
             w.destroy()
         self._b_rows = []
+        self._zeb = 0   # zebra-stripe counter for this render (issue #5.2)
         self._b_hdr.configure(text=self._bldgs[sel[0]][0])
         self._section(self._b_fields, t("Building economy / stats"))
         covered = set()

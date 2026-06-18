@@ -42,6 +42,7 @@ from ruse_mod_engine import dic as dic_mod          # noqa: E402
 from ruse_mod_engine import edata as edata_mod      # noqa: E402
 import pil_log                                       # noqa: E402  (tags PIL DEBUG as "Raw editor")
 from i18n import t                                    # noqa: E402
+import ui_util                                        # noqa: E402  — language-aware widget sizing
 
 try:
     from PIL import Image, ImageTk
@@ -553,6 +554,7 @@ class ToolsEditorWindow(tk.Frame):
         cb = ttk.Combobox(top, textvariable=self._dat_var, state="readonly", width=52,
                           values=[lbl for _k, lbl in self._dat_choices])
         cb.pack(side="left", padx=8)
+        ui_util.fit_combobox(cb, maximum=70)
         cb.bind("<<ComboboxSelected>>", self._on_dat_pick)
         self._src_lbl = tk.Label(top, text="", background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._src_lbl.pack(side="left", padx=10)
@@ -651,14 +653,16 @@ class ToolsEditorWindow(tk.Frame):
         ttk.Button(fr, text="✕", width=2, command=lambda: self._bf_var.set("")).pack(side="left")
 
         cols = ("path", "kind", "size")
-        self._b_tv = ttk.Treeview(left, columns=cols, show="headings", selectmode="browse")
+        tvh = tk.Frame(left, background=_R_BG)
+        tvh.pack(fill="both", expand=True)
+        self._b_tv = ttk.Treeview(tvh, columns=cols, show="headings", selectmode="browse")
         for c, hd, w in [("path", t("Virtual Path"), 360), ("kind", t("Type"), 110), ("size", t("Size"), 90)]:
             self._b_tv.heading(c, text=hd)
-            self._b_tv.column(c, width=w, minwidth=50, anchor=("e" if c == "size" else "w"))
-        bsb = ttk.Scrollbar(left, orient="vertical", command=self._b_tv.yview)
-        self._b_tv.configure(yscrollcommand=bsb.set)
-        bsb.pack(side="right", fill="y")
-        self._b_tv.pack(fill="both", expand=True)
+            # path doesn't stretch — it's widened to the longest path on refresh so the horizontal
+            # scrollbar can reveal full virtual paths (issue #5.4).
+            self._b_tv.column(c, width=w, minwidth=50, stretch=(c != "path"),
+                              anchor=("e" if c == "size" else "w"))
+        ui_util.with_scrollbars(tvh, self._b_tv)
         self._b_tv.bind("<<TreeviewSelect>>", self._on_browse_select)
 
         self._b_count = tk.Label(left, text="", background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN)
@@ -693,6 +697,7 @@ class ToolsEditorWindow(tk.Frame):
             self._b_tv.delete(it)
         flt = self._bf_var.get().lower().strip()
         shown = 0
+        shown_paths = []
         for p in self._all_paths:
             if flt and flt not in p.lower():
                 continue
@@ -701,7 +706,10 @@ class ToolsEditorWindow(tk.Frame):
             orig = p.replace("/", "\\") if p.replace("/", "\\") in self._sizes else p
             size = self._sizes.get(orig, self._sizes.get(p, 0))
             self._b_tv.insert("", tk.END, iid=p, values=(p, _entry_kind(p), f"{size:,}"))
+            shown_paths.append(p)
             shown += 1
+        ui_util.fit_tree_column(self._b_tv, "path", shown_paths, header=t("Virtual Path"))  # #5.4
+        ui_util.stripe_treeview(self._b_tv, _R_BG_WIDGET); ui_util.retag_treeview(self._b_tv)  # #5.2
         total = sum(1 for p in self._all_paths if (not flt or flt in p.lower()))
         cap = t("  (showing first {n:,} — narrow with Filter)", n=self._BROWSE_CAP) if total > self._BROWSE_CAP else ""
         self._b_count.configure(text=t("{n:,} match(es){cap}", n=total, cap=cap))
@@ -1005,47 +1013,45 @@ class ToolsEditorWindow(tk.Frame):
         pw.pack(fill="both", expand=True, padx=4, pady=4)
 
         lf = ttk.LabelFrame(pw, text=t("NDF Files"))
-        pw.add(lf, weight=1)
+        pw.add(lf, weight=1)   # equal weights → the three lists default to 1/3 each (still draggable)
         self._v_files = self._mk_listbox(lf, selectmode="browse")
-        vfsb = ttk.Scrollbar(lf, orient="vertical", command=self._v_files.yview)
-        self._v_files.configure(yscrollcommand=vfsb.set)
-        vfsb.pack(side="right", fill="y")
-        self._v_files.pack(fill="both", expand=True, padx=2, pady=2)
+        ui_util.with_scrollbars(lf, self._v_files)   # horizontal scroll for long NDF paths (issue #5.4)
         self._v_files.bind("<<ListboxSelect>>", self._vars_on_file)
 
         cf = ttk.LabelFrame(pw, text=t("Instances"))
-        pw.add(cf, weight=2)
+        pw.add(cf, weight=1)
         row = tk.Frame(cf, background=_R_BG)
         row.pack(fill="x", padx=2, pady=(2, 0))
         tk.Label(row, text=t("Filter:"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).pack(side="left")
         self._v_filter = tk.StringVar()
         self._v_filter.trace_add("write", lambda *_: self._vars_apply_filter())
         ttk.Entry(row, textvariable=self._v_filter).pack(side="left", fill="x", expand=True, padx=4)
-        self._v_inst = self._mk_listbox(cf, selectmode="browse")
-        visb = ttk.Scrollbar(cf, orient="vertical", command=self._v_inst.yview)
-        self._v_inst.configure(yscrollcommand=visb.set)
-        visb.pack(side="right", fill="y")
-        self._v_inst.pack(fill="both", expand=True, padx=2, pady=2)
+        ih = tk.Frame(cf, background=_R_BG)
+        ih.pack(fill="both", expand=True, padx=2, pady=2)
+        self._v_inst = self._mk_listbox(ih, selectmode="browse")
+        ui_util.with_scrollbars(ih, self._v_inst)   # horizontal scroll for long instance names (#5.4)
         self._v_inst.bind("<<ListboxSelect>>", self._vars_on_inst)
 
         rf = ttk.LabelFrame(pw, text=t("Properties"))
-        pw.add(rf, weight=3)
+        pw.add(rf, weight=1)
+        ui_util.equalize_panes(pw)   # start the three lists at equal (1/3) widths (issue #5.4)
         eb = tk.Frame(rf, background=_R_BG)
         eb.pack(fill="x", padx=2, pady=(2, 0))
         ttk.Button(eb, text=t("Edit Value"), command=self._vars_edit).pack(side="left", padx=2)
         tk.Label(eb, text=t("or double-click a row"), background=_R_BG, foreground=_R_TEXT_DIM,
                  font=_F_MAIN).pack(side="left", padx=6)
         cols = ("property", "type", "value", "edited")
-        self._v_props = ttk.Treeview(rf, columns=cols, show="headings", selectmode="browse")
+        ph = tk.Frame(rf, background=_R_BG)
+        ph.pack(fill="both", expand=True, padx=2, pady=2)
+        self._v_props = ttk.Treeview(ph, columns=cols, show="headings", selectmode="browse")
         for c, hd, w in [("property", t("Property"), 160), ("type", t("Type"), 80),
                          ("value", t("Value"), 240), ("edited", "", 40)]:
             self._v_props.heading(c, text=hd)
-            self._v_props.column(c, width=w, minwidth=40)
+            # property/value don't stretch — widened to their content on render so the horizontal
+            # scrollbar can reveal long property names and value strings (issue #5.4).
+            self._v_props.column(c, width=w, minwidth=40, stretch=(c in ("type", "edited")))
         self._v_props.tag_configure("mod", foreground=_R_GOLD)
-        vpsb = ttk.Scrollbar(rf, orient="vertical", command=self._v_props.yview)
-        self._v_props.configure(yscrollcommand=vpsb.set)
-        vpsb.pack(side="right", fill="y")
-        self._v_props.pack(fill="both", expand=True, padx=2, pady=2)
+        ui_util.with_scrollbars(ph, self._v_props)
         self._v_props.bind("<Double-Button-1>", self._vars_edit)
 
         self._v_ndf = None
@@ -1125,6 +1131,7 @@ class ToolsEditorWindow(tk.Frame):
         prop_by_idx = {p.index: p for p in ndf.properties}
         for it in self._v_props.get_children():
             self._v_props.delete(it)
+        names, vals = [], []
         for pv in inst.props:
             pr = prop_by_idx.get(pv.prop_index)
             if pr is None:
@@ -1133,8 +1140,13 @@ class ToolsEditorWindow(tk.Frame):
             key = (self._v_ndf_path, inst_idx, pv.prop_index)
             tag = ("mod",) if key in self._v_modified else ()
             mark = "✎" if key in self._v_modified else ""
+            vstr = _fmt_val(pv.value, ndf)
+            names.append(pr.name); vals.append(vstr)
             self._v_props.insert("", tk.END, iid=f"{inst_idx}:{pv.prop_index}",
-                                 values=(pr.name, tname, _fmt_val(pv.value, ndf), mark), tags=tag)
+                                 values=(pr.name, tname, vstr, mark), tags=tag)
+        ui_util.fit_tree_column(self._v_props, "property", names, header=t("Property"))   # #5.4
+        ui_util.fit_tree_column(self._v_props, "value", vals, header=t("Value"))          # #5.4
+        ui_util.stripe_treeview(self._v_props, _R_BG_WIDGET); ui_util.retag_treeview(self._v_props)  # #5.2
 
     def _commit_var(self, inst_idx, inst, prop_idx, type_name, raw_in):
         """Parse raw_in as type_name and write it onto the instance's property, staging the edit.
@@ -1187,8 +1199,10 @@ class ToolsEditorWindow(tk.Frame):
         tk.Label(dlg, text=t("Type:"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).grid(row=1, column=0, sticky="e", **pad)
         type_var = tk.StringVar(value=tname if tname in _EDIT_TYPES else "Int32")
-        ttk.Combobox(dlg, textvariable=type_var, values=_EDIT_TYPES, width=14,
-                     state="readonly").grid(row=1, column=1, sticky="w", **pad)
+        type_cb = ttk.Combobox(dlg, textvariable=type_var, values=_EDIT_TYPES, width=14,
+                               state="readonly")
+        type_cb.grid(row=1, column=1, sticky="w", **pad)
+        ui_util.fit_combobox(type_cb)
         tk.Label(dlg, text=t("Current:"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).grid(row=2, column=0, sticky="e", **pad)
         tk.Label(dlg, text=_fmt_val(pv.value, ndf)[:80], background=_R_BG_PANEL,
@@ -1261,15 +1275,16 @@ class ToolsEditorWindow(tk.Frame):
                  background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN).pack(side="left", padx=12)
 
         cols = ("ndf", "idx", "class", "name", "property", "value")
-        self._s_tv = ttk.Treeview(parent, columns=cols, show="headings", selectmode="browse")
+        sh = tk.Frame(parent, background=_R_BG)
+        sh.pack(fill="both", expand=True, padx=6, pady=2)
+        self._s_tv = ttk.Treeview(sh, columns=cols, show="headings", selectmode="browse")
         for c, hd, w in [("ndf", t("NDF File"), 150), ("idx", "#", 50), ("class", t("Class"), 130),
                          ("name", t("Instance"), 150), ("property", t("Property"), 130), ("value", t("Value"), 220)]:
             self._s_tv.heading(c, text=hd)
-            self._s_tv.column(c, width=w, minwidth=40)
-        ssb = ttk.Scrollbar(parent, orient="vertical", command=self._s_tv.yview)
-        self._s_tv.configure(yscrollcommand=ssb.set)
-        ssb.pack(side="right", fill="y", padx=(0, 6), pady=2)
-        self._s_tv.pack(fill="both", expand=True, padx=6, pady=2)
+            # only the small '#' column stretches; the rest are sized to content on each search so
+            # the horizontal scrollbar reveals wide names/values (issue #5.4).
+            self._s_tv.column(c, width=w, minwidth=40, stretch=(c == "idx"))
+        ui_util.with_scrollbars(sh, self._s_tv)
         self._s_tv.bind("<Double-Button-1>", self._ns_goto)
         self._s_status = tk.Label(parent, text=t("Load a dat then search."), background=_R_BG,
                                   foreground=_R_TEXT_DIM, font=_F_MAIN)
@@ -1341,9 +1356,17 @@ class ToolsEditorWindow(tk.Frame):
         threading.Thread(target=work, daemon=True).start()
 
     def _ns_done(self, results):
+        cells = {"ndf": [], "class": [], "name": [], "property": [], "value": []}
         for path, ii, cn, nm, pn, vs in results:
-            iid = self._s_tv.insert("", tk.END, values=(path.split("/")[-1], ii, cn, nm, pn, vs))
+            ndf = path.split("/")[-1]
+            iid = self._s_tv.insert("", tk.END, values=(ndf, ii, cn, nm, pn, vs))
             self._search_meta[iid] = (path, ii)
+            cells["ndf"].append(ndf); cells["class"].append(cn); cells["name"].append(nm)
+            cells["property"].append(pn); cells["value"].append(vs)
+        for col, hd in (("ndf", t("NDF File")), ("class", t("Class")), ("name", t("Instance")),
+                        ("property", t("Property")), ("value", t("Value"))):
+            ui_util.fit_tree_column(self._s_tv, col, cells[col], header=hd)   # #5.4
+        ui_util.stripe_treeview(self._s_tv, _R_BG_WIDGET); ui_util.retag_treeview(self._s_tv)  # #5.2
         self._s_btn.configure(state="normal")
         cap = t(" (capped at 5000)") if len(results) >= 5000 else ""
         self._s_status.configure(text=t("{n} result(s){cap}", n=len(results), cap=cap))

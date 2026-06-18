@@ -30,6 +30,7 @@ from ruse_mod_engine import edata as edata_mod  # noqa: E402
 from ruse_mod_engine import mod_project as mp_mod  # noqa: E402
 from ruse_mod_engine import ndfbin as ndfbin_mod  # noqa: E402
 from i18n import t  # noqa: E402
+import ui_util  # noqa: E402  — zebra-striping (issue #5.2)
 
 _R_BG, _R_BG_PANEL, _R_BG_WIDGET = "#08101c", "#0e1a2a", "#060d18"
 _R_GOLD, _R_GOLD_BRT, _R_TEXT, _R_TEXT_DIM, _R_SEL_BG = "#c8a020", "#e0c030", "#ccd8e8", "#3e5878", "#1a3060"
@@ -284,10 +285,7 @@ class AIEditorWindow(tk.Frame):
         lb = tk.Listbox(left, width=26, activestyle="none", background=_R_BG_WIDGET, foreground=_R_TEXT,
                         selectbackground=_R_SEL_BG, selectforeground=_R_GOLD_BRT, font=_F_MAIN,
                         exportselection=False)
-        lb.pack(side="left", fill="y", expand=True)
-        sb = ttk.Scrollbar(left, orient="vertical", command=lb.yview)
-        lb.configure(yscrollcommand=sb.set)
-        sb.pack(side="left", fill="y")
+        ui_util.with_scrollbars(left, lb)   # horizontal scroll for long names (issue #5.4)
         for lbl, _inst in items:
             lb.insert(tk.END, lbl)
         st["lb"] = lb
@@ -343,10 +341,7 @@ class AIEditorWindow(tk.Frame):
         lb = tk.Listbox(left, width=40, activestyle="none", background=_R_BG_WIDGET, foreground=_R_TEXT,
                         selectbackground=_R_SEL_BG, selectforeground=_R_GOLD_BRT, font=_F_MAIN,
                         exportselection=False)
-        lb.pack(side="left", fill="y", expand=True)
-        sb = ttk.Scrollbar(left, orient="vertical", command=lb.yview)
-        lb.configure(yscrollcommand=sb.set)
-        sb.pack(side="left", fill="y")
+        ui_util.with_scrollbars(left, lb)   # horizontal scroll for long script names (issue #5.4)
         for lbl, _p in self._scripts:
             lb.insert(tk.END, lbl)
         self._scripts_lb = lb
@@ -522,10 +517,21 @@ class AIEditorWindow(tk.Frame):
         var = tk.StringVar(value=cur)
         ttk.Entry(r, textvariable=var, width=self._ENT_W).grid(row=0, column=2, sticky="e", padx=(0, 4))
         rows.append((prop, kind, val, var, cur))
+        ui_util.apply_row_bg(r, ui_util.row_bg(getattr(self, "_zeb", 0), _R_BG_PANEL))  # issue #5.2
+        self._zeb = getattr(self, "_zeb", 0) + 1
 
     def _section(self, container, title):
         tk.Label(container, text=title, anchor="w", background=_R_BG_PANEL,
                  foreground=_R_GOLD_BRT, font=_F_BOLD).pack(fill="x", padx=2, pady=(8, 2))
+
+    def _notes_section(self, container, key, hint=None):
+        """A modder's 'Notes' box (issue #5.6) for the AI item identified by `key`, auto-saving into
+        the project's notes.json on focus-out / panel rebuild."""
+        ui_util.notes_section(
+            container, lambda text, k=key: self.project.set_note(k, text),
+            panel_bg=_R_BG_PANEL, widget_bg=_R_BG_WIDGET, text_fg=_R_TEXT, dim_fg=_R_TEXT_DIM,
+            gold=_R_GOLD, font=_F_MAIN, font_bold=_F_BOLD,
+            initial=self.project.get_note(key), label=t("Notes"), hint=hint)
 
     def _on_select(self, st):
         sel = st["lb"].curselection()
@@ -535,6 +541,7 @@ class AIEditorWindow(tk.Frame):
         for w in st["fields"].winfo_children():
             w.destroy()
         st["rows"] = []
+        self._zeb = 0   # zebra-stripe counter for this render (issue #5.2)
         st["render"](st, st["sel"])
         st["apply"].configure(state="normal")
         st["status"].configure(text="")
@@ -560,6 +567,9 @@ class AIEditorWindow(tk.Frame):
             for pv in extra:
                 nm = self._ndf.properties[pv.prop_index].name
                 self._row(st["fields"], st["rows"], nm, nm, "scalar", pv.value)
+        label = next((l for l, i in self._profiles if i is inst), "")
+        self._notes_section(st["fields"], "ai_profile:" + label,
+                            hint=t("Private notes for this AI profile — saved with the mod project."))
 
     def _render_bonus(self, st, inst):
         st["hdr"].configure(text=t("AI difficulty handicap (cheat bonus)"))
@@ -572,6 +582,9 @@ class AIEditorWindow(tk.Frame):
                                       "Force,2=Howitzer,3=Prototype,4=Blitzkrieg,5=Turtle,6=Random."),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN, justify="left",
                  wraplength=560).pack(anchor="w", padx=2, pady=(8, 0))
+        label = next((l for l, i in self._bonuses if i is inst), "")
+        self._notes_section(st["fields"], "ai_bonus:" + label,
+                            hint=t("Private notes for this difficulty bonus — saved with the mod project."))
 
     def _render_card(self, st, inst):
         st["hdr"].configure(text=next((l for l, i in self._cards if i is inst), t("Ruse card")))
@@ -579,6 +592,9 @@ class AIEditorWindow(tk.Frame):
             val = self._pv(inst, prop)
             if val is not None:
                 self._row(st["fields"], st["rows"], lbl, prop, kind, val)
+        label = next((l for l, i in self._cards if i is inst), "")
+        self._notes_section(st["fields"], "ai_card:" + label,
+                            hint=t("Private notes for this ruse card — saved with the mod project."))
 
     # ── apply / save ─────────────────────────────────────────────────────────────
 

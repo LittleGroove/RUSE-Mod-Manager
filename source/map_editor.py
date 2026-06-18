@@ -31,6 +31,7 @@ sys.path.insert(0, REPO)
 from ruse_mod_engine import edata, scenario as scenario_mod, kdt as kdt_mod, ndfbin, sdb as sdb_mod  # noqa: E402
 import pil_log                                       # noqa: E402  (tags PIL DEBUG as "Map editor")
 from i18n import t                                    # noqa: E402
+import ui_util                                        # noqa: E402  — language-aware widget sizing
 
 try:
     from PIL import Image, ImageTk, ImageDraw
@@ -1239,6 +1240,13 @@ class MapEditorWindow(tk.Frame):
                   foreground=_R_GOLD_BRT, font=_F_BOLD, relief="flat").pack(side="right")
         # (kdtf above is never packed — KDT UI is hidden)
 
+        # PLACEMENTS + GAME MODES live in a block RESERVED at the bottom of the panel, so their
+        # controls (incl. 'Recompute ticks' / 'Apply lobby modes') stay reachable no matter how long
+        # the selection DETAILS get.  DETAILS takes the space above and SHRINKS (it's scrollable)
+        # rather than pushing the bottom controls off-screen.
+        bottom_block = tk.Frame(left, background=_R_BG_PANEL)
+        bottom_block.pack(side="bottom", fill="x")
+
         # ── DETAILS panel ─────────────────────────────────────────────────────────
         # Sectors are visual-only (capture is driven by the KDT, not these polygons), so the
         # ex-"SECTORS" listbox was removed — that vertical real-estate now belongs to the
@@ -1253,7 +1261,7 @@ class MapEditorWindow(tk.Frame):
                            highlightthickness=0, borderwidth=0)
         dsb.pack(side="right", fill="y")
         self._detail = tk.Text(df, background=_R_BG_WIDGET, foreground=_R_TEXT, font=_F_MAIN,
-                               width=30, highlightthickness=0, borderwidth=0,
+                               width=30, height=6, highlightthickness=0, borderwidth=0,
                                wrap="word", state="disabled",
                                yscrollcommand=dsb.set)
         self._detail.pack(side="left", fill="both", expand=True)
@@ -1269,7 +1277,7 @@ class MapEditorWindow(tk.Frame):
         # other kinds use. _commit_int_prop / _commit_ffa_toggle write directly to the NDF.
 
         # ── placements (depots / HQ spawns / labels) overlay + edit ──────────────
-        plf = tk.Frame(left, background=_R_BG_PANEL)
+        plf = tk.Frame(bottom_block, background=_R_BG_PANEL)
         plf.pack(fill="x", padx=8, pady=(0, 4))
         tk.Label(plf, text=t("PLACEMENTS"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", pady=(2, 2))
@@ -1301,7 +1309,7 @@ class MapEditorWindow(tk.Frame):
         # The two buttons below split the old "Apply game modes (add HQs)" into the two real
         # operations: 'Recompute ticks' re-reads the HQ layout into the ticks; 'Apply lobby
         # modes' stages TMultiMapInfo so the lobby OFFERS exactly the ticked modes.
-        gmf = tk.Frame(left, background=_R_BG_PANEL)
+        gmf = tk.Frame(bottom_block, background=_R_BG_PANEL)
         gmf.pack(fill="x", padx=8, pady=(2, 4))
         tk.Label(gmf, text=t("GAME MODES"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", pady=(2, 0))
@@ -1398,6 +1406,7 @@ class MapEditorWindow(tk.Frame):
             self._map_cb["values"] = []
             return
         self._map_cb["values"] = maps
+        ui_util.fit_combobox(self._map_cb, minimum=18, maximum=40)
         if maps:
             # default to blitz (supercrossroads4) — the user's in-game test map
             self._map_cb.set("supercrossroads4" if "supercrossroads4" in maps else maps[0])
@@ -1435,6 +1444,7 @@ class MapEditorWindow(tk.Frame):
         map_dir = self._map_cb.get()
         scns = list_scenarios(self._dm, map_dir)
         self._scn_cb["values"] = scns
+        ui_util.fit_combobox(self._scn_cb, minimum=24, maximum=44)
         self._pil = self._load_minimap(map_dir)
         win = self._dm.get(f"datasmap\\{map_dir}\\mapinfo.win")
         self._bbox = read_bbox(win) if win else None
