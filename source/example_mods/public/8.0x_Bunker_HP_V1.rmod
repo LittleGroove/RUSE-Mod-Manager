@@ -1,0 +1,577 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "8-0x-bunker-hp-v1",
+  "name": "8.0x Bunker HP",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCAMGNest"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseAT"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCAMGATNest"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCAMGATNestUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_PosteAlerteAvanceUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseArtillerieDCAUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ArtillerieFieldLeger"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ArtillerieFieldLourd"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseLegereFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseMaginotFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 16000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 16000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseATITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseMGNestGER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseSiegfriedGER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 12000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 12000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Bunker_enterre_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 16000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 16000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Position_105mm_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Position_DCA_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_Siegfried_GER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 12000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 12001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_MG_GER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_MG_US"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_AT_US"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_DCA_US"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_AT_UK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_Outpost_UK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_Artillerie_UK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_ArtillerieLight_URSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_ArtillerieHeavy_URSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_Light_FR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_Maginot_FR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 16000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 16001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_AT_ITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 6000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 6001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Bunker_enterre_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 16000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 16001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Position_105mm_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2001.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Position_DCA_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2001.0
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "Football1995, and RossGosling",
+  "description": "Multiplies the Hit-points of every Bunker by 8.0x\nCould be paired nicely with the x3.0 Bunker Price mod c:"
+}
