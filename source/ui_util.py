@@ -116,14 +116,18 @@ def row_bg(index, base, delta=10):
 
 
 def apply_row_bg(frame, bg):
-    """Paint a row ``frame`` and its plain-tk children one ``bg`` so the whole row reads as a single
-    stripe.  ttk widgets (Entry/Combobox) have no ``-background`` and are skipped — they keep their
-    own field colour, which reads fine as the 'cell' sitting on the stripe."""
-    for w in (frame, *frame.winfo_children()):
+    """Paint a row ``frame`` and ALL its descendant plain-tk widgets one ``bg`` so the whole row reads
+    as a single stripe (recurses, so nested sub-frames like the #6 conversion box stripe too).  ttk
+    widgets (Entry/Combobox) have no ``-background`` and are skipped — they keep their own field
+    colour, which reads fine as the 'cell' sitting on the stripe."""
+    def _paint(w):
         try:
             w.configure(background=bg)
         except Exception:
             pass
+        for c in w.winfo_children():
+            _paint(c)
+    _paint(frame)
 
 
 def flow(container, widgets, gap=4, pady=2):

@@ -125,36 +125,23 @@ _OTHER_SKIP = {"DescriptorId", "TrackingId", "AmmunitionId", "IconeType", "Key",
                "ClassNameForDebug", "UpgradeRequire", "IsUpgrade"}
 _COVERED = {p for _, p, _ in _FIELDS} | _OTHER_SKIP
 
-# Display-only metric conversion for distance/speed fields (issue #6).  The raw game value is NOT
-# changed — we just show what it means in standard units underneath the field:
-#   distance: 260 raw = 1 metre   (so the 3 decimals of km ARE the metres: 3.568 km = 3568 m)
-#   speed:    130 raw = 1 km/h    (linear)
-_DIST_PER_M = 260.0
-_SPEED_PER_KPH = 130.0
+# Standard-unit conversion for distance/speed/accel fields (issue #6).  The raw game value and the
+# standard-unit value are shown in TWO linked boxes — edit either and the other updates live (before
+# Apply); the RAW value is still what gets committed.  Base factors: 260 raw = 1 metre, 130 raw =
+# 1 km/h.  `_CONV_SPECS[kind]` = (raw units per 1 displayed unit, unit label, decimals shown):
+#   distance → km  (260 * 1000),  speed → km/h (130),  accel → m/s² (260, but per time²).
 _UNIT_CONV = {
     "VitesseLineaire": "speed", "VitesseCombat": "speed",
-    "MaxAcceleration": "accel", "MaxDeceleration": "accel",   # same /260, but per time² → m/s²
+    "MaxAcceleration": "accel", "MaxDeceleration": "accel",
     "DetectionBase": "distance", "PorteeVisionVolant": "distance",
     "PorteeAttackReflexAir": "distance", "PorteeAttackReflexSol": "distance",
-    "PorteeMaximale": "distance", "PorteeMinimale": "distance", "RayonPinned": "distance",
+    "PorteeMaximale": "distance", "PorteeMinimale": "distance",
 }
-
-
-def _conv_text(prop, raw):
-    """The '≈ …' metric label for a distance/speed field, '' for a non-numeric (mid-edit) value, or
-    None when `prop` isn't a distance/speed field (issue #6).  Display only."""
-    kind = _UNIT_CONV.get(prop)
-    if not kind:
-        return None
-    try:
-        v = float(str(raw).strip())
-    except (TypeError, ValueError):
-        return ""
-    if kind == "speed":
-        return t("≈ {kph:.2f} km/h", kph=v / _SPEED_PER_KPH)
-    if kind == "accel":
-        return t("≈ {a:.3f} m/s²", a=v / _DIST_PER_M)
-    return t("≈ {km:.3f} km", km=v / _DIST_PER_M / 1000.0)
+_CONV_SPECS = {
+    "speed":    (130.0,    "km/h", 2),
+    "accel":    (260.0,    "m/s²", 3),
+    "distance": (260000.0, "km",   3),
+}
 
 
 def _nation_from_value(raw) -> str:
@@ -1028,18 +1015,64 @@ class UnitsEditorWindow(tk.Frame):
             self._fit_dropdown(cb)   # show full building names in the drop-down (issue #5.1)
         else:
             ttk.Entry(row, textvariable=var, width=self._ENT_W).grid(row=0, column=2, sticky="e", padx=(0, 4))
-        # Distance/speed fields: show the value in standard units (km / km·h) live as you type — the
-        # stored value is untouched (issue #6).
+        # Distance/speed/accel fields: a second, EDITABLE box in standard units (km / km/h / m/s²),
+        # two-way-linked to the raw box — edit either and the other updates live (issue #6).
         if prop in _UNIT_CONV:
-            conv = tk.Label(row, text=(_conv_text(prop, cur) or ""), anchor="e",
-                            background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN)
-            conv.grid(row=1, column=0, columnspan=3, sticky="e", padx=(0, 6))
-            var.trace_add("write", lambda *_a, p=prop, v=var, lbl=conv:
-                          lbl.configure(text=(_conv_text(p, v.get()) or "")))
+            self._add_conv_input(row, prop, val, var)
         rows.append((prop, kind, val, var, cur))
         # Zebra-stripe: alternate row shade so the eye can follow a row to its value box (issue #5.2).
         ui_util.apply_row_bg(row, ui_util.row_bg(getattr(self, "_zebra_i", 0), _R_BG_PANEL))
         self._zebra_i = getattr(self, "_zebra_i", 0) + 1
+
+    def _add_conv_input(self, row, prop, val, var):
+        """Add a SECOND editable box (standard units: km / km/h / m/s²) on the field row, two-way
+        bound to the raw-value box `var`: edit either and the other updates live, before Apply.  The
+        RAW value remains what gets committed — this box just lets the user enter standard units
+        instead of doing the maths (issue #6)."""
+        factor, unit, dec = _CONV_SPECS[_UNIT_CONV[prop]]
+        is_int = isinstance(val.raw, int)
+
+        def raw_to_disp(s):
+            try:
+                return "%.*f" % (dec, float(str(s).strip()) / factor)
+            except (TypeError, ValueError):
+                return ""
+        conv_var = tk.StringVar(value=raw_to_disp(var.get()))
+
+        cf = tk.Frame(row, background=_R_BG_PANEL)
+        cf.grid(row=1, column=1, columnspan=2, sticky="e", padx=(0, 4), pady=(0, 1))
+        tk.Label(cf, text="=", background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
+                 font=_F_MAIN).pack(side="left", padx=(0, 3))
+        ttk.Entry(cf, textvariable=conv_var, width=12).pack(side="left")
+        tk.Label(cf, text=unit, background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
+                 font=_F_MAIN).pack(side="left", padx=(3, 0))
+
+        guard = {"on": False}   # stop the two traces ping-ponging each other
+
+        def on_raw(*_a):
+            if guard["on"]:
+                return
+            guard["on"] = True
+            try:
+                conv_var.set(raw_to_disp(var.get()))
+            finally:
+                guard["on"] = False
+
+        def on_conv(*_a):
+            if guard["on"]:
+                return
+            try:
+                d = float(conv_var.get().strip())
+            except (TypeError, ValueError):
+                return                       # blank / mid-edit — leave the raw box alone
+            guard["on"] = True
+            try:
+                raw = d * factor
+                var.set(str(int(round(raw)) if is_int else raw))
+            finally:
+                guard["on"] = False
+        var.trace_add("write", on_raw)
+        conv_var.trace_add("write", on_conv)
 
     def _notes_section(self, container, key, hint=None):
         """A modder's 'Notes' box (issue #5.6) for the thing identified by `key`, auto-saving into the
