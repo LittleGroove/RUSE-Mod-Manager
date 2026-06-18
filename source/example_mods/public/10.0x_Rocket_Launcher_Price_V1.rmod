@@ -1,0 +1,73 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "10-0x-rocket-launcher-price-v1",
+  "name": "10.0x Rocket Launcher Price",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sherman_Calliope"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                400,
+                400,
+                400,
+                400,
+                400
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Katyusha"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                300,
+                300,
+                300,
+                300,
+                300
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sdkfz251"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                400,
+                400,
+                400,
+                400,
+                400
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "Football1995, and RossGosling",
+  "description": "Multiplies the Price of every Rocket Launcher unit by 10.0x"
+}

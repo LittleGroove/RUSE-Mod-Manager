@@ -1,0 +1,41 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "infinite-supply-depot-v1",
+  "name": "Infinite Supply Depot",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/gdconstanteoriginal.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {
+            "_index": "0"
+          },
+          "set": {
+            "QteDeviseParCamion": {
+              "type": "Int32",
+              "value": 9
+            },
+            "NbCamionParConvoi": {
+              "type": "Int32",
+              "value": 1000000
+            },
+            "TempsENtreDeuxCamionsEnConvoiMin": {
+              "type": "Float32",
+              "value": 30.0
+            },
+            "TempsENtreDeuxCamionsEnConvoiMax": {
+              "type": "Float32",
+              "value": 30.0
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "Football1995, and RossGosling",
+  "description": "Supply Depots now contain an unfathomably high amount of resources\nWith this increase, your Supply Trucks no longer come out 3 at a time, but 1, maintaining the same income per convoy, but being more vulnerable (and necessary for the workaround)"
+}

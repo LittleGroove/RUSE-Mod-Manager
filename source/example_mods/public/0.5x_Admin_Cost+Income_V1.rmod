@@ -1,0 +1,168 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "0-5x-admin-cost-income-v1",
+  "name": "0.5x Admin Cost/Income",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratif"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifJAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/gdconstanteoriginal.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {
+            "_index": "0"
+          },
+          "set": {
+            "TempsGenAutoDevises": {
+              "type": "Int32",
+              "value": 8
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "Football1995, and RossGosling",
+  "description": "Multiplies both the Price, and Income, of Administration Buildings by 0.5x\nNote this influences your HQ too"
+}

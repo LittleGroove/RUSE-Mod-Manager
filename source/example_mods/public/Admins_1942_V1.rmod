@@ -1,0 +1,149 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "admins-1942-v1",
+  "name": "Admins 1942",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratif"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                0,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifGR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                0,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifURSS"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                0,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifUK"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                0,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifFR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                0,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifITA"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                0,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifJAP"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                0,
+                1,
+                1
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "andi3714",
+  "description": "This Mod make it possible to build Administrative Buildings in all Timelines except 1939."
+}

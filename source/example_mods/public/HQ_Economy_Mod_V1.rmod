@@ -1,0 +1,82 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "hq-economy-mod-v1",
+  "name": "HQ Economy Mod",
+  "version": "1.0.0",
+  "author": "LittleGroove",
+  "description": "Economy mod that changes how much the HQ, Admin, and Supply Depots give you.",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/gdconstanteoriginal.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {},
+          "set": {
+            "QteDeviseInitiale": {
+              "type": "Int32",
+              "value": 1000
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {},
+          "set": {
+            "QuantiteGenAutoDevises": {
+              "type": "Int32",
+              "value": 3
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {},
+          "set": {
+            "QteDeviseParCamion": {
+              "type": "Int32",
+              "value": 10
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {},
+          "set": {
+            "NbCamionParConvoi": {
+              "type": "Int32",
+              "value": 3
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {},
+          "set": {
+            "TempsENtreDeuxConvois": {
+              "type": "Int32",
+              "value": 30
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {},
+          "set": {
+            "StockDeviseSupplementaireFacile": {
+              "type": "Int32",
+              "value": 10
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

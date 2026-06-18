@@ -1,0 +1,1631 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "2-0x-building-hp-v1",
+  "name": "2.0x Building HP",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Headquarter"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 9000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 9000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_HeadquarterGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 9000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 9000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_HeadquarterURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 9000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 9000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_HeadquarterUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 9000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 9000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_HeadquarterFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 9000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 9000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_HeadquarterITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 9000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 9000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Headquarter_M03_Italie"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 9000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 9000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactory"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratif"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepot"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactory"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Caserne"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Canon"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Aeroport"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactory"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_US"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryGR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_GER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_UK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_URSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_FR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_ITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteur"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurGER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurURSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCAMGNest"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseAT"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCAMGATNest"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCAMGATNestUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_PosteAlerteAvanceUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseArtillerieDCAUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ArtillerieFieldLeger"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ArtillerieFieldLourd"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseLegereFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseMaginotFR"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 4000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 4000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseATITA"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseMGNestGER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseSiegfriedGER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 4000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 4000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_HeadquarterJAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 9000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 9000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepot_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifJAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryJAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 2000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 2000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactory_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Caserne_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Canon_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Aeroport_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactory_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteur_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 1500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Bunker_enterre_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 4000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 4000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Position_105mm_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Position_DCA_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "Football1995, and RossGosling",
+  "description": "Multiplies the Hit-points of every Building by 2.0x"
+}

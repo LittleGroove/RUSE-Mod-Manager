@@ -1,0 +1,1241 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "separate-research-units-v1",
+  "name": "Separate Research Units",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_ME262"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_ME262"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Ar234"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Ar234"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Ar234_PV"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Ar234_PV"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Junkers_87_GR"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Junkers_87_GR"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_B17"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_B17"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Dewoitine_D520"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Dewoitine_D520"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Macchi_MC_205V"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Macchi_MC_205V"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Hawker_Typhoon"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Hawker_Typhoon"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Lancaster"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Lancaster"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Yak_3"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Yak_3"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Kyushu_Shinden"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Kyushu_Shinden"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_US_Lourd"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_US_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Lourd"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_UK_Lourd"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_UK_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Lourd"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Russe_Lourd"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Russe_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Autoblinda_43"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Autoblinda_43"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M5_76mm_L_50"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M5_76mm_L_50"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M36_Jackson"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M36_Jackson"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_PaK_40_75mm_L_48"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_PaK_40_75mm_L_48"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Jagdpanther"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Jagdpanther"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Lorraine_37_L"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Lorraine_37_L"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SU_100"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SU_100"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_QF_17_pounder_76mm"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_QF_17_pounder_76mm"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_76mm_ZIS_3"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_76mm_ZIS_3"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M40_GMC"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M40_GMC"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SturmTiger"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SturmTiger"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_150mm_sFH_18_L_30"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_150mm_sFH_18_L_30"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_140mm_5_5_Inch_BL_Mk_III_L_30"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_140mm_5_5_Inch_BL_Mk_III_L_30"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_203mm_howitzer_atomique"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_203mm_howitzer_atomique"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Semovente_M_43_105_25"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Semovente_M_43_105_25"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M19_GMC_Twin_40mm"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M19_GMC_Twin_40mm"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Churchill_atomique"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Churchill_atomique"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS2"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS2"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sherman_Firefly"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sherman_Firefly"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Puma_atomique"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Puma_atomique"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS3_atomique"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS3_atomique"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M24_Chaffee"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M24_Chaffee"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M4_Sherman"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M4_Sherman"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_V_G_Panther"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_V_G_Panther"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sau_40"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sau_40"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Cruiser_A27_Cromwell"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Cruiser_A27_Cromwell"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Carro_Armato_M15_42"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Carro_Armato_M15_42"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_VI_B_Tigre_II"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_VI_B_Tigre_II"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_ARL_44"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_ARL_44"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Coventry_armoured_car"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Coventry_armoured_car"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_EBR_atomique"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_EBR_atomique"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type3_ChiNu"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type3_ChiNu"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type5_ChiRi"
+          },
+          "set": {
+            "IsUpgrade": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type5_ChiRi"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        }
+      ]
+    }
+  ],
+  "author": "Football1995, and RossGosling",
+  "description": "Every upgrade is now a separate menu entry, allowing for prior versions to still be purchased\nSuper Pershing is the only exception, replacing the Pershing as standard"
+}

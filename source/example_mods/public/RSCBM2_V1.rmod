@@ -1,0 +1,3801 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "rscbm2-v1",
+  "name": "RSCBM2",
+  "version": "1.0.1",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44914"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 136500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44915"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 136500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44976"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 136500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44992"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 156000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44994"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 156000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44996"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 156000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44998"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 156000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "45000"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 156000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "45004"
+          },
+          "set": {
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 156000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_ME109_GR"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_ME262"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_P40Warhawk"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Junkers_87_GR"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_MS_406"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Dewoitine_D520"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Macchi_MC_200"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Macchi_MC_205V"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Spitfire"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Hawker_Hurricane"
+          },
+          "set": {
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 10
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Polikarpov_I16"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Yak_3"
+          },
+          "set": {
+            "PorteeAttackReflexAir": {
+              "type": "Float32",
+              "value": 208000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Mitsubishi_Zero"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 31200.0
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 15
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Aichi_Susie"
+          },
+          "set": {
+            "UpgradePrice": {
+              "type": "Int32",
+              "value": 25
+            },
+            "UpgradeTime": {
+              "type": "Int32",
+              "value": 50
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactory"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratif"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                200,
+                200,
+                200,
+                200,
+                200
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                200,
+                200,
+                200,
+                200,
+                200
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                200,
+                200,
+                200,
+                200,
+                200
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                200,
+                200,
+                200,
+                200,
+                200
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                200,
+                200,
+                200,
+                200,
+                200
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                200,
+                200,
+                200,
+                200,
+                200
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepot"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                100,
+                0,
+                0,
+                100,
+                100
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_UK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                100,
+                0,
+                0,
+                100,
+                100
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteur"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                20,
+                35,
+                35,
+                35
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurGER"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                45,
+                20,
+                45,
+                45,
+                45
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                25,
+                30,
+                30,
+                30
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                20,
+                30,
+                30,
+                30
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                30,
+                40,
+                40,
+                40
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCAMGNest"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCAMGATNestUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_PosteAlerteAvanceUK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 350.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseArtillerieDCAUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ArtillerieFieldLeger"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 350.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ArtillerieFieldLourd"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseATITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                35,
+                35,
+                35,
+                35
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseMGNestGER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepot_JAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifJAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                200,
+                200,
+                200,
+                200,
+                200
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryJAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteur_JAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                30,
+                35,
+                35,
+                35
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Position_105mm_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 350.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Position_DCA_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 350.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBluffCardDescriptor",
+          "match": {
+            "_index": "44838"
+          },
+          "set": {
+            "LifeDuration": {
+              "type": "Float32",
+              "value": 120.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBluffCardDescriptor",
+          "match": {
+            "_index": "44842"
+          },
+          "set": {
+            "LifeDuration": {
+              "type": "Float32",
+              "value": 90.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBluffCardDescriptor",
+          "match": {
+            "_index": "44843"
+          },
+          "set": {
+            "LifeDuration": {
+              "type": "Float32",
+              "value": 180.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBluffInfos",
+          "match": {
+            "_index": "45071"
+          },
+          "set": {
+            "LifeDuration": {
+              "type": "Int32",
+              "value": 90
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBluffInfos",
+          "match": {
+            "_index": "45074"
+          },
+          "set": {
+            "LifeDuration": {
+              "type": "Int32",
+              "value": 120
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBluffInfos",
+          "match": {
+            "_index": "45079"
+          },
+          "set": {
+            "LifeDuration": {
+              "type": "Int32",
+              "value": 180
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TFloatArmeArmureContainer",
+          "match": {
+            "_index": "44899"
+          },
+          "set": {
+            "Values": {
+              "type": "Map<Int32,List<Float32>>",
+              "value": [
+                [
+                  4,
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    5.0,
+                    1.0,
+                    0.6000000238418579,
+                    0.4000000059604645,
+                    0.27000001072883606,
+                    0.1899999976158142,
+                    10.0
+                  ]
+                ],
+                [
+                  5,
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    10.0,
+                    1.25,
+                    1.0,
+                    0.6000000238418579,
+                    0.4000000059604645,
+                    0.27000001072883606,
+                    15.0
+                  ]
+                ],
+                [
+                  6,
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    15.0,
+                    2.5,
+                    1.25,
+                    1.0,
+                    0.6000000238418579,
+                    0.4000000059604645,
+                    20.0
+                  ]
+                ],
+                [
+                  7,
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    20.0,
+                    5.0,
+                    2.5,
+                    1.25,
+                    1.0,
+                    0.6000000238418579,
+                    25.0
+                  ]
+                ],
+                [
+                  8,
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    25.0,
+                    10.0,
+                    5.0,
+                    2.5,
+                    1.25,
+                    1.0,
+                    30.0
+                  ]
+                ],
+                [
+                  0,
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    10.0
+                  ]
+                ],
+                [
+                  1,
+                  [
+                    0.0,
+                    1.0,
+                    1.75,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ]
+                ],
+                [
+                  2,
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ]
+                ],
+                [
+                  3,
+                  [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                    1.0,
+                    0.25,
+                    0.15000000596046448,
+                    0.10000000149011612,
+                    0.05000000074505806,
+                    0.02500000037252903,
+                    2.0
+                  ]
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_US_Para"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 2080.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2080.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Para"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 2080.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2080.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_FR_Para"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 2080.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                8,
+                8,
+                8,
+                8,
+                8
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2080.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_UK_Para"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 2080.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2080.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Para"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 2080.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2080.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Russe_Para"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 2080.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                8,
+                8,
+                8,
+                8,
+                8
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2080.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Teishin_Shudan"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 2080.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                8,
+                8,
+                8,
+                8,
+                8
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2080.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Giretsu_Kuteitai"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 2080.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2080.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_US_Leger"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                4,
+                4,
+                4,
+                4,
+                4
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1560.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_US_Lourd"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3120.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                6,
+                6,
+                6,
+                6,
+                6
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 8
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1040.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_US_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Recon"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1560.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Leger"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                4,
+                4,
+                4,
+                4,
+                4
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1560.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Lourd"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3120.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                6,
+                6,
+                6,
+                6,
+                6
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 8
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1040.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_FR_Leger"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                4,
+                4,
+                4,
+                4,
+                4
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1560.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_FR_Lourd"
+          },
+          "set": {
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 400.0
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 8
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_UK_Leger"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                4,
+                4,
+                4,
+                4,
+                4
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1560.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_UK_Lourd"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3120.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                6,
+                6,
+                6,
+                6,
+                6
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 8
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1040.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_UK_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Leger"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                4,
+                4,
+                4,
+                4,
+                4
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1560.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Lourd"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3120.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                6,
+                6,
+                6,
+                6,
+                6
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 8
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1040.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Russe_Leger"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                4,
+                4,
+                4,
+                4,
+                4
+              ]
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1560.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Russe_Lourd"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3120.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                6,
+                6,
+                6,
+                6,
+                6
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 5
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1040.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Russe_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Konoe_Shidan"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1560.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "_index": "45347"
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 44914,
+                "class": 149
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "_index": "45383"
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 44914,
+                "class": 149
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Hotchkiss_H_39"
+          },
+          "set": {
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Willis_MB"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Autoblinda_40"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M1_57mm_L_50"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_GER_37mm_Pak36"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_PaK_40_75mm_L_48"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_PaK_40_75mm_L_48"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Semovente_M_90_53"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SA_25mm_L_1934"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_QF_2_pounder_40_mm"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_QF_17_pounder_76mm"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_45mm_L46"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Cannone_da_47_32_M35"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_88mm_Flak"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M40_GMC"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                60
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_87mm_QF_25_pounder"
+          },
+          "set": {
+            "PositionInMenu": {
+              "type": "Int32",
+              "value": 203
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_140mm_5_5_Inch_BL_Mk_III_L_30"
+          },
+          "props": [
+            "UpgradeRequire",
+            "UpgradePrice",
+            "UpgradeTime",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_203mm_howitzer"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                80,
+                80,
+                80,
+                80,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_203mm_howitzer_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_40mm_M1_Bofors_L_60_UK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M16_GMC"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_88mm_FlaK_36L_56"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                35,
+                35,
+                35,
+                35
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_20mm_Breda"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_T28"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                80,
+                80,
+                80,
+                80,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_T28_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                55,
+                55,
+                55,
+                55,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M26_Pershing"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 30
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Super_Pershing"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 30
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Maus"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                80,
+                80,
+                80,
+                80,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_FCM_F1"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                90,
+                90,
+                90,
+                90,
+                90
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Churchill_A22"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 15
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Churchill_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 15
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Matilda"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 10
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Churchill_AVRE"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                35,
+                35,
+                35,
+                35
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 15
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS2"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_KV1"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                35,
+                35,
+                35,
+                35
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS3"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                90,
+                90,
+                90,
+                90,
+                90
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_AVRE_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                35,
+                35,
+                35,
+                35
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 15
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Maus_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_155mm_M1_Long_Tom_L_45"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                80,
+                80,
+                80,
+                80,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Long_Tom_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_210mm_Morser"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                80,
+                80,
+                80,
+                80,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Morser_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                80
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS3_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                90
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Char_DCA_M4_SKINK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Char_DCA_M4_SKINK"
+          },
+          "props": [
+            "UpgradePrice",
+            "UpgradeTime"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sdkfz251"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                35,
+                35,
+                35,
+                35
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sdkfz251_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                35,
+                35,
+                35,
+                35,
+                35
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M3A1_Stuart"
+          },
+          "set": {
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M24_Chaffee"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_III_J"
+          },
+          "set": {
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_T26"
+          },
+          "set": {
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Carro_Veloce"
+          },
+          "set": {
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Carro_Armato_M11_39"
+          },
+          "set": {
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M3_Lee"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_FCM_F1_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                55,
+                55,
+                55,
+                55,
+                90
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Skink_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                45,
+                45,
+                45,
+                45,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Cruiser_A13"
+          },
+          "set": {
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Cruiser_A27_Cromwell"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 5
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Cruiser_A27_Cromwell"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_VI_Tigre"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_VI_B_Tigre_II"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                60
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Daimler_AC_MK_1"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Coventry_armoured_car"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_MG_GER"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 351.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_MG_US"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 351.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_Outpost_UK"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 351.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Tourelle_ArtillerieLight_URSS"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 351.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_47mm_AT"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type2_HoRi"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                50,
+                50,
+                50,
+                50,
+                50
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_TaSe_20mm"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type95_HaGo"
+          },
+          "set": {
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 123500.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type3_ChiNu"
+          },
+          "set": {
+            "UpgradePrice": {
+              "type": "Int32",
+              "value": 25
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type5_ChiRi"
+          },
+          "set": {
+            "UpgradePrice": {
+              "type": "Int32",
+              "value": 50
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_OI_Heavy_Tank"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                75,
+                75,
+                75,
+                75,
+                75
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_OI_Heavy_Tank_atomique"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                55,
+                55,
+                55,
+                55,
+                75
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Position_105mm_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 351.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Position_DCA_JAP"
+          },
+          "set": {
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 350.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 351.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/gdconstanteatomic.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {
+            "_index": "0"
+          },
+          "set": {
+            "DistancePourDeclencherMarcheArriere": {
+              "type": "Float32",
+              "value": 41600.0
+            },
+            "DistancePourDeclencherMarcheArriereEnCombat": {
+              "type": "Float32",
+              "value": 135200.0
+            },
+            "TailleMinimumDeRoute": {
+              "type": "Float32",
+              "value": 39000.0
+            },
+            "RatioPinnedPropagande": {
+              "type": "Float32",
+              "value": 0.6499999761581421
+            }
+          }
+        }
+      ]
+    },
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/gdconstanteoriginal.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {
+            "_index": "0"
+          },
+          "set": {
+            "DistancePourDeclencherMarcheArriere": {
+              "type": "Float32",
+              "value": 41600.0
+            },
+            "DistancePourDeclencherMarcheArriereEnCombat": {
+              "type": "Float32",
+              "value": 135200.0
+            },
+            "TailleMinimumDeRoute": {
+              "type": "Float32",
+              "value": 39000.0
+            },
+            "NbInitialCardsInPoolForAllianceTaille_1": {
+              "type": "Int32",
+              "value": 3
+            },
+            "NbInitialCardsInPoolForAllianceTaille_2": {
+              "type": "Int32",
+              "value": 3
+            },
+            "NbInitialCardsInPoolForAllianceTaille_3": {
+              "type": "Int32",
+              "value": 3
+            },
+            "NbInitialCardsInPoolForAllianceTaille_4": {
+              "type": "Int32",
+              "value": 3
+            },
+            "MultiplicateurVitesseDeroute": {
+              "type": "Float32",
+              "value": 0.75
+            },
+            "QteDeviseParCamion": {
+              "type": "Int32",
+              "value": 4
+            },
+            "TempsENtreDeuxConvois": {
+              "type": "Int32",
+              "value": 40
+            }
+          }
+        }
+      ]
+    },
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/misc/globals.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "create",
+          "table": "TMultiMapInfo",
+          "local_id": "inst_254",
+          "set": {
+            "Description": {
+              "type": "LocHash",
+              "value": "49503a6507000000"
+            },
+            "GUID": {
+              "type": "Guid",
+              "value": "ff449890415711df98790800200c9a66"
+            },
+            "TrackingId": {
+              "type": "StringRef",
+              "value": "M09"
+            },
+            "NbPlayers": {
+              "type": "Int32",
+              "value": 8
+            },
+            "GameType": {
+              "type": "Int32",
+              "value": 1
+            },
+            "GameModeMulti": {
+              "type": "Int32",
+              "value": 1
+            },
+            "DispoMulti2Teams": {
+              "type": "Bool",
+              "value": 1
+            },
+            "MapSize": {
+              "type": "Int32",
+              "value": 4
+            },
+            "CategoryId": {
+              "type": "Int32",
+              "value": 6
+            },
+            "DispoMultiFFA": {
+              "type": "Bool",
+              "value": 1
+            },
+            "DispoMulti4Teams": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMultiPack",
+          "match": {
+            "_index": "97"
+          },
+          "set": {
+            "MultiList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "inst": 129,
+                  "class": 18
+                },
+                {
+                  "inst": 130,
+                  "class": 18
+                },
+                {
+                  "inst": 131,
+                  "class": 18
+                },
+                {
+                  "inst": 132,
+                  "class": 18
+                },
+                {
+                  "inst": 133,
+                  "class": 18
+                },
+                {
+                  "inst": 134,
+                  "class": 18
+                },
+                {
+                  "inst": 135,
+                  "class": 18
+                },
+                {
+                  "inst": 136,
+                  "class": 18
+                },
+                {
+                  "inst": 137,
+                  "class": 18
+                },
+                {
+                  "inst": 138,
+                  "class": 18
+                },
+                {
+                  "inst": 139,
+                  "class": 18
+                },
+                {
+                  "inst": 140,
+                  "class": 18
+                },
+                {
+                  "inst": 141,
+                  "class": 18
+                },
+                {
+                  "inst": 142,
+                  "class": 18
+                },
+                {
+                  "inst": 143,
+                  "class": 18
+                },
+                {
+                  "inst": 144,
+                  "class": 18
+                },
+                {
+                  "inst": 145,
+                  "class": 18
+                },
+                {
+                  "inst": 146,
+                  "class": 18
+                },
+                {
+                  "inst": 147,
+                  "class": 18
+                },
+                {
+                  "inst": 148,
+                  "class": 18
+                },
+                {
+                  "inst": 149,
+                  "class": 18
+                },
+                {
+                  "inst": 150,
+                  "class": 18
+                },
+                {
+                  "inst": 151,
+                  "class": 18
+                },
+                {
+                  "inst": 152,
+                  "class": 18
+                },
+                {
+                  "local_id": "inst_254",
+                  "class": 18
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "SuperCrumpets",
+  "description": "Balance changes:\n\tRuses:\n\t\tStarting Ruse Cards 2->3\n\t\tBlitz 120s->90s\n\t\tTerror 120s -> 180s morale mult 0.75->0.65\n\t\tSpy 60s->120s\n\n\tRetreat speed mult 0.5->0.75\n\tAntiTank Base enabled in 1939\n\nEconomy:\n\tSupply Depot 18/30s->24/40s\n\nUnit Stats:\n\t\n\tRecon:\n\t\tDetection 400m->475m\n\t\tall paras\n\t\tall light/medium infantry\n\t\tStuart\n\t\tPanzer3\n\t\tCruisera13\n\t\tH39\n\t\tCarro Veloce&M11\n\t\tT26\n\t\tHa-go\n\n\tHealth:\n\t\tAll Fragile Bunkers 250hp->350hp\n\t\n\tproduction times:\n\t\tHeavy infantry 5s->8s\n\t\tGvardiya 1s->5s\n\t\tPershing&SuperPershing 20s->30s\n\t\tCromwell  10s->5s\n\t\tMatilda   15s->10s\n\t\tChurchill&AVRE 40s->15s\n\t\tHurricane 15s->10s\n\t\tA6M Zero  10s->15s\n\n\tspeeds:\n\t\tInfantry\n\t\t\tlight/medium 24/8  -> 28/12\n\t\t\tHeavy        28/12 -> 24/8\n\t\t\tLegionnaires 28/12 -> 28/12 Morale 300->400\n\t\t\tParas        24/12 -> 16/16\n\t\tA6M Zero 720->540 (41600->31200)\n\n\tResearch:\n\t\tSkink $50->0\n\t\tChi-Nu  $50->$25\n\t\tChi-Ri  $25->$50\n\t\t140mm Artillery UK $50->$0\n\t\tSusie $0->$25\n\t\n\tNo longer Upgrades:\n\t\tHeavy Infantry \n\t\tPak40 \n\t\tChaffee\n\t\tCromwell\n\t\t140mm Artillery UK\n\n\tWeapons:\n\t\tammoid 44914&44915\tSuperHeavy Guns AP Range 500m->525m\n\t\t17pdr & Pak40 At gun Tammoid44918-> 44914 80D/500m -> 120d/525m\n\t\tAnti Air Range 550m->600m\n\t\tarty vs armourDamage modifiers\n\t\t\tlv1 0.2   -> 0.25\n\t\t\tlv2 0.1   -> 0.15\n\t\t\tlv3 0.05   -> 0.10\n\t\t\tlv4 0.025  -> 0.05\n\t\t\tlv5 0.01  -> 0.025\n\n\t\nRusopedia:\n\n\tAll:\n\t\tSupply Depot $40->$50\n\t\tAdmin Building $100->$200\n\t\tSecondary HQ $50\n\t\t\n\n\tUSA:\n\t\tHQ:\n\t\t\tMG Nest $15\n\t\t\tAT Bunker $25\n\t\t\tAA Bunker $30\n\t\tBarracks $20\n\t\t\tWillys $10\n\t\t\tGI $4\n\t\t\tRangers $6\n\t\tArtillery Base $35\n\t\t\tBofors $10\n\t\t\tM16 $20\n\t\t\tM19 $30\n\t\t\tPriest $35\n\t\t\tM40 $60\n\t\tTank Base $30\n\t\t\tGreyhound $20\n\t\t\tStuart $15\n\t\t\tChaffee $20\n\t\t\tLee $15\n\t\t\tSherman $20\n\t\t\tPershing $50\n\t\t\tSuper Pershing $50\n\t\tAntiTank Base $35\n\t\t\tM1 57MM $10\n\t\t\tM5 76MM $10\n\t\t\tWolverine $15\n\t\t\tJackson $20\n\t\tAirfield $60\n\t\t\tGrasshopper $20\n\t\t\tAirborne $10\n\t\t\tP40 $20\n\t\t\tP51 $25\n\t\t\tP47 $30\n\t\t\tB25 $25\n\t\t\tB17 $35\n\t\tPrototype Base $120\n\t\t\tLong Tom $80\n\t\t\tCalliope $40\n\t\t\tCrocodile $30\n\t\t\tT95 $80\n\n\n\tGermany:\n\t\tHQ:\n\t\t\tMG Nest $15\n\t\t\tSiegFried $45\n\t\tBarracks $30\n\t\t\tKubelWagon $10\n\t\t\tSdkfz $20\n\t\t\tGrenadier $4\n\t\t\tSturmGrenadier $6\n\t\tArtillery Base $45\n\t\t\tFlak20mm $10\n\t\t\tHaubitze 75mm $15\n\t\t\tHaubitze 150mm $50\n\t\t\tFlak88 $35\n\t\t\tStug $25\n\t\t\tSturmtiger $40\n\t\tTank Base $30\n\t\t\tPanzer 3 $15\n\t\t\tPanzer 4 $25\n\t\t\tPanther $35\n\t\t\tTiger $50\n\t\t\tKing Tiger $60\n\t\tAntiTank Base $45\n\t\t\tPak36 $5\n\t\t\tPak40 $25\n\t\t\tMarder $15\n\t\t\tJagdpanther $30\n\t\tAirfield $50\n\t\t\tStorch $20\n\t\t\tFallshirmjager $10\n\t\t\tMe109 $25\n\t\t\tMe262 $30\n\t\t\tJU87 $20\n\t\t\tHe111 $25\n\t\t\tArado $50\n\t\tPrototype Base $100\n\t\t\tPuma $30\n\t\t\tWirbelwind $35\n\t\t\tMorser $75\n\t\t\tWurfrahmen $35\n\t\t\tMaus $80\n\t\t\n\tUnited Kingdom:\n\t\tHQ:\n\t\t\tOutpost $15\n\t\t\tAT Bunker $15\n\t\t\tArty Bunker $25\n\t\tBarracks $30\n\t\t\tRegulars $4\n\t\t\tGuards $6\n\t\t\tVickers $10\n\t\tArtillery Base $40\n\t\t\tBofors $10\n\t\t\tHowitzer 87mm $20\n\t\t\tSexton $30\n\t\t\tHowitzer 140mm $40\n\t\tTank Base $30\n\t\t\tACMK1 $20\n\t\t\tCoventryMK2 $25\n\t\t\tCruiser $15\n\t\t\tCromwell $20\n\t\t\tMatilda $15\n\n\t\tAntiTank Base $35\n\t\t\tAT 2pdr $10\n\t\t\tAT 17pdr $20\n\t\t\tArcher $10\n\t\t\tFirefly $25\n\t\tAirfield $40\n\t\t\tAnson $25\n\t\t\tParatroopers $10\n\t\t\tSpitfire $20\n\t\t\tHurricane $25\n\t\t\tTyphoon $40\n\t\t\tWellington $30\n\t\t\tLancaster $30\n\t\tPrototype Base $100\n\t\t\tSkink $40\n\t\t\tAvre $35\n\t\t\tChurchill $30\n\n\tFrance:\n\t\tHQ:\n\t\t\tFortified Position $20\n\t\t\tMaginot Bunker $40\n\t\tBarracks $30\n\t\t\tFFL $4\n\t\t\tLegionnaires $10\n\t\t\tH39 $15\n\t\tArtillery Base $35\n\t\t\tCamel $10\n\t\t\tCannon 75mm $10\n\t\t\tCannon 155m $50\n\t\tTank Base $25\n\t\t\tPanhard $20\n\t\t\tS35 $20\n\t\t\tSau40 $25\n\t\t\tB1Bis $20\n\t\t\tARL44 $45\n\t\tAntiTank Base $30\n\t\t\tAT 25mm $5\n\t\t\tAT 47mm $10\n\t\t\tLaffly $10\n\t\t\tLorraine $25\n\t\tAirfield $50\n\t\t\tPotez $25\n\t\t\tChasseurs paras $8\n\t\t\tMS406 $20\n\t\t\tD520 $20\n\t\t\tGuppy $20\n\t\t\tAmiot $20\n\t\tPrototype Base $120\n\t\t\tEBR $25\n\t\t\tARL40 $25\n\t\t\tFCMF1 $90\n\n\tItaly:\n\t\tHQ:\n\t\t\t90mm AT Bunker $35\n\t\tBarracks $20\n\t\t\tSahariana $10\n\t\t\tBersaglieri $4\n\t\t\tGranatieri $6\n\t\t\tcarro veloce $10\n\t\t\tCarro M11 $10\n\t\tArtillery Base $45\n\t\t\tBreda 20mm $10\n\t\t\tCannon 75mm $15\n\t\t\tObice 210mm $70\n\t\t\tM75 $20\n\t\t\tM105 $30\n\t\tTank Base $25\n\t\t\tAutoBlinda40 $15\n\t\t\tAutoBlinda43 $20\n\t\t\tCarroM13 $15\n\t\t\tCarroM15 $15\n\t\tAntiTank Base $40\n\t\t\tAt47mm $10\n\t\t\tAA 90mm $30\n\t\t\tSemovente $15\n\t\tAirfield $110\n\t\t\tFalco $25\n\t\t\tFolgore $10\n\t\t\tSaetta $20\n\t\t\tVeltro $25\n\t\t\tSparviero $30\n\t\t\tP108 $25\n\t\tPrototype Base $120\n\t\t\tM15 Contraereo $25\n\t\t\tLanciaFiamme $10\n\t\t\tBreda90/53 $25\n\t\t\tCarroP26 $25\n\t\t\n\tRussia:\n\t\tHQ:\n\t\t\tArty position $20\n\t\t\tHeavy Arty Position $40\n\t\tBarracks $10\n\t\t\tBa-11 $15\n\t\t\tStrelki $4\n\t\t\tGvardiya $6\n\t\tArtillery Base $20\n\t\t\tAA37mm $10\n\t\t\tZSU37 $25\n\t\t\tPushka152mm $40\n\t\t\tISU-122 $25\n\t\tTank Base $30\n\t\t\tT26 $10\n\t\t\tT34 $20\n\t\t\tKV-1 $35\n\t\t\tIS2 $40\n\t\tAntiTank Base $40\n\t\t\tAT45mm $10\n\t\t\tAT76mm $10\n\t\t\tSU-85 $15\n\t\t\tSU-100 $25\n\t\tAirfield $120\n\t\t\tNieman $15\n\t\t\tDesantniki $8\n\t\t\tIshak $15\n\t\t\tYak3 $20\n\t\t\tIl2Sturmovik $35\n\t\t\tPE-8 $35\n\t\tPrototype Base $120\n\t\t\tGaubitsa203mm $80\n\t\t\tKatyusha $30\n\t\t\tIS-3 $80\n\t\t\n\tJapan:\n\t\tHQ:\n\t\t\tPillbox $25\n\t\t\t105mm position $30\n\t\t\tAA position $20\n\t\tBarracks $15\n\t\t\tKurogane $10\n\t\t\tKonoe $4\n\t\t\tSogekihei $15\n\t\t\tDokuritsu Kohei $10\n\t\tArtillery Base $45\n\t\t\tType 88 $20\n\t\t\tType 35 75mm $10\n\t\t\tKU-SE $20\n\t\tTank Base $35\n\t\t\tHa-go $5\n\t\t\tChi-ha $20\n\t\t\tChi-Nu $25\n\t\t\tChi-Ri $30\n\t\t\tTa-Se $30\n\t\tAntiTank Base $35\n\t\t\tType1 47mm $10\n\t\t\tHo-Ru $10\n\t\t\tHo-Ri $50\n\t\tAirfield $50\n\t\t\tSusie $25\n\t\t\tGiretsu Kuteitai $10\n\t\t\tTeishin Shudan $8\n\t\t\tZero $20\n\t\t\tShinden $30\n\t\t\tSuisei $30\n\t\t\tRenzan $35\n\t\tPrototype Base $125\n\t\t\tAOV $20\n\t\t\tO-I $75\n\t\t\tHA-To $40",
+  "file_patches": [
+    {
+      "dat": "Data/PC/190852/DataMap_Win.dat",
+      "files": [
+        {
+          "path": "test/map/m03_italie_demo_final/leveldesign.scenario",
+          "data": "U0NFTkFSSU8NCoIvuaVjpLu64fxEDPGcRO4AAAQAAAABAAAANLAAAB4AAABBUkVBAgAAAAAAAAApAAAAem9uZV9mOTE2ZWU5ZC1mYzdmLTRjMWYtYjQ5Zi0wMGQzNjFiNmJjN2YAAABBUkVB/+gNSqzEvkmoSzhGQVJFQQIAAAAAAAAABgAAAAAAAAAJAAAABgAAAA4AAAAJAAAADgAAAEFSRUEUAAAAFAAAABcAAAAUAAAAQVJFQRcAAAAKAAAAQVJFQSsAAAAoAAAA4sYfSqzEvklg4XdGGFhjRgAAAAAl4B9KifSiSYhjekYYWGNGAAAAAOX7DEqsxL5JiPI3RhhYY0bWKWE/XFX/SazEvknkoYFGGFhjRgAAAABTBv9JMAWkSaCJPEYYWGNGAAAAADkKCUqsxL5JQLqcRhhYY0awFmA/fjD/Se2JjkkglEdGGFhjRgAAAAAmmwlKrMS+SYBzlUYYWGNG+kJtP+X7DEqsxL5JiPI3RhhYY0bVKWE/f8L/Sa4O3ElYFlJGGFhjRgAAAAAhaP9J7R7FSdA7UUYYWGNGAAAAAAXFAEqPJdZJfkHBRhhYY0YAAIA/w54fSnzx6klA2UpGGFhjRgAAAADixh9KrMS+SWDhd0YYWGNGAAAAAOX7DEqsxL5JiPI3RhhYY0bWKWE/j2UKSsqTwkkoC7xGGFhjRgAAgD++uQJKD0PhSaiFIkYYWGNGAAAAAFxV/0msxL5J5KGBRhhYY0YAAAAAOQoJSqzEvklAupxGGFhjRrAWYD/HvgdKXjPrSSD1H0YYWGNGAAAAACabCUqsxL5JgHOVRhhYY0b6Qm0/5fsMSqzEvkmI8jdGGFhjRtUpYT/nNgFK/jDTSRX1CUcYWGNGAACAP8e+B0peM+tJIPUfRhhYY0YAAAAAvrkCSg9D4UmohSJGGFhjRgAAAAB/wv9Jrg7cSVgWUkYYWGNGAAAAACFo/0ntHsVJ0DtRRhhYY0YAAAAAAln/SdgAwEk41XBGGFhjRgAAAABTBv9JMAWkSaCJPEYYWGNGAAAAAH4w/0ntiY5JIJRHRhhYY0YAAAAAJeAfSon0okmIY3pGGFhjRgAAAADExR9Kwf+/SWDOaUYYWGNGAAAAAMOeH0p88epJQNlKRhhYY0YAAAAAmT4ISvvA6EkIASxGGFhjRgAAgD8zkQNKMH7fSbBFMEYYWGNGAACAP6MXAUpv99pJyOdjRhhYY0YAAIA/iewASoMWxUkwcWxGGFhjRgAAgD/85ABKofm/SYz1tkYYWGNGAACAP627AEr6A6RJKOM7RhhYY0YAAIA/fs0ASgXdkUno2kJGGFhjRgAAgD8Eph5KXr2kSZDod0YYWGNGAACAP0aNHkpS+79JqL9dRhhYY0YAAIA/dmgeStKD6EkAzThGGFhjRgAAgD9BUkVBAAAAAAIAAAABAAAAAwAAAAQAAAAFAAAABQAAAAQAAAAGAAAABQAAAAYAAAAHAAAACAAAAAYAAAABAAAACAAAAAcAAAAGAAAACQAAAAoAAAALAAAADAAAAA4AAAANAAAADAAAAA8AAAAOAAAAEAAAAAkAAAALAAAACgAAABEAAAASAAAACgAAABIAAAAPAAAAEwAAABAAAAAPAAAAEgAAABQAAAAPAAAAEwAAAA8AAAAMAAAAFQAAAA8AAAAUAAAACgAAAA8AAAAWAAAAFgAAAA8AAAAQAAAACgAAABYAAAALAAAAFgAAABAAAAALAAAAFwAAABgAAAAiAAAAFwAAACIAAAAhAAAAGAAAABkAAAAjAAAAGAAAACMAAAAiAAAAGQAAABoAAAAkAAAAGQAAACQAAAAjAAAAGgAAABsAAAAlAAAAGgAAACUAAAAkAAAAGwAAABwAAAAmAAAAGwAAACYAAAAlAAAAHAAAAB0AAAAnAAAAHAAAACcAAAAmAAAAHQAAAB4AAAAoAAAAHQAAACgAAAAnAAAAHgAAAB8AAAApAAAAHgAAACkAAAAoAAAAHwAAACAAAAAqAAAAHwAAACoAAAApAAAAIAAAABcAAAAhAAAAIAAAACEAAAAqAAAAQVJFQQcAAAABAAAAEQAAABcAAAALAAAAFAAAAB0AAAAGAAAAQVJFQUVORDBBUkVBAgAAAAEAAAApAAAAem9uZV9lYjAxZDEzNS1lNTJmLTQ1NmUtOGE2MC02MTYxZDA3NThkMjgAAABBUkVBiWoSSkMn90koxyJGQVJFQQIAAAAAAAAABAAAAAAAAAAGAAAABAAAAAYAAAAGAAAABwAAAEFSRUEKAAAADAAAAA0AAAAMAAAAQVJFQQ0AAAAGAAAAQVJFQRkAAAAWAAAAzjMRSkMn90mojyNGGFhjRhr6UT/HvgdKXjPrSSD1H0YYWGNGAAAAAMOeH0p88epJQNlKRhhYY0YAAAAAvnQVSkMn90nwiBtGGFhjRpDGUj+v8AdKQyf3SVihK0YYWGNGAAAAADCeH0pDJ/dJuEiSRhhYY0YAAAAAzjMRSkMn90mojyNGGFhjRhr6UT++dBVKQyf3SfCIG0YYWGNGkMZSP3NGE0rvxflJAEgrRhhYY0YAAIA/r/AHSkMn90lYoStGGFhjRgAAAADmNQhKe90DSmiKhkYYWGNGAAAAAFqdH0pMdQRKOExaRhhYY0YAAAAAMJ4fSkMn90m4SJJGGFhjRgAAAADHvgdKXjPrSSD1H0YYWGNGAAAAAMOeH0p88epJQNlKRhhYY0YAAAAAw50fSmcZAErM0pVGGFhjRgAAAABanR9KTHUESjhMWkYYWGNGAAAAAOY1CEp73QNKaIqGRhhYY0YAAAAAmhUISsT+/0mYqy1GGFhjRgAAAACVAQlK5qDtSdDzFUYYWGNGAACAPyVmHkrdZe1J0D1ORhhYY0YAAIA/Q2UeSkoZAEr4pHJGGFhjRgAAgD/4ZB5KyDQDSohAS0YYWGNGAACAP55kCUqNrAJK3ialRhhYY0YAAIA/700JSmTq/0nI8kZGGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAAAAAAIAAAADAAAAAAAAAAQAAAABAAAABQAAAAMAAAACAAAABgAAAAcAAAAIAAAABgAAAAoAAAAJAAAABgAAAAgAAAAKAAAACwAAAAcAAAAMAAAACwAAAAgAAAAHAAAACgAAAAgAAAALAAAADQAAAA4AAAAUAAAADQAAABQAAAATAAAADgAAAA8AAAAVAAAADgAAABUAAAAUAAAADwAAABAAAAAWAAAADwAAABYAAAAVAAAAEAAAABEAAAAXAAAAEAAAABcAAAAWAAAAEQAAABIAAAAYAAAAEQAAABgAAAAXAAAAEgAAAA0AAAATAAAAEgAAABMAAAAYAAAAQVJFQQMAAAAQAAAAHQAAAAAAAABBUkVBRU5EMEFSRUECAAAAAgAAACkAAAB6b25lX2I2N2MxN2JjLTZmODEtNDNhYy05ZjcxLWRkOTU2NzQ2ZmFhYwAAAEFSRUGz2a5JGVoRSqirJkZBUkVBAgAAAAAAAAAoAAAAAAAAAB4AAAAoAAAAEAAAAB4AAAAPAAAAQVJFQTgAAAAgAAAALQAAACAAAABBUkVBLQAAABAAAABBUkVBTQAAAFgAAABTZK5JivkJSlgQAEYYWGNGAAAAALK/qUmDVQxKsFb1RRhYY0YAAAAAJ8asSaBhDErIiCVGGFhjRgAAgD9uLq5J0tUOStDi+UUYWGNGAAAAAHnlrUkZWhFKEA/8RRhYY0YAAAAAoQ2vSRlaEUqoqyZGGFhjRmRqWz6PeLNJI80PSqirJkYYWGNGAACAP1g3ukkZWhFKqKsmRhhYY0YwmXc+B2K+ST/LDkqoqyZGGFhjRgAAAABWV75JGVoRSqirJkYYWGNGAAAAANwzukmkfQNKVEUpRhhYY0YAAAAA/Cq7SfR3BkoI+AtGGFhjRgAAAABWiq9JBBACSqirJkYYWGNGAACAP24Hrkl1qwNK8AQCRhhYY0YAAAAAL4G1SWKWCEqoqyZGGFhjRgAAgD92X75JOe0HShA88UUYWGNGAAAAANBSvUlCiwlKqKsmRhhYY0YAAIA/ZwOoSUK9+0nAAR1GGFhjRgAAAADB4aJJknT/SchDJUYYWGNGAAAAAILGvEmaoQpKqKsmRhhYY0YAAIA/Oki2SYjQDkqoqyZGGFhjRgAAgD/uprNJijMNSqirJkYYWGNGAACAP6Mvs0kZWhFKqKsmRhhYY0Yh9Ck/yjm0SRlaEUqoqyZGGFhjRmasGD9gSa5JrmcMSviPJkYYWGNGAACAPy1jtklkYgxKqKsmRhhYY0YAAIA/nx22ScxIEEqoqyZGGFhjRgAAgD8AO7JJGVoRSqirJkYYWGNGAACAP60xsEkZWhFKqKsmRhhYY0Z6Q5E+NZm0SbQRBUqoqyZGGFhjRgAAgD955a1JGVoRShAP/EUYWGNGAAAAADfZrUlaxhFKEAD/RRhYY0YAAAAAoQ2vSRlaEUqoqyZGGFhjRmRqWz5YN7pJGVoRSqirJkYYWGNGMJl3PlZXvkkZWhFKqKsmRhhYY0YAAAAAoBu+SaqjH0pYoSZGGFhjRgAAAACDJq1JiV8ZSqirJkYYWGNGAACAP/dRnElVXxdKYGQORhhYY0YAAAAAbsqbSeevH0pQEvZFGFhjRgAAAABnhK1JpaUSSqirJkYYWGNGAACAP6Mvs0kZWhFKqKsmRhhYY0Yh9Ck/yjm0SRlaEUqoqyZGGFhjRmasGD//Wa1JShUTSqirJkYYWGNGAACAPwA7skkZWhFKqKsmRhhYY0YAAIA/rTGwSRlaEUqoqyZGGFhjRnpDkT432a1JWsYRShAA/0UYWGNGAAAAAKEMrklRABBK2OglRhhYY0YAAAAAbi6uSdLVDkrQ4vlFGFhjRgAAAACyv6lJg1UMSrBW9UUYWGNGAAAAAFNkrkmK+QlKWBAARhhYY0YAAAAAbgeuSXWrA0rwBAJGGFhjRgAAAADB4aJJknT/SchDJUYYWGNGAAAAAGcDqElCvftJwAEdRhhYY0YAAAAA3DO6SaR9A0pURSlGGFhjRgAAAAD8KrtJ9HcGSgj4C0YYWGNGAAAAAHZfvkk57QdKEDzxRRhYY0YAAAAAB2K+ST/LDkqoqyZGGFhjRgAAAAD5XL5J3gAQSqirJkYYWGNGAAAAAKAbvkmqox9KWKEmRhhYY0YAAAAAbsqbSeevH0pQEvZFGFhjRgAAAAD3UZxJVV8XSmBkDkYYWGNGAAAAACM3sEmndxJKqKsmRhhYY0YAAIA/oXywSfsREEqoqyZGGFhjRgAAgD/9rLBJ8GYOSiD5JUYYWGNGAACAP44WrUmvYAxKSPolRhhYY0YAAIA/u9ywSb51CkqoqyZGGFhjRgAAgD8xb7BJcwYDSqirJkYYWGNGAACAP6ETp0mSbv9JUOMjRhhYY0YAAIA/6h6oSQKt/kmoNiNGGFhjRgAAgD+Q+LdJdjwESqirJkYYWGNGAACAP/TkuEmpFQdKUKMmRhhYY0YAAIA/qu67SXl3CEqoqyZGGFhjRgAAgD8H8btJFsoOSqirJkYYWGNGAACAP/7ru0lR/g9KqKsmRhhYY0YAAIA/sa+7SQdsHkpIpCZGGFhjRgAAgD+0T55JgXYeSjB9JEYYWGNGAACAPym4nkn+DRhKqKsmRhhYY0YAAIA/QVJFQQAAAAACAAAAAQAAAAMAAAAFAAAABAAAAAMAAAAGAAAABQAAAAcAAAAIAAAACQAAAAoAAAALAAAADAAAAA0AAAAOAAAAAAAAAA8AAAAIAAAAEAAAABEAAAAKAAAADAAAAAEAAAACAAAAAwAAABIAAAAMAAAADQAAABEAAAAMAAAAEgAAAAsAAAAPAAAAEAAAAAsAAAAQAAAAEwAAABMAAAAQAAAACAAAAAgAAAAUAAAAFQAAABQAAAADAAAAFQAAABYAAAAIAAAAFwAAAAMAAAACAAAAGAAAABgAAAACAAAAAAAAAAMAAAAYAAAAFQAAABgAAAAAAAAAFQAAAAAAAAAZAAAAFQAAABkAAAAIAAAAFQAAABYAAAAaAAAACAAAABYAAAAbAAAAGgAAABsAAAAcAAAAGgAAAAsAAAATAAAADgAAABMAAAAIAAAADgAAAA0AAAAMAAAAHQAAAB0AAAAMAAAACwAAAAAAAAAOAAAAGQAAABkAAAAOAAAACAAAAAgAAAAaAAAABgAAABoAAAAcAAAABQAAABoAAAAFAAAABgAAAAcAAAAXAAAACAAAAA0AAAAdAAAADgAAAB0AAAALAAAADgAAAAgAAAAGAAAAFAAAABQAAAAGAAAAAwAAAB4AAAAgAAAAHwAAACEAAAAiAAAAIwAAACEAAAAjAAAAJAAAACUAAAAkAAAAJgAAACYAAAAkAAAAIwAAAB8AAAAnAAAAJQAAACgAAAApAAAAKgAAACgAAAAqAAAAJwAAACoAAAAlAAAAJwAAACgAAAAnAAAAKwAAACsAAAAfAAAALAAAACsAAAAnAAAAHwAAACwAAAAfAAAAIAAAACEAAAAqAAAAKQAAACEAAAAkAAAAKgAAACoAAAAkAAAAJQAAAC0AAAAuAAAAPgAAAC0AAAA+AAAAPQAAAC4AAAAvAAAAPwAAAC4AAAA/AAAAPgAAAC8AAAAwAAAAQAAAAC8AAABAAAAAPwAAADAAAAAxAAAAQQAAADAAAABBAAAAQAAAADEAAAAyAAAAQgAAADEAAABCAAAAQQAAADIAAAAzAAAAQwAAADIAAABDAAAAQgAAADMAAAA0AAAARAAAADMAAABEAAAAQwAAADQAAAA1AAAARQAAADQAAABFAAAARAAAADUAAAA2AAAARgAAADUAAABGAAAARQAAADYAAAA3AAAARwAAADYAAABHAAAARgAAADcAAAA4AAAASAAAADcAAABIAAAARwAAADgAAAA5AAAASQAAADgAAABJAAAASAAAADkAAAA6AAAASgAAADkAAABKAAAASQAAADoAAAA7AAAASwAAADoAAABLAAAASgAAADsAAAA8AAAATAAAADsAAABMAAAASwAAADwAAAAtAAAAPQAAADwAAAA9AAAATAAAAEFSRUEFAAAAFgAAABgAAAAFAAAACQAAAA8AAABBUkVBRU5EMEFSRUECAAAAAwAAACkAAAB6b25lXzNiNzU4NWY2LWYxNmItNGZmNi05MThkLTk0NTA1MDQ0MTE4ZAAAAEFSRUHdXfhJBakHSqAiKkZBUkVBAgAAAAAAAAANAAAAAAAAAA4AAAANAAAADgAAAA4AAAAOAAAAQVJFQRsAAAAOAAAAHAAAAA4AAABBUkVBHAAAAAcAAABBUkVBKgAAACkAAADHuOlJBakHStDEJkYYWGNGAAAAAPKR50l/egZKqKsmRhhYY0YAAAAATuTsSQWpB0po7ydGGFhjRuBDqD6Rt/5Jr/f9SbCxJUYYWGNGAAAAAGMrBEr3tgVKQIIqRhhYY0YAAAAAxCv9SXCgBErovitGGFhjRgAAgD9kBwNKclQHSpDaIUYYWGNGAAAAABoEA0oFqQdKAIEDRhhYY0YAAAAAYOcCSgWpB0rgmSBGGFhjRkDEJD1d0PZJeOcGStjsKUYYWGNGAACAP7DNAkoFqQdKgIYpRhhYY0YA9JQ9IisCSgWpB0rwDh9GGFhjRoyI9j1RCvdJBakHSpDiKUYYWGNGAACAPyIrAkoFqQdK8A4fRhhYY0aIiPY9W6n5SR1qEEpQaflFGFhjRgAAAADHuOlJBakHStDEJkYYWGNGAAAAAE7k7EkFqQdKaO8nRhhYY0bgQ6g+XMP3SQUTCkpoNSlGGFhjRgAAgD8nogJKRX4RSrCS+UUYWGNGAAAAABoEA0oFqQdKAIEDRhhYY0YAAAAAYOcCSgWpB0rgmSBGGFhjRkDEJD0T1/9J6YoPSlAXIkYYWGNGAACAP91f+knR7hRK8EoHRhhYY0YAAAAAsM0CSgWpB0qAhilGGFhjRgD0lD0S3P9JSN8LSrjZKEYYWGNGAACAPyIrAkoFqQdK8A4fRhhYY0aMiPY9UQr3SQWpB0qQ4ilGGFhjRgAAgD8iKwJKBakHSvAOH0YYWGNGiIj2PVup+UkdahBKUGn5RRhYY0YAAAAA8pHnSX96BkqoqyZGGFhjRgAAAACRt/5Jr/f9SbCxJUYYWGNGAAAAAGMrBEr3tgVKQIIqRhhYY0YAAAAAZAcDSnJUB0qQ2iFGGFhjRgAAAAAnogJKRX4RSrCS+UUYWGNGAAAAAN1f+knR7hRK8EoHRhhYY0YAAAAAlwf8Sd3mD0oAMSFGGFhjRgAAgD8jUOtJjLgGSjDQJ0YYWGNGAACAPzgW/kljpABKSDErRhhYY0YAAIA/DawCSg64BUoIhShGGFhjRgAAgD+60gFKzOsGSvB3KUYYWGNGAACAP0hwAUrXzRBK4DomRhhYY0YAAIA/gH38SSvSEkrgmyZGGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAwAAAAQAAAAFAAAABgAAAAUAAAAEAAAAAwAAAAUAAAABAAAABwAAAAgAAAAGAAAAAQAAAAUAAAAJAAAACQAAAAUAAAAGAAAACAAAAAoAAAAGAAAACwAAAAYAAAAKAAAAAgAAAAEAAAAJAAAAAgAAAAkAAAAMAAAADAAAAAkAAAAGAAAADAAAAAYAAAANAAAADgAAAA8AAAAQAAAADgAAABAAAAARAAAAEgAAABQAAAATAAAAEgAAABUAAAAUAAAADgAAABUAAAAWAAAAFgAAABUAAAASAAAAFAAAABgAAAAXAAAAFAAAABUAAAAYAAAAGAAAABUAAAAOAAAAGQAAABcAAAAYAAAAGQAAABgAAAARAAAAGAAAAA4AAAARAAAAEAAAABoAAAARAAAAGgAAABsAAAARAAAAHAAAAB0AAAAkAAAAHAAAACQAAAAjAAAAHQAAAB4AAAAlAAAAHQAAACUAAAAkAAAAHgAAAB8AAAAmAAAAHgAAACYAAAAlAAAAHwAAACAAAAAnAAAAHwAAACcAAAAmAAAAIAAAACEAAAAoAAAAIAAAACgAAAAnAAAAIQAAACIAAAApAAAAIQAAACkAAAAoAAAAIgAAABwAAAAjAAAAIgAAACMAAAApAAAAQVJFQQQAAAAQAAAACgAAAB0AAAAaAAAAQVJFQUVORDBBUkVBAgAAAAQAAAApAAAAem9uZV9hZDg0YzAxYi1lYTExLTQ2NzMtOGY1Ni1iMTBhN2ZhYWE5YTkAAABBUkVBmcSdSDmQ60hIvoRGQVJFQQIAAAAAAAAABwAAAAAAAAAIAAAABwAAAA8AAAAIAAAADQAAAEFSRUEWAAAAEAAAABUAAAAQAAAAQVJFQRUAAAAIAAAAQVJFQSUAAAAmAAAAOuYrSUidukYv3F9HGFhjRgAAAAAsby1JOZDrSMKzVUcYWGNGAAAAAJIJ8Ug5kOtI1FLpRhhYY0ZEGR8/CiuwSCOQzUjE/JBGGFhjRgAAgD9ImHFGbN3XRgbae0cYWGNGAAAAAIuAn0g6kOtICAiFRhhYY0bL9WY/ZWFYRjmQ60gcXaNGGFhjRgAAAACxPrBIOZDrSAD9n0YYWGNGAACAP6Mn2kjYRUJJKC6SRhhYY0YAAAAAg4naSNZkfklwFSpGGFhjRgAAAACdfZNIZu9qSWChQUYYWGNGAACAP57FLUnwaA5JhFQcRxhYY0YAAAAAMH6+SG6bRUl4FUdGGFhjRgAAgD8sby1JOZDrSMKzVUcYWGNGAAAAAJIJ8Ug5kOtI1FLpRhhYY0ZEGR8/i4CfSDqQ60gICIVGGFhjRsv1Zj899jhGwBGASfzKjEYYWGNGAAAAAGVhWEY5kOtIHF2jRhhYY0YAAAAAVe9fSKw0YUl48WZGGFhjRgAAgD93qbBIOEZHSbDnOkYYWGNGAACAP7E+sEg5kOtIAP2fRhhYY0YAAIA/oyfaSNhFQkkoLpJGGFhjRgAAAACDidpI1mR+SXAVKkYYWGNGAAAAAD32OEbAEYBJ/MqMRhhYY0YAAAAAb+BXRgIA8EiWlK5GGFhjRgAAAABImHFGbN3XRgbae0cYWGNGAAAAADrmK0lInbpGL9xfRxhYY0YAAAAA9XYtSdT/70h9U19HGFhjRgAAAACexS1J8GgOSYRUHEcYWGNGAAAAANFf0Ehf7z9JkAqDRhhYY0YAAIA/rr3QSDyXeUkIyC1GGFhjRgAAgD+mS/lGwSx7ScwSjUYYWGNGAACAP/sXBEfhCPBIxJyQRhhYY0YAAIA/nj8KR6aiOUcRLXpHGFhjRgAAgD9XFSdJL9orR7mKVEcYWGNGAACAPxOVKEkaIvBIv0FYRxhYY0YAAIA/XdsoSY0XDEnTUAxHGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAAAAAAIAAAADAAAABAAAAAAAAAADAAAABQAAAAYAAAAEAAAABQAAAAQAAAADAAAABQAAAAMAAAAHAAAABwAAAAMAAAACAAAACAAAAAkAAAAKAAAACwAAAAgAAAAMAAAADQAAAAsAAAAOAAAADwAAABAAAAARAAAAEAAAAAoAAAAJAAAACAAAAAoAAAASAAAAEgAAAAoAAAAQAAAAEAAAABMAAAAMAAAAEwAAAAsAAAAMAAAACAAAABIAAAAMAAAAEgAAABAAAAAMAAAADwAAABMAAAAQAAAADwAAABQAAAATAAAAFAAAAAsAAAATAAAAFAAAAA4AAAALAAAAFQAAABYAAAAeAAAAFQAAAB4AAAAdAAAAFgAAABcAAAAfAAAAFgAAAB8AAAAeAAAAFwAAABgAAAAgAAAAFwAAACAAAAAfAAAAGAAAABkAAAAhAAAAGAAAACEAAAAgAAAAGQAAABoAAAAiAAAAGQAAACIAAAAhAAAAGgAAABsAAAAjAAAAGgAAACMAAAAiAAAAGwAAABwAAAAkAAAAGwAAACQAAAAjAAAAHAAAABUAAAAdAAAAHAAAAB0AAAAkAAAAQVJFQQMAAAAHAAAADAAAABkAAABBUkVBRU5EMEFSRUECAAAABQAAACkAAAB6b25lXzM3ZjA2OTU1LTg1Y2YtNDQ0OS1hYmZlLTAyYTIzMjMzOTNhNQAAAEFSRUG/+ZRJpDENSlhZJUZBUkVBAgAAAAAAAAANAAAAAAAAAA8AAAANAAAAGAAAAA8AAAAVAAAAQVJFQSUAAAAaAAAAJAAAABoAAABBUkVBJAAAAA0AAABBUkVBPgAAAD8AAADB4aJJknT/SchDJUYYWGNGAAAAAG4Hrkl1qwNK8AQCRhhYY0YAAAAALvacSRgICUpYViRGGFhjRgAAgD9TZK5JivkJSlgQAEYYWGNGAAAAAOmGqUmkMQ1KACsmRhhYY0ZMkDk+sr+pSYNVDEqwVvVFGFhjRgAAAADNRatJpDENSlCs+EUYWGNGAAAAAFxhkUmkMQ1K6JIfRhhYY0bC6go/qSN4SaQxDUrwyI5FGFhjRgAAAAAoGG9JTz4KShCDkUUYWGNGAAAAAOazqEmkMQ1KyG4mRhhYY0aUiR8+rj+nSaQxDUpwIiZGGFhjRlL4Hj5LwZhJpDENSuCOJkYYWGNGAACAP+gYpEmkMQ1K8HwlRhhYY0YQ25c+rj+nSaQxDUpwIiZGGFhjRlD4Hj5uLq5J0tUOStDi+UUYWGNGAAAAADfZrUlaxhFKEAD/RRhYY0YAAAAAVIaoSUEUEUpwpiZGGFhjRgAAgD/phqlJpDENSgArJkYYWGNGTJA5Ps1Fq0mkMQ1KUKz4RRhYY0YAAAAA91GcSVVfF0pgZA5GGFhjRgAAAABuyptJ568fSlAS9kUYWGNGAAAAAEByk0laLBpKOM4fRhhYY0YAAIA/XGGRSaQxDUrokh9GGFhjRsLqCj+lo4NJ5SESSoD1lUUYWGNGAAAAAKkjeEmkMQ1K8MiORRhYY0YAAAAA8fiMSZOuH0ow34lFGFhjRgAAAADms6hJpDENSshuJkYYWGNGlIkfPtQIo0ls2hFKAHUmRhhYY0YAAIA/rj+nSaQxDUpwIiZGGFhjRlL4Hj4QpZlJd98RSiidJkYYWGNGAACAP6yxlkm0Ow9KuGQmRhhYY0YAAIA/S8GYSaQxDUrgjiZGGFhjRgAAgD/oGKRJpDENSvB8JUYYWGNGENuXPs76j0mdwBRKmI0hRhhYY0YAAIA/rj+nSaQxDUpwIiZGGFhjRlD4Hj432a1JWsYRShAA/0UYWGNGAAAAAPdRnElVXxdKYGQORhhYY0YAAAAAbsqbSeevH0pQEvZFGFhjRgAAAADx+IxJk64fSjDfiUUYWGNGAAAAAKWjg0nlIRJKgPWVRRhYY0YAAAAA816ASQYAEEqgbIJFGFhjRgAAAAAoGG9JTz4KShCDkUUYWGNGAAAAAMHhokmSdP9JyEMlRhhYY0YAAAAAbgeuSXWrA0rwBAJGGFhjRgAAAABTZK5JivkJSlgQAEYYWGNGAAAAALK/qUmDVQxKsFb1RRhYY0YAAAAAbi6uSdLVDkrQ4vlFGFhjRgAAAAChDK5JUQAQStjoJUYYWGNGAAAAAEt7q0kNFRFKoKYmRhhYY0YAAIA/xeuZSaywFkrwmiZGGFhjRgAAgD8GbZlJMXceSni7I0YYWGNGAACAP9K2jkk7dh5KsLjQRRhYY0YAAIA/gdGFSR2MEUrApdZFGFhjRgAAgD8FT4JJ70EPSgCDv0UYWGNGAACAPzqcdkk4sApKcADSRRhYY0YAAIA/YaaiSQ0kAUpoliZGGFhjRgAAgD+rn6tJd1AESrhwJkYYWGNGAACAP+vrq0lWfQlKMHsmRhhYY0YAAIA/1mimSVdKDEpI3SRGGFhjRgAAgD/fr6tJtEQPSmCoJkYYWGNGAACAP6Gcq0mn7g9KQKgmRhhYY0YAAIA/QVJFQQAAAAABAAAAAgAAAAEAAAADAAAAAgAAAAQAAAAFAAAABgAAAAMAAAAFAAAAAgAAAAcAAAAIAAAACQAAAAcAAAAJAAAAAgAAAAAAAAACAAAACQAAAAQAAAAKAAAABQAAAAsAAAAFAAAACgAAAAcAAAACAAAADAAAAAwAAAAFAAAADQAAAAwAAAACAAAABQAAAA0AAAAFAAAADgAAAA8AAAAQAAAAEQAAABIAAAATAAAADwAAABIAAAAPAAAAEQAAABAAAAAUAAAAEQAAABQAAAAVAAAAFgAAABcAAAAYAAAAGQAAABoAAAAYAAAAFgAAABoAAAAWAAAAFQAAABIAAAAcAAAAGwAAABIAAAARAAAAHAAAABwAAAARAAAAFAAAAB0AAAAbAAAAHAAAAB0AAAAcAAAAHgAAABwAAAAUAAAAHgAAABcAAAAfAAAAGAAAABcAAAAgAAAAHwAAACAAAAAhAAAAHwAAABQAAAAWAAAAIgAAACIAAAAWAAAAGAAAABQAAAAiAAAAHgAAACIAAAAYAAAAHgAAABgAAAAfAAAAHgAAAB8AAAAhAAAAIwAAAB8AAAAjAAAAHgAAACQAAAAlAAAAMgAAACQAAAAyAAAAMQAAACUAAAAmAAAAMwAAACUAAAAzAAAAMgAAACYAAAAnAAAANAAAACYAAAA0AAAAMwAAACcAAAAoAAAANQAAACcAAAA1AAAANAAAACgAAAApAAAANgAAACgAAAA2AAAANQAAACkAAAAqAAAANwAAACkAAAA3AAAANgAAACoAAAArAAAAOAAAACoAAAA4AAAANwAAACsAAAAsAAAAOQAAACsAAAA5AAAAOAAAACwAAAAtAAAAOgAAACwAAAA6AAAAOQAAAC0AAAAuAAAAOwAAAC0AAAA7AAAAOgAAAC4AAAAvAAAAPAAAAC4AAAA8AAAAOwAAAC8AAAAwAAAAPQAAAC8AAAA9AAAAPAAAADAAAAAkAAAAMQAAADAAAAAxAAAAPQAAAEFSRUECAAAAFgAAAAIAAABBUkVBRU5EMEFSRUECAAAABgAAACkAAAB6b25lXzhkYWVmZjI1LWExMWMtNDVjMy1hNzhiLWQwMjllYjIwZjdjYQAAAEFSRUHps+dJWszjSbjaNEZBUkVBAgAAAAAAAAAGAAAAAAAAAAgAAAAGAAAADAAAAAgAAAALAAAAQVJFQRIAAAAMAAAAEwAAAAwAAABBUkVBEwAAAAYAAABBUkVBHwAAAB4AAAALUOVJWszjSXgRNkYYWGNG5rleP3bM1kmyfNxJUBE6RhhYY0YAAAAAAFjWSVrM40loPTBGGFhjRgAAAAB/wv9Jrg7cSVgWUkYYWGNGAAAAAKx76klazONJEIkzRhhYY0ZRWGA/nIDwSVrM40lAujtGGFhjRsjwMj++uQJKD0PhSaiFIkYYWGNGAAAAAFG5AEpazONJYOI7RhhYY0YAAAAAK0HiSU3b90n4BSdGGFhjRgAAAACmHtZJF2bnSRhwLkYYWGNGAAAAAPtx40l89O5JSB0wRhhYY0YAAIA/C1DlSVrM40l4ETZGGFhjRua5Xj8AWNZJWszjSWg9MEYYWGNGAAAAACB750n34+RJIBY0RhhYY0YAAIA/rHvqSVrM40kQiTNGGFhjRlFYYD+cgPBJWszjSUC6O0YYWGNGyPAyP1G5AEpazONJYOI7RhhYY0YAAAAAIfbxSQ6c7Um4sjBGGFhjRgAAAABkCuRJEoHqSfDiMUYYWGNGAACAPytB4klN2/dJ+AUnRhhYY0YAAAAAph7WSRdm50kYcC5GGFhjRgAAAAB2zNZJsnzcSVAROkYYWGNGAAAAAH/C/0muDtxJWBZSRhhYY0YAAAAAvrkCSg9D4UmohSJGGFhjRgAAAAAh9vFJDpztSbiyMEYYWGNGAAAAAPfZ4klfjfRJwO4nRhhYY0YAAIA/jpzYSReq5knoki5GGFhjRgAAgD8pGNlJkOfeSXD3NUYYWGNGAACAP5rS/kk7gt5JwMptRhhYY0YAAIA/N7kASpvo4En4nCtGGFhjRgAAgD8fpPBJU47rSSh9MEYYWGNGAACAP0FSRUEAAAAAAgAAAAEAAAAAAAAAAQAAAAMAAAAAAAAAAwAAAAQAAAAFAAAABgAAAAcAAAAFAAAAAwAAAAYAAAAFAAAABAAAAAMAAAAIAAAACQAAAAoAAAALAAAACQAAAAwAAAALAAAADQAAAAkAAAALAAAADgAAAA0AAAAPAAAAEAAAABEAAAAPAAAAEQAAAA0AAAAPAAAADQAAAA4AAAAIAAAACgAAABEAAAAJAAAADQAAABIAAAASAAAADQAAABEAAAAJAAAAEgAAAAoAAAASAAAAEQAAAAoAAAATAAAAFAAAABoAAAATAAAAGgAAABkAAAAUAAAAFQAAABsAAAAUAAAAGwAAABoAAAAVAAAAFgAAABwAAAAVAAAAHAAAABsAAAAWAAAAFwAAAB0AAAAWAAAAHQAAABwAAAAXAAAAGAAAAB4AAAAXAAAAHgAAAB0AAAAYAAAAEwAAABkAAAAYAAAAGQAAAB4AAABBUkVBBgAAAAoAAAAAAAAAEQAAAB0AAAAcAAAACQAAAEFSRUFFTkQwQVJFQQIAAAAHAAAAKQAAAHpvbmVfNTYyODE5ZGEtYzViMy00OWEyLWFmNWYtYjBkZjQyMDI5M2MxAAAAQVJFQXsZkkn0r8VIB80dR0FSRUECAAAAAAAAAAQAAAAAAAAABgAAAAQAAAAIAAAABgAAAAkAAABBUkVBDAAAABAAAAAPAAAAEAAAAEFSRUEPAAAACAAAAEFSRUEfAAAAHAAAAN9jhEn0r8VIYBjBRhhYY0ZAiEQ/OuYrSUidukYv3F9HGFhjRgAAAACzLC1J9K/FSKqNCkcYWGNGAAAAAG7nnkn0r8VI0ZZERxhYY0am20U/tE/JSVJrREYvGXRHGFhjRgAAAAAMEstJ86/FSETP6kYYWGNGAAAAAN9jhEn0r8VIYBjBRhhYY0ZAiEQ/sywtSfSvxUiqjQpHGFhjRgAAAACexS1J8GgOSYRUHEcYWGNGAAAAADxxkkm2+f1IAPu5RhhYY0YAAIA/KTimSUOOTEl2tvhGGFhjRgAAAACE98xJzhZKSYidGkYYWGNGAAAAABlBgkmtvkxJmF4rRhhYY0YAAAAAbueeSfSvxUjRlkRHGFhjRqbbRT8MEstJ86/FSETP6kYYWGNGAAAAAJ7FLUnwaA5JhFQcRxhYY0YAAAAAtyItSYn/v0hFZANHGFhjRgAAAAA65itJSJ26Ri/cX0cYWGNGAAAAALRPyUlSa0RGLxl0RxhYY0YAAAAArATLScf/v0gosAFHGFhjRgAAAACE98xJzhZKSYidGkYYWGNGAAAAACk4pklDjkxJdrb4RhhYY0YAAAAAGUGCSa2+TEmYXitGGFhjRgAAAADcnjJJqeELSSPfOEcYWGNGAACAP5kEMklD3b9IOqLvRhhYY0YAAIA/R9kwSVV9KkdUZmlHGFhjRgAAgD+C9cZJASMARwnGckcYWGNGAACAPxiUyEmOW8BIza8BRxhYY0YAAIA/4W/KSWZdRUnwRClGGFhjRgAAgD9lLaZJUKxHSRM+E0cYWGNGAACAP6YJg0me20dJILIhRhhYY0YAAIA/QVJFQQAAAAACAAAAAQAAAAMAAAAEAAAABQAAAAAAAAABAAAABAAAAAAAAAAEAAAAAwAAAAYAAAAIAAAABwAAAAYAAAAJAAAACAAAAAoAAAAJAAAACwAAAAoAAAAMAAAACQAAAA0AAAAOAAAACwAAAA0AAAALAAAACQAAAAgAAAAJAAAADAAAAAYAAAANAAAACQAAAA8AAAAQAAAAGAAAAA8AAAAYAAAAFwAAABAAAAARAAAAGQAAABAAAAAZAAAAGAAAABEAAAASAAAAGgAAABEAAAAaAAAAGQAAABIAAAATAAAAGwAAABIAAAAbAAAAGgAAABMAAAAUAAAAHAAAABMAAAAcAAAAGwAAABQAAAAVAAAAHQAAABQAAAAdAAAAHAAAABUAAAAWAAAAHgAAABUAAAAeAAAAHQAAABYAAAAPAAAAFwAAABYAAAAXAAAAHgAAAEFSRUEFAAAAGQAAABIAAAATAAAABAAAABsAAABBUkVBRU5EMEFSRUECAAAACAAAACkAAAB6b25lX2FhNGQwMGE4LWVkMTgtNDlkYS05NWU0LWI1MjEwY2I4NjEyOQAAAEFSRUFZ71NJvP2eSaLdvEZBUkVBAgAAAAAAAAAGAAAAAAAAAAgAAAAGAAAACQAAAAgAAAAKAAAAQVJFQQ8AAAASAAAAEgAAABIAAABBUkVBEgAAAAkAAABBUkVBJAAAACEAAACMxVpJvP2eSRFgEEcYWGNGDrxtP232C0nixn5J6AY6RhhYY0YAAAAAUbGCSc2mgEloGyxGGFhjRgAAAAAgiWNJvP2eSbEwDkcYWGNGzwdtP4VLDUm8/Z5JAgwbRxhYY0YAAAAAOteJSTuOhElAZytGGFhjRgAAAADMGmVJvP2eSVRdBkcYWGNG+XZqP50Xikm8/Z5JuPEnRhhYY0YAAAAAjMVaSbz9nkkRYBBHGFhjRg68bT8giWNJvP2eSbEwDkcYWGNGzwdtP6DTYElSa6FJudAERxhYY0YAAIA/hUsNSbz9nkkCDBtHGFhjRgAAAAAq8A1J7T6uSUu5GUcYWGNGAAAAALsEgkngu81JQHwnRhhYY0YAAAAAGkchSWQ+s0l4WHtGGFhjRgAAAADMGmVJvP2eSVRdBkcYWGNG+XZqP/l7ikk/MshJWFQURhhYY0YAAAAAnReKSbz9nkm48SdGGFhjRgAAAABt9gtJ4sZ+SegGOkYYWGNGAAAAAFGxgknNpoBJaBssRhhYY0YAAAAAOteJSTuOhElAZytGGFhjRgAAAAAUGopJ0QCgSWCZJUYYWGNGAAAAAPl7ikk/MshJWFQURhhYY0YAAAAAuwSCSeC7zUlAfCdGGFhjRgAAAAAaRyFJZD6zSXhYe0YYWGNGAAAAACrwDUntPq5JS7kZRxhYY0YAAAAAaVYNSRMAoEkvpSBHGFhjRgAAAACf8xBJ3eGBSdiIQEYYWGNGAACAP7QLgkl+FINJ8FwqRhhYY0YAAIA/v2mHSfEChknAUClGGFhjRgAAgD8bqYdJwwagSaC3JEYYWGNGAACAP8AHiElY4sZJCAcYRhhYY0YAAIA/K+WBSbDlykl4pCJGGFhjRgAAgD+QjSNJXxWxSZihc0YYWGNGAACAPzrCEklMvqxJaNMFRxhYY0YAAIA/IjgSSefyn0ka7zFHGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAAAAAAIAAAADAAAAAAAAAAQAAAABAAAAAwAAAAIAAAAFAAAAAwAAAAUAAAAGAAAABgAAAAUAAAAHAAAACAAAAAkAAAAKAAAACAAAAAwAAAALAAAACAAAAAoAAAAMAAAADQAAAA4AAAAKAAAADgAAAAwAAAAKAAAACQAAAA8AAAAKAAAAEAAAAA0AAAAKAAAADwAAABEAAAAQAAAADwAAABAAAAAKAAAAEgAAABMAAAAcAAAAEgAAABwAAAAbAAAAEwAAABQAAAAdAAAAEwAAAB0AAAAcAAAAFAAAABUAAAAeAAAAFAAAAB4AAAAdAAAAFQAAABYAAAAfAAAAFQAAAB8AAAAeAAAAFgAAABcAAAAgAAAAFgAAACAAAAAfAAAAFwAAABgAAAAhAAAAFwAAACEAAAAgAAAAGAAAABkAAAAiAAAAGAAAACIAAAAhAAAAGQAAABoAAAAjAAAAGQAAACMAAAAiAAAAGgAAABIAAAAbAAAAGgAAABsAAAAjAAAAQVJFQQYAAAAWAAAADAAAABkAAAATAAAAFQAAAA4AAABBUkVBRU5EMEFSRUECAAAACQAAACkAAAB6b25lXzYzY2IwNDJkLTIxZmQtNDNiMi04Y2RjLTk5MjEwZmRlMmNlNwAAAEFSRUHUEMFJp9P0SQiMJkZBUkVBAgAAAAAAAAANAAAAAAAAAA4AAAANAAAAFgAAAA4AAAAUAAAAQVJFQSMAAAAWAAAAIgAAABYAAABBUkVBIgAAAAsAAABBUkVBOAAAADkAAADPPK5JUQDoSSC0DkYYWGNGAAAAAKYe1kkXZudJGHAuRhhYY0YAAAAAG4W/SZAg8kmwNidGGFhjRgAAgD9FTK5Jp9P0SUhSJkYYWGNG3DRnP6HDqEkeFu5JiPESRhhYY0YAAAAAkl2tSafT9Em45yVGGFhjRsidVD9DBeBJp9P0SdAVKUYYWGNGAAAAAEdx0Emn0/RJ+DsmRhhYY0byDws/umSoSafT9ElQ0PZFGFhjRgAAAADiMLNJp9P0SSgqJ0YYWGNGdPZTPxFAykmn0/RJwGslRhhYY0aPr1k/niDESafT9EkQOiZGGFhjRgAAgD/l1L5Jp9P0SdjHJkYYWGNGdNxeP0zVuUmn0/RJaBAnRhhYY0YAAIA/RUyuSafT9ElIUiZGGFhjRtw0Zz+SXa1Jp9P0SbjnJUYYWGNGyJ1UP+1Nrkm+M/ZJkI4mRhhYY0YAAIA/K0HiSU3b90n4BSdGGFhjRgAAAABDBeBJp9P0SdAVKUYYWGNGAAAAAEdx0Emn0/RJ+DsmRhhYY0byDws/I6vLSScPAEqoqyZGGFhjRgAAgD9nA6hJQr37ScABHUYYWGNGAAAAANwzukmkfQNKVEUpRhhYY0YAAAAAdl++STntB0oQPPFFGFhjRgAAAACu5NlJzq79SUDpJkYYWGNGAAAAAPwqu0n0dwZKCPgLRhhYY0YAAAAAumSoSafT9ElQ0PZFGFhjRgAAAABWOLRJzH33SSgHJ0YYWGNGAACAP+Iws0mn0/RJKConRhhYY0Z09lM/EUDKSafT9EnAayVGGFhjRo+vWT9BKchJsDD3SRCJJkYYWGNGAACAP54gxEmn0/RJEDomRhhYY0YAAIA/5dS+SafT9EnYxyZGGFhjRnTcXj9M1blJp9P0SWgQJ0YYWGNGAACAPytB4klN2/dJ+AUnRhhYY0YAAAAAruTZSc6u/UlA6SZGGFhjRgAAAAA7YtZJAQAASqirJkYYWGNGAAAAAHZfvkk57QdKEDzxRRhYY0YAAAAA/Cq7SfR3BkoI+AtGGFhjRgAAAADcM7pJpH0DSlRFKUYYWGNGAAAAACforkkAAABKqIgARhhYY0YAAAAAZwOoSUK9+0nAAR1GGFhjRgAAAAChw6hJHhbuSYjxEkYYWGNGAAAAAM88rklRAOhJILQORhhYY0YAAAAAph7WSRdm50kYcC5GGFhjRgAAAAAozd5JhUn3SbgxJ0YYWGNGAACAP8mF2EmLqftJYAknRhhYY0YAAIA/3QnVSXD2/UnIsSZGGFhjRgAAgD+jnL5JjmIGSqirJkYYWGNGAACAPwRxvUk/2gVKqKsmRhhYY0YAAIA/KG+8SdK+AkqoqyZGGFhjRgAAgD/AMLBJWuz9STj+IkYYWGNGAACAP9qHqknUbPpJ+DklRhhYY0YAAIA/lyerSVcU70nQvCtGGFhjRgAAgD8LV69JIG3qSVA/MkYYWGNGAACAP3zm1Eng2+lJ6IEvRhhYY0YAAIA/QVJFQQAAAAABAAAAAgAAAAMAAAAEAAAAAAAAAAMAAAAFAAAABAAAAAYAAAAHAAAAAQAAAAUAAAAIAAAABAAAAAkAAAADAAAAAAAAAAEAAAAKAAAACwAAAAEAAAALAAAAAgAAAAsAAAAMAAAAAgAAAAwAAAANAAAAAgAAAA0AAAAJAAAAAAAAAA0AAAAAAAAAAgAAAAcAAAAKAAAAAQAAAA4AAAAQAAAADwAAABEAAAATAAAAEgAAABEAAAAUAAAAEwAAABUAAAAQAAAAFgAAABcAAAAUAAAAGAAAABYAAAAUAAAAGQAAABkAAAAUAAAAFwAAABgAAAAUAAAAEQAAAA8AAAAVAAAAGgAAAA8AAAAQAAAAFQAAABYAAAAQAAAAGwAAABsAAAAOAAAAHAAAABsAAAAQAAAADgAAAB0AAAAeAAAAHwAAAB8AAAAeAAAAFgAAAB8AAAAWAAAAIAAAACAAAAAWAAAAGwAAACAAAAAbAAAAIQAAACEAAAAbAAAAHAAAABMAAAAeAAAAHQAAABMAAAAUAAAAHgAAAB4AAAAUAAAAFgAAACIAAAAjAAAALgAAACIAAAAuAAAALQAAACMAAAAkAAAALwAAACMAAAAvAAAALgAAACQAAAAlAAAAMAAAACQAAAAwAAAALwAAACUAAAAmAAAAMQAAACUAAAAxAAAAMAAAACYAAAAnAAAAMgAAACYAAAAyAAAAMQAAACcAAAAoAAAAMwAAACcAAAAzAAAAMgAAACgAAAApAAAANAAAACgAAAA0AAAAMwAAACkAAAAqAAAANQAAACkAAAA1AAAANAAAACoAAAArAAAANgAAACoAAAA2AAAANQAAACsAAAAsAAAANwAAACsAAAA3AAAANgAAACwAAAAiAAAALQAAACwAAAAtAAAANwAAAEFSRUEGAAAAFgAAAAIAAAAKAAAABgAAABwAAAAPAAAAQVJFQUVORDBBUkVBAgAAAAoAAAApAAAAem9uZV9lYzgyZTFlZC1kM2EzLTQwOGEtODVjNi03YmQzODJhYWE3MzcAAABBUkVBPhnqSYPo+klYpidGQVJFQQIAAAAAAAAABAAAAAAAAAAHAAAABAAAAAgAAAAHAAAACgAAAEFSRUEMAAAAEAAAABEAAAAQAAAAQVJFQREAAAAIAAAAQVJFQSEAAAAcAAAAm4LlSYPo+kkYySZGGFhjRt0B5T4rQeJJTdv3SfgFJ0YYWGNGAAAAACH28UkOnO1JuLIwRhhYY0YAAAAAK2XrSYPo+kmoOihGGFhjRvVxRz8J4N1Jg+j6SRAgJ0YYWGNGAAAAAJuC5UmD6PpJGMkmRhhYY0beAeU+3VT8SYPo+knAQCxGGFhjRgAAAACbguVJg+j6SRjJJkYYWGNG3QHlPitl60mD6PpJqDooRhhYY0b1cUc/g4jpSeKt/km4NihGGFhjRgAAgD+Rt/5Jr/f9SbCxJUYYWGNGAAAAAPKR50l/egZKqKsmRhhYY0YAAAAAruTZSc6u/UlA6SZGGFhjRgAAAAAJ4N1Jg+j6SRAgJ0YYWGNGAAAAAJuC5UmD6PpJGMkmRhhYY0beAeU+ms3kSTgABUqoqyZGGFhjRgAAAADdVPxJg+j6ScBALEYYWGNGAAAAAJrN5Ek4AAVKqKsmRhhYY0YAAAAABfLbSf7//0lIySZGGFhjRgAAAACu5NlJzq79SUDpJkYYWGNGAAAAACtB4klN2/dJ+AUnRhhYY0YAAAAAIfbxSQ6c7Um4sjBGGFhjRgAAAACRt/5Jr/f9SbCxJUYYWGNGAAAAACOU+0n4//9JIAssRhhYY0YAAAAA8pHnSX96BkqoqyZGGFhjRgAAAADBm+ZJyy0ESvhSJ0YYWGNGAACAP+nF3UmfYf5JmAAnRhhYY0YAAIA/JIrdSSIe/kk4BCdGGFhjRgAAgD+onuNJi+H5SaDmJkYYWGNGAACAP4Jq8Ulj4fBJ2HswRhhYY0YAAIA/Iif7SfRd/UkA5StGGFhjRgAAgD9qQPpJXfP9SYgeLEYYWGNGAACAP/P050kj5gRK8HcnRhhYY0YAAIA/QVJFQQAAAAABAAAAAgAAAAAAAAACAAAAAwAAAAQAAAABAAAABQAAAAMAAAACAAAABgAAAAcAAAAIAAAACQAAAAoAAAALAAAACQAAAAwAAAANAAAADgAAAAwAAAAOAAAACQAAAAwAAAAJAAAADwAAAA8AAAAJAAAACwAAAAgAAAAQAAAACgAAAAgAAAAKAAAACQAAABEAAAASAAAAGgAAABEAAAAaAAAAGQAAABIAAAATAAAAGwAAABIAAAAbAAAAGgAAABMAAAAUAAAAHAAAABMAAAAcAAAAGwAAABQAAAAVAAAAHQAAABQAAAAdAAAAHAAAABUAAAAWAAAAHgAAABUAAAAeAAAAHQAAABYAAAAXAAAAHwAAABYAAAAfAAAAHgAAABcAAAAYAAAAIAAAABcAAAAgAAAAHwAAABgAAAARAAAAGQAAABgAAAAZAAAAIAAAAEFSRUEGAAAAAwAAABoAAAAGAAAAHQAAAAkAAAAPAAAAQVJFQUVORDBBUkVBAgAAAAsAAAApAAAAem9uZV8wMDkwMTdkNy1mNmM3LTQzZWUtYmZlMy00NGNkNjFjMjQ0NGUAAABBUkVBgkgOSstWgkkC8bhGQVJFQQIAAAAAAAAABAAAAAAAAAAGAAAABAAAAAcAAAAGAAAACAAAAEFSRUELAAAADgAAAA4AAAAOAAAAQVJFQQ4AAAAHAAAAQVJFQRwAAAAZAAAA1ggMSstWgkkIJcFGGFhjRvl4dj+ZFQBKolpJSREdgEcYWGNGAAAAAOxCH0pr0G9JogCzRhhYY0YAAAAAzVoOSstWgknGerpGGFhjRimmZj8fXP9Jy1aCScCgM0YYWGNGAAAAAAZpH0rLVoJJzsizRhhYY0YAAAAA1ggMSstWgkkIJcFGGFhjRvl4dj/NWg5Ky1aCScZ6ukYYWGNGKaZmPxd/DEpSfINJVILZRhhYY0YAAIA/JeAfSon0okmIY3pGGFhjRgAAAAB+MP9J7YmOSSCUR0YYWGNGAAAAAB9c/0nLVoJJwKAzRhhYY0YAAAAAEFX/SZtZg0mgqzhGGFhjRgAAAAAGaR9Ky1aCSc7Is0YYWGNGAAAAAJkVAEqiWklJER2ARxhYY0YAAAAA7EIfSmvQb0miALNGGFhjRgAAAAB9YB9KoQCASYTQv0YYWGNGAAAAACXgH0qJ9KJJiGN6RhhYY0YAAAAAfjD/Se2JjkkglEdGGFhjRgAAAAAQVf9Jm1mDSaCrOEYYWGNGAAAAAHds/0ng/n9JcEcvRhhYY0YAAAAAw0IBSj/qT0mQZUVHGFhjRgAAgD/vEB5KC3NzSQhD6UYYWGNGAACAPx4oHkp0EoBJzErgRhhYY0YAAIA/PJseSomXn0n8cs1GGFhjRgAAgD+v0wBK7MGMSchHVUYYWGNGAACAP/riAEodZoNJmMY1RhhYY0YAAIA/nu4ASnoQgElozi5GGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAAAAAAIAAAADAAAAAAAAAAQAAAABAAAABQAAAAMAAAACAAAABgAAAAcAAAAIAAAACQAAAAoAAAAIAAAABgAAAAwAAAALAAAABgAAAAgAAAAMAAAACQAAAAcAAAANAAAACQAAAAgAAAAHAAAADAAAAAgAAAAKAAAADgAAAA8AAAAWAAAADgAAABYAAAAVAAAADwAAABAAAAAXAAAADwAAABcAAAAWAAAAEAAAABEAAAAYAAAAEAAAABgAAAAXAAAAEQAAABIAAAAZAAAAEQAAABkAAAAYAAAAEgAAABMAAAAaAAAAEgAAABoAAAAZAAAAEwAAABQAAAAbAAAAEwAAABsAAAAaAAAAFAAAAA4AAAAVAAAAFAAAABUAAAAbAAAAQVJFQQQAAAAUAAAAGwAAAAAAAAASAAAAQVJFQUVORDBBUkVBAgAAAAwAAAApAAAAem9uZV8xMWIxYzdiMS0yZWM1LTQyNDgtODNjMi01YjczYWY5YzUwZTAAAABBUkVBAcaFSDLGp0myAwtHQVJFQQIAAAAAAAAACQAAAAAAAAALAAAACQAAAC4AAAALAAAAIwAAAEFSRUE3AAAAJgAAAC4AAAAmAAAAQVJFQS4AAAATAAAAQVJFQVQAAABdAAAAg4naSNZkfklwFSpGGFhjRgAAAABt9gtJ4sZ+SegGOkYYWGNGAAAAAO1/i0hZq55JC+sZRxhYY0YAAIA/UaoNSTLGp0kKxkJHGFhjRgAAAABI5N9IMsanSWIfAUcYWGNG3LjUPj32OEbAEYBJ/MqMRhhYY0YAAAAAghFdSDLGp0lAlBZHGFhjRsPDST+4HAVGMsanSUqYsEYYWGNGAAAAAEqtbUgyxqdJXfsQRxhYY0bbnUk/gxFdSDLGp0k+lBZHGFhjRsPDST9O15JIMsanSZQrD0cYWGNGAACAP1GqDUkyxqdJCsZCRxhYY0YAAAAAKvANSe0+rklLuRlHGFhjRgAAAABI5N9IMsanSWIfAUcYWGNG3LjUPoIRXUgyxqdJQJQWRxhYY0bDw0k/gcKxRVqlyUlw6aRFGFhjRgAAAAC4HAVGMsanSUqYsEYYWGNGAAAAAGA9zUi55s5JEJ6gRRhYY0YAAAAAJn7MSCriwEmIMhJGGFhjRgAAAABgkcRIBD3JSVCyykUYWGNGAACAP81inUjTtu5JgOBJRBhYY0YAAAAAU4J2SFX85UmgeDhFGFhjRgAAAAAmdpRIYojlSZj7c0YYWGNGAACAP0qtbUgyxqdJXfsQRxhYY0bbnUk/WPaoR2WHyUmgQJdFGFhjRgAAAACDEV1IMsanST6UFkcYWGNGw8NJP9AHo0iRC+FJgM9URRhYY0YAAAAAPWysSNqK50mg13hFGFhjRgAAAACwYbNIBGnRScBVpkUYWGNGAAAAAG1orUiLmNhJAHhRRRhYY0YAAAAAut6RSAST1kliUpZGGFhjRgAAgD9TIZtIcsHBSQB84EUYWGNGAACAP8D+GUh1cdVJkLiZRRhYY0YAAAAAnWeESBXa2kks/pBGGFhjRgAAgD8z+ntI3ibhSSCZNUUYWGNGAAAAAG17P0ge0t1JgD0aRRhYY0YAAAAARulFSDev3ElQJuZFGFhjRgAAgD/1DqNIKeO7SVi2EEYYWGNGAACAP3WCkEg4GeFJAJ+URhhYY0YAAIA/evxKSCpM20kgQSdGGFhjRgAAgD/DvoxI0CnLSUD5yEUYWGNGAACAP81nekgABddJ+F7DRhhYY0YAAIA/TteSSDLGp0mUKw9HGFhjRgAAgD/r779IlyXJSaB720UYWGNGAACAP4gwgEg8bdNJKuG4RhhYY0YAAIA/sK+bSIhDy0lArclFGFhjRgAAgD9t9gtJ4sZ+SegGOkYYWGNGAAAAAMGsDUkKAKhJ/bZCRxhYY0YAAAAAKvANSe0+rklLuRlHGFhjRgAAAAAmfsxIKuLASYgyEkYYWGNGAAAAAGA9zUi55s5JEJ6gRRhYY0YAAAAAsGGzSARp0UnAVaZFGFhjRgAAAABtaK1Ii5jYSQB4UUUYWGNGAAAAANAHo0iRC+FJgM9URRhYY0YAAAAAPWysSNqK50mg13hFGFhjRgAAAADNYp1I07buSYDgSUQYWGNGAAAAAFOCdkhV/OVJoHg4RRhYY0YAAAAAM/p7SN4m4UkgmTVFGFhjRgAAAABtez9IHtLdSYA9GkUYWGNGAAAAAMD+GUh1cdVJkLiZRRhYY0YAAAAAWPaoR2WHyUmgQJdFGFhjRgAAAACBwrFFWqXJSXDppEUYWGNGAAAAADzRBEYAAKhJeLOmRhhYY0YAAAAAPfY4RsARgEn8yoxGGFhjRgAAAACDidpI1mR+SXAVKkYYWGNGAAAAAC4uB0nazIFJ+M86RhhYY0YAAIA/CMsISTYNqEmGKUNHGFhjRgAAgD+2AglJ2jWtSZGKOkcYWGNGAACAP7Krwkgb179JAH82RhhYY0YAAIA/eWLDSBg9zUmgNcRFGFhjRgAAgD955qpIQ53PSXD34EUYWGNGAACAP2fwo0jk/NdJWAQBRhhYY0YAAIA/17yYSKsb4UkYgyxGGFhjRgAAgD/oxqFIc1znSYgWDkYYWGNGAACAP6n5mkjumupJQJNGRhhYY0YAAIA/xZiFSFYj5UnYuCFGGFhjRgAAgD+QsYhItqnfSQCqMUYYWGNGAACAP1tWTUh46ttJqAUxRhhYY0YAAIA/tncqSIwf1EmQB7BFGFhjRgAAgD8YprxHnRLHSXAk/0UYWGNGAACAP7ZPykbRLMdJQDi+RRhYY0YAAIA/iqbeRmAGqEngF5lGGFhjRgAAgD+uK/dGr3iCSfK5o0YYWGNGAACAP2qO2kh7o4FJUCZIRhhYY0YAAIA/QVJFQQAAAAABAAAAAgAAAAEAAAADAAAABAAAAAEAAAAEAAAAAgAAAAUAAAAAAAAAAgAAAAYAAAAHAAAABQAAAAYAAAAFAAAAAgAAAAgAAAAJAAAAAgAAAAgAAAACAAAACgAAAAoAAAACAAAABAAAAAsAAAAMAAAADQAAAA4AAAAPAAAAEAAAABEAAAATAAAAEgAAABQAAAAVAAAAFgAAABcAAAAYAAAADwAAABcAAAAPAAAAGQAAABoAAAAbAAAAFgAAABsAAAAUAAAAFgAAABwAAAAdAAAAHgAAABIAAAAfAAAADAAAACAAAAAYAAAAHwAAAB0AAAAaAAAAIQAAABwAAAATAAAAEQAAABUAAAAiAAAAFgAAACIAAAAjAAAAJAAAACMAAAAgAAAAJAAAABgAAAAlAAAAHwAAACUAAAAMAAAAHwAAABoAAAAmAAAAIQAAACYAAAAiAAAAIQAAACIAAAAkAAAAJwAAACcAAAAkAAAAIAAAACAAAAAfAAAAKAAAACgAAAAfAAAAEgAAAB0AAAApAAAAHgAAACkAAAAgAAAAHgAAABcAAAAlAAAAGAAAABcAAAAqAAAAJQAAACoAAAAMAAAAJQAAACoAAAANAAAADAAAABoAAAAWAAAAJgAAACYAAAAWAAAAIgAAAB0AAAAhAAAAKQAAACkAAAAhAAAAIAAAACIAAAAnAAAAIQAAACcAAAAgAAAAIQAAABIAAAATAAAAKwAAACsAAAATAAAAHAAAACAAAAAtAAAALAAAACwAAAAtAAAAHAAAACAAAAAsAAAAHgAAACwAAAAcAAAAHgAAACAAAAAoAAAALQAAACgAAAASAAAALQAAABIAAAArAAAALQAAACsAAAAcAAAALQAAAC4AAAAvAAAAQgAAAC4AAABCAAAAQQAAAC8AAAAwAAAAQwAAAC8AAABDAAAAQgAAADAAAAAxAAAARAAAADAAAABEAAAAQwAAADEAAAAyAAAARQAAADEAAABFAAAARAAAADIAAAAzAAAARgAAADIAAABGAAAARQAAADMAAAA0AAAARwAAADMAAABHAAAARgAAADQAAAA1AAAASAAAADQAAABIAAAARwAAADUAAAA2AAAASQAAADUAAABJAAAASAAAADYAAAA3AAAASgAAADYAAABKAAAASQAAADcAAAA4AAAASwAAADcAAABLAAAASgAAADgAAAA5AAAATAAAADgAAABMAAAASwAAADkAAAA6AAAATQAAADkAAABNAAAATAAAADoAAAA7AAAATgAAADoAAABOAAAATQAAADsAAAA8AAAATwAAADsAAABPAAAATgAAADwAAAA9AAAAUAAAADwAAABQAAAATwAAAD0AAAA+AAAAUQAAAD0AAABRAAAAUAAAAD4AAAA/AAAAUgAAAD4AAABSAAAAUQAAAD8AAABAAAAAUwAAAD8AAABTAAAAUgAAAEAAAAAuAAAAQQAAAEAAAABBAAAAUwAAAEFSRUEEAAAABAAAAAgAAAAOAAAAGQAAAEFSRUFFTkQwQVJFQQIAAAANAAAAKQAAAHpvbmVfYWJkNDA2ZjAtZmFjNC00OTg1LTlkZDktMzY2M2MyNjg0MWJhAAAAQVJFQSyIz0kVza9JON5ERkFSRUECAAAAAAAAAAsAAAAAAAAADAAAAAsAAAANAAAADAAAAA0AAABBUkVBGAAAABAAAAAZAAAAEAAAAEFSRUEZAAAACAAAAEFSRUEpAAAAKAAAABGfzUkVza9JMENMRhhYY0ZmIUo/SQHPSV0go0nAiUBGGFhjRgAAAABd6MRJrCijScgZUEYYWGNGAAAAADd+y0kVza9JCApSRhhYY0Z1BUo/qpzFSRXNr0kAymJGGFhjRgAAAADQLN9JymWjSeC2QEYYWGNGAAAAAFAk2kmZhq9J8NZARhhYY0YAAIA/olTaSRXNr0lg1UBGGFhjRlkIeD+3BNpJFc2vSXDbQEYYWGNGT3J7P/bI30kVza9JqJtARhhYY0YAAAAA1+nQSRXNr0kQ20FGGFhjRl3GaD+jhthJFc2vSWj4QEYYWGNGAACAPxGfzUkVza9JMENMRhhYY0ZmIUo/N37LSRXNr0kIClJGGFhjRnUFSj+qQM1J1C2zSTBjSkYYWGNGAACAP6qcxUkVza9JAMpiRhhYY0YAAAAAuerGSVs5x0kAX05GGFhjRgAAAADkM9NJSQG/SYg+G0YYWGNGAAAAAKJU2kkVza9JYNVARhhYY0ZZCHg/3TTgSVRfuEkIGBZGGFhjRgAAAAC3BNpJFc2vSXDbQEYYWGNGT3J7P/bI30kVza9JqJtARhhYY0YAAAAAlhrRSdMQsUlgy0FGGFhjRgAAgD/X6dBJFc2vSRDbQUYYWGNGXcZoP6OG2EkVza9JaPhARhhYY0YAAIA/SQHPSV0go0nAiUBGGFhjRgAAAADQLN9JymWjSeC2QEYYWGNGAAAAAN004ElUX7hJCBgWRhhYY0YAAAAA5DPTSUkBv0mIPhtGGFhjRgAAAAAet9FJBADASdjYF0YYWGNGAAAAALnqxklbOcdJAF9ORhhYY0YAAAAAsoPGSQcAwEmgR3JGGFhjRgAAAABd6MRJrCijScgZUEYYWGNGAAAAAA39zklhkaVJUC9BRhhYY0YAAIA/TtncSeTMpUnYt0BGGFhjRgAAgD/DsN1JQOq2SRimQEYYWGNGAACAPwv30UlL5bxJQLFDRhhYY0YAAIA/mVvQSYr4vUkIikFGGFhjRgAAgD/QHclJstDCScjeUUYYWGNGAACAP7rzyElD3b9JaCxeRhhYY0YAAIA/CX3HSY2XpUmw91VGGFhjRgAAgD9BUkVBAAAAAAIAAAABAAAAAAAAAAMAAAACAAAAAwAAAAQAAAACAAAABQAAAAYAAAABAAAABwAAAAgAAAAGAAAABwAAAAUAAAAJAAAABwAAAAYAAAAFAAAACgAAAAAAAAABAAAACAAAAAsAAAAGAAAACwAAAAoAAAABAAAACwAAAAEAAAAGAAAADAAAAA4AAAANAAAADQAAABAAAAAPAAAADQAAAA4AAAAQAAAAEQAAABAAAAAOAAAAEgAAABMAAAARAAAAEgAAABEAAAAUAAAAEgAAABUAAAATAAAAEQAAAA4AAAAWAAAAFgAAAAwAAAAXAAAAFgAAAA4AAAAMAAAAFAAAABEAAAAWAAAAFAAAABYAAAAYAAAAGAAAABYAAAAXAAAAGQAAABoAAAAiAAAAGQAAACIAAAAhAAAAGgAAABsAAAAjAAAAGgAAACMAAAAiAAAAGwAAABwAAAAkAAAAGwAAACQAAAAjAAAAHAAAAB0AAAAlAAAAHAAAACUAAAAkAAAAHQAAAB4AAAAmAAAAHQAAACYAAAAlAAAAHgAAAB8AAAAnAAAAHgAAACcAAAAmAAAAHwAAACAAAAAoAAAAHwAAACgAAAAnAAAAIAAAABkAAAAhAAAAIAAAACEAAAAoAAAAQVJFQQYAAAARAAAAFwAAABMAAAAVAAAAHAAAABQAAABBUkVBRU5EMEFSRUECAAAADgAAACkAAAB6b25lXzk5NWMwMDMwLTY2MWItNGNlMi1iYjBkLTc2YTEyNDU4Mjg3YgAAAEFSRUF9dStJncLJSZiTIkZBUkVBAgAAAAAAAAAJAAAAAAAAAAoAAAAJAAAADAAAAAoAAAAMAAAAQVJFQRUAAAASAAAAFgAAABIAAABBUkVBFgAAAAkAAABBUkVBKAAAACcAAAAhPU9JncLJScDMI0YYWGNG2Ln0PvY4dUmdwslJcPUlRhhYY0YAAAAAGkchSWQ+s0l4WHtGGFhjRgAAAAB1kxVJoGvFSWjuGEYYWGNGAACAPyrwDUntPq5JS7kZRxhYY0YAAAAAJn7MSCriwEmIMhJGGFhjRgAAAAAHFQBJncLJSYgvAUYYWGNGUtEKPz73zEidwslJEEfKRRhYY0YAAAAAF10SSZ3CyUkomRRGGFhjRkyVOD/AkCdJncLJSfgqJEYYWGNGAACAP7sEgkngu81JQHwnRhhYY0YAAAAA4Hc3SVaf60lQfYVFGFhjRgAAAACFUkRJcvXXSegjI0YYWGNGAACAP50PCkkQ+tRJAGCeRRhYY0YAAAAAIT1PSZ3CyUnAzCNGGFhjRti59D72OHVJncLJSXD1JUYYWGNGAAAAAAcVAEmdwslJiC8BRhhYY0ZS0Qo/YD3NSLnmzkkQnqBFGFhjRgAAAAA+98xIncLJSRBHykUYWGNGAAAAABddEkmdwslJKJkURhhYY0ZMlTg/igxHSfha0Uno1SNGGFhjRgAAgD/AkCdJncLJSfgqJEYYWGNGAACAP7sEgkngu81JQHwnRhhYY0YAAAAAUTt+Sf3/z0kQVidGGFhjRgAAAADgdzdJVp/rSVB9hUUYWGNGAAAAAJ0PCkkQ+tRJAGCeRRhYY0YAAAAA9g7aSAAA0EkALoBFGFhjRgAAAABgPc1IuebOSRCeoEUYWGNGAAAAACZ+zEgq4sBJiDISRhhYY0YAAAAAKvANSe0+rklLuRlHGFhjRgAAAAAaRyFJZD6zSXhYe0YYWGNGAAAAAIoge0lSHc5J4DAnRhhYY0YAAIA/Gjp7SVcTzkkQMidGGFhjRgAAgD/u3DdJ+17oSdCHxkUYWGNGAACAPwa2DEmm2dJJ4PjpRRhYY0YAAIA/xDndSMiwzUmwMsRFGFhjRgAAgD+z6dZIRCbNSUDPvkUYWGNGAACAP5pQ1kg57cFJ4FQDRhhYY0YAAIA/gcMOSRc1sUnSnsVGGFhjRgAAgD+kAB9JaWe1SbDbWkYYWGNGAACAP0FSRUEAAAAAAgAAAAEAAAAAAAAAAwAAAAIAAAACAAAAAwAAAAQAAAAFAAAABAAAAAMAAAAGAAAABwAAAAUAAAAGAAAABQAAAAMAAAAIAAAABgAAAAMAAAAIAAAAAwAAAAkAAAAJAAAAAwAAAAAAAAAKAAAACwAAAAwAAAALAAAADQAAAAwAAAAOAAAADwAAAAoAAAAQAAAAEQAAABIAAAATAAAADQAAABEAAAATAAAAEQAAABAAAAANAAAAFAAAAAwAAAAUAAAACgAAAAwAAAATAAAAFAAAAA0AAAATAAAAFQAAABQAAAAVAAAACgAAABQAAAAVAAAADgAAAAoAAAAWAAAAFwAAACAAAAAWAAAAHwAAACAAAAAXAAAAGAAAACEAAAAXAAAAIQAAACAAAAAYAAAAGQAAACIAAAAYAAAAIgAAACEAAAAZAAAAGgAAACMAAAAZAAAAIwAAACIAAAAaAAAAGwAAACQAAAAaAAAAJAAAACMAAAAbAAAAHAAAACUAAAAbAAAAJQAAACQAAAAcAAAAHQAAACYAAAAcAAAAJgAAACUAAAAdAAAAHgAAACcAAAAdAAAAJwAAACYAAAAeAAAAFgAAAB8AAAAeAAAAHwAAACcAAABBUkVBAwAAABYAAAAIAAAADAAAAEFSRUFFTkQwQVJFQQIAAAAPAAAAKQAAAHpvbmVfYjIzMWIyOTgtNjgyNC00YmNlLThhOWQtMGI4M2VhYzk1Y2VmAAAAQVJFQem6zUlergZKqKsmRkFSRUECAAAAAAAAAAcAAAAAAAAACQAAAAcAAAALAAAACQAAAAwAAABBUkVBEgAAAAwAAAAVAAAADAAAAEFSRUEVAAAABgAAAEFSRUEhAAAAHgAAAJrN5Ek4AAVKqKsmRhhYY0YAAAAA/ubfSV6uBkqoqyZGGFhjRgAAAABeWtVJXq4GSqirJkYYWGNGKZk2P1jJ1EniawVKqKsmRhhYY0YAAIA/ruTZSc6u/UlA6SZGGFhjRgAAAAArhMlJXq4GSqirJkYYWGNGLY3+PlElwklergZKUGQfRhhYY0YAAAAA9Q3RSV6uBkrgcSVGGFhjRgAAgD8rhMlJXq4GSqirJkYYWGNGLo3+Pv7m30lergZKqKsmRhhYY0YAAAAAIsPWSZnQCUrgQiVGGFhjRgAAAABeWtVJXq4GSqirJkYYWGNGKZk2Pwdivkk/yw5KqKsmRhhYY0YAAAAA233WSalWD0rw1yRGGFhjRgAAAAC+VMpJdP4LSqirJkYYWGNGAACAP3Zfvkk57QdKEDzxRRhYY0YAAAAAK4TJSV6uBkqoqyZGGFhjRi2N/j5RJcJJXq4GSlBkH0YYWGNGAAAAAEyRyknp3ghKqKsmRhhYY0YAAIA/9Q3RSV6uBkrgcSVGGFhjRgAAgD8rhMlJXq4GSqirJkYYWGNGLo3+PprN5Ek4AAVKqKsmRhhYY0YAAAAAIsPWSZnQCUrgQiVGGFhjRgAAAADbfdZJqVYPSvDXJEYYWGNGAAAAAAdivkk/yw5KqKsmRhhYY0YAAAAAdl++STntB0oQPPFFGFhjRgAAAACu5NlJzq79SUDpJkYYWGNGAAAAAJwk4UmPxgRKqKsmRhhYY0YAAIA/JVrUSTkpCUogUiZGGFhjRgAAgD+rHNRJFRAOSqirJkYYWGNGAACAP5fSwEmJoA1KEK72RRhYY0YAAIA/tdDASUiVCEpw1e9FGFhjRgAAgD9neNlJnnEASqirJkYYWGNGAACAP0FSRUEAAAAAAQAAAAIAAAAAAAAAAgAAAAMAAAAEAAAAAAAAAAMAAAAFAAAABgAAAAQAAAAFAAAABAAAAAMAAAACAAAABwAAAAMAAAAHAAAACAAAAAMAAAAJAAAACgAAAAsAAAAMAAAADgAAAA0AAAAKAAAADQAAAA4AAAAPAAAADgAAAAwAAAAQAAAADwAAABEAAAAKAAAADgAAABIAAAASAAAADgAAAA8AAAALAAAACgAAABIAAAALAAAAEgAAABMAAAATAAAAEgAAAA8AAAATAAAADwAAABQAAAAVAAAAFgAAABwAAAAVAAAAHAAAABsAAAAWAAAAFwAAAB0AAAAWAAAAHQAAABwAAAAXAAAAGAAAAB4AAAAXAAAAHgAAAB0AAAAYAAAAGQAAAB8AAAAYAAAAHwAAAB4AAAAZAAAAGgAAACAAAAAZAAAAIAAAAB8AAAAaAAAAFQAAABsAAAAaAAAAGwAAACAAAABBUkVBBQAAAAoAAAACAAAAGAAAABoAAAAJAAAAQVJFQUVORDBBUkVBAgAAABAAAAApAAAAem9uZV8xMmNhYjdmNy1iMzBiLTQ4OTYtYTljOS1mZWVmYWI5MzBmZjYAAABBUkVBk7kNSkeEEUoQNydGQVJFQQIAAAAAAAAAEAAAAAAAAAAOAAAAEAAAAAkAAAAOAAAACgAAAEFSRUEZAAAAEgAAABgAAAASAAAAQVJFQRgAAAAJAAAAQVJFQSoAAAArAAAAYysESve2BUpAgipGGFhjRgAAAADmNQhKe90DSmiKhkYYWGNGAAAAAEmPBEoOlQhKoEstRhhYY0YAAIA/J6ICSkV+EUqwkvlFGFhjRgAAAABkBwNKclQHSpDaIUYYWGNGAAAAAFqdH0pMdQRKOExaRhhYY0YAAAAA980NSnahCEpASCVGGFhjRgAAgD9psR9KR4QRSrB1JkYYWGNGAAAAAJr0DUpHhBFK8EUnRhhYY0Z7K0M/pJgCSkeEEUoAufhFGFhjRgAAAACxqgJKR4QRStBd+EUYWGNGgNu7O8AfEUrI+QpKKDgYRhhYY0YAAIA/KscLSkeEEUpoxyZGGFhjRgAAgD8GbAVK4K0KSpjYKUYYWGNGAACAPzSy80m9HRdKuOckRhhYY0YAAAAA3V/6SdHuFErwSgdGGFhjRgAAAACVcwhKNpYVSqhpJkYYWGNGAACAPzhL80lIuh9KQKX3RRhYY0YAAAAAVscfStXKH0oIlyZGGFhjRgAAAABpsR9KR4QRSrB1JkYYWGNGAAAAAJr0DUpHhBFK8EUnRhhYY0Z7K0M/pJgCSkeEEUoAufhFGFhjRgAAAACxqgJKR4QRStBd+EUYWGNGgNu7OyrHC0pHhBFKaMcmRhhYY0YAAIA/3V/6SdHuFErwSgdGGFhjRgAAAAAnogJKRX4RSrCS+UUYWGNGAAAAAGQHA0pyVAdKkNohRhhYY0YAAAAAYysESve2BUpAgipGGFhjRgAAAADmNQhKe90DSmiKhkYYWGNGAAAAAFqdH0pMdQRKOExaRhhYY0YAAAAAVscfStXKH0oIlyZGGFhjRgAAAAA4S/NJSLofSkCl90UYWGNGAAAAADSy80m9HRdKuOckRhhYY0YAAAAAxbH7Sbj1FUqoqyZGGFhjRgAAgD8G1ANKsy4SSqirJkYYWGNGAACAPw48BEoYvQdKcDotRhhYY0YAAIA/DfoESg6wBkqQBjRGGFhjRgAAgD88dghKthcFSuByfUYYWGNGAACAP61mHkoGpgVKqC5JRhhYY0YAAIA/9IweSsyRHkrIoSZGGFhjRgAAgD/2yvVJU4IeSqirJkYYWGNGAACAP1sb9klZyRdKqKsmRhhYY0YAAIA/QVJFQQAAAAABAAAAAgAAAAMAAAAEAAAAAgAAAAEAAAAFAAAABgAAAAQAAAAAAAAAAgAAAAcAAAAIAAAABQAAAAkAAAADAAAACgAAAAgAAAALAAAABQAAAAgAAAAMAAAACwAAAAwAAAADAAAACwAAAAwAAAAKAAAAAwAAAAUAAAALAAAABgAAAAsAAAADAAAABgAAAAMAAAACAAAADQAAAA0AAAACAAAAAQAAAAMAAAANAAAABgAAAA0AAAABAAAABgAAAA4AAAAPAAAAEAAAABEAAAAOAAAAEAAAABEAAAAQAAAAEgAAABIAAAAUAAAAEwAAABIAAAAQAAAAFAAAAA8AAAAVAAAAFgAAAA8AAAAWAAAAEAAAABQAAAAQAAAAFwAAABcAAAAQAAAAFgAAABgAAAAZAAAAIgAAABgAAAAiAAAAIQAAABkAAAAaAAAAIwAAABkAAAAjAAAAIgAAABoAAAAbAAAAJAAAABoAAAAkAAAAIwAAABsAAAAcAAAAJQAAABsAAAAlAAAAJAAAABwAAAAdAAAAJgAAABwAAAAmAAAAJQAAAB0AAAAeAAAAJwAAAB0AAAAnAAAAJgAAAB4AAAAfAAAAKAAAAB4AAAAoAAAAJwAAAB8AAAAgAAAAKQAAAB8AAAApAAAAKAAAACAAAAAYAAAAIQAAACAAAAAhAAAAKQAAAEFSRUEEAAAAHQAAAAEAAAADAAAAGgAAAEFSRUFFTkQwQVJFQQIAAAARAAAAKQAAAHpvbmVfOGZhOGE3YWUtZmEzNS00NzczLWI5YjMtMmFlNTg5NWJhOGUzAAAAQVJFQbfo5UkZxMpJ4IJSRkFSRUECAAAAAAAAAAYAAAAAAAAACAAAAAYAAAAIAAAACAAAAAkAAABBUkVBDgAAABAAAAARAAAAEAAAAEFSRUERAAAACAAAAEFSRUEhAAAAHgAAAF9+/0kZxMpJlETsRhhYY0YAAAAAIWj/Se0exUnQO1FGGFhjRgAAAAD54+ZJGcTKSfgGWEYYWGNG159HP2z830kZxMpJWNo9RhhYY0bJlGs/3TTgSVRfuEkIGBZGGFhjRgAAAADkM9NJSQG/SYg+G0YYWGNGAAAAAHdx3kkZxMpJuEk7RhhYY0bHcGE/QR/TSRnEyklg2z9GGFhjRgAAAAB/wv9Jrg7cSVgWUkYYWGNGAAAAAF9+/0kZxMpJlETsRhhYY0YAAAAA+ePmSRnEykn4BlhGGFhjRtefRz+I999JOlzMSSB1PUYYWGNGAACAP3bM1kmyfNxJUBE6RhhYY0YAAAAAhwfTSdZJ2EkQ/jpGGFhjRgAAAABs/N9JGcTKSVjaPUYYWGNGyZRrP3dx3kkZxMpJuEk7RhhYY0bHcGE/QR/TSRnEyklg2z9GGFhjRgAAAADkM9NJSQG/SYg+G0YYWGNGAAAAAN004ElUX7hJCBgWRhhYY0YAAAAA0t/ySQMAwEko/D1GGFhjRgAAAAAhaP9J7R7FSdA7UUYYWGNGAAAAAH/C/0muDtxJWBZSRhhYY0YAAAAAdszWSbJ83ElQETpGGFhjRgAAAACHB9NJ1knYSRD+OkYYWGNGAAAAACgy00lU/r9JCEA5RhhYY0YAAAAARqLVSXGBwEkYeTtGGFhjRgAAgD+mUeBJQA67STjzPUYYWGNGAACAP2vz8UmUQsJJ2E88RhhYY0YAAIA/jv38SVbFxkmAkWZGGFhjRgAAgD/oR/1JTqTZSQAifkYYWGNGAACAP6fg10nDCNpJ4GI5RhhYY0YAAIA/LHrVSUhc10kgSjxGGFhjRgAAgD8ko9VJnQLASehLP0YYWGNGAACAP0FSRUEAAAAAAgAAAAEAAAADAAAABQAAAAQAAAADAAAABgAAAAUAAAAGAAAABwAAAAUAAAACAAAABAAAAAEAAAACAAAAAwAAAAQAAAAIAAAACgAAAAkAAAAIAAAACwAAAAoAAAAMAAAADQAAAAsAAAAOAAAACwAAAA8AAAAMAAAACwAAAAgAAAAPAAAADQAAABAAAAAPAAAACwAAAA0AAAAKAAAACwAAAA4AAAARAAAAEgAAABoAAAARAAAAGgAAABkAAAASAAAAEwAAABsAAAASAAAAGwAAABoAAAATAAAAFAAAABwAAAATAAAAHAAAABsAAAAUAAAAFQAAAB0AAAAUAAAAHQAAABwAAAAVAAAAFgAAAB4AAAAVAAAAHgAAAB0AAAAWAAAAFwAAAB8AAAAWAAAAHwAAAB4AAAAXAAAAGAAAACAAAAAXAAAAIAAAAB8AAAAYAAAAEQAAABkAAAAYAAAAIAAAABkAAABBUkVBBQAAAAAAAAAXAAAABgAAABwAAAANAAAAQVJFQUVORDBBUkVBAgAAABIAAAApAAAAem9uZV80Y2M0NGM0Ni0yZDZhLTQwYzQtOTE3Ni0wNjg1ZTkyMWZkZGMAAABBUkVBMVfZSfsDZEnoDV9GQVJFQQIAAAAAAAAABwAAAAAAAAAIAAAABwAAAAQAAAAIAAAABgAAAEFSRUELAAAADgAAAA4AAAAOAAAAQVJFQQ4AAAAHAAAAQVJFQRwAAAAZAAAAKTimSUOOTEl2tvhGGFhjRgAAAACE98xJzhZKSYidGkYYWGNGAAAAADOg3klVImJJkEdpRhhYY0YAAIA/mRUASqJaSUkRHYBHGFhjRgAAAAAfHbVJ+wNkSQwtAUcYWGNGAAAAAHPD3Un7A2RJsGxoRhhYY0avq3M/Is7/SfsDZEmwtotGGFhjRgAAAAADT+BJ+wNkSWAscUYYWGNG9NNyPx8dtUn7A2RJDC0BRxhYY0YAAAAApLjMSYGZhEk2Ts1GGFhjRgAAAABzw91J+wNkSbBsaEYYWGNGr6tzPyLO/0n7A2RJsLaLRhhYY0YAAAAAEFX/SZtZg0mgqzhGGFhjRgAAAAADT+BJ+wNkSWAscUYYWGNG9NNyP4T3zEnOFkpJiJ0aRhhYY0YAAAAAmRUASqJaSUkRHYBHGFhjRgAAAAAp3P9JGv9fSWxto0YYWGNGAAAAABBV/0mbWYNJoKs4RhhYY0YAAAAApLjMSYGZhEk2Ts1GGFhjRgAAAAB2kLJJ/f9fSc7fEkcYWGNGAAAAACk4pklDjkxJdrb4RhhYY0YAAAAAtAPNSan4TknAnxlGGFhjRgAAgD/LqP1J40VOSWhlTUcYWGNGAACAP2Rr/UkH3V9JXC2fRhhYY0YAAIA/ePT8SXH3gEmI5TNGGFhjRgAAgD9iis1JIiOCSVzyh0YYWGNGAACAPycTtEn2KVxJELYWRxhYY0YAAIA/Qv6sSYECUUkmv/NGGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAQAAAAMAAAACAAAAAAAAAAUAAAAEAAAAAAAAAAIAAAAFAAAAAwAAAAYAAAAHAAAAAwAAAAcAAAACAAAABQAAAAIAAAAHAAAACAAAAAoAAAAJAAAACwAAAAwAAAANAAAACgAAAAwAAAAJAAAACgAAAA0AAAAMAAAADgAAAA8AAAAWAAAADgAAABYAAAAVAAAADwAAABAAAAAXAAAADwAAABcAAAAWAAAAEAAAABEAAAAYAAAAEAAAABgAAAAXAAAAEQAAABIAAAAZAAAAEQAAABkAAAAYAAAAEgAAABMAAAAaAAAAEgAAABoAAAAZAAAAEwAAABQAAAAbAAAAEwAAABsAAAAaAAAAFAAAAA4AAAAVAAAAFAAAABUAAAAbAAAAQVJFQQUAAAALAAAAEwAAABsAAAAUAAAABwAAAEFSRUFFTkQwQVJFQQIAAAATAAAAKQAAAHpvbmVfMWY0ZTBjNDYtOGZhMS00MTkxLWFmMmQtY2Q3YzFkY2MyOTA0AAAAQVJFQZBwp0khNYBJIHQ/RkFSRUECAAAAAAAAAAQAAAAAAAAABgAAAAQAAAAJAAAABgAAAAoAAABBUkVBDQAAABIAAAAQAAAAEgAAAEFSRUEQAAAACQAAAEFSRUEiAAAAHwAAAIqWqUkhNYBJsLJDRhhYY0YHhl4/KTimSUOOTEl2tvhGGFhjRgAAAAAZQYJJrb5MSZheK0YYWGNGAAAAAFDepEkhNYBJeLQ9RhhYY0bGal4/7yTHSSE1gEnyjbRGGFhjRgAAAABsr4JJITWASVBkLEYYWGNGAAAAAIqWqUkhNYBJsLJDRhhYY0YHhl4/UN6kSSE1gEl4tD1GGFhjRsZqXj9GGKpJwBuESUBPOkYYWGNGAACAP0kBz0ldIKNJwIlARhhYY0YAAAAAXejESawoo0nIGVBGGFhjRgAAAADvJMdJITWASfKNtEYYWGNGAAAAAKS4zEmBmYRJNk7NRhhYY0YAAAAAOteJSTuOhElAZytGGFhjRgAAAABsr4JJITWASVBkLEYYWGNGAAAAAFGxgknNpoBJaBssRhhYY0YAAAAAKTimSUOOTEl2tvhGGFhjRgAAAAB44cZJ/v9/SVZ7rkYYWGNGAAAAAKS4zEmBmYRJNk7NRhhYY0YAAAAASQHPSV0go0nAiUBGGFhjRgAAAABd6MRJrCijScgZUEYYWGNGAAAAADrXiUk7joRJQGcrRhhYY0YAAAAAUbGCSc2mgEloGyxGGFhjRgAAAACJroJJEQCASViGLEYYWGNGAAAAABlBgkmtvkxJmF4rRhhYY0YAAAAAU2ClSWdxUUkeVsVGGFhjRgAAgD/HXsVJAuuBSc5IA0cYWGNGAACAP+Zdyklf2oVJHmHeRhhYY0YAAIA/8V/MSYaxoEnY6T1GGFhjRgAAgD+3f8VJL7egSTCXO0YYWGNGAACAP9D8iklvZoJJCPwtRhhYY0YAAIA/KhyFSU1hfknQgy5GGFhjRgAAgD9zH4VJSet/SXAFLkYYWGNGAACAP5W8hElXnVFJ0HUpRhhYY0YAAIA/QVJFQQAAAAACAAAAAQAAAAAAAAADAAAAAgAAAAAAAAABAAAABAAAAAMAAAAFAAAAAgAAAAYAAAAIAAAABwAAAAkAAAAKAAAACAAAAAYAAAALAAAADAAAAAYAAAAMAAAACAAAAAkAAAAIAAAADAAAAA0AAAAIAAAACgAAAAcAAAAPAAAADgAAAAcAAAAIAAAADwAAAA8AAAAIAAAADQAAABAAAAARAAAAGgAAABAAAAAaAAAAGQAAABEAAAASAAAAGwAAABEAAAAbAAAAGgAAABIAAAATAAAAHAAAABIAAAAcAAAAGwAAABMAAAAUAAAAHQAAABMAAAAdAAAAHAAAABQAAAAVAAAAHgAAABQAAAAeAAAAHQAAABUAAAAWAAAAHwAAABUAAAAfAAAAHgAAABYAAAAXAAAAIAAAABYAAAAfAAAAIAAAABcAAAAYAAAAIQAAABcAAAAhAAAAIAAAABgAAAAQAAAAGQAAABgAAAAZAAAAIQAAAEFSRUEHAAAAGQAAABIAAAAVAAAAFAAAAAcAAAANAAAACAAAAEFSRUFFTkQwQVJFQQIAAAAUAAAAKQAAAHpvbmVfNzc2ZTQzMDEtMDRkYy00YTE3LTk1MTUtOTk1YTkzMjRmMTFlAAAAQVJFQUB65En0JZJJ8Hg/RkFSRUECAAAAAAAAAAwAAAAAAAAADgAAAAwAAAASAAAADgAAABEAAABBUkVBHgAAABAAAAAfAAAAEAAAAEFSRUEfAAAACAAAAEFSRUEvAAAALgAAAB+8zUn0JZJJbI+hRhhYY0YAAAAApLjMSYGZhEk2Ts1GGFhjRgAAAACITdFJ9CWSSegqd0YYWGNGDa0pPxBV/0mbWYNJoKs4RhhYY0YAAAAAwZrqSbV4jkk43FZGGFhjRgAAgD9+MP9J7YmOSSCUR0YYWGNGAAAAAGgp/0n0JZJJKL02RhhYY0YAAAAAOXL8SfQlkknQDzdGGFhjRmbxgj7l1tRJ9CWSSRjnSUYYWGNGEz1hP6qY6En0JZJJMCRARhhYY0Y+BVM/D93cSfQlkknwUT9GGFhjRgAAgD9JpvlJ9CWSSZDhN0YYWGNGODKxPj417En0JZJJeLY+RhhYY0YAAIA/OXL8SfQlkknQDzdGGFhjRmXxgj5JAc9JXSCjScCJQEYYWGNGAAAAAB+8zUn0JZJJbI+hRhhYY0YAAAAAiE3RSfQlkknoKndGGFhjRg2tKT9AotNJjgqZSZBpPUYYWGNGAACAP9As30nKZaNJ4LZARhhYY0YAAAAAUwb/STAFpEmgiTxGGFhjRgAAAACLdvRJ96acSfiyM0YYWGNGAACAP2gp/0n0JZJJKL02RhhYY0YAAAAAOXL8SfQlkknQDzdGGFhjRmbxgj668tVJpv+TSdDRQkYYWGNGAACAP+XW1En0JZJJGOdJRhhYY0YTPWE/qpjoSfQlkkkwJEBGGFhjRj4FUz8P3dxJ9CWSSfBRP0YYWGNGAACAP0mm+Un0JZJJkOE3RhhYY0Y4MrE+py7vSdz3mElIVUBGGFhjRgAAgD8+NexJ9CWSSXi2PkYYWGNGAACAPzly/En0JZJJ0A83RhhYY0Zl8YI+SQHPSV0go0nAiUBGGFhjRgAAAABrxc5JIQCgSdCKP0YYWGNGAAAAAKS4zEmBmYRJNk7NRhhYY0YAAAAAEFX/SZtZg0mgqzhGGFhjRgAAAAB+MP9J7YmOSSCUR0YYWGNGAAAAADgO/0mj/59JOGM5RhhYY0YAAAAAUwb/STAFpEmgiTxGGFhjRgAAAADQLN9JymWjSeC2QEYYWGNGAAAAAP9F0UkEuaBJkIJARhhYY0YAAIA/rTTRSYDRn0mAOkBGGFhjRgAAgD/rWM9JGPqGSYhVmEYYWGNGAACAP9Tb/Elu2oVJ6GNCRhhYY0YAAIA/hr/8SYqDjkkYc0ZGGFhjRgAAgD89nfxJ2PqfSajXOEYYWGNGAACAPzGa/Enyh6FJUNQ6RhhYY0YAAIA/KTjfSeT0oEnotUBGGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAQAAAAMAAAAEAAAAAwAAAAUAAAAEAAAABgAAAAcAAAAFAAAACAAAAAIAAAABAAAACQAAAAoAAAAEAAAACgAAAAgAAAABAAAACgAAAAEAAAAEAAAABQAAAAsAAAAMAAAABQAAAAwAAAAEAAAADAAAAAkAAAAEAAAADQAAAAsAAAAFAAAADgAAAA8AAAAQAAAADgAAABAAAAARAAAAEgAAAA4AAAARAAAAEgAAABQAAAATAAAAEwAAABYAAAAVAAAAEwAAABQAAAAWAAAAEgAAABEAAAAXAAAAFwAAABAAAAAYAAAAFwAAABEAAAAQAAAAGQAAABIAAAAXAAAAGQAAABcAAAAaAAAAGgAAABcAAAAYAAAAGwAAABwAAAAdAAAAHQAAABwAAAASAAAAHQAAABIAAAAZAAAAHgAAABwAAAAbAAAAHgAAABQAAAAcAAAAHAAAABQAAAASAAAAHwAAACAAAAAoAAAAHwAAACgAAAAnAAAAIAAAACEAAAApAAAAIAAAACkAAAAoAAAAIQAAACIAAAAqAAAAIQAAACoAAAApAAAAIgAAACMAAAArAAAAIgAAACsAAAAqAAAAIwAAACQAAAAsAAAAIwAAACwAAAArAAAAJAAAACUAAAAtAAAAJAAAAC0AAAAsAAAAJQAAACYAAAAuAAAAJQAAAC4AAAAtAAAAJgAAAB8AAAAnAAAAJgAAACcAAAAuAAAAQVJFQQYAAAAAAAAACwAAABcAAAASAAAAEwAAAA0AAABBUkVBRU5EMEFSRUECAAAAFQAAACkAAAB6b25lXzRjNGY5M2E4LTViN2ItNDZlNC1hYzdlLTVlYzJiYzI2YzJlNgAAAEFSRUHpqaRJ1WyxSVOMHUdBUkVBAgAAAAAAAAAEAAAAAAAAAAYAAAAEAAAACAAAAAYAAAAJAAAAQVJFQQwAAAAQAAAADwAAABAAAABBUkVBDwAAAAgAAABBUkVBHwAAABwAAABtRahJ1WyxSebCB0cYWGNGt3RUPzrXiUk7joRJQGcrRhhYY0YAAAAAXejESawoo0nIGVBGGFhjRgAAAACqSbdJ1WyxSdLzA0cYWGNGyKgbP9SzxUnVbLFJUKZdRhhYY0YAAAAAg0SKSdVssUnoqzBGGFhjRgAAAAC56sZJWznHSQBfTkYYWGNGAAAAAGvYxklUdsxJmIURRhhYY0YAAAAAE4KuSRSfukn5GglHGFhjRgAAgD+9nq5JnQDcSehUPEYYWGNGAAAAAPl7ikk/MshJWFQURhhYY0YAAAAAbUWoSdVssUnmwgdHGFhjRrd0VD+qSbdJ1WyxSdLzA0cYWGNGyKgbP9SzxUnVbLFJUKZdRhhYY0YAAAAAg0SKSdVssUnoqzBGGFhjRgAAAAA614lJO46ESUBnK0YYWGNGAAAAAF3oxEmsKKNJyBlQRhhYY0YAAAAAgp/FSRgAsEn4JmJGGFhjRgAAAAC56sZJWznHSQBfTkYYWGNGAAAAAGvYxklUdsxJmIURRhhYY0YAAAAAvZ6uSZ0A3EnoVDxGGFhjRgAAAAD5e4pJPzLISVhUFEYYWGNGAAAAAAtBiklOALBJ6D0qRhhYY0YAAAAAFVKMSRCXiEnIiCdGGFhjRgAAgD8rjMJJiq+kScjDakYYWGNGAACAP3ovw0ncIrBJwLRjRhhYY0YAAIA/fHnESX1Gx0mI33RGGFhjRgAAgD8QbMRJvB3LSfCsT0YYWGNGAACAP6yFrkknKtlJEOU+RhhYY0YAAIA/dumMSSm+xknA/xZGGFhjRgAAgD8EsoxJXPqvSQDJFUYYWGNGAACAP0FSRUEAAAAAAQAAAAIAAAAAAAAAAgAAAAMAAAADAAAAAgAAAAQAAAAAAAAABQAAAAEAAAAGAAAABwAAAAgAAAAJAAAACgAAAAgAAAAHAAAACQAAAAgAAAALAAAADAAAAAgAAAAMAAAADQAAAAYAAAAMAAAABgAAAAgAAAALAAAACgAAAA4AAAALAAAACAAAAAoAAAAPAAAAEAAAABgAAAAPAAAAGAAAABcAAAAQAAAAEQAAABkAAAAQAAAAGQAAABgAAAARAAAAEgAAABoAAAARAAAAGgAAABkAAAASAAAAEwAAABsAAAASAAAAGwAAABoAAAATAAAAFAAAABwAAAATAAAAHAAAABsAAAAUAAAAFQAAAB0AAAAUAAAAHQAAABwAAAAVAAAAFgAAAB4AAAAVAAAAHgAAAB0AAAAWAAAADwAAABcAAAAWAAAAFwAAAB4AAABBUkVBBQAAABYAAAATAAAAHAAAAA0AAAAIAAAAQVJFQUVORDBBUkVBAgAAABYAAAApAAAAem9uZV8xYzgwMjEwZi00OWU5LTQ2MzctOWYwYy02MmI3Yjc4NWJkNTUAAABBUkVB8KKGSZWZ6kkw/RhGQVJFQQIAAAAAAAAACgAAAAAAAAALAAAACgAAAA4AAAALAAAADgAAAEFSRUEYAAAAGAAAABkAAAAYAAAAQVJFQRkAAAAMAAAAQVJFQTEAAAAwAAAAzzyuSVEA6EkgtA5GGFhjRgAAAABu5qtJlZnqScCmL0YYWGNGAAAAAJUHoUmVmepJiH9JRhhYY0bwypM+IPiNSRkC4klA3B5GGFhjRgAAgD+9nq5JnQDcSehUPEYYWGNGAAAAAPl7ikk/MshJWFQURhhYY0YAAAAAuwSCSeC7zUlAfCdGGFhjRgAAAABwFjpJlZnqSVBxtUUYWGNGAAAAAEAnQkmVmepJAC8BRhhYY0ZIztk9dD6ESZWZ6klofxxGGFhjRnyQMz8XwYxJlZnqSSABE0YYWGNGAACAP27mq0mVmepJwKYvRhhYY0YAAAAAocOoSR4W7kmI8RJGGFhjRgAAAACVB6FJlZnqSYh/SUYYWGNG8MqTPnAWOkmVmepJUHG1RRhYY0YAAAAA4Hc3SVaf60lQfYVFGFhjRgAAAABAJ0JJlZnqSQAvAUYYWGNGSM7ZPXQ+hEmVmepJaH8cRhhYY0Z8kDM/TctaSarI/knQiJBFGFhjRgAAAABnA6hJQr37ScABHUYYWGNGAAAAAOyyk0lgSv9JcJZARhhYY0YAAIA/KBhvSU8+CkoQg5FFGFhjRgAAAADB4aJJknT/SchDJUYYWGNGAAAAAKQUi0lkb/ZJUAEvRhhYY0YAAIA/F8GMSZWZ6kkgARNGGFhjRgAAgD+7BIJJ4LvNSUB8J0YYWGNGAAAAAPl7ikk/MshJWFQURhhYY0YAAAAAvZ6uSZ0A3EnoVDxGGFhjRgAAAADPPK5JUQDoSSC0DkYYWGNGAAAAAKHDqEkeFu5JiPESRhhYY0YAAAAAr6ioSQwA8ElY4gFGGFhjRgAAAABnA6hJQr37ScABHUYYWGNGAAAAAMHhokmSdP9JyEMlRhhYY0YAAAAAKBhvSU8+CkoQg5FFGFhjRgAAAABNy1pJqsj+SdCIkEUYWGNGAAAAAPeJP0kGAPBJUK2LRRhYY0YAAAAA4Hc3SVaf60lQfYVFGFhjRgAAAAC8cINJnLjPSbC9J0YYWGNGAACAP1iYikmFCstJsHMcRhhYY0YAAIA/1CGsST9s3UkQDkRGGFhjRgAAgD9n06tJJQjnSeDOMkYYWGNGAACAP6tfpknlF+1J4EMnRhhYY0YAAIA/oDimSbrd70mQbC1GGFhjRgAAgD+yo6VJrHH6SXjAKEYYWGNGAACAP5CfoUk5Wv1JaDonRhhYY0YAAIA/OWtxScCaCErAZNNFGFhjRgAAgD+W5V5JOGj9SWCy1EUYWGNGAACAPw4hQ0lrWO5JECDSRRhYY0YAAIA/i6Y+SYbq60ngks5FGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAAAAAAIAAAADAAAABAAAAAMAAAAFAAAABgAAAAgAAAAHAAAABgAAAAMAAAAIAAAAAAAAAAMAAAAEAAAABQAAAAMAAAAGAAAACQAAAAgAAAADAAAAAgAAAAoAAAADAAAACgAAAAkAAAADAAAACwAAAAwAAAANAAAADgAAABAAAAAPAAAAEQAAABIAAAAPAAAAEQAAAA8AAAAQAAAADAAAABMAAAAUAAAAFQAAABIAAAAUAAAAFgAAABUAAAAUAAAAEwAAABYAAAAUAAAADQAAAAwAAAAXAAAADQAAABcAAAAYAAAAGAAAABcAAAASAAAAGAAAABIAAAARAAAADAAAABQAAAAXAAAAFwAAABQAAAASAAAAGQAAABoAAAAmAAAAGQAAACYAAAAlAAAAGgAAABsAAAAnAAAAGgAAACcAAAAmAAAAGwAAABwAAAAoAAAAGwAAACgAAAAnAAAAHAAAAB0AAAApAAAAHAAAACkAAAAoAAAAHQAAAB4AAAAqAAAAHQAAACoAAAApAAAAHgAAAB8AAAArAAAAHgAAACsAAAAqAAAAHwAAACAAAAAsAAAAHwAAACwAAAArAAAAIAAAACEAAAAtAAAAIAAAAC0AAAAsAAAAIQAAACIAAAAuAAAAIQAAAC4AAAAtAAAAIgAAACMAAAAvAAAAIgAAAC8AAAAuAAAAIwAAACQAAAAwAAAAIwAAADAAAAAvAAAAJAAAABkAAAAlAAAAJAAAACUAAAAwAAAAQVJFQQcAAAACAAAABQAAABUAAAAcAAAACQAAAA4AAAAIAAAAQVJFQUVORDBBUkVBAgAAABcAAAApAAAAem9uZV9kMjYxNWRlOS0xM2RjLTRmYzAtODI4ZC0yZDI3MmUzMmViMzkAAABBUkVBPz7uSWmjr0nY7z1GQVJFQQIAAAAAAAAABAAAAAAAAAAGAAAABAAAAAYAAAAGAAAABwAAAEFSRUEKAAAADAAAAA0AAAAMAAAAQVJFQQ0AAAAGAAAAQVJFQRkAAAAWAAAAHJXtSWmjr0mQiD5GGFhjRiKUYj/QLN9JymWjSeC2QEYYWGNGAAAAAFMG/0kwBaRJoIk8RhhYY0YAAAAAxFPxSWmjr0mwIztGGFhjRg4xYT/pxt9JaaOvSRidQEYYWGNGAAAAAKco/0lpo69JGFWBRhhYY0YAAAAAHJXtSWmjr0mQiD5GGFhjRiKUYj/EU/FJaaOvSbAjO0YYWGNGDjFhPwl070lQOrFJGD89RhhYY0YAAIA/IWj/Se0exUnQO1FGGFhjRgAAAADdNOBJVF+4SQgYFkYYWGNGAAAAAOnG30lpo69JGJ1ARhhYY0YAAAAApyj/SWmjr0kYVYFGGFhjRgAAAAAhaP9J7R7FSdA7UUYYWGNGAAAAANLf8kkDAMBJKPw9RhhYY0YAAAAA3TTgSVRfuEkIGBZGGFhjRgAAAADQLN9JymWjSeC2QEYYWGNGAAAAAFMG/0kwBaRJoIk8RhhYY0YAAAAAAln/SdgAwEk41XBGGFhjRgAAAABM7PxJ93fBSbDEM0YYWGNGAACAPznM80lyvb1JYMo+RhhYY0YAAIA/kZHiSUCztknoo0BGGFhjRgAAgD/xveFJweOlSeC3QEYYWGNGAACAP1yc/Ek6aqZJuKQ/RhhYY0YAAIA/Dej8SQ8IwEkYkD1GGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAAAAAAIAAAADAAAABAAAAAEAAAAAAAAABQAAAAMAAAACAAAABgAAAAcAAAAIAAAACQAAAAoAAAAIAAAACgAAAAsAAAAGAAAACgAAAAYAAAAIAAAACQAAAAcAAAAMAAAACQAAAAgAAAAHAAAADQAAAA4AAAAUAAAADQAAABQAAAATAAAADgAAAA8AAAAVAAAADgAAABUAAAAUAAAADwAAABAAAAAWAAAADwAAABYAAAAVAAAAEAAAABEAAAAXAAAAEAAAABcAAAAWAAAAEQAAABIAAAAYAAAAEQAAABgAAAAXAAAAEgAAAA0AAAATAAAAEgAAABMAAAAYAAAAQVJFQQQAAAAUAAAADQAAABEAAAAAAAAAQVJFQUVORDBBUkVBAgAAABgAAAApAAAAem9uZV8yNzE1OTE2Yy0zYTA3LTQyOGItYWJjZS04Y2RiNzQ3OWRhNzAAAABBUkVBCjTISarYFUqoqyZGQVJFQQIAAAAAAAAABAAAAAAAAAAGAAAABAAAAAYAAAAGAAAABwAAAEFSRUEKAAAACAAAAA0AAAAIAAAAQVJFQQ0AAAAEAAAAQVJFQRUAAAASAAAAXS3ISarYFUqoqyZGGFhjRmanUj8HYr5JP8sOSqirJkYYWGNGAAAAANt91kmpVg9K8NckRhhYY0YAAAAAKJjMSarYFUqoqyZGGFhjRriTTz+ORL5JqtgVSqirJkYYWGNGAAAAAAlc1kmq2BVKqKsmRhhYY0YAAAAA5SjWSaivH0pYoSZGGFhjRgAAAACgG75JqqMfSlihJkYYWGNGAAAAABpJyklOXRdKqKsmRhhYY0YAAIA/XS3ISarYFUqoqyZGGFhjRmanUj8omMxJqtgVSqirJkYYWGNGuJNPP45Evkmq2BVKqKsmRhhYY0YAAAAACVzWSarYFUqoqyZGGFhjRgAAAAAHYr5JP8sOSqirJkYYWGNGAAAAANt91kmpVg9K8NckRhhYY0YAAAAA5SjWSaivH0pYoSZGGFhjRgAAAACgG75JqqMfSlihJkYYWGNGAAAAALbNwEkQEhBKqKsmRhhYY0YAAIA/wwbUSTmBEEog+iRGGFhjRgAAgD87vtNJ83UeSqirJkYYWGNGAACAP7qRwElkbB5KYKEmRhhYY0YAAIA/QVJFQQAAAAABAAAAAgAAAAAAAAACAAAAAwAAAAAAAAAEAAAAAQAAAAMAAAACAAAABQAAAAYAAAAHAAAACAAAAAkAAAAKAAAACAAAAAkAAAAHAAAACwAAAAkAAAAIAAAABwAAAAoAAAAMAAAABgAAAAoAAAAGAAAACAAAAA0AAAAOAAAAEgAAAA0AAAASAAAAEQAAAA4AAAAPAAAAEwAAAA4AAAATAAAAEgAAAA8AAAAQAAAAFAAAAA8AAAAUAAAAEwAAABAAAAANAAAAEQAAABAAAAARAAAAFAAAAEFSRUEDAAAAAgAAAA8AAAAaAAAAQVJFQUVORDBBUkVBAgAAABkAAAApAAAAem9uZV9hMTVkMjg1YS04NzQ4LTQwZmMtOGY1NC05NzliZjcyNWIwY2UAAABBUkVBqcw0SRnCUUmASUpGQVJFQQIAAAAAAAAACAAAAAAAAAAMAAAACAAAAA4AAAAMAAAADwAAAEFSRUEWAAAAEAAAABsAAAAQAAAAQVJFQRsAAAAIAAAAQVJFQSsAAAAmAAAATLs8SRnCUUnAx2pGGFhjRsB2fD+exS1J8GgOSYRUHEcYWGNGAAAAABlBgkmtvkxJmF4rRhhYY0YAAAAAVkZISRnCUUl424dGGFhjRpJ1Vz9WRkhJGcJRSXjbh0YYWGNGkXVXP81LgkkZwlFJOJkxRhhYY0YAAAAAoyfaSNhFQkkoLpJGGFhjRgAAAAABWzhJGcJRSdC0V0YYWGNGAk1xPzwi4kgZwlFJqEBXRhhYY0Z8L8U+2UDaSBnCUUlQVUtGGFhjRgAAAAACWzhJGcJRSdC0V0YYWGNGAk1xP9z26UgZwlFJMDlmRhhYY0Z6CgM/bfYLSeLGfknoBjpGGFhjRgAAAABRsYJJzaaASWgbLEYYWGNGAAAAAPDwPEmWs1JJwF9mRhhYY0YAAIA/TLs8SRnCUUnAx2pGGFhjRsB2fD9WRkhJGcJRSXjbh0YYWGNGknVXP1ZGSEkZwlFJeNuHRhhYY0aRdVc/zUuCSRnCUUk4mTFGGFhjRgAAAAABWzhJGcJRSdC0V0YYWGNGAk1xPzwi4kgZwlFJqEBXRhhYY0Z8L8U+2UDaSBnCUUlQVUtGGFhjRgAAAACDidpI1mR+SXAVKkYYWGNGAAAAAFPf7kgwe2pJsBZARhhYY0YAAIA/Als4SRnCUUnQtFdGGFhjRgJNcT/c9ulIGcJRSTA5ZkYYWGNGegoDPz4K+UhdhmBJ4O1BRhhYY0YAAIA/nsUtSfBoDkmEVBxHGFhjRgAAAAAZQYJJrb5MSZheK0YYWGNGAAAAAAxIgknh/09J8P0tRhhYY0YAAAAAUbGCSc2mgEloGyxGGFhjRgAAAABt9gtJ4sZ+SegGOkYYWGNGAAAAAIOJ2kjWZH5JcBUqRhhYY0YAAAAA/T3aSKkAUEmA5lFGGFhjRgAAAACjJ9pI2EVCSSgukkYYWGNGAAAAAOXuLUnsiRRJ4IMXRxhYY0YAAIA/16p/SVBHT0nwZixGGFhjRgAAgD9Frn9JuhRQSdgRLEYYWGNGAACAP5U1gEnhUHxJeDwsRhhYY0YAAIA/OgsMSQzleUnIKDlGGFhjRgAAgD+sReRISpJ5SeB6M0YYWGNGAACAP/oB5Eiw/E9JoCtnRhhYY0YAAIA/de/jSFGcREk+l5lGGFhjRgAAgD9BUkVBAAAAAAEAAAACAAAAAAAAAAIAAAADAAAABAAAAAIAAAAFAAAAAAAAAAYAAAABAAAAAAAAAAcAAAAGAAAACAAAAAkAAAAGAAAACgAAAAsAAAAGAAAACAAAAAYAAAALAAAADAAAAA4AAAANAAAADwAAABAAAAAOAAAAEQAAABIAAAANAAAAEQAAAA0AAAAOAAAADwAAAA4AAAATAAAAFAAAABYAAAAVAAAAFAAAABcAAAAWAAAAFgAAABcAAAAMAAAAGAAAABoAAAAZAAAAGAAAAA4AAAAaAAAAGgAAAA4AAAAMAAAAFAAAABkAAAAaAAAAFAAAABoAAAAXAAAAGgAAAAwAAAAXAAAAGwAAABwAAAAkAAAAGwAAACQAAAAjAAAAHAAAAB0AAAAlAAAAHAAAACUAAAAkAAAAHQAAAB4AAAAmAAAAHQAAACYAAAAlAAAAHgAAAB8AAAAnAAAAHgAAACcAAAAmAAAAHwAAACAAAAAoAAAAHwAAACgAAAAnAAAAIAAAACEAAAApAAAAIAAAACkAAAAoAAAAIQAAACIAAAAqAAAAIQAAACoAAAApAAAAIgAAABsAAAAjAAAAIgAAACMAAAAqAAAAQVJFQQUAAAAMAAAABAAAABMAAAAHAAAACAAAAEFSRUFFTkQwQVJFQQIAAAAaAAAAKQAAAHpvbmVfYWY1MjJmM2EtZTVjNi00ZjhhLThhZjMtMGI0ODM4N2I2YjViAAAAQVJFQU1840kXVhJKqKsmRkFSRUECAAAAAAAAAAwAAAAAAAAADQAAAAwAAAANAAAADQAAAA0AAABBUkVBGQAAABIAAAAaAAAAEgAAAEFSRUEaAAAACQAAAEFSRUEsAAAAKwAAAFup+UkdahBKUGn5RRhYY0YAAAAA8pHnSX96BkqoqyZGGFhjRgAAAAA1PelJruINSqirJkYYWGNGAACAP5rN5Ek4AAVKqKsmRhhYY0YAAAAAIsPWSZnQCUrgQiVGGFhjRgAAAABXwtpJF1YSSqirJkYYWGNGg4mXPtt91kmpVg9K8NckRhhYY0YAAAAAR27WSRdWEkqoqyZGGFhjRgAAAAD79vlJF1YSSpAFDUYYWGNGAAAAAJ4P9EkXVhJKkLDvRRhYY0bspLw+/kfuSRdWEkqoqyZGGFhjRh2QBD9/v+FJF1YSSqirJkYYWGNGo1dFPwrJ5UkXVhJKqKsmRhhYY0YAAIA/OEvzSUi6H0pApfdFGFhjRgAAAAA0svNJvR0XSrjnJEYYWGNGAAAAAArp5EmVdxlKqKsmRhhYY0YAAIA/V8LaSRdWEkqoqyZGGFhjRoOJlz5HbtZJF1YSSqirJkYYWGNGAAAAAOUo1kmorx9KWKEmRhhYY0YAAAAA+/b5SRdWEkqQBQ1GGFhjRgAAAADdX/pJ0e4USvBKB0YYWGNGAAAAAJ4P9EkXVhJKkLDvRRhYY0bspLw+/kfuSRdWEkqoqyZGGFhjRh2QBD9/v+FJF1YSSqirJkYYWGNGo1dFPwgY5UkzOhNKqKsmRhhYY0YAAIA/CsnlSRdWEkqoqyZGGFhjRgAAgD+azeRJOAAFSqirJkYYWGNGAAAAAPKR50l/egZKqKsmRhhYY0YAAAAAW6n5SR1qEEpQaflFGFhjRgAAAADdX/pJ0e4USvBKB0YYWGNGAAAAADSy80m9HRdKuOckRhhYY0YAAAAAOEvzSUi6H0pApfdFGFhjRgAAAADlKNZJqK8fSlihJkYYWGNGAAAAANt91kmpVg9K8NckRhhYY0YAAAAAIsPWSZnQCUrgQiVGGFhjRgAAAABKdORJwJkGSqirJkYYWGNGAACAP7nG5Ul8TgdKqKsmRhhYY0YAAIA/H0v3SV3tEEqwv+9FGFhjRgAAgD+n0/dJq04USiinJkYYWGNGAACAPw1J8UkhchZKSGEmRhhYY0YAAIA/sOjwSemAHkrIpyZGGFhjRgAAgD9BoNhJDngeSqirJkYYWGNGAACAP8fu2EkTXA9K6EMmRhhYY0YAAIA/HyzZSfl3CkrguCFGGFhjRgAAgD9BUkVBAAAAAAIAAAABAAAAAwAAAAIAAAAEAAAABQAAAAcAAAAGAAAAAwAAAAEAAAACAAAABAAAAAIAAAAGAAAAAAAAAAgAAAAJAAAAAAAAAAkAAAACAAAACgAAAAIAAAAJAAAABgAAAAwAAAALAAAABgAAAAIAAAAMAAAADAAAAAIAAAAKAAAABQAAAAYAAAALAAAADQAAAA8AAAAOAAAAEAAAABIAAAARAAAAEAAAAA8AAAASAAAAEgAAAA8AAAANAAAAEwAAABQAAAAVAAAAFgAAABQAAAAOAAAAFgAAABUAAAAUAAAAFwAAABkAAAAYAAAAGQAAAA4AAAAYAAAAGQAAABYAAAAOAAAAEAAAABcAAAAYAAAAEAAAABgAAAAPAAAAGAAAAA4AAAAPAAAAGgAAABsAAAAkAAAAGgAAACQAAAAjAAAAGwAAABwAAAAlAAAAGwAAACUAAAAkAAAAHAAAAB0AAAAmAAAAHAAAACYAAAAlAAAAHQAAAB4AAAAnAAAAHQAAACcAAAAmAAAAHgAAAB8AAAAoAAAAHgAAACgAAAAnAAAAHwAAACAAAAApAAAAHwAAACkAAAAoAAAAIAAAACEAAAAqAAAAIAAAACoAAAApAAAAIQAAACIAAAArAAAAIQAAACsAAAAqAAAAIgAAABoAAAAjAAAAIgAAACMAAAArAAAAQVJFQQUAAAAQAAAACgAAABgAAAADAAAADwAAAEFSRUFFTkQwQVJFQQIAAAAbAAAAKQAAAHpvbmVfOTgxYTQ1NmQtNDRhYS00ZTdkLTk4NjYtY2FmNjA4YWY3ODI0AAAAQVJFQcIkAko3utNICKdRRkFSRUECAAAAAAAAAA4AAAAAAAAAEAAAAA4AAAARAAAAEAAAABIAAABBUkVBHwAAAA4AAAAiAAAADgAAAEFSRUEiAAAABwAAAEFSRUEwAAAALQAAAIAo3Ek5utNIsGqVRhhYY0aYGUw/tE/JSVJrREYvGXRHGFhjRgAAAAAOM8tJNrrTSFQRu0YYWGNGAAAAADuwH0oUjORFp2I9RxhYY0YAAAAAb4AfSji600gGJaFGGFhjRgAAAABgcw9KN7rTSGD2h0YYWGNGlh5aP3K0DEqQM6VIKpAERxhYY0YAAIA/HcDlSTe600hon3pGGFhjRtKRdj9zveRJT2zMSJYTlkYYWGNGAACAP4dG5Ek3utNI2CaBRhhYY0YAAIA/gCjcSTa600jAapVGGFhjRpYZTD+UZ+dJN7rTSNjzYUYYWGNGAACAP+689Ek3utNIOCZSRhhYY0aF/DM/7rz0STe600g4JlJGGFhjRoT8Mz9dNPxJN7rTSNCPU0YYWGNGbk9eP8FEBko3utNIaEZjRhhYY0YAAIA/hPfMSc4WSkmInRpGGFhjRgAAAACZFQBKolpJSREdgEcYWGNGAAAAAGPz4EnKAARJWH85RhhYY0YAAIA/gCjcSTm600iwapVGGFhjRpgZTD8OM8tJNrrTSFQRu0YYWGNGAAAAAOxCH0pr0G9JogCzRhhYY0YAAAAACIoDSuVGFUmYnWBGGFhjRgAAgD9vgB9KOLrTSAYloUYYWGNGAAAAAGBzD0o3utNIYPaHRhhYY0aWHlo/HcDlSTe600hon3pGGFhjRtKRdj+HRuRJN7rTSNgmgUYYWGNGAACAP4Ao3Ek2utNIwGqVRhhYY0aWGUw/lGfnSTe600jY82FGGFhjRgAAgD/uvPRJN7rTSDgmUkYYWGNGhfwzP+689Ek3utNIOCZSRhhYY0aE/DM/XTT8STe600jQj1NGGFhjRm5PXj9j9QFKGOLySAgMOUYYWGNGAACAP8FEBko3utNIaEZjRhhYY0YAAIA/hPfMSc4WSkmInRpGGFhjRgAAAADoT8tJ2//fSBAO+EYYWGNGAAAAALRPyUlSa0RGLxl0RxhYY0YAAAAAO7AfShSM5EWnYj1HGFhjRgAAAACefR9KFwDgSDy6kkYYWGNGAAAAAOxCH0pr0G9JogCzRhhYY0YAAAAAmRUASqJaSUkRHYBHGFhjRgAAAADRUc9JICxFSXBwH0YYWGNGAACAP3zAzUkUpN9IVijfRhhYY0YAAIA/9dfLSb2U/Ubur25HGFhjRgAAgD94dR5KnT7WRvq/NkcYWGNGAACAPyBFHkon7t9IMK+JRhhYY0YAAIA/cg0eSo02aUkw7rRGGFhjRgAAgD+YQwBKSHdESXxcTUcYWGNGAACAP0FSRUEAAAAAAgAAAAEAAAADAAAABAAAAAUAAAADAAAABQAAAAYAAAABAAAAAwAAAAYAAAAHAAAACQAAAAgAAAAJAAAAAQAAAAgAAAAJAAAACgAAAAEAAAAHAAAACAAAAAsAAAALAAAACAAAAAEAAAALAAAAAQAAAAwAAAANAAAAAQAAAA4AAAABAAAADwAAAA4AAAABAAAABgAAAA8AAAAPAAAABgAAAAUAAAAQAAAAEgAAABEAAAATAAAAEAAAABQAAAATAAAAEgAAABAAAAARAAAAFgAAABUAAAAXAAAAFQAAABgAAAARAAAAGgAAABkAAAARAAAAEgAAABoAAAAaAAAAEgAAABsAAAARAAAAGQAAABwAAAARAAAAHAAAABYAAAAcAAAAHQAAABYAAAAeAAAAHwAAACAAAAAeAAAAIAAAABYAAAAgAAAAFQAAABYAAAAfAAAAIQAAACAAAAAhAAAAFQAAACAAAAAhAAAAGAAAABUAAAAiAAAAIwAAACoAAAAiAAAAKgAAACkAAAAjAAAAJAAAACsAAAAjAAAAKwAAACoAAAAkAAAAJQAAACwAAAAkAAAALAAAACsAAAAlAAAAJgAAAC0AAAAlAAAALQAAACwAAAAmAAAAJwAAAC4AAAAmAAAALgAAAC0AAAAnAAAAKAAAAC8AAAAnAAAALwAAAC4AAAAoAAAAIgAAACkAAAAoAAAAKQAAAC8AAABBUkVBAwAAAAcAAAALAAAAEgAAAEFSRUFFTkQwQVJFQQIAAAAcAAAAKQAAAHpvbmVfODEyNmVkOWQtYTQ4NC00ZjE2LTkzM2ItYWFhMTJmYWQxZGRiAAAAQVJFQaQ1w0mLrtdJiCo3RkFSRUECAAAAAAAAAAsAAAAAAAAADQAAAAsAAAALAAAADQAAAA4AAABBUkVBFgAAABQAAAAbAAAAFAAAAEFSRUEbAAAACgAAAEFSRUEvAAAAKgAAAFUvxkmLrtdJsME3RhhYY0a/yi4/a9jGSVR2zEmYhRFGGFhjRgAAAAD5WrVJi67XSZhtC0YYWGNGAAAAALnqxklbOcdJAF9ORhhYY0YAAAAATwvNSa3HyklQCUBGGFhjRgAAgD/kM9NJSQG/SYg+G0YYWGNGAAAAAJcI00mLrtdJOMI7RhhYY0YAAAAAucLSSYuu10movjtGGFhjRqDvNz2JZ9JJi67XSQi6O0YYWGNGqBnSPfnvzEkVYNJJOJc9RhhYY0YAAIA/T2DJSYuu10kAXjxGGFhjRgAAgD9VL8ZJi67XSbDBN0YYWGNGvsouP7nC0kmLrtdJqL47RhhYY0ab7zc9zzyuSVEA6EkgtA5GGFhjRgAAAACmHtZJF2bnSRhwLkYYWGNGAAAAAMfgxUn45NxJiHU3RhhYY0YAAIA/VS/GSYuu10mwwTdGGFhjRr/KLj/5WrVJi67XSZhtC0YYWGNGAAAAAL2erkmdANxJ6FQ8RhhYY0YAAAAAdszWSbJ83ElQETpGGFhjRgAAAACHB9NJ1knYSRD+OkYYWGNGAAAAAJcI00mLrtdJOMI7RhhYY0YAAAAAucLSSYuu10movjtGGFhjRqDvNz2JZ9JJi67XSQi6O0YYWGNGqBnSPU9gyUmLrtdJAF48RhhYY0YAAIA/VS/GSYuu10mwwTdGGFhjRr7KLj+5wtJJi67XSai+O0YYWGNGm+83PbnqxklbOcdJAF9ORhhYY0YAAAAA5DPTSUkBv0mIPhtGGFhjRgAAAACHB9NJ1knYSRD+OkYYWGNGAAAAAHbM1kmyfNxJUBE6RhhYY0YAAAAAhJTWSc//30mgazZGGFhjRgAAAACmHtZJF2bnSRhwLkYYWGNGAAAAAM88rklRAOhJILQORhhYY0YAAAAAIX6uSXT/30nIlBNGGFhjRgAAAAC9nq5JnQDcSehUPEYYWGNGAAAAAGvYxklUdsxJmIURRhhYY0YAAAAAL1fJST2KyEkooEFGGFhjRgAAgD/SutBJw5jDSZjUQUYYWGNGAACAP+KU0ElkN9lJyMc7RhhYY0YAAIA/Z0zUSU5b3UnICDtGGFhjRgAAgD+5JNRJ/9jfSfDmOEYYWGNGAACAP8jS00nm/eRJ4NIvRhhYY0YAAIA/XcKwSX6F5Umo8DdGGFhjRgAAgD/Q7rBJXhPgSQDcPEYYWGNGAACAP/IEsUknXd1JANI+RhhYY0YAAIA/xkTJSezOzUlgaDpGGFhjRgAAgD9BUkVBAAAAAAIAAAABAAAAAwAAAAQAAAABAAAABQAAAAYAAAAHAAAABQAAAAcAAAAEAAAABQAAAAQAAAADAAAACAAAAAoAAAAJAAAACgAAAAEAAAAJAAAACgAAAAsAAAABAAAADAAAAAgAAAAJAAAADAAAAAkAAAAEAAAACQAAAAEAAAAEAAAADQAAAA8AAAAOAAAAEAAAABIAAAARAAAAEAAAAA8AAAASAAAAEwAAAA8AAAAUAAAAEwAAAA4AAAAPAAAADQAAABIAAAAPAAAAFQAAABQAAAAWAAAAFAAAABgAAAAXAAAAFAAAAA8AAAAYAAAAGAAAAA8AAAAZAAAAGgAAABQAAAAXAAAAGwAAABwAAAAmAAAAGwAAACYAAAAlAAAAHAAAAB0AAAAnAAAAHAAAACcAAAAmAAAAHQAAAB4AAAAoAAAAHQAAACgAAAAnAAAAHgAAAB8AAAApAAAAHgAAACkAAAAoAAAAHwAAACAAAAAqAAAAHwAAACoAAAApAAAAIAAAACEAAAArAAAAIAAAACsAAAAqAAAAIQAAACIAAAAsAAAAIQAAACwAAAArAAAAIgAAACMAAAAtAAAAIgAAAC0AAAAsAAAAIwAAACQAAAAuAAAAIwAAAC4AAAAtAAAAJAAAABsAAAAlAAAAJAAAACUAAAAuAAAAQVJFQQYAAAAWAAAAEQAAABUAAAANAAAABgAAAAkAAABBUkVBRU5EMEFSRUECAAAAHQAAACkAAAB6b25lX2ZhYTc3NmRhLTljM2YtNGEyMi1iN2NkLThlNmZiYWUzYWQ1OAAAAEFSRUEKDgFKW5XySbD6MUZBUkVBAgAAAAAAAAAOAAAAAAAAAA4AAAAOAAAAEAAAAA4AAAAPAAAAQVJFQR4AAAAQAAAAHQAAABAAAABBUkVBHQAAAAgAAABBUkVBLQAAAC4AAAC+uQJKD0PhSaiFIkYYWGNGAAAAACH28UkOnO1JuLIwRhhYY0YAAAAAGqD3SdM58klQ3i1GGFhjRgAAgD/cZAZKW5XySejbKkYYWGNGcc7wPse+B0peM+tJIPUfRhhYY0YAAAAADy0ESluV8kkgfi9GGFhjRu/4LD8H1/VJW5XySVD7LUYYWGNGAAAAAGLX90lblfJJyOwtRhhYY0ZeNHg/mt0HSluV8kkQDChGGFhjRgAAAACfsQBKW5XySXA/MkYYWGNGuAxLP8MKAUpfne9JYPUxRhhYY0YAAIA/868ASluV8kmwQDJGGFhjRgAAgD8TrQBKW5XySdBCMkYYWGNG7tEkP5VRA0pblfJJ0IowRhhYY0aIUVI/3GQGSluV8kno2ypGGFhjRnHO8D4PLQRKW5XySSB+L0YYWGNG7/gsP0vfBErX5fpJEHsuRhhYY0YAAIA/B9f1SVuV8klQ+y1GGFhjRgAAAACRt/5Jr/f9SbCxJUYYWGNGAAAAAGLX90lblfJJyOwtRhhYY0ZeNHg/mt0HSluV8kkQDChGGFhjRgAAAADmNQhKe90DSmiKhkYYWGNGAAAAAGMrBEr3tgVKQIIqRhhYY0YAAAAAphX/SXMq/EkI9ipGGFhjRgAAgD+fsQBKW5XySXA/MkYYWGNGuAxLP/OvAEpblfJJsEAyRhhYY0YAAIA/E60ASluV8knQQjJGGFhjRu7RJD+VUQNKW5XySdCKMEYYWGNGiFFSP5ByA0p+WPZJaIkvRhhYY0YAAIA/x74HSl4z60kg9R9GGFhjRgAAAACaFQhKxP7/SZirLUYYWGNGAAAAAOY1CEp73QNKaIqGRhhYY0YAAAAAYysESve2BUpAgipGGFhjRgAAAADEFQBKDAAASthdHkYYWGNGAAAAAJG3/kmv9/1JsLElRhhYY0YAAAAAIfbxSQ6c7Um4sjBGGFhjRgAAAAC+uQJKD0PhSaiFIkYYWGNGAAAAAICKBkp1QOxJaA4xRhhYY0YAAIA/Rd0GSpIJAEpwCyhGGFhjRgAAgD/J9gZK3BcDSoC0V0YYWGNGAACAP7qTBEqILwRKCAMoRhhYY0YAAIA/ABQBSqqU/kmYnRhGGFhjRgAAgD86VgBKpIH8SbB+JEYYWGNGAACAP8eK9UkwO+5JMGExRhhYY0YAAIA/wY4CSmhd5ElgHxJGGFhjRgAAgD9BUkVBAAAAAAIAAAABAAAAAwAAAAAAAAAEAAAAAwAAAAUAAAAAAAAAAQAAAAcAAAAGAAAAAQAAAAIAAAAHAAAAAwAAAAQAAAAIAAAACQAAAAsAAAAKAAAACwAAAAAAAAAKAAAACwAAAAwAAAAAAAAABwAAAAoAAAAJAAAABwAAAAIAAAAKAAAACgAAAAIAAAAAAAAADAAAAAAAAAANAAAABQAAAA0AAAAAAAAADgAAABAAAAAPAAAAEQAAABMAAAASAAAADgAAABQAAAAVAAAADgAAABUAAAAQAAAAFgAAABAAAAAVAAAAEgAAABcAAAAWAAAAEgAAABkAAAAYAAAAEgAAABcAAAAZAAAAGQAAABcAAAAaAAAAEwAAABgAAAASAAAAGgAAABsAAAAcAAAAGgAAABwAAAAXAAAAHAAAABYAAAAXAAAADwAAABwAAAAbAAAADwAAABAAAAAcAAAAHAAAABAAAAAWAAAAHQAAAB4AAAAmAAAAHQAAACYAAAAlAAAAHgAAAB8AAAAnAAAAHgAAACcAAAAmAAAAHwAAACAAAAAoAAAAHwAAACgAAAAnAAAAIAAAACEAAAApAAAAIAAAACkAAAAoAAAAIQAAACIAAAAqAAAAIQAAACoAAAApAAAAIgAAACMAAAArAAAAIgAAACsAAAAqAAAAIwAAACQAAAAsAAAAIwAAACwAAAArAAAAJAAAAB0AAAAlAAAAJAAAACUAAAAsAAAAQVJFQQYAAAAQAAAACgAAAAAAAAABAAAAAwAAAAYAAABBUkVBRU5EMCAqAABFVUcwAAAAAENOREYAAAAAPikAAAAAAAAoAAAAAAAAAB4qAAAAAAAAAAAAAAAAAAARAAAATwAAAAkAAAC7u7u7AQAAAAEAAAAJAAAAu7u7uwIAAAABAAAACQAAALu7u7sDAAAAAQAAAAkAAAC7u7u7BAAAAAEAAAAJAAAAu7u7uwUAAAABAAAACQAAALu7u7sGAAAAAQAAAAkAAAC7u7u7BwAAAAEAAAAJAAAAu7u7uwgAAAABAAAACQAAALu7u7sJAAAAAQAAAAkAAAC7u7u7CgAAAAEAAAAJAAAAu7u7uwsAAAABAAAACQAAALu7u7sMAAAAAQAAAAkAAAC7u7u7DQAAAAEAAAAJAAAAu7u7uw4AAAABAAAACQAAALu7u7sPAAAAAQAAAAkAAAC7u7u7EAAAAAEAAAAJAAAAu7u7uxEAAAABAAAACQAAALu7u7sSAAAAAQAAAAkAAAC7u7u7EwAAAAEAAAAJAAAAu7u7uxQAAAABAAAACQAAALu7u7sVAAAAAQAAAAkAAAC7u7u7FgAAAAEAAAAJAAAAu7u7uxcAAAABAAAACQAAALu7u7sYAAAAAQAAAAkAAAC7u7u7GQAAAAEAAAAJAAAAu7u7uxoAAAABAAAACQAAALu7u7sbAAAAAQAAAAkAAAC7u7u7HAAAAAEAAAAJAAAAu7u7ux0AAAABAAAACQAAALu7u7seAAAAAQAAAAkAAAC7u7u7HwAAAAEAAAAJAAAAu7u7uyAAAAABAAAACQAAALu7u7shAAAAAQAAAAkAAAC7u7u7IgAAAAEAAAAJAAAAu7u7uyMAAAABAAAACQAAALu7u7skAAAAAQAAAAkAAAC7u7u7JQAAAAEAAAAJAAAAu7u7uyYAAAABAAAACQAAALu7u7snAAAAAQAAAAkAAAC7u7u7KAAAAAEAAAAJAAAAu7u7uykAAAABAAAACQAAALu7u7sqAAAAAQAAAAkAAAC7u7u7KwAAAAEAAAAJAAAAu7u7uywAAAABAAAACQAAALu7u7stAAAAAQAAAAkAAAC7u7u7LgAAAAEAAAAJAAAAu7u7uy8AAAABAAAACQAAALu7u7swAAAAAQAAAAkAAAC7u7u7MQAAAAEAAAAJAAAAu7u7uzIAAAABAAAACQAAALu7u7szAAAAAQAAAAkAAAC7u7u7NAAAAAEAAAAJAAAAu7u7uzUAAAABAAAACQAAALu7u7s2AAAAAQAAAAkAAAC7u7u7NwAAAAEAAAAJAAAAu7u7uzgAAAABAAAACQAAALu7u7s5AAAAAQAAAAkAAAC7u7u7OgAAAAEAAAAJAAAAu7u7uzsAAAABAAAACQAAALu7u7s8AAAAAQAAAAkAAAC7u7u7PQAAAAEAAAAJAAAAu7u7uz4AAAABAAAACQAAALu7u7s/AAAAAQAAAAkAAAC7u7u7QAAAAAEAAAAJAAAAu7u7u0EAAAABAAAACQAAALu7u7tCAAAAAQAAAAkAAAC7u7u7QwAAAAEAAAAJAAAAu7u7u0QAAAABAAAACQAAALu7u7tFAAAAAQAAAAkAAAC7u7u7RgAAAAEAAAAJAAAAu7u7u0cAAAABAAAACQAAALu7u7tIAAAAAQAAAAkAAAC7u7u7SQAAAAEAAAAJAAAAu7u7u0oAAAABAAAACQAAALu7u7tLAAAAAQAAAAkAAAC7u7u7TAAAAAEAAAAJAAAAu7u7u00AAAABAAAACQAAALu7u7tOAAAAAQAAAAkAAAC7u7u7TwAAAAEAAACrq6urAQAAAAEAAAALAAAAEb2nR98fJUmR4E1HAwAAAAUAAADO/wZAAgAAAAkAAAC7u7u7UAAAAAMAAACrq6urAQAAAAEAAAALAAAA5mH/SQqkDEpypyZGAwAAAAUAAACJm9u/AgAAAAkAAAC7u7u7UQAAAAQAAACrq6urAQAAAAEAAAALAAAAgP7aSQB50UmCKy9HAwAAAAUAAADonURAAgAAAAkAAAC7u7u7UgAAAAQAAACrq6urAQAAAAEAAAALAAAAqPQASuur9El1ojFGAwAAAAUAAABZ9yS+AgAAAAkAAAC7u7u7UwAAAAQAAACrq6urAQAAAAEAAAALAAAA0CVYSRt7V0lWoEpHAwAAAAUAAADbyfS+AgAAAAkAAAC7u7u7VAAAAAMAAACrq6urAQAAAAEAAAALAAAAaO1PSNEDuUdaXktHAwAAAAUAAADnpcw/AgAAAAkAAAC7u7u7VQAAAAMAAACrq6urAQAAAAEAAAALAAAA4TFdScF/sEhL+0pHAwAAAAUAAABdKilAAgAAAAkAAAC7u7u7VgAAAAMAAACrq6urAQAAAAEAAAALAAAAqPQASuur9El1ojFGAwAAAAUAAAA8PwO+AgAAAAkAAAC7u7u7VwAAAAQAAACrq6urAQAAAAEAAAALAAAAiMhsSb0tY0kR1FBHAwAAAAUAAAC4J/0+AgAAAAkAAAC7u7u7WAAAAAMAAACrq6urAQAAAAEAAAALAAAAWA4VSfNrbEkHD1tHAwAAAAUAAADM18q/AgAAAAkAAAC7u7u7WQAAAAMAAACrq6urAQAAAAEAAAALAAAA32aISXEC9klypyZGAwAAAAUAAACJm9u/AgAAAAkAAAC7u7u7WgAAAAQAAACrq6urAQAAAAEAAAALAAAAAG4+SQCxnklO11dHAwAAAAUAAABfLj8/AgAAAAkAAAC7u7u7WwAAAAMAAACrq6urAQAAAAEAAAALAAAAVOA4Sd3uqEnsTFpHAwAAAAUAAADVaMe/AgAAAAkAAAC7u7u7XAAAAAMAAACrq6urAQAAAAEAAAALAAAAWWvJScvIA0pkvUlHAwAAAAUAAAAbgy+/AgAAAAkAAAC7u7u7XQAAAAMAAACrq6urAQAAAAEAAAALAAAA1m2RSYiSekmttk9HAwAAAAUAAADFcQFAAgAAAAkAAAC7u7u7XgAAAAMAAACrq6urAQAAAAEAAAALAAAAP08iSd7MvElfslZHAwAAAAUAAABWxYE8AgAAAAkAAAC7u7u7XwAAAAMAAACrq6urAQAAAAEAAAALAAAA5cQUSYq1wEkQJk5HAwAAAAUAAAAUbyfAAgAAAAkAAAC7u7u7YAAAAAMAAACrq6urAQAAAAEAAAALAAAAscuNSRocw0lfslZHAwAAAAUAAAD4qCXAAgAAAAkAAAC7u7u7YQAAAAMAAACrq6urAQAAAAEAAAALAAAAF7mUSaV5CUpypyZGAwAAAAUAAACIm9u/AgAAAAkAAAC7u7u7YgAAAAQAAACrq6urAQAAAAEAAAALAAAArPOpSVtJ50n41VhHAgAAAAkAAAC7u7u7YwAAAAIAAACrq6urAQAAAAEAAAALAAAA41NbSU9K30lfslZHAwAAAAUAAAAB5ijAAgAAAAkAAAC7u7u7ZAAAAAMAAACrq6urAQAAAAEAAAALAAAAXTGSSQF3xkle9jJHAwAAAAUAAACG+Iw/AgAAAAkAAAC7u7u7ZQAAAAMAAACrq6urAQAAAAEAAAALAAAAHRw4SfVGn0mf709HAgAAAAkAAAC7u7u7ZgAAAAIAAACrq6urAQAAAAEAAAALAAAAZWMBSpNY9El1ojFGAwAAAAUAAABZ9yS+AgAAAAkAAAC7u7u7ZwAAAAQAAACrq6urAQAAAAEAAAALAAAAkPfZSZHlv0lwlL1GAwAAAAUAAAD3k9c/AgAAAAkAAAC7u7u7aAAAAAQAAACrq6urAQAAAAEAAAALAAAAiCeESTcb5EmUt01HAwAAAAUAAACs9tS/AgAAAAkAAAC7u7u7aQAAAAMAAACrq6urAQAAAAEAAAALAAAALa19SW6/6kmv/VpHAwAAAAUAAAC7JStAAgAAAAkAAAC7u7u7agAAAAMAAACrq6urAQAAAAEAAAALAAAADiu8SaYvBkqAm1pHAwAAAAUAAADUvYO/AgAAAAkAAAC7u7u7awAAAAMAAACrq6urAQAAAAEAAAALAAAAmWOWSbg7C0oUbktHAwAAAAUAAAAURiPAAgAAAAkAAAC7u7u7bAAAAAMAAACrq6urAQAAAAEAAAALAAAACMXbSWLt+EnmFklHAwAAAAUAAABnC8K+AgAAAAkAAAC7u7u7bQAAAAMAAACrq6urAQAAAAEAAAALAAAAr0SPSb+sAUqBl1VHAwAAAAUAAABanATAAgAAAAkAAAC7u7u7bgAAAAMAAACrq6urAQAAAAEAAAALAAAAQJWTSQA28UmjHURHAwAAAAUAAACa1Jc/AgAAAAkAAAC7u7u7bwAAAAQAAACrq6urAQAAAAEAAAALAAAAORAeShnWT0lGeVZHAwAAAAUAAACRKco/AgAAAAkAAAC7u7u7cAAAAAMAAACrq6urAQAAAAEAAAALAAAAjmLVSe41SklqcVBHAwAAAAUAAAAsGdi/AgAAAAkAAAC7u7u7cQAAAAMAAACrq6urAQAAAAEAAAALAAAApwgeSoz7yUlvEVZHAwAAAAUAAAAkiRE/AgAAAAkAAAC7u7u7cgAAAAMAAACrq6urAQAAAAEAAAALAAAAMXSRSUakcknWNEJHAwAAAAUAAACja4w/AgAAAAkAAAC7u7u7cwAAAAQAAACrq6urAQAAAAEAAAALAAAArWO7ScaZ/UmUOHJHAwAAAAUAAACU/Mu+AgAAAAkAAAC7u7u7dAAAAAMAAACrq6urAQAAAAEAAAALAAAA+3OsSdYyB0oXNk9HAwAAAAUAAABMzPY/AgAAAAkAAAC7u7u7dQAAAAMAAACrq6urAQAAAAEAAAALAAAAwAuUSQuYwkmSy0VHAwAAAAUAAADUTAc/AgAAAAkAAAC7u7u7dgAAAAMAAACrq6urAQAAAAEAAAALAAAA35/KSW2hpklnd1hHAwAAAAUAAACAZdg+AgAAAAkAAAC7u7u7dwAAAAMAAACrq6urAQAAAAEAAAALAAAAzFKeSW6IyUmtRVhHAwAAAAUAAABShCA/AgAAAAkAAAC7u7u7eAAAAAMAAACrq6urAQAAAAEAAAALAAAAkwCsSYC460msl1xHAwAAAAUAAADPz4U/AgAAAAkAAAC7u7u7eQAAAAMAAACrq6urAQAAAAEAAAALAAAAAUWtSZcZqkmhdExHAwAAAAUAAAD+xfU+AgAAAAkAAAC7u7u7egAAAAMAAACrq6urAQAAAAEAAAALAAAA1zCtSZ3x+UlWXVBHAwAAAAUAAACavKI9AgAAAAkAAAC7u7u7ewAAAAMAAACrq6urAQAAAAEAAAALAAAAZ+3NSQZDB0qMU1VHAwAAAAUAAABy+aO/AgAAAAkAAAC7u7u7fAAAAAMAAACrq6urAQAAAAEAAAALAAAAqM/CSTWR1UnXbVNHAwAAAAUAAAANQwW/AgAAAAkAAAC7u7u7fQAAAAMAAACrq6urAQAAAAEAAAALAAAAzy7fSSTcy0nMaE1HAwAAAAUAAABvlZo/AgAAAAkAAAC7u7u7fgAAAAMAAACrq6urAQAAAAEAAAALAAAA1ovgSXriYkmCKy9HAgAAAAkAAAC7u7u7fwAAAAQAAACrq6urAQAAAAEAAAALAAAAkL7WSSW8/EkzM1pHAwAAAAUAAADHQMs/AgAAAAkAAAC7u7u7gAAAAAMAAACrq6urAQAAAAEAAAALAAAAaUaUSSkWsEnj62VHAwAAAAUAAABYswI/AgAAAAkAAAC7u7u7gQAAAAMAAACrq6urAQAAAAEAAAALAAAAUG6pSSncz0kUyGdHAwAAAAUAAACKAsQ/AgAAAAkAAAC7u7u7ggAAAAMAAACrq6urAQAAAAEAAAALAAAA0c0CSq379klvLi1GAwAAAAUAAABUJ+O/AgAAAAkAAAC7u7u7gwAAAAMAAACrq6urAQAAAAEAAAALAAAAgNIOSgDS10gCLI5HAgAAAAkAAAC7u7u7hAAAAAQAAACrq6urAQAAAAEAAAALAAAA5Q8fShfuDEqijiZGAwAAAAUAAADOsAhAAgAAAAkAAAC7u7u7hQAAAAMAAACrq6urAQAAAAEAAAALAAAAKbrxSUzbGkpisyZGAwAAAAUAAABich7AAgAAAAkAAAC7u7u7hgAAAAMAAACrq6urAQAAAAEAAAALAAAASKTiSKGKvkkQJk5HAgAAAAkAAAC7u7u7hwAAAAQAAAADAAAABQAAAI48RkCrq6urAQAAAAEAAAALAAAAZ00BSldNDEouqSZGAwAAAAUAAABb/EjAAgAAAAkAAAC7u7u7iAAAAAMAAACrq6urAQAAAAEAAAALAAAAYZ3PSZOKGkrXrCZGAwAAAAUAAADe90FAAgAAAAkAAAC7u7u7iQAAAAMAAACrq6urAQAAAAEAAAALAAAA9NXYScMOAkovOilGAwAAAAUAAACIify/AgAAAAkAAAC7u7u7igAAAAMAAACrq6urAQAAAAEAAAALAAAAmoX/SXZ/HkqbsCZGAwAAAAUAAABGb/6+AgAAAAkAAAC7u7u7iwAAAAMAAACrq6urAQAAAAEAAAALAAAABnseSm8giEkxTElGAwAAAAUAAAA6PyZAAgAAAAkAAAC7u7u7jAAAAAMAAACrq6urAQAAAAEAAAALAAAA+FMHStu3qElSjz5GAwAAAAUAAABEQCrAAgAAAAkAAAC7u7u7jQAAAAMAAACrq6urAQAAAAEAAAALAAAA24bMSZSOEEoPnj9GAwAAAAUAAAA7dI6/AgAAAAkAAAC7u7u7jgAAAAMAAACrq6urAQAAAAEAAAALAAAA+LrlSdsi50n67i9GAwAAAAUAAABQwyPAAgAAAAkAAAC7u7u7jwAAAAMAAACrq6urAQAAAAEAAAALAAAA91fKSW757Ul0ozVGAwAAAAUAAABaxjDAAgAAAAkAAAC7u7u7kAAAAAMAAACrq6urAQAAAAEAAAALAAAAsrJPSW+q2EmjHURHAgAAAAkAAAC7u7u7kQAAAAQAAAADAAAABQAAAJ3Ulz+rq6urAQAAAAEAAAALAAAAUbcFSqHtzUkS8WJHAgAAAAkAAAC7u7u7kgAAAAIAAACrq6urAQAAAAEAAAALAAAA8FDOScGlyknPHTdHAgAAAAkAAAC7u7u7kwAAAAIAAACrq6urAQAAAAEAAAALAAAAUvrOSQCqZkkCLI5HAgAAAAkAAAC7u7u7lAAAAAQAAACrq6urAQAAAAEAAAALAAAAk4apSWzw30nhZzxGAwAAAAUAAAC+EYI/AgAAAAkAAAC7u7u7lQAAAAMAAACrq6urAQAAAAEAAAALAAAAg225Sfbq3EloXzBGAwAAAAUAAABKFbc/AgAAAAkAAAC7u7u7lgAAAAMAAACrq6urAQAAAAEAAAALAAAAunRmSbpxR0nun05HAwAAAAUAAACUBLg/AgAAAAkAAAC7u7u7lwAAAAQAAACrq6urAQAAAAEAAAALAAAA2yW8SabvlUlqTIBGAwAAAAUAAACc5g0/AgAAAAkAAAC7u7u7mAAAAAMAAACrq6urAQAAAAEAAAALAAAAkFHRSG20F0lYGS9GAwAAAAUAAAA9Zds+AgAAAAkAAAC7u7u7mQAAAAMAAACrq6urAQAAAAEAAAALAAAA5Ud9SZhk6UkE7Y5HAgAAAAkAAAC7u7u7mgAAAAIAAACrq6urAQAAAAEAAAALAAAAiS+jSauPBkqsvqVHAgAAAAkAAAC7u7u7mwAAAAIAAACrq6urAQAAAAEAAAALAAAAWOqzSf992Emuap1HAgAAAAkAAAC7u7u7nAAAAAIAAACrq6urAQAAAAEAAAALAAAACs54SWmQxEkQnzZGAwAAAAUAAADa3Pm+AgAAAAkAAAC7u7u7nQAAAAMAAACrq6urAQAAAAEAAAALAAAA5Rp8SdSQi0lYgy1GAwAAAAUAAABQHZm/AgAAAAkAAAC7u7u7ngAAAAMAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sEAAAACAAAAAIAAAADAAAACQAAAAIAAAABAAAACgAAAAsAAACapTRJHZ4aSQADT0gLAAAABwAAAAEAAAAMAAAABQAAAN9wiUINAAAABQAAALCMnMKrq6urBAAAAAgAAAACAAAABgAAAAoAAAALAAAACpI0SYKmGkkAA09ICwAAAAcAAAABAAAADAAAAAUAAAASwZNCDQAAAAUAAADIXKHCq6urqwQAAAAIAAAAAgAAAAIAAAAJAAAAAgAAAAMAAAAKAAAACwAAAE2jSEk2WMlIc2WBSAsAAAAHAAAAAQAAAAwAAAAFAAAArDuxww0AAAAFAAAAt1QFwqurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sEAAAACAAAAAIAAAAHAAAACgAAAAsAAACXj+lJzag2SWZtaUgLAAAABwAAAAIAAAAMAAAABQAAANeRuUINAAAABQAAAP1PscKrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwQAAAAIAAAAAgAAAAEAAAAJAAAAAgAAAAEAAAAKAAAACwAAAD+W6UlSpjZJBm1pSAsAAAAHAAAAAgAAAAwAAAAFAAAA15G5Qg0AAAAFAAAA/U+xwqurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwQAAAAIAAAAAgAAAAEAAAAKAAAACwAAANVspkk4awJJjS5KSAsAAAAHAAAAAwAAAAwAAAAFAAAA15G5Qg0AAAAFAAAA/U+xwqurq6sCAAAABAAAAAgAAAAeAAAAQgBsAGEAYwBrAHAAbwBvAGwAQgByAGkAZABnAGUAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sCAAAABAAAAAgAAAAMAAAAVAB1AHQAdABvAG4Aq6urqwQAAAAIAAAAAgAAAAMAAAAKAAAACwAAAE7oCEnna5ZJxlOmSAsAAAAHAAAABAAAAAwAAAAFAAAAvkCDQg0AAAAFAAAAvkyfwqurq6sEAAAACAAAAAIAAAACAAAACQAAAAIAAAACAAAACgAAAAsAAAC4zghJr2qWScZTpkgLAAAABwAAAAQAAAAMAAAABQAAAMwAhkINAAAABQAAAMT8n8Krq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urBAAAAAgAAAACAAAABQAAAAoAAAALAAAABr8fSVUx3kmtoX5ICwAAAAcAAAAFAAAADAAAAAUAAAC0MIFCDQAAAAUAAADTbKPCq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwQAAAAIAAAAAgAAAAIAAAAJAAAAAgAAAAEAAAAKAAAACwAAAEObH0mtJ95JraF+SAsAAAAHAAAABQAAAAwAAAAFAAAAtDCBQg0AAAAFAAAA02yjwqurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urBAAAAAgAAAACAAAABAAAAAkAAAACAAAAAQAAAAoAAAALAAAAw17ZSf715UlgobJICwAAAAcAAAAGAAAADAAAAAUAAAAooXRCDQAAAAUAAADTbKPCq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urBAAAAAgAAAACAAAACAAAAAoAAAALAAAAyV7ZSQH25UlgobJICwAAAAcAAAAGAAAADAAAAAUAAAAooXRCDQAAAAUAAADTbKPCq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sEAAAACAAAAAIAAAABAAAACQAAAAIAAAADAAAACgAAAAsAAAAfq+BJsLTOSW3ObEgLAAAABwAAAAYAAAAMAAAABQAAALUfs8MNAAAABQAAAKog/cGrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urBAAAAAgAAAACAAAAAQAAAAkAAAACAAAAAgAAAAoAAAALAAAAa7P4ScdUqkkzm5dICwAAAAcAAAAHAAAADAAAAAUAAAAJEZNCDQAAAAUAAAD/XKzCq6urqwIAAAAEAAAACAAAABIAAABEAHIAZQBlAG4AaABpAGwAbACrq6urAgAAAAQAAAAIAAAAGgAAAE0AZQByAGwAaQBuAHMAQgByAGkAZABnAGUAq6urqwQAAAAIAAAAAgAAAAQAAAAKAAAACwAAAHez+EnKVKpJM5uXSAsAAAAHAAAABwAAAAwAAAAFAAAACRGTQg0AAAAFAAAA/1yswqurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urBAAAAAgAAAACAAAAAgAAAAoAAAALAAAAw+OUSXsd+km9vrtICwAAAAcAAAAIAAAADAAAAAUAAAAooXRCDQAAAAUAAADTbKPCq6urqwMAAAAFAAAAAgAAAP////8GAAAABwAAAAAAAAAHAAAAAgAAACgAAACrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sCAAAABAAAAAgAAAAQAAAATABlAHcAZQBzAHQAbwBuAKurq6sCAAAABAAAAAgAAAAWAAAAQwB1AHQAdAB5AGIAcgBpAGQAZwBlAKurq6sCAAAABAAAAAgAAAAaAAAAUABlAGwAYwBvAG0AYgBCAHIAaQBkAGcAZQCrq6urAwAAAAUAAAACAAAA/////wYAAAAHAAAAAAAAAAcAAAACAAAAKAAAAKurq6sDAAAABQAAAAIAAAD/////BgAAAAcAAAAAAAAABwAAAAIAAAAoAAAAq6urqwAAAAAAAAAAnwAAABMAAABUR2FtZURlc2lnbkl0ZW1MaXN0DwAAAFRHYW1lRGVzaWduSXRlbRsAAABUR2FtZURlc2lnbkFkZE9uX0xhYmVsVmlsbGUWAAAAVEdhbWVEZXNpZ25BZGRPbl9TcGF3bh4AAABUR2FtZURlc2lnbkFkZE9uX1N0YXJ0aW5nUG9pbnQSAAAAR2FtZURlc2lnbkl0ZW1MaXN0AAAAAAgAAABQb3NpdGlvbgEAAAAFAAAAQWRkT24BAAAACAAAAFJvdGF0aW9uAQAAAAoAAABDaGFtcFRleHRlAgAAAAQAAABDYW1wAwAAAA8AAABQeXRob25DbGFzc05hbWUDAAAADAAAAENoYW1wSW50ZWdlcgMAAAALAAAAQWxsaWFuY2VOdW0EAAAAEAAAAEFsbGlhbmNlUHJpb3JpdHkEAAAADgAAAFBvc2l0aW9uQ2FtZXJhBAAAAA0AAABXYXJtdXBDYW1QYXRoBAAAAAYAAABBemltdXQEAAAABAAAAFNpdGUEAAAAJwAAAGZyb250LmJhdGltZW50X2RlcG90LkRhbGxlQmF0aW1lbnREZXBvdAkAAABXYXJtdXBfSjUJAAAAV2FybXVwX0ozCQAAAFdhcm11cF9KMQkAAABXYXJtdXBfSjYJAAAAV2FybXVwX0o0CQAAAFdhcm11cF9KNwkAAABXYXJtdXBfSjgJAAAAV2FybXVwX0oyVE9DMAkAAABPQkpFAAAAACgAAAAAAAAA8iYAAAAAAABUT1BPAAAAABonAAAAAAAABAAAAAAAAABDSE5LAAAAAB4nAAAAAAAACAAAAAAAAABDTEFTAAAAACYnAAAAAAAAhQAAAAAAAABQUk9QAAAAAKsnAAAAAAAAAAEAAAAAAABTVFJHAAAAAKsoAAAAAAAAkwAAAAAAAABUUkFOAAAAAD4pAAAAAAAAAAAAAAAAAABJTVBSAAAAAD4pAAAAAAAAAAAAAAAAAABFWFBSAAAAAD4pAAAAAAAAAAAAAAAAAAAAAA=="
+        }
+      ]
+    }
+  ]
+}

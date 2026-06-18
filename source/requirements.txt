@@ -1,0 +1,14 @@
+# RUSE Mod Manager — Python dependencies
+#
+# Quick setup (project-local venv):
+#     python -m venv .venv
+#     .venv\Scripts\python -m pip install -r requirements.txt
+# Then run/test with:  .venv\Scripts\python mod_manager.py
+# (or select .venv as the interpreter in your IDE)
+
+# Runtime — the map editor's minimap rendering (map_editor.py).
+# The rest of the app is pure stdlib (tkinter) + the local ruse_mod_engine package.
+pillow>=10
+
+# Build only (build.py packages the exe; Pillow is bundled into it via the spec):
+#   pip install pyinstaller

@@ -440,10 +440,12 @@ All NDF binary types are fully supported in both the converter and the applier:
 
 ```bash
 git clone https://github.com/LittleGroove/RUSE-Mod-Manager.git
-cd RUSE-Mod-Manager
+cd RUSE-Mod-Manager/source
 pip install -r requirements.txt
 python mod_manager.py
 ```
+
+The runnable source lives in the **`source/`** folder on the `main` branch (browse it to see exactly what's compiled into each release). The full deploy bundle (`RUSE_Mod_Manager_v<X.Y.Z>.zip`) and the auto-updater exe are on the **[Releases](https://github.com/LittleGroove/RUSE-Mod-Manager/releases)** page.
 
 The auto-update check is **disabled** when running from source — only the packaged exe checks for new releases.
 
@@ -457,6 +459,29 @@ The auto-update check is **disabled** when running from source — only the pack
 - The deploy cache reuses the longest unchanged prefix of your load order so re-deploys are fast.
 - Shipped multiplayer-safe ("SAFE") mods are bundled inside the exe and override external mods of the same name + major version, so multiplayer stays consistent.
 - All changes are logged with before/after values for every property touched.
+
+---
+
+## Suggesting changes / Contributing
+
+This tool is built with the community, and your input feeds **directly** into updates —
+suggestions, bug reports, small improvements, and full-blown changes are all welcome.
+
+To contribute, open a **[GitHub Issue](https://github.com/LittleGroove/RUSE-Mod-Manager/issues/new/choose)**
+and pick the **Bug report** or **Feature / suggestion** form. You don't have to word it
+perfectly — if anything's unclear we'll comment on the issue to ask what you mean, so check
+back after posting.
+
+What helps us act fast:
+
+- **Screenshots** — drag images straight into the issue.
+- **Which tab / area** you were in (Mod Manager, Convert, Mod Editor, Settings).
+- **Steps to reproduce** for bugs, even rough ones.
+- **Your version**, and whether you're on **Public RUSE** or **RUSE Compat**.
+
+Every issue is read and taken seriously; closed ones are archived, not lost. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the full rundown. Thank you — it genuinely makes the
+tool better for everyone.
 
 ---
 
