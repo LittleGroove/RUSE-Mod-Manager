@@ -1,0 +1,72 @@
+name: "Bug report"
+description: "Something in the Mod Manager doesn't work the way it should."
+title: "BUG: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this! Screenshots and the exact area you were in
+        help a lot — the more specific you are, the faster it gets fixed.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, and what went wrong?
+      placeholder: "I clicked Deploy and the app froze..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area of the app?
+      options:
+        - "Mod Manager tab (load order / deploy)"
+        - "Convert tab"
+        - "Mod Editor"
+        - "Settings"
+        - "Launching RUSE"
+        - "Other / not sure"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Number the steps if you can.
+      placeholder: |
+        1. Open the Mod Editor
+        2. ...
+        3. ...
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag-and-drop images here. A picture of the problem is worth a thousand words.
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Mod Manager version
+      description: Shown in the title bar / about. e.g. v1.0.103
+    validations:
+      required: false
+  - type: dropdown
+    id: build
+    attributes:
+      label: Which build?
+      options:
+        - "Public RUSE"
+        - "RUSE Compat"
+        - "Not sure"
+    validations:
+      required: false
