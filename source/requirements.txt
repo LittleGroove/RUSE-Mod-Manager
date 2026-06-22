@@ -9,6 +9,8 @@
 # Runtime — the map editor's minimap rendering (map_editor.py).
 # The rest of the app is pure stdlib (tkinter) + the local ruse_mod_engine package.
 pillow>=10
+# Runtime — high-def terrain decode (ruse_mod_engine/terrain_codec.py, map editor; issue #8).
+numpy>=1.24
 
 # Build only (build.py packages the exe; Pillow is bundled into it via the spec):
 #   pip install pyinstaller

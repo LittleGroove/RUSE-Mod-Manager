@@ -230,3 +230,238 @@ def paint_circle(grid, R, bboxX, bboxY, wx, wy, world_radius, bit=FOREST_BIT, er
             if nb != b:
                 grid[i] = nb; changed += 1
     return changed
+
+
+# ═════════════════════════════════════════════════════════════════════════════════
+# Unified SDB codec — handles BOTH mapinfo buffer4 AND the terrain dat's output.sdb.
+#
+# Both files are the SAME quadtree encoding (confirmed vs 32 maps, issue #9):
+#   container = 'SDB\r\n'(5) + md5(16) + u32 ver + u32 body_size, then a body.
+#   body = prefix (28-byte sub-header + u32 root-pointer, =0x20 bytes) + a flat array of
+#          16-byte NODES (4× u32 children) starting at the root pointer + optional trailing.
+#   child V: (V&1) -> LEAF carrying 4 sub-cell occupancy bytes; else BRANCH, V = byte
+#            offset (within body) of the child node. The root node is the first node.
+#   The node array starts at body 0x20 for BOTH files (the legacy buffer4 "0x1C entry model"
+#   just folds a single root-pointer entry into the prefix; output.sdb's "storage_flag" at
+#   0x1C IS that same root pointer = 0x20). node_start is read from the root pointer.
+#   md5 = md5('SDB\r\n' + ver + body_size + body[:body_size])  [matched 32/32 — ProLution's
+#   body-only md5 is WRONG and would write game-rejected files].
+#
+# Edits are IN PLACE (change leaf values / subdivide a leaf into a child node appended at
+# the end), preserving the original node order/offsets -> BYTE-IDENTICAL on a no-op for
+# both files. A merge-rebuild does NOT round-trip output.sdb (the game does not maximally
+# merge), which is why this is edit-in-place rather than rebuild-from-grid.
+#
+# NB (Ghidra runtime audit, issue #9): the game's SDB parser is called from ONE site — the mapinfo.win
+# loader (buffer4). The terrain dat's output.sdb is NEVER parsed (build artifact). And the runtime
+# query builder is only ever called with mask 0x08 (forest/conceal) and 0x04 (blocked/clear-path) —
+# the other bits are never queried, so only these two layers do anything in-game.
+# ═════════════════════════════════════════════════════════════════════════════════
+_NODE = 16
+
+# The ONLY two runtime-meaningful SDB layers (Ghidra-confirmed query masks). bit 0x08 = forest cover
+# (GetIsEnForet); bit 0x04 = blocked / clear-path. Other bits exist in the data but are never queried.
+LAYERS_BUFFER4 = (("Forest / concealment (0x08)", 0x08), ("Blocked / clear-path (0x04)", 0x04))
+
+
+def _tree_valid(nodes, ns, body_size) -> bool:
+    cnt = len(nodes)
+    for node in nodes:
+        for V in node:
+            if V & 1:
+                continue
+            if V < ns or V >= body_size or (V - ns) % _NODE:
+                return False
+    seen = set(); stack = [ns]
+    while stack:
+        off = stack.pop()
+        if off in seen:
+            continue
+        idx = (off - ns) // _NODE
+        if not (0 <= idx < cnt):
+            return False
+        seen.add(off)
+        for V in nodes[idx]:
+            if not (V & 1):
+                stack.append(V)
+    return len(seen) == cnt
+
+
+def parse(data: bytes, node_start=None):
+    """Parse any SDB (buffer4 or output.sdb) -> dict {ver, prefix, node_start, nodes, tail}.
+    `nodes` is a list of [c0,c1,c2,c3] in file order; serialize(parse(x)) == x byte-for-byte.
+    `node_start` (the byte offset of the root/first node within the body) is read from the root
+    pointer at body 0x1C when None — that is 0x20 for every real map; 0x20/0x1C are tried as
+    fallbacks. Pass it explicitly only for exotic files."""
+    if not is_sdb(data):
+        raise ValueError("not an SDB")
+    ver = struct.unpack_from("<I", data, 21)[0]
+    body_size = struct.unpack_from("<I", data, 25)[0]
+    body = data[29:]
+    if body_size > len(body) or body_size < 0x20:
+        raise ValueError("SDB body too small / body_size exceeds data")
+    if node_start is not None:
+        cands = [node_start]
+    else:
+        root_ptr = struct.unpack_from("<I", body, 0x1C)[0]
+        cands = [root_ptr, 0x20, 0x1C]
+    seen = set()
+    for ns in cands:
+        if ns in seen or ns < 0x1C or body_size < ns or (body_size - ns) % _NODE:
+            continue
+        seen.add(ns)
+        cnt = (body_size - ns) // _NODE
+        nodes = [list(struct.unpack_from("<IIII", body, ns + i * _NODE)) for i in range(cnt)]
+        if _tree_valid(nodes, ns, body_size):
+            return {"ver": ver, "prefix": body[:ns], "node_start": ns, "nodes": nodes,
+                    "tail": body[body_size:]}
+    raise ValueError("SDB node array did not validate (tried %s)" % [hex(c) for c in cands])
+
+
+def serialize(p) -> bytes:
+    """Serialize a parsed SDB back to bytes with the correct (game-validated) md5."""
+    node_bytes = b"".join(struct.pack("<IIII", *(c & 0xFFFFFFFF for c in n)) for n in p["nodes"])
+    payload = p["prefix"] + node_bytes
+    body_size = len(payload)
+    md5 = hashlib.md5(b"SDB\r\n" + struct.pack("<I", p["ver"]) + struct.pack("<I", body_size) + payload).digest()
+    return b"SDB\r\n" + md5 + struct.pack("<I", p["ver"]) + struct.pack("<I", body_size) + payload + p["tail"]
+
+
+
+
+def tree_grid_R(p) -> int:
+    # Finest grid = 1<<(deepest LEAF depth + 1): the +1 resolves each leaf's 2x2 sub-cells. (Counting
+    # only branch depth under-samples by one level and drops real sub-cell detail — matches legacy
+    # decode_grid's R exactly when leaf depth is used.)
+    nodes = p["nodes"]; ns = p["node_start"]
+    def depth(off, d):
+        m = d
+        for V in nodes[(off - ns) // _NODE]:
+            if V & 1:
+                m = max(m, d + 1)
+            else:
+                m = max(m, depth(V, d + 1))
+        return m
+    return 1 << (depth(ns, 0) + 1)
+
+
+def to_grid(p):
+    """Decode the quadtree -> (bytearray grid of R*R per-cell occupancy bytes, R). grid[y*R+x] is
+    the finest-cell byte; quadrant order is 0=(x,y) 1=(x+h,y) 2=(x,y+h) 3=(x+h,y+h) (image space).
+    Uses numpy slice-fill when available (much faster at native resolution); pure-Python fallback."""
+    nodes = p["nodes"]; ns = p["node_start"]; R = tree_grid_R(p)
+    try:
+        import numpy as np
+        g = np.zeros((R, R), np.uint8); use_np = True
+    except Exception:
+        g = bytearray(R * R); use_np = False
+    stack = [(ns, 0, 0, R)]
+    while stack:
+        off, x0, y0, sz = stack.pop()
+        node = nodes[(off - ns) // _NODE]; h = sz >> 1; hh = h >> 1
+        quad = ((x0, y0), (x0 + h, y0), (x0, y0 + h), (x0 + h, y0 + h))
+        for q in range(4):
+            V = node[q]; qx, qy = quad[q]
+            if V & 1:
+                sub = ((qx, qy), (qx + hh, qy), (qx, qy + hh), (qx + hh, qy + hh))
+                fz = max(hh, 1)
+                for s in range(4):
+                    b = (V >> (s * 8)) & 0xFF
+                    sx, sy = sub[s]
+                    if use_np:
+                        g[sy:sy + fz, sx:sx + fz] = b
+                    else:
+                        for yy in range(sy, min(sy + fz, R)):
+                            row = yy * R
+                            for xx in range(sx, min(sx + fz, R)):
+                                g[row + xx] = b
+            else:
+                stack.append((V, qx, qy, h))
+    return (bytearray(g.tobytes()), R) if use_np else (g, R)
+
+
+def apply_layer_masks_inplace(p, layer_specs) -> None:
+    """FAST rmod apply: set each layer to a target state by EDITING THE TREE IN PLACE, instead of
+    decode→apply→rebuild. `layer_specs` = [(bit, mask_bytes, R_mask)] where mask_bytes is an LSB-first
+    bitmap (the rmod's stored target for that bit) at resolution R_mask. We decode the tree's grid once,
+    diff each layer's target against the current state, and paint only the changed cells (paint_tree).
+    Requires numpy (raise → caller falls back to the legacy decode_grid/encode_from_grid path)."""
+    import numpy as np
+    grid, R = to_grid(p)
+    cur = np.frombuffer(bytes(grid), np.uint8).reshape(R, R)
+    for bit, mask_bytes, R_mask in layer_specs:
+        bits = np.unpackbits(np.frombuffer(mask_bytes, np.uint8), bitorder="little")
+        need = R_mask * R_mask
+        if bits.size < need:
+            bits = np.concatenate([bits, np.zeros(need - bits.size, np.uint8)])
+        target = bits[:need].reshape(R_mask, R_mask).astype(bool)
+        if R_mask != R:                                  # legacy masks are at 2× native; downsample
+            if R_mask > R and R_mask % R == 0:
+                target = target[:: R_mask // R, :: R_mask // R]
+            else:
+                from PIL import Image
+                target = np.asarray(Image.fromarray(target.view(np.uint8) * 255)
+                                    .resize((R, R), Image.NEAREST)) > 127
+        have = (cur & bit) > 0
+        set_cells = target & ~have
+        clr_cells = (~target) & have
+        if set_cells.any():
+            paint_tree(p, set_cells, R, bit, True)
+        if clr_cells.any():
+            paint_tree(p, clr_cells, R, bit, False)
+
+
+def paint_tree(p, mask, R, bit, value: bool) -> None:
+    """Edit-in-place: set (value=True) or clear `bit` on every cell where `mask` (a flat length-R*R
+    truthy sequence, or numpy 2-D RxR array) is set. Subdivides leaves only where the mask edge
+    crosses them; leaves all untouched nodes byte-identical. Requires numpy (map-editor dependency)."""
+    import numpy as np
+    m = np.asarray(mask)
+    if m.ndim == 1:
+        m = m.reshape(R, R)
+    m = m.astype(bool)
+    sat = np.zeros((R + 1, R + 1), np.int64)
+    sat[1:, 1:] = np.cumsum(np.cumsum(m.astype(np.int64), 0), 1)
+    def count(x, y, s):
+        x2, y2 = min(x + s, R), min(y + s, R); x, y = max(x, 0), max(y, 0)
+        if x2 <= x or y2 <= y:
+            return 0
+        return int(sat[y2, x2] - sat[y, x2] - sat[y2, x] + sat[y, x])
+    if value:
+        setb = lambda b: ((b | bit) | 1) & 0xFF
+    else:
+        setb = lambda b: ((b & ~bit) | 1) & 0xFF
+    def split(V):
+        return [((((V >> (q * 8)) & 0xFF) * 0x01010101) | 0x01010101) & 0xFFFFFFFF for q in range(4)]
+    nodes = p["nodes"]; ns = p["node_start"]
+    def rec(off, x0, y0, sz):
+        node = nodes[(off - ns) // _NODE]; h = sz >> 1
+        quad = ((x0, y0), (x0 + h, y0), (x0, y0 + h), (x0 + h, y0 + h))
+        for q in range(4):
+            V = node[q]; qx, qy = quad[q]
+            if count(qx, qy, h) == 0:
+                continue
+            if V & 1:
+                hh = h >> 1
+                sb = [(V >> (s * 8)) & 0xFF for s in range(4)]
+                if hh < 1:
+                    node[q] = (setb(sb[0]) | setb(sb[1]) << 8 | setb(sb[2]) << 16 | setb(sb[3]) << 24)
+                    continue
+                sub = ((qx, qy), (qx + hh, qy), (qx, qy + hh), (qx + hh, qy + hh)); need = False
+                for s in range(4):
+                    c = count(sub[s][0], sub[s][1], hh)
+                    if c == 0:
+                        continue
+                    if c == hh * hh:
+                        sb[s] = setb(sb[s])
+                    else:
+                        need = True; break
+                if not need:
+                    node[q] = (sb[0] | sb[1] << 8 | sb[2] << 16 | sb[3] << 24) | 1
+                else:
+                    noff = ns + len(nodes) * _NODE
+                    nodes.append(split(V)); node[q] = noff
+                    rec(noff, qx, qy, h)
+            else:
+                rec(V, qx, qy, h)
+    rec(ns, 0, 0, R)

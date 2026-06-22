@@ -713,15 +713,25 @@ def _apply(
             if not parts or not sdb_mod.is_sdb(parts[1][3]):
                 result.warn(f"sdb_patch: {sg.win} has no editable SDB buffer — skipped")
                 continue
-            g = sdb_mod.decode_grid(parts[1][3])
-            if g["R"] != sg.grid_size:
-                result.warn(f"sdb_patch: grid size {g['R']} != patch {sg.grid_size} for {sg.win} — skipped")
-                continue
-            grid = g["grid"]
-            for ly in sg.layers:
-                raw_mask = zlib.decompress(ly.mask)   # masks are zlib-compressed LSB-first bitmaps
-                sdb_mod.apply_layer_mask(grid, g["R"], ly.bit, raw_mask)
-            new_sdb = sdb_mod.encode_from_grid(g["orig"], grid, g["R"])
+            buf = parts[1][3]
+            specs = [(ly.bit, zlib.decompress(ly.mask), sg.grid_size) for ly in sg.layers]
+            try:
+                # FAST path: parse the tree, set each layer to its target by editing IN PLACE
+                # (numpy diff + paint only the changed cells), then serialize. ~9x faster than the
+                # decode→apply→full-rebuild path, and byte-exact on the resulting layer state.
+                parsed = sdb_mod.parse(buf)
+                sdb_mod.apply_layer_masks_inplace(parsed, specs)
+                new_sdb = sdb_mod.serialize(parsed)
+            except Exception as e:                       # numpy missing / unexpected tree → legacy path
+                log.info("sdb_patch: in-place apply unavailable (%s) — using legacy rebuild", e)
+                g = sdb_mod.decode_grid(buf)
+                if g["R"] != sg.grid_size:
+                    result.warn(f"sdb_patch: grid size {g['R']} != patch {sg.grid_size} for {sg.win} — skipped")
+                    continue
+                grid = g["grid"]
+                for bit, raw_mask, _ in specs:
+                    sdb_mod.apply_layer_mask(grid, g["R"], bit, raw_mask)
+                new_sdb = sdb_mod.encode_from_grid(g["orig"], grid, g["R"])
             to_replace[actual_path] = sdb_mod.replace_buffer4(win, new_sdb)
             result.changes_applied += len(sg.layers)
 

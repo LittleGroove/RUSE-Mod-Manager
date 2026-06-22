@@ -39,6 +39,16 @@ try:
 except Exception:
     _HAVE_PIL = False
 
+# High-def terrain decode (issue #8) — optional: needs numpy + Pillow.  Guarded so the editor still
+# runs (falling back to the baked minimap) if the codec/numpy isn't available.
+try:
+    from ruse_mod_engine import terrain_codec as _terrain_codec
+except Exception:
+    _terrain_codec = None
+
+import threading
+import tempfile
+
 # ── Theme (mirrors mod_manager.py "Field Operations" palette) ──────────────────
 _R_BG        = "#08101c"
 _R_BG_PANEL  = "#0e1a2a"
@@ -1018,6 +1028,7 @@ class MapEditorWindow(tk.Frame):
         # view state
         self._pil = None
         self._bbox = None
+        self._terrain_token = 0      # bumps per map change; stale background decodes are discarded (#8)
         self._scn = None            # full scenario dict (editable source of truth)
         self._zones = []            # render dicts (parallel-ish to scn['zones'])
         self._sel = None            # index into self._zones
@@ -1045,6 +1056,19 @@ class MapEditorWindow(tk.Frame):
         self._comp_tk = None
         self._comp_key = None
         self._comp_rect = None      # base-pixel region the cached composite covers (viewport render)
+        # ── view/data render split (perf): the static overlays are rasterised ONCE into whole-map
+        # bitmaps in "overlay space" (base pixels × supersample) and only crop+resized on pan/zoom
+        # (a C-level PIL op), instead of redrawing every vector primitive each frame. Two independent
+        # caches so a paint stroke rebuilds ONLY the cheap numpy SDB raster, never the KDT/road vectors.
+        self._ov_scale = 1          # overlay supersample factor (base px -> overlay px)
+        self._ov_sdb = None         # cached RGBA of the SDB paint layers (whole map, overlay space)
+        self._ov_sdb_key = None
+        self._ov_vec = None         # cached RGBA of sectors + KDT mesh + roads (whole map, overlay space)
+        self._ov_vec_key = None
+        self._ov_sdb_dirty = True   # SDB raster needs (re)building (paint / layer toggle / load)
+        self._ov_vec_dirty = True   # vector raster needs (re)building (sector/KDT/road change / load)
+        self._dragging = False      # a sector/KDT vertex drag is live -> freeze the vec overlay (stale
+        #   fill is fine; the moving handles/outline are drawn as live canvas items), rebuild on release
         # KDT (mechanics mesh) overlay + global transform preview
         self._kf = None             # kdt.read_full of the map's KDT
         self._kdt_bytes = None      # original KDT bytes (for transform + save)
@@ -1104,24 +1128,18 @@ class MapEditorWindow(tk.Frame):
         # forest CONCEALMENT zones (mapinfo.win buffer4 SDB) — where the game grants forest cover
         self._forest = None         # {"cells": [(x0,y0,x1,y1)], "bbox": (...)}
         self._show_forest = tk.BooleanVar(value=True)
-        # editable SDB AI-terrain grid (paint/erase any layer bit -> rebuild SDB -> repack mapinfo.win).
-        # bit 0x08=forest/concealment (green, confirmed), 0x04=ground clear-path "blocked" (blue; air
-        # ignores it), 0x02/0x10/0x20/0x40/0x80 = the other AI-terrain "fence" layers (functions TBD,
-        # mapped empirically in-game). decode/encode round-trips byte-identical, so painting is safe.
-        self._sdb = None            # {"grid","R","bboxX","bboxY","orig","win_vpath","win","dirty"}
-        self._sdb_layers = [        # (label, bit, (r,g,b)) — in-game confirmed: 0x08 conceal, 0x04 vision
-            ("Conceal / forest (0x08)",  0x08, (60, 220, 90)),
-            ("Sight-block (0x04)",       0x04, (80, 160, 255)),
-            ("Layer 0x02 (red)",         0x02, (255, 80, 80)),
-            ("Layer 0x10 (yellow)",      0x10, (255, 220, 60)),
-            ("Layer 0x20 (purple)",      0x20, (220, 80, 255)),
-            ("Layer 0x40 (cyan)",        0x40, (60, 230, 230)),
-            ("Layer 0x80 (orange)",      0x80, (255, 150, 40)),
-        ]
+        # Editable SDB AI-terrain quadtree (paint/erase -> edit-in-place -> repack mapinfo.win), via the
+        # unified codec ruse_mod_engine.sdb (issue #9), byte-identical safe. We edit buffer4 in
+        # mapinfo.win — the game's runtime concealment/movement SDB (TSparseSpatialStateDatabaseStatic).
+        # A Ghidra runtime audit (jpype_sdb_runtime_audit) proved the game queries ONLY two layer bits:
+        # 0x08 = forest / concealment (GetIsEnForet) and 0x04 = blocked / clear-path. (The terrain dat's
+        # output.sdb is NEVER loaded by the game — a build artifact — so it isn't an edit target.)
+        self._sdb = None            # {"parsed","grid","R","bboxX","bboxY","win","win_vpath","dirty"}
         self._conceal_edit = tk.BooleanVar(value=False)   # paint mode active
         self._conceal_erase = tk.BooleanVar(value=False)  # erase instead of paint
         self._conceal_brush = tk.IntVar(value=40000)      # brush radius in world units
         self._conceal_layer = tk.IntVar(value=0x08)       # which layer BIT to paint/erase
+        self._sdb_layers = self._sdb_layers_list()        # the two runtime layers (label,bit,rgb)
         # per-layer visibility (forest on by default) + cached overlay cells per bit
         self._sdb_show = {bit: tk.BooleanVar(value=(bit == 0x08)) for (_, bit, _) in self._sdb_layers}
         self._sdb_cells = {}        # bit -> [(x0,y0,x1,y1)] overlay cells (lazy, invalidated on paint)
@@ -1339,8 +1357,9 @@ class MapEditorWindow(tk.Frame):
         right.pack_propagate(False)
         tk.Label(right, text=t("AI-TERRAIN LAYERS (SDB)"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", padx=8, pady=(8, 0))
-        tk.Label(right, text=t("show ✓   paint target ◉   (mapinfo.win buffer4)"), background=_R_BG_PANEL,
-                 foreground=_R_TEXT_DIM, font=_F_MAIN).pack(anchor="w", padx=8, pady=(0, 4))
+        tk.Label(right, text=t("show ✓   paint target ◉   (mapinfo.win — runtime SDB)"),
+                 background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN).pack(anchor="w", padx=8,
+                                                                                   pady=(0, 4))
         for label, bit, rgb in self._sdb_layers:
             row = tk.Frame(right, background=_R_BG_PANEL); row.pack(fill="x", padx=8, pady=1)
             tk.Label(row, text="  ", background="#%02x%02x%02x" % rgb,
@@ -1438,6 +1457,105 @@ class MapEditorWindow(tk.Frame):
         except Exception:
             return None
 
+    def _terrain_dat_src(self, map_dir):
+        """Resolve the on-disk terrain dat (mod/backup/game) for `map_dir`, or None."""
+        want = _norm(map_dir)
+        for k in self.project.terrain_dat_keys():            # "terrain/DataMap<Name>_v09.dat"
+            stem = k.split("/", 1)[1]
+            if stem.lower().startswith("datamap") and stem.lower().endswith("_v09.dat") \
+                    and _norm(stem[len("DataMap"):-len("_v09.dat")]) == want:
+                try:
+                    src = self.project.read_source(k)
+                    return str(src) if os.path.isfile(str(src)) else None
+                except Exception:
+                    return None
+        return None
+
+    def _terrain_cache_path(self, map_dir):
+        """Generated high-def terrain is cached WITH the mod project, so it persists with it (the
+        project folder is the home for everything created for the mod — like notes.json and the
+        edited dats).  Falls back to the system temp dir only if the project folder isn't writable."""
+        safe = re.sub(r"[^A-Za-z0-9_.-]", "_", map_dir)
+        try:
+            base = os.path.join(str(self.project.folder), "cache", "terrain")
+            os.makedirs(base, exist_ok=True)
+        except Exception:
+            base = os.path.join(tempfile.gettempdir(), "ruse_mm_terrain_cache")
+            try:
+                os.makedirs(base, exist_ok=True)
+            except Exception:
+                pass
+        return os.path.join(base, f"{safe}_hd.png")
+
+    def _load_terrain(self, map_dir):
+        """The map's display image, REPLACING the baked minimap with the decoded high-def terrain
+        (issue #8).  Returns an image to show NOW — a cached high-def PNG if we have one, else the
+        minimap as an instant placeholder while the tmst high-def decodes on a background thread and
+        swaps in.  Falls back to the minimap if Pillow/numpy/the codec aren't available."""
+        self._terrain_token += 1
+        if not _HAVE_PIL:
+            return None
+        cache = self._terrain_cache_path(map_dir)
+        if os.path.isfile(cache):
+            try:
+                return Image.open(cache).convert("RGBA")
+            except Exception:
+                pass
+        if _terrain_codec is not None:
+            src = self._terrain_dat_src(map_dir)
+            if src:
+                token = self._terrain_token
+                self._status.config(text=t("  decoding high-def terrain…"))
+                threading.Thread(target=self._decode_terrain_bg,
+                                 args=(src, cache, token), daemon=True).start()
+        return self._load_minimap(map_dir)
+
+    def _decode_terrain_bg(self, src, cache, token):
+        """Background: extract the tmst pair, pick the best LOD, decode + enhance, cache, then swap."""
+        try:
+            dat = edata.open_dat(src)
+            tmst = chunk = png = None
+            for vp in dat.list():
+                low = vp.lower()
+                if low.endswith("highdef.tmst_pc"):
+                    tmst = dat.get(vp)
+                elif low.endswith("highdef.tmst_chunk_pc"):
+                    chunk = dat.get(vp)
+                elif low.endswith("terrain.png"):
+                    png = dat.get(vp)
+            if not (tmst and chunk):
+                return
+            gw, gh, _recs = _terrain_codec.parse_tile_index(tmst)
+            lod = _terrain_codec.best_lod(gw, gh)         # LOD0 detail where the map is small enough
+            img = _terrain_codec.decode_terrain(tmst, chunk, lod=lod, use_index=True)
+            if img is None:
+                return
+            # Lay the tmst's fine DETAIL over the clean minimap colour base — kills the per-tile
+            # banding and restores true colour (see terrain_codec.compose).
+            base = Image.open(io.BytesIO(png)).convert("RGB") if png else None
+            img = _terrain_codec.compose(img, base)
+            try:
+                img.save(cache)
+            except Exception:
+                pass
+            rgba = img.convert("RGBA")
+        except Exception:
+            return
+        self.after(0, lambda: self._apply_terrain(rgba, token))
+
+    def _apply_terrain(self, rgba, token):
+        if token != self._terrain_token:      # user switched maps meanwhile — discard
+            return
+        try:
+            if not self.winfo_exists():
+                return
+        except Exception:
+            return
+        self._pil = rgba
+        self._status.config(text="")
+        self._invalidate_redraw()
+        self._fit_view()
+
     def _on_map_change(self, _=None, force=False):
         if not force and not self._confirm_discard():
             return
@@ -1445,12 +1563,15 @@ class MapEditorWindow(tk.Frame):
         scns = list_scenarios(self._dm, map_dir)
         self._scn_cb["values"] = scns
         ui_util.fit_combobox(self._scn_cb, minimum=24, maximum=44)
-        self._pil = self._load_minimap(map_dir)
+        self._pil = self._load_terrain(map_dir)
         win = self._dm.get(f"datasmap\\{map_dir}\\mapinfo.win")
         self._bbox = read_bbox(win) if win else None
         self._roads = read_road_graph(win) if win else None
         self._forest = read_forest_zones(win) if win else None
-        self._load_conceal(win, f"datasmap\\{map_dir}\\mapinfo.win")
+        self._sdb_map_dir = map_dir
+        self._sdb_win = win
+        self._sdb_win_vpath = f"datasmap\\{map_dir}\\mapinfo.win"
+        self._load_sdb()
         if scns:
             # prefer the standard/MP scenario (challenge/testia variants have different placements)
             self._scn_cb.set(next((s for s in ("leveldesign_normal", "leveldesign") if s in scns),
@@ -1459,25 +1580,40 @@ class MapEditorWindow(tk.Frame):
         self._load_game_modes_state()      # reflect the map's currently-enabled game modes in the panel
         self._fit_view()
 
-    # ── concealment (forest SDB) painting ───────────────────────────────────────
-    def _load_conceal(self, win, win_vpath):
-        """Decode the editable AI-terrain SDB grid from mapinfo.win buffer4 (all layer bits)."""
+    # ── AI-terrain SDB painting (unified codec; mapinfo buffer4 = the game's runtime SDB) ─────
+    _SDB_LAYER_RGB = {0x08: (60, 220, 90), 0x04: (80, 160, 255)}
+
+    def _sdb_layers_list(self):
+        """The (label, bit, rgb) rows for the two runtime-meaningful SDB layers (Ghidra-confirmed:
+        only 0x08 forest/conceal and 0x04 blocked/clear-path are ever queried by the game)."""
+        return [(lbl, bit, self._SDB_LAYER_RGB.get(bit, (200, 200, 200)))
+                for (lbl, bit) in sdb_mod.LAYERS_BUFFER4]
+
+    def _load_sdb(self):
+        """Decode the editable buffer4 SDB grid (mapinfo.win) with the unified codec. Stores the parsed
+        tree for edit-in-place writeback."""
         self._sdb = None
-        self._sdb_cells = {}; self._sdb_rev += 1
-        parts = sdb_mod.split_mapinfo(win) if win else None
-        if not parts:
-            return
-        _, bufs, _ = parts
-        if len(bufs) < 4 or not sdb_mod.is_sdb(bufs[3]):
-            return
+        self._sdb_cells = {}; self._sdb_rev += 1; self._ov_sdb_dirty = True
         try:
-            d = sdb_mod.decode_grid(bufs[3])
-        except Exception:
-            return
-        d.update(orig=bufs[3], win_vpath=win_vpath, win=win, dirty=False)
-        self._sdb = d
+            win = getattr(self, "_sdb_win", None)
+            parts = sdb_mod.split_mapinfo(win) if win else None
+            if not parts or len(parts[1]) < 4 or not sdb_mod.is_sdb(parts[1][3]):
+                self._sdb_status(t("(no SDB)")); return
+            buf = parts[1][3]
+            parsed = sdb_mod.parse(buf)
+            grid, R = sdb_mod.to_grid(parsed)
+            bboxX = struct.unpack_from("<f", buf, 37)[0]
+            bboxY = struct.unpack_from("<f", buf, 41)[0]
+            self._sdb = {"parsed": parsed, "grid": bytearray(grid), "R": R, "bboxX": bboxX,
+                         "bboxY": bboxY, "win": win,
+                         "win_vpath": getattr(self, "_sdb_win_vpath", None), "dirty": False}
+        except Exception as e:
+            self._sdb_status(t("SDB load failed: {e}", e=e)); return
+        self._sdb_status(t("SDB {r}x{r}  (mapinfo buffer4)", r=self._sdb["R"]))
+
+    def _sdb_status(self, msg):
         if self._sdb_lbl is not None:
-            self._sdb_lbl.config(text=t("SDB {r}x{r}  cell={cell:.0f}", r=d["R"], cell=d.get("cell", 0)))
+            self._sdb_lbl.config(text=msg)
 
     def _sdb_cells_for(self, bit):
         """Overlay cells for a layer bit (lazy; invalidated on paint of that bit)."""
@@ -1490,20 +1626,40 @@ class MapEditorWindow(tk.Frame):
 
     def _on_paint_layer(self):
         """Selecting a paint target auto-shows that layer so you see what you edit."""
-        self._sdb_show[self._conceal_layer.get()].set(True)
+        self._sdb_show.setdefault(self._conceal_layer.get(), tk.BooleanVar(value=True)).set(True)
         self._invalidate_redraw()
 
     def _conceal_refresh_overlay(self):
-        self._invalidate_redraw()
+        self._invalidate_sdb()      # only the SDB raster changed — don't re-rasterise the vectors
 
     def _conceal_paint_at(self, sx, sy):
         if not self._sdb:
             return
+        try:
+            import numpy as np
+        except Exception:
+            return
         bit = self._conceal_layer.get()
         wx, wy = self._screen_to_world(sx, sy)
-        sdb_mod.paint_circle(self._sdb["grid"], self._sdb["R"], self._sdb["bboxX"], self._sdb["bboxY"],
-                             wx, wy, float(self._conceal_brush.get()),
-                             bit=bit, erase=self._conceal_erase.get())
+        R = self._sdb["R"]; bboxX = self._sdb["bboxX"]; bboxY = self._sdb["bboxY"]
+        radius = float(self._conceal_brush.get())
+        # circular brush mask at grid resolution
+        cw = bboxX / R; ch = bboxY / R
+        cx = int(wx / cw); cy = int(wy / ch)
+        rx = max(1, int(radius / cw)); ry = max(1, int(radius / ch))
+        ys, xs = np.ogrid[0:R, 0:R]
+        mask = (((xs + 0.5) * cw - wx) ** 2 + ((ys + 0.5) * ch - wy) ** 2) <= radius * radius
+        if not mask.any():
+            return
+        erase = self._conceal_erase.get()
+        sdb_mod.paint_tree(self._sdb["parsed"], mask, R, bit, not erase)
+        # keep the display grid in sync with the edited tree (same mask)
+        g = np.frombuffer(self._sdb["grid"], np.uint8).reshape(R, R).copy()
+        if erase:
+            g[mask] = (g[mask] & np.uint8(~bit & 0xFF)) | 1
+        else:
+            g[mask] = (g[mask] | np.uint8(bit)) | 1
+        self._sdb["grid"] = bytearray(g.tobytes())
         self._sdb["dirty"] = True
         self._sdb_cells.pop(bit, None)      # invalidate this layer's overlay
         self._sdb_rev += 1
@@ -1650,12 +1806,12 @@ class MapEditorWindow(tk.Frame):
     def _kdt_preview(self):
         if self._kf:
             self._kdt_show.set(True)
-        self._redraw()
+        self._invalidate_vec()      # KDT mesh shown/transform applied — rebuild the vector overlay
 
     def _kdt_reset(self, redraw=True):
         self._kdt_dx.set("0"); self._kdt_dy.set("0"); self._kdt_scale.set("1.0")
         if redraw:
-            self._redraw()
+            self._invalidate_vec()  # transform reset moves the mesh — rebuild the vector overlay
 
     def _kdt_follow_toggle(self):
         """KDT follow writes verts only (encode_mesh) on save — it KEEPS the per-triangle zone link so
@@ -3717,8 +3873,7 @@ class MapEditorWindow(tk.Frame):
             self._painting = True
             self._press = (e.x, e.y, self._ox, self._oy)
             self._conceal_paint_at(e.x, e.y)
-            self._conceal_refresh_overlay()
-            self._invalidate_redraw()
+            self._conceal_refresh_overlay()                 # SDB-only refresh (cheap numpy raster)
             return
         self._painting = False
         self._drag_kdt_vi = None
@@ -3732,6 +3887,8 @@ class MapEditorWindow(tk.Frame):
                                        or self._drag_kdt_vi is not None)
                               else self._handle_at(e.x, e.y))
         self._press = (e.x, e.y, self._ox, self._oy)
+        # a sector-cluster / KDT-vertex drag freezes the heavy vector overlay for the whole stroke
+        self._dragging = (self._drag_kdt_vi is not None or self._drag_cluster is not None)
         if self._drag_cam is not None or self._drag_place is not None:
             return
         if self._drag_kdt_vi is not None:
@@ -3754,8 +3911,7 @@ class MapEditorWindow(tk.Frame):
             now = time.monotonic()
             if now - getattr(self, "_last_conceal_ref", 0) > 0.12:  # throttle overlay regen
                 self._last_conceal_ref = now
-                self._conceal_refresh_overlay()
-                self._invalidate_redraw()
+                self._conceal_refresh_overlay()             # SDB-only (cheap); no vector rebuild
             return
         x0, y0, ox0, oy0 = self._press
         if abs(e.x - x0) + abs(e.y - y0) > 3:
@@ -3771,10 +3927,10 @@ class MapEditorWindow(tk.Frame):
             self._redraw()
         elif self._drag_kdt_vi is not None:                 # drag a KDT sector border vertex
             self._kdt_move(*self._screen_to_world(e.x, e.y))
-            self._invalidate_redraw()
+            self._recompose()                               # vec overlay frozen; handles drawn live
         elif self._drag_cluster is not None:                # drag a boundary node (ring-hooked + KDT follows)
             self._sector_node_move(*self._screen_to_world(e.x, e.y))
-            self._invalidate_redraw()
+            self._recompose()                               # vec overlay frozen; outline drawn live
         else:                                               # pan
             self._ox = ox0 + (e.x - x0)
             self._oy = oy0 + (e.y - y0)
@@ -3783,8 +3939,7 @@ class MapEditorWindow(tk.Frame):
     def _press_release(self, e):
         if self._painting:                                  # finish a concealment paint stroke
             self._painting = False
-            self._conceal_refresh_overlay()
-            self._invalidate_redraw()
+            self._conceal_refresh_overlay()                 # final SDB-only refresh
             self._press = None
             return
         if self._drag_cam is not None:
@@ -3796,11 +3951,13 @@ class MapEditorWindow(tk.Frame):
         elif self._drag_kdt_vi is not None:
             self._drag_kdt_vi = None
             self._drag_kdt_orig = self._drag_kdt_p0 = None
-            self._invalidate_redraw()
+            self._dragging = False
+            self._invalidate_vec()              # stroke done: rebuild the vector overlay once
         elif self._drag_cluster is not None:
             self._drag_cluster = None
             self._drag_orig = self._drag_p0 = None
-            self._invalidate_redraw()
+            self._dragging = False
+            self._invalidate_vec()              # stroke done: rebuild the vector overlay once
         elif self._press and not self._moved and self._pil and self._bbox:
             # click selects a placement under the cursor; sector selection is via the left list ONLY
             pi = self._place_at(e.x, e.y)
@@ -3849,7 +4006,7 @@ class MapEditorWindow(tk.Frame):
         self._scale *= factor
         self._ox = e.x - bx * self._scale
         self._oy = e.y - by * self._scale
-        self._invalidate_redraw()
+        self._recompose()           # zoom is a view change only — reuse both cached overlays
 
     def _hover(self, e):
         if self._pil and self._bbox:
@@ -3883,6 +4040,30 @@ class MapEditorWindow(tk.Frame):
 
     # ── render ──────────────────────────────────────────────────────────────────
     def _invalidate_redraw(self):
+        """Data may have changed: rebuild BOTH overlay rasters on the next compose. Used by the
+        infrequent callers (toggles, property commits, map/scenario load). The per-motion hot paths
+        use the granular _invalidate_sdb / _invalidate_vec / _recompose instead so a paint stroke
+        never re-rasterises the (heavy) KDT/road vectors and a pan/zoom rebuilds neither overlay."""
+        self._ov_sdb_dirty = True
+        self._ov_vec_dirty = True
+        self._comp_key = None
+        self._redraw()
+
+    def _invalidate_sdb(self):
+        """Only the painted SDB layer changed — leave the vector overlay cache intact (keeps painting
+        snappy: no KDT/road redraw)."""
+        self._ov_sdb_dirty = True
+        self._comp_key = None
+        self._redraw()
+
+    def _invalidate_vec(self):
+        """Only sectors / KDT mesh / roads changed — leave the SDB raster cache intact."""
+        self._ov_vec_dirty = True
+        self._comp_key = None
+        self._redraw()
+
+    def _recompose(self):
+        """View transform only (pan/zoom): re-crop+resize the cached overlays, rebuild NEITHER."""
         self._comp_key = None
         self._redraw()
 
@@ -3907,11 +4088,137 @@ class MapEditorWindow(tk.Frame):
     def _rect_covers(r, v):
         return r is not None and r[0] <= v[0] and r[1] <= v[1] and r[2] >= v[2] and r[3] >= v[3]
 
+    # ── overlay rasters (view-independent; built once per data change, reused on pan/zoom) ──────
+    # The static overlays are rendered ONCE into whole-map bitmaps in "overlay space" (= base/minimap
+    # pixels × a supersample factor, capped so the longest side stays ~2048px → thin lines stay crisp
+    # at normal zoom). Pan/zoom then only crop+resize these cached bitmaps (a C-level PIL op) instead
+    # of re-running thousands of Python ImageDraw/numpy calls every frame. Two independent caches:
+    #   _ov_sdb  — the painted SDB layers (numpy raster; rebuilt by a paint stroke, which is cheap)
+    #   _ov_vec  — sectors + KDT mesh + roads (vector raster; the heavy one — frozen during drags)
+    def _ov_scale_for(self, W, H):
+        # supersample base px so 1px overlay lines render ~1px on screen near zoom 1, capped ~2048px
+        return max(1, min(8, 2048 // max(W, H, 1)))
+
+    def _ov_world_to_overlay(self, x, y, ovs):
+        bx, by = self._world_to_base(x, y)
+        return bx * ovs, by * ovs
+
+    def _build_sdb_overlay(self):
+        """Rasterise the visible SDB paint layers into _ov_sdb (overlay space). Direct numpy fill from
+        the R×R grid → one Image.fromarray + a NEAREST resize per layer (no per-cell Python loop, no
+        grid_to_cells). This is what makes a paint stroke refresh in ms instead of ~10s."""
+        W, H = self._pil.size; ovs = self._ov_scale
+        OW, OH = max(1, W * ovs), max(1, H * ovs)
+        ov = Image.new("RGBA", (OW, OH), (0, 0, 0, 0))
+        if self._bbox and self._sdb:
+            try:
+                import numpy as np
+            except Exception:
+                np = None
+            if np is not None:
+                R = self._sdb["R"]; bboxX = self._sdb["bboxX"]; bboxY = self._sdb["bboxY"]
+                g = np.frombuffer(bytes(self._sdb["grid"]), np.uint8).reshape(R, R)
+                # destination box (overlay px) for the SDB world extent [0,bboxX]×[0,bboxY]
+                bx0, by0 = self._ov_world_to_overlay(0.0, 0.0, ovs)
+                bx1, by1 = self._ov_world_to_overlay(bboxX, bboxY, ovs)
+                dx0 = int(math.floor(min(bx0, bx1))); dy0 = int(math.floor(min(by0, by1)))
+                dw = max(1, int(math.ceil(max(bx0, bx1))) - dx0)
+                dh = max(1, int(math.ceil(max(by0, by1))) - dy0)
+                flip = self._flip_y.get()                  # grid row 0 = world y 0; y-flip puts it bottom
+                for _label, _bit, _rgb in self._sdb_layers:
+                    if not self._sdb_show[_bit].get():
+                        continue
+                    mask = (g & _bit) > 0
+                    if not mask.any():
+                        continue
+                    rgba = np.zeros((R, R, 4), np.uint8)
+                    rgba[..., 0] = _rgb[0]; rgba[..., 1] = _rgb[1]; rgba[..., 2] = _rgb[2]
+                    rgba[..., 3] = np.where(mask, 104, 0).astype(np.uint8)
+                    block = Image.fromarray(rgba, "RGBA")
+                    if flip:
+                        block = block.transpose(Image.FLIP_TOP_BOTTOM)
+                    block = block.resize((dw, dh), Image.NEAREST)
+                    # paste (no mask) into a full-size transparent tile preserves the block's STRAIGHT
+                    # alpha (0/104) and clips out-of-bounds; alpha_composite then blends it correctly
+                    # (paste-with-self-as-mask would premultiply against the transparent base = darken).
+                    tile = Image.new("RGBA", (OW, OH), (0, 0, 0, 0))
+                    tile.paste(block, (dx0, dy0))
+                    ov = Image.alpha_composite(ov, tile)
+        self._ov_sdb = ov
+        self._ov_sdb_dirty = False
+
+    def _build_vec_overlay(self):
+        """Rasterise sectors + KDT mesh + roads into _ov_vec (overlay space). Heavy (vector primitives),
+        so it is rebuilt ONLY when that geometry/toggles change — never on pan/zoom, and frozen while a
+        sector/KDT vertex is being dragged (the moving handles/outline are live canvas items instead)."""
+        W, H = self._pil.size; ovs = self._ov_scale
+        OW, OH = max(1, W * ovs), max(1, H * ovs)
+        ov = Image.new("RGBA", (OW, OH), (0, 0, 0, 0))
+        d = ImageDraw.Draw(ov, "RGBA")
+
+        def b(x, y):
+            return self._ov_world_to_overlay(x, y, ovs)
+
+        def onscreen(px, py, pad=8):
+            return -pad <= px <= OW + pad and -pad <= py <= OH + pad
+
+        lw = max(1, ovs)                                   # 1px-at-zoom-1 line width
+        if self._bbox:
+            # scenario AREA-zone polygons = the VISUAL sectors (coloured fill — the EDIT TARGET)
+            for zi, z in enumerate(self._zones if self._show_sectors.get() else []):
+                if zi == self._sel:
+                    continue
+                col = _SECTOR_COLORS[z["idx"] % len(_SECTOR_COLORS)]
+                bp = [b(x, y) for (x, y) in z["verts"]]
+                if not bp:
+                    continue
+                xs = [p[0] for p in bp]; ys = [p[1] for p in bp]
+                if max(xs) < -8 or min(xs) > OW + 8 or max(ys) < -8 or min(ys) > OH + 8:
+                    continue
+                for f in z["faces"]:
+                    if len(f) >= 3 and max(f[:3]) < len(bp):
+                        d.polygon([bp[f[0]], bp[f[1]], bp[f[2]]], fill=col + (55,))
+                for (a, bk) in z["boundary"]:
+                    if a < len(bp) and bk < len(bp):
+                        d.line([bp[a][0], bp[a][1], bp[bk][0], bp[bk][1]], fill=col + (230,), width=lw)
+            # KDT mechanics mesh = a wireframe OVERLAY that FOLLOWS the sectors
+            if self._kdt_show.get() and self._kdt_tris:
+                by_sector = self._kdt_color.get()
+                bp = [b(*self._kdt_xform_world(x, y)) for (x, y) in self._kdt_world]
+                n = len(bp)
+                for ti, (a, bb, k) in enumerate(self._kdt_tris):
+                    if a >= n or bb >= n or k >= n:
+                        continue
+                    if by_sector:
+                        S = self._kdt_tri_sector[ti] if ti < len(self._kdt_tri_sector) else None
+                        col = _SECTOR_COLORS[S % len(_SECTOR_COLORS)] if S is not None else (51, 72, 94)
+                    else:
+                        col = (33, 212, 212)
+                    d.line([bp[a], bp[bb], bp[k], bp[a]], fill=col + (235,), width=lw)
+            # roads ON TOP (brightest): edges + node dots, junctions highlighted
+            if self._show_roads.get() and self._roads:
+                nodes = self._roads["nodes"]
+                bp = [b(x, y) for (x, y, _) in nodes]
+                rw = max(2, 2 * ovs); rr = max(2, ovs + 1)
+                for i, j in self._roads["edges"]:
+                    if onscreen(*bp[i]) or onscreen(*bp[j]):
+                        d.line([bp[i], bp[j]], fill=(214, 142, 64, 255), width=rw)
+                for (px, py), (_, _, deg) in zip(bp, nodes):
+                    if not onscreen(px, py):
+                        continue
+                    if deg >= 3:
+                        d.ellipse([px - rr - 1, py - rr - 1, px + rr + 1, py + rr + 1],
+                                  fill=(255, 214, 110, 255), outline=(70, 44, 12, 255))
+                    else:
+                        d.ellipse([px - rr, py - rr, px + rr, py + rr], fill=(232, 158, 86, 255))
+        self._ov_vec = ov
+        if not self._dragging:                            # while dragging we keep the stale cache
+            self._ov_vec_dirty = False
+
     def _build_composite(self):
-        """Bake the STATIC overlays (sectors + KDT mesh + roads) into one cached bitmap. Only the
-        VISIBLE region (+ a margin for smooth panning) is rendered at screen resolution, so the
-        composite stays ~canvas-sized at ANY zoom (a 256px minimap zoomed 20x would otherwise become
-        a 157 MP image). Panning within the margin reuses the cache; placements/handles are live."""
+        """Compose the visible viewport: crop+resize the base image, then crop+resize the cached SDB
+        and vector overlays over it. The overlays are (re)rasterised only when their data is dirty —
+        pan/zoom just re-crop the existing bitmaps, so this is a handful of C-level PIL ops per frame."""
         W, H = self._pil.size
         sc = self._scale
         cw = max(self._canvas.winfo_width(), 1); ch = max(self._canvas.winfo_height(), 1)
@@ -3925,81 +4232,25 @@ class MapEditorWindow(tk.Frame):
         dw = max(1, int(round((cx1 - cx0) * sc))); dh = max(1, int(round((cy1 - cy0) * sc)))
         resample = Image.NEAREST if sc >= 1 else Image.BILINEAR
         img = self._pil.crop((cx0, cy0, cx1, cy1)).resize((dw, dh), resample)  # _pil is already RGBA
-        ov = Image.new("RGBA", (dw, dh), (0, 0, 0, 0))
-        d = ImageDraw.Draw(ov, "RGBA")
-
-        def b(x, y):                                   # world -> this composite's pixel
-            bx, by = self._world_to_base(x, y)
-            return (bx - cx0) * sc, (by - cy0) * sc
-
-        def onscreen(px, py, pad=8):
-            return -pad <= px <= dw + pad and -pad <= py <= dh + pad
-
-        if self._bbox:
-            # AI-terrain SDB layers (bottom). z-order = self._sdb_layers: forest(green) under
-            # ground-block(blue) under the other "fence" layers, each toggled in the right panel.
-            if self._sdb:
-                for _label, _bit, _rgb in self._sdb_layers:
-                    if not self._sdb_show[_bit].get():
-                        continue
-                    fill = _rgb + (104,)
-                    for (fx0, fy0, fx1, fy1) in self._sdb_cells_for(_bit):
-                        px0, py0 = b(fx0, fy0); px1, py1 = b(fx1, fy1)
-                        if px0 > px1:
-                            px0, px1 = px1, px0
-                        if py0 > py1:
-                            py0, py1 = py1, py0
-                        if px1 < -2 or px0 > dw + 2 or py1 < -2 or py0 > dh + 2:
-                            continue
-                        d.rectangle([px0, py0, px1, py1], fill=fill)
-            # scenario AREA-zone polygons = the VISUAL sectors (coloured fill — these are the EDIT TARGET;
-            # the KDT mechanics mesh below follows them). Togglable with "Sectors".
-            for zi, z in enumerate(self._zones if self._show_sectors.get() else []):
-                if zi == self._sel:
-                    continue
-                col = _SECTOR_COLORS[z["idx"] % len(_SECTOR_COLORS)]
-                bp = [b(x, y) for (x, y) in z["verts"]]
-                xs = [p[0] for p in bp]; ys = [p[1] for p in bp]
-                if not bp or max(xs) < -8 or min(xs) > dw + 8 or max(ys) < -8 or min(ys) > dh + 8:
-                    continue                            # sector fully off the visible composite
-                for f in z["faces"]:
-                    if len(f) >= 3 and max(f[:3]) < len(bp):
-                        d.polygon([bp[f[0]], bp[f[1]], bp[f[2]]], fill=col + (55,))
-                for (a, bk) in z["boundary"]:
-                    if a < len(bp) and bk < len(bp):
-                        d.line([bp[a][0], bp[a][1], bp[bk][0], bp[bk][1]], fill=col + (230,), width=1)
-            # KDT mechanics mesh = a wireframe OVERLAY that FOLLOWS the sectors (validation of the follow).
-            if self._kdt_show.get() and self._kdt_tris:
-                by_sector = self._kdt_color.get()
-                bp = [b(*self._kdt_xform_world(x, y)) for (x, y) in self._kdt_world]
-                n = len(bp)
-                for ti, (a, bb, k) in enumerate(self._kdt_tris):
-                    if a >= n or bb >= n or k >= n:
-                        continue
-                    if by_sector:
-                        S = self._kdt_tri_sector[ti] if ti < len(self._kdt_tri_sector) else None
-                        col = _SECTOR_COLORS[S % len(_SECTOR_COLORS)] if S is not None else (51, 72, 94)
-                    else:
-                        col = (33, 212, 212)
-                    d.line([bp[a], bp[bb], bp[k], bp[a]], fill=col + (235,), width=1)
-            # roads ON TOP (brightest): edges width 2, every node dotted, junctions highlighted
-            if self._show_roads.get() and self._roads:
-                nodes = self._roads["nodes"]
-                bp = [b(x, y) for (x, y, _) in nodes]
-                for i, j in self._roads["edges"]:
-                    if onscreen(*bp[i]) or onscreen(*bp[j]):
-                        d.line([bp[i], bp[j]], fill=(214, 142, 64, 255), width=2)
-                for (px, py), (_, _, deg) in zip(bp, nodes):
-                    if not onscreen(px, py):
-                        continue
-                    if deg >= 3:
-                        d.ellipse([px - 3, py - 3, px + 3, py + 3],
-                                  fill=(255, 214, 110, 255), outline=(70, 44, 12, 255))
-                    else:
-                        d.ellipse([px - 2, py - 2, px + 2, py + 2], fill=(232, 158, 86, 255))
         if img.mode != "RGBA":
             img = img.convert("RGBA")
-        img.alpha_composite(ov)                        # in-place; avoids a full-size copy
+        # keep the overlay caches in sync (rebuild only when dirty; recompute supersample on map resize)
+        ovs = self._ov_scale_for(W, H)
+        if ovs != self._ov_scale:
+            self._ov_scale = ovs
+            self._ov_sdb_dirty = self._ov_vec_dirty = True
+        if self._ov_sdb is None or self._ov_sdb_dirty:
+            self._build_sdb_overlay()
+        if self._ov_vec is None or (self._ov_vec_dirty and not self._dragging):
+            self._build_vec_overlay()
+        ob = (int(cx0 * ovs), int(cy0 * ovs), int(cx1 * ovs), int(cy1 * ovs))
+        for cache in (self._ov_sdb, self._ov_vec):     # SDB under vectors
+            if cache is None:
+                continue
+            crop = cache.crop(ob)
+            if crop.size != (dw, dh):
+                crop = crop.resize((dw, dh), Image.BILINEAR)
+            img.alpha_composite(crop)
         self._comp_tk = ImageTk.PhotoImage(img)
         self._comp_rect = (cx0, cy0, cx1, cy1)
         self._comp_key = self._comp_state()
@@ -4309,16 +4560,16 @@ class MapEditorWindow(tk.Frame):
                                      parent=self)
                 return
             staged.append(t("start camera"))
-        # painted AI-terrain SDB layer (mapinfo.win buffer4)
+        # painted AI-terrain SDB layer (unified codec, edit-in-place -> mapinfo.win buffer4)
         if self._sdb and self._sdb.get("dirty"):
             try:
-                new_sdb = sdb_mod.encode_from_grid(self._sdb["orig"], self._sdb["grid"], self._sdb["R"])
+                new_sdb = sdb_mod.serialize(self._sdb["parsed"])
                 new_win = sdb_mod.replace_buffer4(self._sdb["win"], new_sdb)
             except Exception as e:
                 messagebox.showerror(t("Save failed"), t("Could not rebuild the SDB layer:\n{e}", e=e), parent=self)
                 return
             self.project.set_raw("maps", self._sdb["win_vpath"], new_win)
-            self._sdb.update(orig=new_sdb, win=new_win)    # new baseline (dirty cleared on success below)
+            self._sdb["win"] = new_win
             staged.append(t("AI-terrain / SDB"))
         # edited capture mesh (KDT verts; Eugen's tree preserved) — shelved, only when dirty
         if self._kdt_dirty and self._kdt_vpath and self._kdt_bytes is not None:
