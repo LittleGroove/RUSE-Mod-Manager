@@ -1,0 +1,64 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "formation-tweaks-v1",
+  "name": "Formation Tweaks",
+  "version": "1.0.0",
+  "author": "SuperCrumpets",
+  "description": "Larger Formations and more space between units, Tanks move closer together",
+  "game_version": "24003166",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TFormationConstantes",
+          "match": {
+            "_index": "46414"
+          },
+          "set": {
+            "EspaceEntreSection": {
+              "type": "List<Float32>",
+              "value": [
+                0.0,
+                200.0,
+                150.0,
+                200.0,
+                350.0,
+                350.0,
+                350.0,
+                200.0,
+                1000.0,
+                1000.0
+              ]
+            },
+            "LargeurLigne": {
+              "type": "List<Float32>",
+              "value": [
+                3000.0,
+                3000.0,
+                2500.0,
+                2500.0,
+                3000.0,
+                3000.0,
+                3000.0,
+                750.0,
+                3000.0,
+                3000.0
+              ]
+            },
+            "EspaceEntreAvionSurMemeLigne": {
+              "type": "Float32",
+              "value": 1500.0
+            },
+            "EspaceEntreLigneAvion": {
+              "type": "Float32",
+              "value": 750.0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

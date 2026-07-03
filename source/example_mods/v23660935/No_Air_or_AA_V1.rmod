@@ -1,0 +1,2255 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "no-air-or-aa-v1",
+  "name": "No Air or AA",
+  "version": "1.0.0",
+  "author": "andi3714",
+  "description": "Disables all Air + AA Units which are available in the Game.",
+  "game_version": "23660935",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Junkers_87"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Storch_GR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_ME109_GR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_ME262"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_HE_111"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Ar234"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_P40Warhawk"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_P47Thunderbolt"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Grasshopper"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_B25"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Junkers_87_GR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_B17"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_MS_406"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Dewoitine_D520"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Breguet_693_Guppy"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Potez_63_11"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Amiot_143"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_CR_42_Falco"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Macchi_MC_200"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Macchi_MC_205V"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_SM_79_Sparviero"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Piaggio_P108"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Avro_Anson"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Spitfire"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Hawker_Hurricane"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Hawker_Typhoon"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Wellington"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Lancaster"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Polikarpov_I16"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Yak_3"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_IL2_Sturmovik"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Nieman_R10"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Petlyakov_Pe8"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Petlyakov_Pe8_PV"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Mitsubishi_Zero"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Yokosuka_Judy"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Aichi_Susie"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Kyushu_Shinden"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Nakajima_Renzan"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Aeroport"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseDCA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Aeroport_JAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Def_Position_DCA_JAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Soldat_US_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_US_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Soldat_ITA_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Soldat_FR_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_FR_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Soldat_UK_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_UK_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Soldat_Allemand_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Soldat_Russe_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Russe_Para"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Teishin_Shudan"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Teishin_Shudan"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Giretsu_Kuteitai"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Giretsu_Kuteitai"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TLoadableQuadTextureAnimatedBladeAndResizeViewPort",
+          "match": {
+            "_index": "46680"
+          },
+          "props": [
+            "AlignementX",
+            "AnimatedInX",
+            "TimeOpening",
+            "TimeClosing",
+            "FadeInAlpha",
+            "ChangeViewPort2DScenes"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_40mm_M1_Bofors_L_60"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_40mm_M1_Bofors_L_60_UK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M16_GMC"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M19_GMC_Twin_40mm"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_20mm_FlaK_30_L_112"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_25mm_CA_mle_1938"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_37mm_AA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_20mm_Breda"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_PZIV_Wirbelwind"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Char_DCA_M4_SKINK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_ZSU_37"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M_15_AA_Tank"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_TaSe_20mm"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1000000,
+                1000000,
+                1000000,
+                1000000,
+                1000000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

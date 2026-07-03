@@ -1,0 +1,30 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "air-nerf-v1",
+  "name": "Air Nerf",
+  "version": "1.0.0",
+  "author": "SuperCrumpets",
+  "description": "Fighter Strafing:\nAll except Shinden(ammoid1113): Shots to kill unarmoured 2->3 / 3->4 coverbonus\nDamage 50*6->30*6",
+  "game_version": "23738184",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "45019"
+          },
+          "set": {
+            "Puissance": {
+              "type": "Float32",
+              "value": 30.0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

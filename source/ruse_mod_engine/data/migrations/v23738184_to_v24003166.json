@@ -1,0 +1,3291 @@
+{
+  "from_build": "23738184",
+  "to_build": "24003166",
+  "from_branch": "compat-4",
+  "to_branch": "public",
+  "files": {
+    "ZZ_GladNotPatchableWin.dat|genglad/nonpatchable/clusterbootstrapgame.cpp.gladndfbin": {
+      "inst_remap": {
+        "32": 31,
+        "39": 36,
+        "34": 33,
+        "35": 34,
+        "36": 35,
+        "40": 37,
+        "33": 32
+      },
+      "_instance_segments": [
+        {
+          "from": 32,
+          "to": 36,
+          "offset": -1
+        },
+        {
+          "from": 39,
+          "to": 40,
+          "offset": -3
+        }
+      ],
+      "_class_map": {
+        "12": 11,
+        "13": 12
+      },
+      "removed": [
+        31,
+        37,
+        38,
+        41
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/outgame/clusteroutgame/main.cpp.gladndfbin": {
+      "inst_remap": {
+        "54": 53
+      },
+      "_instance_segments": [
+        {
+          "from": 54,
+          "to": 54,
+          "offset": -1
+        }
+      ],
+      "_class_map": {
+        "20": 19
+      },
+      "removed": [
+        53
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/alpha/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/alpha/scenario_bh/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/battleofthebulge/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/battleofthebulge/scenario_3v3_v01/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/beta/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/chess/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/chess/scenario_2v2_v01/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/chess/scenario_challenge_seelow/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/chessmate/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/chessmate/scenario_challenge/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/compassrose/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/compassrose/scenario_banzai/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/diplomatietriangulaire/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/diplomatietriangulaire/scenario_2v2v2_v01/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/diplomatietriangulaire/scenario_challenge/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/diplomatietriangulaire/scenario_challenge_coop/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/dolly/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/dolly/scenario_coldwar/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "122": 121,
+        "121": 120,
+        "123": 119,
+        "125": 123,
+        "126": 124,
+        "127": 125,
+        "124": 122
+      },
+      "_instance_segments": [
+        {
+          "from": 121,
+          "to": 122,
+          "offset": -1
+        },
+        {
+          "from": 123,
+          "to": 123,
+          "offset": -4
+        },
+        {
+          "from": 124,
+          "to": 127,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        119,
+        120
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/edge/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/edge/scenario_challenge/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/afrique/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/allemagne/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/ardennes/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/base/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/basejap/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/france/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/hollande/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/ia/scenarioplayable/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/italie/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/flat/light/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/gam_ostfriesland/scenario_ostfriesland/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/gamma/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/hurtgen/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/korsun/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/korsun/scenario_1v1_v01/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/krakdeschevaliers/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/kursk43_ladder/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/kursk43_ladder/scenario_2v2_v01/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/kursk43_ladder/scenario_challenge_3945/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/kursk43_ladder/scenario_change_mode_fast/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m01_leipzig/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m02_tunisie/scenario_chapter1/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m02_tunisie/scenario_chapter2/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m02_tunisie/scenario_chapter3/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m02_tunisie/scenario_chapter4/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m02_tunisie/scenario_testauto/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m03_italie/scenario_chapter1/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m03_italie/scenario_chapter2/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m03_italie/scenario_chapter3/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m03_italie/scenario_chapter4/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m03_italie_demo_final/scenario_demo_final/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m04_cotentin/scenario_3v3_demointel/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m04_cotentin/scenario_3v3_v01/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m04_cotentin/scenario_auto_setting/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m04_cotentin/scenario_chapter1/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m04_cotentin/scenario_chapter2/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m04_cotentin/scenario_chapter3/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m05_hollande/scenario_chapter1/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m05_hollande/scenario_chapter2/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m05_hollande/scenario_chapter3/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m06_ardennes/scenario_chapter1/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m06_ardennes/scenario_chapter2/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m06_ardennes/scenario_chapter3/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m07_allemagne/scenario_3v3_v01/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m07_allemagne/scenario_chapter1/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m07_allemagne/scenario_chapter2/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m07_allemagne/scenario_chapter3/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m08_allemagne/scenario_chapter1/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m08_allemagne/scenario_chapter2/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/m08_allemagne/scenario_chapter2-ps3/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/mireille/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/mireille/scenario_narvik/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/robert/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/seize/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/seize/scenario_2v2_v01/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/square/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/supercrossroads4/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/supercrossroads4/scenario_challenge_2/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/supercrossroads4/scenario_testia/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/swamps/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/swamps/scenario_challengeorbraves/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/testia/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/twoislands/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/twoislands/scenario_challenge/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    },
+    "ZZ_GladPatchableWin.dat|genglad/patchable/scenario/valley/scenario/clustermap.cpp.gladndfbin": {
+      "inst_remap": {
+        "124": 123,
+        "123": 122,
+        "125": 121,
+        "127": 125,
+        "128": 126,
+        "129": 127,
+        "126": 124
+      },
+      "_instance_segments": [
+        {
+          "from": 123,
+          "to": 124,
+          "offset": -1
+        },
+        {
+          "from": 125,
+          "to": 125,
+          "offset": -4
+        },
+        {
+          "from": 126,
+          "to": 129,
+          "offset": -2
+        }
+      ],
+      "_class_map": {
+        "30": 27,
+        "31": 30,
+        "32": 31
+      },
+      "removed": [
+        121,
+        122
+      ],
+      "removed_keys": []
+    }
+  }
+}

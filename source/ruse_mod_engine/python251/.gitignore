@@ -1,0 +1,10 @@
+# Keep the slot (README + worker + LICENSE + this file) in the repo; don't commit the interpreter
+# binaries. Python 2.5.1 (the version the game embeds) lives here so python.exe exists; bundled into
+# the packaged build for end users (see build.py). Get it from python.org/ftp/python/2.5.1/python-2.5.1.msi
+# and admin-extract (msiexec /a) — copy python.exe, pythonw.exe, python25.dll, msvcr71.dll, Lib/, DLLs/.
+# LICENSE.txt is the PSF license (tracked) — required to redistribute the interpreter.
+*
+!.gitignore
+!README.md
+!compile_worker.py
+!LICENSE.txt

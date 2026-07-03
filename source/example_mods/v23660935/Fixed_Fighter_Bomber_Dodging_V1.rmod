@@ -1,0 +1,56 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "fixed-fighter-bomber-dodging-v1",
+  "name": "Fixed Fighter Bomber Dodging",
+  "version": "1.0.0",
+  "author": "SuperCrumpets",
+  "description": "Fighter Bomber Bombs Speed x4\nAmmoids 1107, 1116, 1117",
+  "game_version": "23660935",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "45013"
+          },
+          "set": {
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 8000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "45022"
+          },
+          "set": {
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 10000.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "45023"
+          },
+          "set": {
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 10000.0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

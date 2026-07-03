@@ -1,0 +1,30 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "0.5x-airfield-capacity-v1",
+  "name": "0.5x Airfield Capacity",
+  "version": "1.0.0",
+  "author": "Football1995, and RossGosling",
+  "description": "Reduces the number of aeroplanes that can fit in an Airfield from 8 to 4",
+  "game_version": "23738184",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/gdconstanteoriginal.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {
+            "_index": "0"
+          },
+          "set": {
+            "NbAvionsParAeroport": {
+              "type": "Int32",
+              "value": 4
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

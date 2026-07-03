@@ -1,0 +1,378 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "10-0x-artillery-price-v1",
+  "name": "10.0x Artillery Price",
+  "version": "1.0.0",
+  "author": "Football1995, and RossGosling",
+  "description": "Multiplies the Price of every Artillery unit by 10.0x",
+  "game_version": "24003166",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M7_Priest"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                350,
+                350,
+                350,
+                350,
+                350
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M40_GMC"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                500,
+                500,
+                500,
+                500,
+                500
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_75mm_le_FK_38_L_34"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                150,
+                150,
+                150,
+                150,
+                150
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_150mm_sFH_18_L_30"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                500,
+                500,
+                500,
+                500,
+                500
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_75mm_mle_1897"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                100,
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_155mm_GPF"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                500,
+                500,
+                500,
+                500,
+                500
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_87mm_QF_25_pounder"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                250,
+                250,
+                250,
+                250,
+                250
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_140mm_5_5_Inch_BL_Mk_III_L_30"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                400,
+                400,
+                400,
+                400,
+                400
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_152mm_howitzer"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                400,
+                400,
+                400,
+                400,
+                400
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_203mm_howitzer"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                500,
+                500,
+                500,
+                500,
+                500
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_75mm_Canonne_da_75_27"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                150,
+                150,
+                150,
+                150,
+                150
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_210mm_Obice_da_M1935_L_23_8"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                700,
+                700,
+                700,
+                700,
+                700
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_ARL_40"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                250,
+                250,
+                250,
+                250,
+                250
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sexton"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                300,
+                300,
+                300,
+                300,
+                300
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_155mm_M1_Long_Tom_L_45"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                500,
+                500,
+                500,
+                500,
+                500
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_210mm_Morser"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                600,
+                600,
+                600,
+                600,
+                600
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_75mm_Type35"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                100,
+                100,
+                100,
+                100,
+                100
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type2_75mm_KuSe"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                200,
+                200,
+                200,
+                200,
+                200
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type4_HaTo"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                400,
+                400,
+                400,
+                400,
+                400
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

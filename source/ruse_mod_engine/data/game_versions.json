@@ -1,0 +1,31 @@
+{
+  "builds": {
+    "3591": {
+      "branch": "compat",
+      "dataver": "99"
+    },
+    "23661872": {
+      "branch": "compat-2",
+      "dataver": "190852"
+    },
+    "23660935": {
+      "branch": "compat-3",
+      "dataver": "190852"
+    },
+    "23738184": {
+      "branch": "compat-4",
+      "dataver": "190852"
+    },
+    "24003166": {
+      "branch": "public",
+      "dataver": "190852"
+    }
+  },
+  "branches": {
+    "compat": "3591",
+    "compat-2": "23661872",
+    "compat-3": "23660935",
+    "compat-4": "23738184",
+    "public": "24003166"
+  }
+}

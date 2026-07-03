@@ -1,0 +1,4776 @@
+{
+  "roster_size": 456,
+  "catalog_size": 457,
+  "by_category": {
+    "para": 9,
+    "unit": 234,
+    "building": 150,
+    "plane": 63,
+    "depot": 1
+  },
+  "ever_placed": 180,
+  "never_placed_but_valid": 277,
+  "classes": {
+    "Para_Soldat_US_Para": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Soldat_US_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Soldat_US_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Para_Soldat_US_Para_SOLO": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Soldat_US_Para_SOLO",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Soldat_US_Para_SOLO",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Para_Soldat_ITA_Para": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Soldat_ITA_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Soldat_ITA_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Para_Soldat_FR_Para": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Soldat_FR_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Soldat_FR_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Para_Soldat_UK_Para": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Soldat_UK_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Soldat_UK_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Para_Soldat_Allemand_Para": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Soldat_Allemand_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Soldat_Allemand_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Para_Soldat_Russe_Para": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Soldat_Russe_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Soldat_Russe_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Para_Teishin_Shudan": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Teishin_Shudan",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Teishin_Shudan",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Para_Giretsu_Kuteitai": {
+      "category": "para",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Para_Giretsu_Kuteitai",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Para_Giretsu_Kuteitai",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportCanon": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportCanon",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportCanon",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportCanon_GER": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportCanon_GER",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportCanon_GER",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportCanon_ITA": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportCanon_ITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportCanon_ITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportCanon_URSS": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportCanon_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportCanon_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportCanon_FR": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportCanon_FR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportCanon_FR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportCanon_UK": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportCanon_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportCanon_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportCanon_JAP": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportCanon_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportCanon_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportSoldier": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportSoldier",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportSoldier",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportSoldier_GER": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportSoldier_GER",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportSoldier_GER",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportSoldier_UK": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportSoldier_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportSoldier_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportSoldier_URSS": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportSoldier_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportSoldier_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportSoldier_FR": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportSoldier_FR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportSoldier_FR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportSoldier_ITA": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportSoldier_ITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportSoldier_ITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TransportSoldier_JAP": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportSoldier_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportSoldier_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Soldat_US_Para": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_US_Para",
+      "used_count": 35,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_US_Para",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel",
+        "m07_allemagne/leveldesign_chapter1",
+        "m07_allemagne/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Soldat_US_Para_SOLO": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_US_Para_SOLO",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_US_Para_SOLO",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Soldat_ITA_Para": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_ITA_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_ITA_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Soldat_FR_Para": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_FR_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_FR_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Soldat_UK_Para": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_UK_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_UK_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Soldat_Allemand_Para": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_Allemand_Para",
+      "used_count": 67,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_Allemand_Para",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter4"
+      ]
+    },
+    "Unit_Soldat_Russe_Para": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_Russe_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_Russe_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Hotchkiss_H_39": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Hotchkiss_H_39",
+      "used_count": 37,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Hotchkiss_H_39",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Vickers": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Vickers",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Unit_Vickers",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Willis_MB": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Willis_MB",
+      "used_count": 12,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Willis_MB",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m01_leipzig/leveldesign",
+        "m06_ardennes/leveldesign_chapter1",
+        "m06_ardennes/leveldesign_chapter2"
+      ]
+    },
+    "Unit_Kubelwagen": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Kubelwagen",
+      "used_count": 89,
+      "placement_string": "front.parametres.Classes.Unit_Kubelwagen",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chessmate/leveldesign_challenge",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Unit_SdkFz_222": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_SdkFz_222",
+      "used_count": 15,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_SdkFz_222",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3"
+      ]
+    },
+    "Unit_BA_11": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_BA_11",
+      "used_count": 24,
+      "placement_string": "parametres.Classes.Unit_BA_11",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Autoblinda_40": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Autoblinda_40",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Autoblinda_40",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Autoblinda_43": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Autoblinda_43",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Autoblinda_43",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Unite_Vide_L": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Unite_Vide_L",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Unite_Vide_L",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Unite_Vide_B": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Unite_Vide_B",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Unite_Vide_B",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Soldat_US_Leger": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_US_Leger",
+      "used_count": 60,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_US_Leger",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_Soldat_US_Lourd": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_US_Lourd",
+      "used_count": 20,
+      "placement_string": "parametres.Classes.Unit_Soldat_US_Lourd",
+      "ever_placed": true,
+      "example_scenarios": [
+        "dolly/leveldesign_coldwar",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_Soldat_US_Leger_SOLO": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_US_Leger_SOLO",
+      "used_count": 16,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_US_Leger_SOLO",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Unit_Soldat_ITA_Recon": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_ITA_Recon",
+      "used_count": 29,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Soldat_ITA_Recon",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Unit_Soldat_ITA_Recon_SOLO": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_ITA_Recon_SOLO",
+      "used_count": 3,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Soldat_ITA_Recon_SOLO",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Soldat_ITA_Leger": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_ITA_Leger",
+      "used_count": 60,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_ITA_Leger",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Unit_Soldat_ITA_Leger_SOLO": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_ITA_Leger_SOLO",
+      "used_count": 33,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Soldat_ITA_Leger_SOLO",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Soldat_ITA_Lourd": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_ITA_Lourd",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_ITA_Lourd",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Soldat_FR_Leger": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_FR_Leger",
+      "used_count": 16,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Soldat_FR_Leger",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville"
+      ]
+    },
+    "Unit_Soldat_FR_Lourd": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_FR_Lourd",
+      "used_count": 21,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Soldat_FR_Lourd",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville"
+      ]
+    },
+    "Unit_Soldat_UK_Leger": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_UK_Leger",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_UK_Leger",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Soldat_UK_Lourd": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_UK_Lourd",
+      "used_count": 3,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_UK_Lourd",
+      "ever_placed": true,
+      "example_scenarios": [
+        "mireille/leveldesign_narvik"
+      ]
+    },
+    "Unit_Soldat_Allemand_Leger": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_Allemand_Leger",
+      "used_count": 639,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_Allemand_Leger",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chessmate/leveldesign_challenge",
+        "kursk43_ladder/leveldesign_challenge_3945",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Unit_Soldat_Allemand_Leger_SOLO": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_Allemand_Leger_SOLO",
+      "used_count": 60,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_Allemand_Leger_SOLO",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Unit_Soldat_Allemand_Lourd": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_Allemand_Lourd",
+      "used_count": 66,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_Allemand_Lourd",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_chapter3",
+        "m07_allemagne/leveldesign_chapter1",
+        "m07_allemagne/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Soldat_Russe_Leger": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_Russe_Leger",
+      "used_count": 44,
+      "placement_string": "parametres.Classes.Unit_Soldat_Russe_Leger",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Soldat_Russe_Lourd": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_Russe_Lourd",
+      "used_count": 107,
+      "placement_string": "parametres.Classes.Unit_Soldat_Russe_Lourd",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_TransportHQ": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TransportHQ",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_TransportHQ",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_M1_57mm_L_50": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M1_57mm_L_50",
+      "used_count": 37,
+      "placement_string": "front.parametres.Classes.Unit_M1_57mm_L_50",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_M1_57mm_L_50_SOLO": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M1_57mm_L_50_SOLO",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_M1_57mm_L_50_SOLO",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_M5_76mm_L_50": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M5_76mm_L_50",
+      "used_count": 26,
+      "placement_string": "parametres.Classes.Unit_M5_76mm_L_50",
+      "ever_placed": true,
+      "example_scenarios": [
+        "dolly/leveldesign_coldwar"
+      ]
+    },
+    "Unit_M10_Wolverine": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M10_Wolverine",
+      "used_count": 5,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_M10_Wolverine",
+      "ever_placed": true,
+      "example_scenarios": [
+        "supercrossroads4/leveldesign_challenge",
+        "supercrossroads4/leveldesign_challenge_2"
+      ]
+    },
+    "Unit_M36_Jackson": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M36_Jackson",
+      "used_count": 12,
+      "placement_string": "front.parametres.Classes.Unit_M36_Jackson",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_GER_37mm_Pak36": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_GER_37mm_Pak36",
+      "used_count": 79,
+      "placement_string": "front.parametres.Classes.Unit_GER_37mm_Pak36",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chessmate/leveldesign_challenge",
+        "diplomatietriangulaire/leveldesign_coop",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Unit_PaK_40_75mm_L_48": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_PaK_40_75mm_L_48",
+      "used_count": 153,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_PaK_40_75mm_L_48",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m04_cotentin/leveldesign_chapter1"
+      ]
+    },
+    "Unit_Marder_II": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Marder_II",
+      "used_count": 21,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Marder_II",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m05_hollande/leveldesign_chapter1",
+        "m05_hollande/leveldesign_chapter2",
+        "m05_hollande/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Jagdpanther": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Jagdpanther",
+      "used_count": 21,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Jagdpanther",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m06_ardennes/leveldesign_chapter1",
+        "m06_ardennes/leveldesign_chapter2",
+        "m07_allemagne/leveldesign_kursk"
+      ]
+    },
+    "Unit_Laffly_W15_TCC": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Laffly_W15_TCC",
+      "used_count": 7,
+      "placement_string": "front.parametres.Classes.Unit_Laffly_W15_TCC",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Unit_Lorraine_37_L": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Lorraine_37_L",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Lorraine_37_L",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Archer": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Archer",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Archer",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_SU_85": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_SU_85",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_SU_85",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_SU_100": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_SU_100",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_SU_100",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Semovente_M_90_53": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Semovente_M_90_53",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Semovente_M_90_53",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_SA_25mm_L_1934": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_SA_25mm_L_1934",
+      "used_count": 8,
+      "placement_string": "front.parametres.Classes.Unit_SA_25mm_L_1934",
+      "ever_placed": true,
+      "example_scenarios": [
+        "mireille/leveldesign_narvik"
+      ]
+    },
+    "Unit_SA_47mm_1937": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_SA_47mm_1937",
+      "used_count": 4,
+      "placement_string": "front.parametres.Classes.Unit_SA_47mm_1937",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Unit_QF_2_pounder_40_mm": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_QF_2_pounder_40_mm",
+      "used_count": 7,
+      "placement_string": "front.parametres.Classes.Unit_QF_2_pounder_40_mm",
+      "ever_placed": true,
+      "example_scenarios": [
+        "mireille/leveldesign_narvik"
+      ]
+    },
+    "Unit_QF_17_pounder_76mm": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_QF_17_pounder_76mm",
+      "used_count": 2,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_QF_17_pounder_76mm",
+      "ever_placed": true,
+      "example_scenarios": [
+        "diplomatietriangulaire/leveldesign_challenge"
+      ]
+    },
+    "Unit_45mm_L46": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_45mm_L46",
+      "used_count": 2,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_45mm_L46",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m07_allemagne/leveldesign_kursk"
+      ]
+    },
+    "Unit_76mm_ZIS_3": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_76mm_ZIS_3",
+      "used_count": 32,
+      "placement_string": "parametres.Classes.Unit_76mm_ZIS_3",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Cannone_da_47_32_M35": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Cannone_da_47_32_M35",
+      "used_count": 3,
+      "placement_string": "parametres.Classes.Unit_Cannone_da_47_32_M35",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Unit_88mm_Flak": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_88mm_Flak",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_88mm_Flak",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Stug_III_B": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Stug_III_B",
+      "used_count": 29,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Stug_III_B",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3",
+        "m07_allemagne/leveldesign_chapter1",
+        "m07_allemagne/leveldesign_chapter2"
+      ]
+    },
+    "Unit_M7_Priest": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M7_Priest",
+      "used_count": 20,
+      "placement_string": "parametres.Classes.Unit_M7_Priest",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_M40_GMC": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M40_GMC",
+      "used_count": 8,
+      "placement_string": "parametres.Classes.Unit_M40_GMC",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_SturmTiger": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_SturmTiger",
+      "used_count": 18,
+      "placement_string": "front.parametres.Classes.Unit_SturmTiger",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel",
+        "m05_hollande/leveldesign_chapter1",
+        "m05_hollande/leveldesign_chapter2",
+        "m05_hollande/leveldesign_chapter3"
+      ]
+    },
+    "Unit_75mm_le_FK_38_L_34": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_75mm_le_FK_38_L_34",
+      "used_count": 40,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_75mm_le_FK_38_L_34",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Unit_150mm_sFH_18_L_30": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_150mm_sFH_18_L_30",
+      "used_count": 28,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_150mm_sFH_18_L_30",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3",
+        "m07_allemagne/leveldesign_kursk"
+      ]
+    },
+    "Unit_75mm_mle_1897": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_75mm_mle_1897",
+      "used_count": 3,
+      "placement_string": "front.parametres.Classes.Unit_75mm_mle_1897",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Unit_155mm_GPF": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_155mm_GPF",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_155mm_GPF",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_87mm_QF_25_pounder": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_87mm_QF_25_pounder",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_87mm_QF_25_pounder",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_140mm_5_5_Inch_BL_Mk_III_L_30": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_140mm_5_5_Inch_BL_Mk_III_L_30",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_140mm_5_5_Inch_BL_Mk_III_L_30",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_152mm_howitzer": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_152mm_howitzer",
+      "used_count": 10,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_152mm_howitzer",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m07_allemagne/leveldesign_kursk",
+        "m08_allemagne/leveldesign_chapter1"
+      ]
+    },
+    "Unit_203mm_howitzer": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_203mm_howitzer",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_203mm_howitzer",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_75mm_Canonne_da_75_27": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_75mm_Canonne_da_75_27",
+      "used_count": 1,
+      "placement_string": "front.parametres.Classes.Unit_75mm_Canonne_da_75_27",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Unit_210mm_Obice_da_M1935_L_23_8": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_210mm_Obice_da_M1935_L_23_8",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_210mm_Obice_da_M1935_L_23_8",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_ARL_40": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_ARL_40",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_ARL_40",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Sexton": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sexton",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Sexton",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_203mm_howitzer_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_203mm_howitzer_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_203mm_howitzer_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_SU_122": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_SU_122",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_SU_122",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Semovente_M_40_75_18": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Semovente_M_40_75_18",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Semovente_M_40_75_18",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Semovente_M_43_105_25": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Semovente_M_43_105_25",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Semovente_M_43_105_25",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_40mm_M1_Bofors_L_60": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_40mm_M1_Bofors_L_60",
+      "used_count": 36,
+      "placement_string": "parametres.Classes.Unit_40mm_M1_Bofors_L_60",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_40mm_M1_Bofors_L_60_UK": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_40mm_M1_Bofors_L_60_UK",
+      "used_count": 14,
+      "placement_string": "parametres.Classes.Unit_40mm_M1_Bofors_L_60_UK",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "mireille/leveldesign_narvik"
+      ]
+    },
+    "Unit_M16_GMC": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M16_GMC",
+      "used_count": 2,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_M16_GMC",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m01_leipzig/leveldesign"
+      ]
+    },
+    "Unit_M19_GMC_Twin_40mm": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M19_GMC_Twin_40mm",
+      "used_count": 18,
+      "placement_string": "parametres.Classes.Unit_M19_GMC_Twin_40mm",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_20mm_FlaK_30_L_112": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_20mm_FlaK_30_L_112",
+      "used_count": 169,
+      "placement_string": "front.parametres.Classes.Unit_20mm_FlaK_30_L_112",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "chess/leveldesign_challenge_seelow",
+        "diplomatietriangulaire/leveldesign_coop",
+        "m03_italie_demo_final/leveldesign",
+        "m04_cotentin/leveldesign_3v3_demointel",
+        "m07_allemagne/leveldesign_chapter1"
+      ]
+    },
+    "Unit_88mm_FlaK_36L_56": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_88mm_FlaK_36L_56",
+      "used_count": 69,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_88mm_FlaK_36L_56",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3",
+        "m07_allemagne/leveldesign_chapter1",
+        "m07_allemagne/leveldesign_chapter2"
+      ]
+    },
+    "Unit_ARL_40_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_ARL_40_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_ARL_40_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_25mm_CA_mle_1938": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_25mm_CA_mle_1938",
+      "used_count": 14,
+      "placement_string": "front.parametres.Classes.Unit_25mm_CA_mle_1938",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Unit_37mm_AA": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_37mm_AA",
+      "used_count": 19,
+      "placement_string": "parametres.Classes.Unit_37mm_AA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "dolly/leveldesign_coldwar"
+      ]
+    },
+    "Unit_20mm_Breda": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_20mm_Breda",
+      "used_count": 4,
+      "placement_string": "front.parametres.Classes.Unit_20mm_Breda",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Unit_T28": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_T28",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_T28",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_T28_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_T28_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_T28_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_L6_40_Lanciafiamme": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_L6_40_Lanciafiamme",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_L6_40_Lanciafiamme",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_M26_Pershing": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M26_Pershing",
+      "used_count": 10,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_M26_Pershing",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chessmate/leveldesign_challenge",
+        "chessmate/leveldesign_challenge_easy",
+        "chessmate/leveldesign_challenge_hard"
+      ]
+    },
+    "Unit_Super_Pershing": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Super_Pershing",
+      "used_count": 8,
+      "placement_string": "parametres.Classes.Unit_Super_Pershing",
+      "ever_placed": true,
+      "example_scenarios": [
+        "dolly/leveldesign_coldwar"
+      ]
+    },
+    "Unit_Super_Pershing_DEMO": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Super_Pershing_DEMO",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Super_Pershing_DEMO",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Maus": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Maus",
+      "used_count": 4,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Maus",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m07_allemagne/leveldesign_chapter1",
+        "m07_allemagne/leveldesign_chapter2",
+        "m07_allemagne/leveldesign_chapter3",
+        "m07_allemagne/leveldesign_kursk"
+      ]
+    },
+    "Unit_FCM_F1": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_FCM_F1",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_FCM_F1",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Churchill_A22": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Churchill_A22",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Churchill_A22",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Churchill_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Churchill_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Churchill_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Churchill_AVRE": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Churchill_AVRE",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Churchill_AVRE",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_IS2": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_IS2",
+      "used_count": 6,
+      "placement_string": "parametres.Classes.Unit_IS2",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_IS3": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_IS3",
+      "used_count": 14,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_IS3",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m07_allemagne/leveldesign_kursk",
+        "m08_allemagne/leveldesign_chapter1",
+        "m08_allemagne/leveldesign_chapter2",
+        "m08_allemagne/leveldesign_chapter2-ps3"
+      ]
+    },
+    "Unit_Lanciafiamme_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Lanciafiamme_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Lanciafiamme_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Carro_Armato_P_26_40": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Carro_Armato_P_26_40",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Carro_Armato_P_26_40",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_AVRE_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_AVRE_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_AVRE_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Sherman_Firefly": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sherman_Firefly",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Sherman_Firefly",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Maus_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Maus_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Maus_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_SdKfz_234_2_Puma": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_SdKfz_234_2_Puma",
+      "used_count": 35,
+      "placement_string": "front.parametres.Classes.Unit_SdKfz_234_2_Puma",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_155mm_M1_Long_Tom_L_45": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_155mm_M1_Long_Tom_L_45",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_155mm_M1_Long_Tom_L_45",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Long_Tom_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Long_Tom_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Long_Tom_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Long_Tom_nuke": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Long_Tom_nuke",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Long_Tom_nuke",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Canon_atomique_US": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Canon_atomique_US",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Canon_atomique_US",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Canon_atomique_UK": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Canon_atomique_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Canon_atomique_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Canon_atomique_FR": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Canon_atomique_FR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Canon_atomique_FR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Canon_atomique_GER": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Canon_atomique_GER",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Canon_atomique_GER",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Canon_atomique_ITA": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Canon_atomique_ITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Canon_atomique_ITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Canon_atomique_URSS": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Canon_atomique_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Canon_atomique_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Canon_atomique_JAP": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Canon_atomique_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Canon_atomique_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Sherman_Calliope": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sherman_Calliope",
+      "used_count": 30,
+      "placement_string": "front.parametres.Classes.Unit_Sherman_Calliope",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_Sherman_Calliope_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sherman_Calliope_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Sherman_Calliope_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Sherman_lance_flammes": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sherman_lance_flammes",
+      "used_count": 3,
+      "placement_string": "front.parametres.Classes.Unit_Sherman_lance_flammes",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_Sherman_lance_flammes_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sherman_lance_flammes_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Sherman_lance_flammes_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Puma_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Puma_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Puma_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_210mm_Morser": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_210mm_Morser",
+      "used_count": 33,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_210mm_Morser",
+      "ever_placed": true,
+      "example_scenarios": [
+        "kursk43_ladder/leveldesign_challenge"
+      ]
+    },
+    "Unit_Morser_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Morser_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Morser_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_V2_launcher": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_V2_launcher",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_V2_launcher",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_V2_nuclear_launcher": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_V2_nuclear_launcher",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_V2_nuclear_launcher",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_IS3_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_IS3_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_IS3_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_P26_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_P26_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_P26_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Breda_Dovunque_90_53": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Breda_Dovunque_90_53",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Breda_Dovunque_90_53",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_PZIV_Wirbelwind": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_PZIV_Wirbelwind",
+      "used_count": 14,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_PZIV_Wirbelwind",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chess/leveldesign_challenge",
+        "chess/leveldesign_challenge_seelow",
+        "m03_italie/leveldesign_demo",
+        "m05_hollande/leveldesign_chapter1",
+        "m05_hollande/leveldesign_chapter2",
+        "m05_hollande/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Char_DCA_M4_SKINK": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Char_DCA_M4_SKINK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Char_DCA_M4_SKINK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Katyusha": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Katyusha",
+      "used_count": 8,
+      "placement_string": "parametres.Classes.Unit_Katyusha",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Katyusha_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Katyusha_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Katyusha_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_ZSU_37": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_ZSU_37",
+      "used_count": 13,
+      "placement_string": "parametres.Classes.Unit_ZSU_37",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Breda_Dovunque_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Breda_Dovunque_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Breda_Dovunque_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_M_15_AA_Tank": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M_15_AA_Tank",
+      "used_count": 14,
+      "placement_string": "front.parametres.Classes.Unit_M_15_AA_Tank",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Unit_Wirbelwind_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Wirbelwind_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Wirbelwind_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Sdkfz251": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sdkfz251",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Sdkfz251",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Sdkfz251_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sdkfz251_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Sdkfz251_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Wurfrahmen_PV": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Wurfrahmen_PV",
+      "used_count": 9,
+      "placement_string": "front.parametres.Classes.Unit_Wurfrahmen_PV",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_Soldat_Allemand_Antichar": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Soldat_Allemand_Antichar",
+      "used_count": 1,
+      "placement_string": "front.parametres.Classes.Unit_Soldat_Allemand_Antichar",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Unit_M3A1_Stuart": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M3A1_Stuart",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_M3A1_Stuart",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_M24_Chaffee": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M24_Chaffee",
+      "used_count": 14,
+      "placement_string": "front.parametres.Classes.Unit_M24_Chaffee",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_Panzer_III_J": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Panzer_III_J",
+      "used_count": 143,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Panzer_III_J",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "kursk43_ladder/leveldesign_challenge_3945",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Unit_T26": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_T26",
+      "used_count": 37,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_T26",
+      "ever_placed": true,
+      "example_scenarios": [
+        "kursk43_ladder/leveldesign_challenge_3945",
+        "m07_allemagne/leveldesign_kursk",
+        "m08_allemagne/leveldesign_chapter1"
+      ]
+    },
+    "Unit_M15_AA_Tank_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M15_AA_Tank_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_M15_AA_Tank_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Carro_Veloce": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Carro_Veloce",
+      "used_count": 6,
+      "placement_string": "front.parametres.Classes.Unit_Carro_Veloce",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Unit_Carro_Armato_M11_39": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Carro_Armato_M11_39",
+      "used_count": 171,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Carro_Armato_M11_39",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3"
+      ]
+    },
+    "Unit_M3_Lee": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M3_Lee",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_M3_Lee",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_M3_Lee_cinematique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M3_Lee_cinematique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_M3_Lee_cinematique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_M4_Sherman": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M4_Sherman",
+      "used_count": 19,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_M4_Sherman",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m01_leipzig/leveldesign"
+      ]
+    },
+    "Unit_Panzer_IV_G": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Panzer_IV_G",
+      "used_count": 114,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Panzer_IV_G",
+      "ever_placed": true,
+      "example_scenarios": [
+        "kursk43_ladder/leveldesign_challenge_3945",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4",
+        "m03_italie/leveldesign_chapter1"
+      ]
+    },
+    "Unit_Panzer_IV_cinematique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Panzer_IV_cinematique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Panzer_IV_cinematique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Panzer_V_G_Panther": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Panzer_V_G_Panther",
+      "used_count": 25,
+      "placement_string": "front.parametres.Classes.Unit_Panzer_V_G_Panther",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_FCM_F1_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_FCM_F1_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_FCM_F1_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Somua_S_35": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Somua_S_35",
+      "used_count": 48,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Somua_S_35",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_abbeville",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Sau_40": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sau_40",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Sau_40",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Skink_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Skink_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Skink_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Cruiser_A13": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Cruiser_A13",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Cruiser_A13",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Cruiser_A27_Cromwell": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Cruiser_A27_Cromwell",
+      "used_count": 2,
+      "placement_string": "parametres.Classes.Unit_Cruiser_A27_Cromwell",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_T34": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_T34",
+      "used_count": 10,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_T34",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m07_allemagne/leveldesign_kursk",
+        "m08_allemagne/leveldesign_chapter1"
+      ]
+    },
+    "Unit_Carro_Armato_M13_40": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Carro_Armato_M13_40",
+      "used_count": 28,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Carro_Armato_M13_40",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Carro_Armato_M15_42": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Carro_Armato_M15_42",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Carro_Armato_M15_42",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Panzer_VI_Tigre": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Panzer_VI_Tigre",
+      "used_count": 54,
+      "placement_string": "front.parametres.Classes.Unit_Panzer_VI_Tigre",
+      "ever_placed": true,
+      "example_scenarios": [
+        "kursk43_ladder/leveldesign_challenge_3945",
+        "m03_italie_demo_final/leveldesign",
+        "m04_cotentin/leveldesign_3v3_demointel",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3"
+      ]
+    },
+    "Unit_Panzer_VI_B_Tigre_II": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Panzer_VI_B_Tigre_II",
+      "used_count": 12,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Panzer_VI_B_Tigre_II",
+      "ever_placed": true,
+      "example_scenarios": [
+        "battleofthebulge/leveldesign_challenge",
+        "m07_allemagne/leveldesign_chapter1",
+        "m07_allemagne/leveldesign_chapter2",
+        "m07_allemagne/leveldesign_chapter3",
+        "m07_allemagne/leveldesign_kursk"
+      ]
+    },
+    "Unit_KingTigerAS": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_KingTigerAS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_KingTigerAS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_B1_Bis": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_B1_Bis",
+      "used_count": 36,
+      "placement_string": "front.parametres.Classes.Unit_B1_Bis",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "m02_tunisie/leveldesign_chapter3",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "twoislands/leveldesign_challenge"
+      ]
+    },
+    "Unit_ARL_44": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_ARL_44",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_ARL_44",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Matilda": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Matilda",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Unit_Matilda",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_KV1": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_KV1",
+      "used_count": 9,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_KV1",
+      "ever_placed": true,
+      "example_scenarios": [
+        "kursk43_ladder/leveldesign_challenge_3945",
+        "m07_allemagne/leveldesign_kursk",
+        "m08_allemagne/leveldesign_chapter1"
+      ]
+    },
+    "Unit_M8_Greyhound": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_M8_Greyhound",
+      "used_count": 6,
+      "placement_string": "parametres.Classes.Unit_M8_Greyhound",
+      "ever_placed": true,
+      "example_scenarios": [
+        "dolly/leveldesign_coldwar"
+      ]
+    },
+    "Unit_Panhard_178": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Panhard_178",
+      "used_count": 6,
+      "placement_string": "parametres.Classes.Unit_Panhard_178",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "mireille/leveldesign_narvik"
+      ]
+    },
+    "Unit_Panhard_EBR_75": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Panhard_EBR_75",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Panhard_EBR_75",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Daimler_AC_MK_1": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Daimler_AC_MK_1",
+      "used_count": 2,
+      "placement_string": "front.parametres.generated_data.ParamsUnites.Unit_Daimler_AC_MK_1",
+      "ever_placed": true,
+      "example_scenarios": [
+        "diplomatietriangulaire/leveldesign_challenge"
+      ]
+    },
+    "Unit_Coventry_armoured_car": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Coventry_armoured_car",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Coventry_armoured_car",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_EBR_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_EBR_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_EBR_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Destroyer": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Destroyer",
+      "used_count": 53,
+      "placement_string": "front.parametres.Classes.Unit_Destroyer",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m04_cotentin/leveldesign_3v3_demointel",
+        "m04_cotentin/leveldesign_chapter1"
+      ]
+    },
+    "Unit_Battleship": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Battleship",
+      "used_count": 16,
+      "placement_string": "front.parametres.Classes.Unit_Battleship",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m03_italie_demo_final/leveldesign",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_Heavy_Cruiser": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Heavy_Cruiser",
+      "used_count": 49,
+      "placement_string": "front.parametres.Classes.Unit_Heavy_Cruiser",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m03_italie_demo_final/leveldesign",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Unit_LCVP": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_LCVP",
+      "used_count": 181,
+      "placement_string": "front.parametres.Classes.Unit_LCVP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2"
+      ]
+    },
+    "Unit_LST": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_LST",
+      "used_count": 28,
+      "placement_string": "front.parametres.Classes.Unit_LST",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2"
+      ]
+    },
+    "Unit_Tourelle_Siegfried_GER": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_Siegfried_GER",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_Siegfried_GER",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_MG_GER": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_MG_GER",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_MG_GER",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_MG_US": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_MG_US",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_MG_US",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_AT_US": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_AT_US",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_AT_US",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_DCA_US": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_DCA_US",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_DCA_US",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_AT_UK": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_AT_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_AT_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_Outpost_UK": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_Outpost_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_Outpost_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_Artillerie_UK": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_Artillerie_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_Artillerie_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_ArtillerieLight_URSS": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_ArtillerieLight_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_ArtillerieLight_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_ArtillerieHeavy_URSS": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_ArtillerieHeavy_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_ArtillerieHeavy_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_Light_FR": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_Light_FR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_Light_FR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_Maginot_FR": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_Maginot_FR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_Maginot_FR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Tourelle_AT_ITA": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Tourelle_AT_ITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Tourelle_AT_ITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Teishin_Shudan": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Teishin_Shudan",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Teishin_Shudan",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Giretsu_Kuteitai": {
+      "category": "unit",
+      "base": "front.unit.infanterie_parachutiste_unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Giretsu_Kuteitai",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Giretsu_Kuteitai",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Kurogane": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Kurogane",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Unit_Kurogane",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Sniper": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Sniper",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Sniper",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Konoe_Shidan": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Konoe_Shidan",
+      "used_count": 12,
+      "placement_string": "parametres.Classes.Unit_Konoe_Shidan",
+      "ever_placed": true,
+      "example_scenarios": [
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Unit_Pionnier_Genie": {
+      "category": "unit",
+      "base": "front.unit.InfanterieUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Pionnier_Genie",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Pionnier_Genie",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_47mm_AT": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_47mm_AT",
+      "used_count": 2,
+      "placement_string": "parametres.Classes.Unit_47mm_AT",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_75mm_Type88": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_75mm_Type88",
+      "used_count": 3,
+      "placement_string": "parametres.Classes.Unit_75mm_Type88",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_75mm_Type35": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_75mm_Type35",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_75mm_Type35",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Type5_47mm_HoRu": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type5_47mm_HoRu",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Type5_47mm_HoRu",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Type2_HoRi": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type2_HoRi",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Type2_HoRi",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Type2_75mm_KuSe": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type2_75mm_KuSe",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Type2_75mm_KuSe",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Type4_HaTo": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type4_HaTo",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Type4_HaTo",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Type4_HaTo_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type4_HaTo_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Type4_HaTo_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_TaSe_20mm": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_TaSe_20mm",
+      "used_count": 3,
+      "placement_string": "parametres.Classes.Unit_TaSe_20mm",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Type95_HaGo": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type95_HaGo",
+      "used_count": 3,
+      "placement_string": "parametres.Classes.Unit_Type95_HaGo",
+      "ever_placed": true,
+      "example_scenarios": [
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Unit_Type97_ChiHa": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type97_ChiHa",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Type97_ChiHa",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Type3_ChiNu": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type3_ChiNu",
+      "used_count": 6,
+      "placement_string": "parametres.Classes.Unit_Type3_ChiNu",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Type5_ChiRi": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type5_ChiRi",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Type5_ChiRi",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Type1_AOV": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type1_AOV",
+      "used_count": 3,
+      "placement_string": "parametres.Classes.Unit_Type1_AOV",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Unit_Type1_AOV_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Type1_AOV_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Type1_AOV_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_OI_Heavy_Tank": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_OI_Heavy_Tank",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_OI_Heavy_Tank",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_OI_Heavy_Tank_atomique": {
+      "category": "unit",
+      "base": "front.unit.TankUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_OI_Heavy_Tank_atomique",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_OI_Heavy_Tank_atomique",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Bunker_enterre_JAP": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Bunker_enterre_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Bunker_enterre_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Position_105mm_JAP": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Position_105mm_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Position_105mm_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Unit_Position_DCA_JAP": {
+      "category": "building",
+      "base": "front.unit.UnitDefefenseBatiment",
+      "descriptor": "$/GFX/Everything/Descriptor_Unit_Position_DCA_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Unit_Position_DCA_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Junkers_87": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Junkers_87",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Junkers_87",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Junkers_87_Rudel": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Junkers_87_Rudel",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Junkers_87_Rudel",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Junkers_87_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Junkers_87_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Junkers_87_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Storch_GR": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Storch_GR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Storch_GR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_ME109_GR": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_ME109_GR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_ME109_GR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_ME109_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_ME109_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_ME109_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_ME262": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_ME262",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_ME262",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_HE_111": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_HE_111",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_HE_111",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_HE_111_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_HE_111_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_HE_111_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_HE_111_High_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_HE_111_High_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_HE_111_High_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Ju_52_Para": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Ju_52_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Ju_52_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Ar234": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Ar234",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Ar234",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Ar234_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Ar234_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Ar234_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_P40Warhawk": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_P40Warhawk",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_P40Warhawk",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_P47Thunderbolt": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_P47Thunderbolt",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_P47Thunderbolt",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_P47Thunderbolt_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_P47Thunderbolt_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_P47Thunderbolt_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Grasshopper": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Grasshopper",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Grasshopper",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_B25": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_B25",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_B25",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_B25_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_B25_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_B25_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Junkers_87_GR": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Junkers_87_GR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Junkers_87_GR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_P51_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_P51_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_P51_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_B17_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_B17_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_B17_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_B17_High_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_B17_High_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_B17_High_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_B17": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_B17",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_B17",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_B17_Atomic_bomber": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_B17_Atomic_bomber",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_B17_Atomic_bomber",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_C47_Para": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_C47_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_C47_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_C47_Para_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_C47_Para_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_C47_Para_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_C47_Para_solo": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_C47_Para_solo",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_C47_Para_solo",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_MS_406": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_MS_406",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_MS_406",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Dewoitine_D520": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Dewoitine_D520",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Dewoitine_D520",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Breguet_693_Guppy": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Breguet_693_Guppy",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Breguet_693_Guppy",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Potez_63_11": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Potez_63_11",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Potez_63_11",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Amiot_143": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Amiot_143",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Amiot_143",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Potez_650_Para": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Potez_650_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Potez_650_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_CR_42_Falco": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_CR_42_Falco",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_CR_42_Falco",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Macchi_MC_200": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Macchi_MC_200",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Macchi_MC_200",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Macchi_MC_205V": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Macchi_MC_205V",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Macchi_MC_205V",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_SM_79_Sparviero": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_SM_79_Sparviero",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_SM_79_Sparviero",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Piaggio_P108": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Piaggio_P108",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Piaggio_P108",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Caproni_314_Para": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Caproni_314_Para",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Caproni_314_Para",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Avro_Anson": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Avro_Anson",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Avro_Anson",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Spitfire": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Spitfire",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Spitfire",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Hawker_Hurricane": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Hawker_Hurricane",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Hawker_Hurricane",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Hawker_Typhoon": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Hawker_Typhoon",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Hawker_Typhoon",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Wellington": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Wellington",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Wellington",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Wellington_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Wellington_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Wellington_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Lancaster": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Lancaster",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Lancaster",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_C47_Para_RU": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_C47_Para_RU",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_C47_Para_RU",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Polikarpov_I16": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Polikarpov_I16",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Polikarpov_I16",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Yak_3": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Yak_3",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Yak_3",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_IL2_Sturmovik": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_IL2_Sturmovik",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_IL2_Sturmovik",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Nieman_R10": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Nieman_R10",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Nieman_R10",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Petlyakov_Pe8": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Petlyakov_Pe8",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Petlyakov_Pe8",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Petlyakov_Atomic_bomber": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Petlyakov_Atomic_bomber",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Petlyakov_Atomic_bomber",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Petlyakov_Pe8_PV": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Petlyakov_Pe8_PV",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Petlyakov_Pe8_PV",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_C47_Para_URSS": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_C47_Para_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_C47_Para_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Mitsubishi_Zero": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Mitsubishi_Zero",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Mitsubishi_Zero",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Yokosuka_Judy": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Yokosuka_Judy",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Yokosuka_Judy",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Aichi_Susie": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Aichi_Susie",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Aichi_Susie",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Kyushu_Shinden": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Kyushu_Shinden",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Kyushu_Shinden",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Nakajima_Renzan": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Nakajima_Renzan",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Nakajima_Renzan",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Mitsubishi_Ki_57": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Mitsubishi_Ki_57",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Mitsubishi_Ki_57",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Avion_Mitsubishi_Ki_57_reco": {
+      "category": "plane",
+      "base": "front.avion.AvionUnit",
+      "descriptor": "$/GFX/Everything/Descriptor_Avion_Mitsubishi_Ki_57_reco",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Avion_Mitsubishi_Ki_57_reco",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_construction": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_construction",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_construction",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_construction_GR": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_construction_GR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_construction_GR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_construction_UK": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_construction_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_construction_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_construction_URSS": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_construction_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_construction_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_construction_FR": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_construction_FR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_construction_FR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_construction_ITA": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_construction_ITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_construction_ITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_construction_JAP": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_construction_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_construction_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory_GR": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory_GR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory_GR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory_UK": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory_URSS": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory_FR": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory_FR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory_FR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory_ITA": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory_ITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory_ITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory_fake": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory_fake",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory_fake",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory_fake_GR": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory_fake_GR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory_fake_GR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Truck_GMC_factory_Jap": {
+      "category": "unit",
+      "base": "front.unit.Unit",
+      "descriptor": "$/GFX/Everything/Descriptor_Truck_GMC_factory_Jap",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Truck_GMC_factory_Jap",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Headquarter": {
+      "category": "building",
+      "base": "front.batiment.BatimentHeadquarter",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Headquarter",
+      "used_count": 19,
+      "placement_string": "parametres.Classes.Building_Headquarter",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Building_HeadquarterGR": {
+      "category": "building",
+      "base": "front.batiment.BatimentHeadquarter",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_HeadquarterGR",
+      "used_count": 21,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_HeadquarterGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2"
+      ]
+    },
+    "Building_HeadquarterURSS": {
+      "category": "building",
+      "base": "front.batiment.BatimentHeadquarter",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_HeadquarterURSS",
+      "used_count": 10,
+      "placement_string": "parametres.Classes.Building_HeadquarterURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_HeadquarterUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentHeadquarter",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_HeadquarterUK",
+      "used_count": 5,
+      "placement_string": "parametres.Classes.Building_HeadquarterUK",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_HeadquarterFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentHeadquarter",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_HeadquarterFR",
+      "used_count": 3,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_HeadquarterFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_challenge"
+      ]
+    },
+    "Building_HeadquarterITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentHeadquarter",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_HeadquarterITA",
+      "used_count": 10,
+      "placement_string": "front.parametres.Classes.Building_HeadquarterITA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Building_Headquarter_M03_Italie": {
+      "category": "building",
+      "base": "front.batiment.BatimentHeadquarterM03Italie",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Headquarter_M03_Italie",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Headquarter_M03_Italie",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_TruckFactory": {
+      "category": "building",
+      "base": "front.batiment.TruckFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_TruckFactory",
+      "used_count": 6,
+      "placement_string": "parametres.Classes.Building_TruckFactory",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_TruckFactoryGR": {
+      "category": "building",
+      "base": "front.batiment.TruckFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_TruckFactoryGR",
+      "used_count": 15,
+      "placement_string": "front.parametres.Classes.Building_TruckFactoryGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m03_italie_demo_final/leveldesign",
+        "m04_cotentin/leveldesign_3v3_demointel",
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3",
+        "m05_hollande/leveldesign_chapter1"
+      ]
+    },
+    "Building_TruckFactoryURSS": {
+      "category": "building",
+      "base": "front.batiment.TruckFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_TruckFactoryURSS",
+      "used_count": 19,
+      "placement_string": "front.parametres.Classes.Building_TruckFactoryURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m07_allemagne/leveldesign_chapter3",
+        "m08_allemagne/leveldesign_chapter1",
+        "m08_allemagne/leveldesign_chapter2",
+        "m08_allemagne/leveldesign_chapter2-ps3"
+      ]
+    },
+    "Building_TruckFactoryUK": {
+      "category": "building",
+      "base": "front.batiment.TruckFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_TruckFactoryUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_TruckFactoryUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_TruckFactoryFR": {
+      "category": "building",
+      "base": "front.batiment.TruckFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_TruckFactoryFR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_TruckFactoryFR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_TruckFactoryITA": {
+      "category": "building",
+      "base": "front.batiment.TruckFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_TruckFactoryITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_TruckFactoryITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentAdministratif": {
+      "category": "building",
+      "base": "front.batiment.BatimentAdministratif",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentAdministratif",
+      "used_count": 2,
+      "placement_string": "parametres.Classes.Building_BatimentAdministratif",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_BatimentAdministratifGR": {
+      "category": "building",
+      "base": "front.batiment.BatimentAdministratif",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentAdministratifGR",
+      "used_count": 8,
+      "placement_string": "front.parametres.Classes.Building_BatimentAdministratifGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "kursk43_ladder/leveldesign_challenge_3945",
+        "m04_cotentin/leveldesign_3v3_demointel",
+        "twoislands/leveldesign_challenge"
+      ]
+    },
+    "Building_BatimentAdministratifURSS": {
+      "category": "building",
+      "base": "front.batiment.BatimentAdministratif",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentAdministratifURSS",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Building_BatimentAdministratifURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_BatimentAdministratifUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentAdministratif",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentAdministratifUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentAdministratifUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentAdministratifFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentAdministratif",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentAdministratifFR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentAdministratifFR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentAdministratifITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentAdministratif",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentAdministratifITA",
+      "used_count": 1,
+      "placement_string": "front.parametres.Classes.Building_BatimentAdministratifITA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "twoislands/leveldesign_challenge"
+      ]
+    },
+    "Building_BatimentDepot": {
+      "category": "building",
+      "base": "front.batiment.BatimentDepot",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentDepot",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentDepot",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentDepotGR": {
+      "category": "building",
+      "base": "front.batiment.BatimentDepot",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentDepotGR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentDepotGR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentDepotURSS": {
+      "category": "building",
+      "base": "front.batiment.BatimentDepot",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentDepotURSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentDepotURSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentDepotUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentDepot",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentDepotUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentDepotUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentDepotFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentDepot",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentDepotFR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentDepotFR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentDepotITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentDepot",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentDepotITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentDepotITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_VehiculeFactory": {
+      "category": "building",
+      "base": "front.batiment.VehiculeFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactory",
+      "used_count": 11,
+      "placement_string": "parametres.Classes.Building_VehiculeFactory",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "dolly/leveldesign_coldwar"
+      ]
+    },
+    "Building_VehiculeFactoryGR": {
+      "category": "building",
+      "base": "front.batiment.VehiculeFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryGR",
+      "used_count": 89,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "diplomatietriangulaire/leveldesign_coop",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Building_VehiculeFactoryURSS": {
+      "category": "building",
+      "base": "front.batiment.VehiculeFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryURSS",
+      "used_count": 15,
+      "placement_string": "parametres.Classes.Building_VehiculeFactoryURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_VehiculeFactoryUK": {
+      "category": "building",
+      "base": "front.batiment.VehiculeFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_VehiculeFactoryFR": {
+      "category": "building",
+      "base": "front.batiment.VehiculeFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryFR",
+      "used_count": 1,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_VehiculeFactoryFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_1v1v1"
+      ]
+    },
+    "Building_VehiculeFactoryITA": {
+      "category": "building",
+      "base": "front.batiment.VehiculeFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryITA",
+      "used_count": 15,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryITA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "chessmate/leveldesign_challenge",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4"
+      ]
+    },
+    "Building_Caserne": {
+      "category": "building",
+      "base": "front.batiment.Caserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Caserne",
+      "used_count": 12,
+      "placement_string": "parametres.Classes.Building_Caserne",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_CaserneGR": {
+      "category": "building",
+      "base": "front.batiment.Caserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneGR",
+      "used_count": 85,
+      "placement_string": "front.parametres.Classes.Building_CaserneGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "diplomatietriangulaire/leveldesign_coop",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Building_CaserneURSS": {
+      "category": "building",
+      "base": "front.batiment.Caserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneURSS",
+      "used_count": 24,
+      "placement_string": "parametres.Classes.Building_CaserneURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_CaserneUK": {
+      "category": "building",
+      "base": "front.batiment.Caserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneUK",
+      "used_count": 2,
+      "placement_string": "front.parametres.Classes.Building_CaserneUK",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chess/leveldesign_challenge_seelow",
+        "mireille/leveldesign_narvik"
+      ]
+    },
+    "Building_CaserneFR": {
+      "category": "building",
+      "base": "front.batiment.Caserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneFR",
+      "used_count": 4,
+      "placement_string": "front.parametres.Classes.Building_CaserneFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "mireille/leveldesign_narvik"
+      ]
+    },
+    "Building_CaserneITA": {
+      "category": "building",
+      "base": "front.batiment.Caserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneITA",
+      "used_count": 16,
+      "placement_string": "front.parametres.Classes.Building_CaserneITA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "m03_italie_demo_final/leveldesign",
+        "twoislands/leveldesign_challenge"
+      ]
+    },
+    "Building_Usine_Canon": {
+      "category": "building",
+      "base": "front.batiment.Usine_Canon",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Canon",
+      "used_count": 5,
+      "placement_string": "parametres.Classes.Building_Usine_Canon",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_Usine_CanonGR": {
+      "category": "building",
+      "base": "front.batiment.Usine_Canon",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonGR",
+      "used_count": 39,
+      "placement_string": "front.parametres.Classes.Building_Usine_CanonGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "chessmate/leveldesign_challenge",
+        "diplomatietriangulaire/leveldesign_coop",
+        "m03_italie_demo_final/leveldesign",
+        "m04_cotentin/leveldesign_3v3_demointel",
+        "m04_cotentin/leveldesign_chapter2"
+      ]
+    },
+    "Building_Usine_CanonURSS": {
+      "category": "building",
+      "base": "front.batiment.Usine_Canon",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonURSS",
+      "used_count": 11,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_Usine_CanonURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m08_allemagne/leveldesign_chapter1",
+        "m08_allemagne/leveldesign_chapter2",
+        "m08_allemagne/leveldesign_chapter2-ps3"
+      ]
+    },
+    "Building_Usine_CanonUK": {
+      "category": "building",
+      "base": "front.batiment.Usine_Canon",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonUK",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Building_Usine_CanonUK",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_Usine_CanonFR": {
+      "category": "building",
+      "base": "front.batiment.Usine_Canon",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonFR",
+      "used_count": 3,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_Usine_CanonFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_1v1v1"
+      ]
+    },
+    "Building_Usine_CanonITA": {
+      "category": "building",
+      "base": "front.batiment.Usine_Canon",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonITA",
+      "used_count": 1,
+      "placement_string": "front.parametres.Classes.Building_Usine_CanonITA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Building_Aeroport": {
+      "category": "building",
+      "base": "front.batiment.Aeroport",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Aeroport",
+      "used_count": 39,
+      "placement_string": "parametres.Classes.Building_Aeroport",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Building_AeroportGR": {
+      "category": "building",
+      "base": "front.batiment.Aeroport",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportGR",
+      "used_count": 43,
+      "placement_string": "front.parametres.Classes.Building_AeroportGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "diplomatietriangulaire/leveldesign_coop",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Building_AeroportURSS": {
+      "category": "building",
+      "base": "front.batiment.Aeroport",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportURSS",
+      "used_count": 19,
+      "placement_string": "parametres.Classes.Building_AeroportURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_AeroportUK": {
+      "category": "building",
+      "base": "front.batiment.Aeroport",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportUK",
+      "used_count": 6,
+      "placement_string": "front.parametres.Classes.Building_AeroportUK",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chess/leveldesign_challenge_seelow"
+      ]
+    },
+    "Building_AeroportFR": {
+      "category": "building",
+      "base": "front.batiment.Aeroport",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportFR",
+      "used_count": 2,
+      "placement_string": "front.parametres.Classes.Building_AeroportFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Building_AeroportITA": {
+      "category": "building",
+      "base": "front.batiment.Aeroport",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportITA",
+      "used_count": 6,
+      "placement_string": "front.parametres.Classes.Building_AeroportITA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Building_ExperimentalFactory": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactory",
+      "used_count": 1,
+      "placement_string": "front.parametres.Classes.Building_ExperimentalFactory",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Building_Usine_Atomique_US": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Atomique_US",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_Atomique_US",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryGR": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryGR",
+      "used_count": 11,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_ExperimentalFactoryGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_1v1v1",
+        "m06_ardennes/leveldesign_chapter1",
+        "m06_ardennes/leveldesign_chapter2",
+        "m07_allemagne/leveldesign_chapter1",
+        "m07_allemagne/leveldesign_chapter2",
+        "m07_allemagne/leveldesign_chapter3"
+      ]
+    },
+    "Building_Usine_Atomique_GER": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Atomique_GER",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_Atomique_GER",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryUK": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryUK",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Building_ExperimentalFactoryUK",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_Usine_Atomique_UK": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Atomique_UK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_Atomique_UK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryURSS": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryURSS",
+      "used_count": 12,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_ExperimentalFactoryURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m08_allemagne/leveldesign_chapter1",
+        "m08_allemagne/leveldesign_chapter2",
+        "m08_allemagne/leveldesign_chapter2-ps3"
+      ]
+    },
+    "Building_Usine_Atomique_URSS": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Atomique_URSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_Atomique_URSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryFR": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryFR",
+      "used_count": 1,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_ExperimentalFactoryFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_1v1v1"
+      ]
+    },
+    "Building_Usine_Atomique_FR": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Atomique_FR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_Atomique_FR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryITA": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_ExperimentalFactoryITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Usine_Atomique_ITA": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Atomique_ITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_Atomique_ITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_UsineAutomoteur": {
+      "category": "building",
+      "base": "front.batiment.AutomotorFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteur",
+      "used_count": 3,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteur",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chessmate/leveldesign_challenge",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Building_UsineAutomoteurGER": {
+      "category": "building",
+      "base": "front.batiment.AutomotorFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurGER",
+      "used_count": 29,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteurGER",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "diplomatietriangulaire/leveldesign_coop",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4"
+      ]
+    },
+    "Building_UsineAutomoteurUK": {
+      "category": "building",
+      "base": "front.batiment.AutomotorFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteurUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_UsineAutomoteurURSS": {
+      "category": "building",
+      "base": "front.batiment.AutomotorFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurURSS",
+      "used_count": 8,
+      "placement_string": "parametres.Classes.Building_UsineAutomoteurURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_UsineAutomoteurFR": {
+      "category": "building",
+      "base": "front.batiment.AutomotorFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurFR",
+      "used_count": 1,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_UsineAutomoteurFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "korsun/leveldesign_challenge_1v1v1"
+      ]
+    },
+    "Building_UsineAutomoteurITA": {
+      "category": "building",
+      "base": "front.batiment.AutomotorFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurITA",
+      "used_count": 13,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteurITA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "m03_italie/leveldesign_chapter1",
+        "m03_italie/leveldesign_chapter2",
+        "m03_italie/leveldesign_chapter3",
+        "m03_italie/leveldesign_chapter4",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Building_DefenseDCAMGNest": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseDCAMGNest",
+      "used_count": 26,
+      "placement_string": "parametres.Classes.Building_DefenseDCAMGNest",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_DefenseAT": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseAT",
+      "used_count": 7,
+      "placement_string": "front.parametres.Classes.Building_DefenseAT",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m01_leipzig/leveldesign",
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Building_DefenseDCA": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseDCA",
+      "used_count": 6,
+      "placement_string": "front.parametres.Classes.Building_DefenseDCA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "dolly/leveldesign_coldwar",
+        "m01_leipzig/leveldesign"
+      ]
+    },
+    "Building_DefenseDCAMGATNest": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseDCAMGATNest",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Building_DefenseDCAMGATNest",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_DefenseDCAMGATNestUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseDCAMGATNestUK",
+      "used_count": 4,
+      "placement_string": "front.parametres.Classes.Building_DefenseDCAMGATNestUK",
+      "ever_placed": true,
+      "example_scenarios": [
+        "chess/leveldesign_challenge_seelow",
+        "m05_hollande/leveldesign_chapter2"
+      ]
+    },
+    "Building_PosteAlerteAvanceUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_PosteAlerteAvanceUK",
+      "used_count": 5,
+      "placement_string": "front.parametres.Classes.Building_PosteAlerteAvanceUK",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m05_hollande/leveldesign_chapter1"
+      ]
+    },
+    "Building_DefenseArtillerieDCAUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseArtillerieDCAUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_DefenseArtillerieDCAUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ArtillerieFieldLeger": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ArtillerieFieldLeger",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_ArtillerieFieldLeger",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ArtillerieFieldLourd": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ArtillerieFieldLourd",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_ArtillerieFieldLourd",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_DefenseLegereFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseLegereFR",
+      "used_count": 3,
+      "placement_string": "front.parametres.Classes.Building_DefenseLegereFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Building_DefenseMaginotFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseMaginotFR",
+      "used_count": 4,
+      "placement_string": "front.parametres.Classes.Building_DefenseMaginotFR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "mireille/leveldesign_narvik"
+      ]
+    },
+    "Building_DefenseATITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseATITA",
+      "used_count": 5,
+      "placement_string": "front.parametres.Classes.Building_DefenseATITA",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "m03_italie_demo_final/leveldesign",
+        "twoislands/leveldesign_challenge"
+      ]
+    },
+    "Building_DefenseMGNestGER": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseMGNestGER",
+      "used_count": 210,
+      "placement_string": "front.parametres.Classes.Building_DefenseMGNestGER",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh",
+        "diplomatietriangulaire/leveldesign_coop",
+        "kursk43_ladder/leveldesign_challenge_3945",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3"
+      ]
+    },
+    "Building_DefenseSiegfriedGER": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseSiegfriedGER",
+      "used_count": 89,
+      "placement_string": "front.parametres.Classes.Building_DefenseSiegfriedGER",
+      "ever_placed": true,
+      "example_scenarios": [
+        "diplomatietriangulaire/leveldesign_coop",
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4",
+        "m03_italie_demo_final/leveldesign"
+      ]
+    },
+    "Building_VehiculeFactoryLeurre": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryLeurre",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryLeurre",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_VehiculeFactoryLeurreGR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryLeurreGR",
+      "used_count": 3,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryLeurreGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m06_ardennes/leveldesign_chapter1",
+        "m06_ardennes/leveldesign_chapter2",
+        "m06_ardennes/leveldesign_chapter3"
+      ]
+    },
+    "Building_VehiculeFactoryLeurreURSS": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryLeurreURSS",
+      "used_count": 1,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_VehiculeFactoryLeurreURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m08_allemagne/leveldesign_chapter1"
+      ]
+    },
+    "Building_VehiculeFactoryLeurreUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryLeurreUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryLeurreUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_VehiculeFactoryLeurreFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryLeurreFR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryLeurreFR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_VehiculeFactoryLeurreITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryLeurreITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryLeurreITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_CaserneLeurre": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeCaserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneLeurre",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_CaserneLeurre",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_CaserneLeurreGR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeCaserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneLeurreGR",
+      "used_count": 3,
+      "placement_string": "front.parametres.Classes.Building_CaserneLeurreGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m06_ardennes/leveldesign_chapter1",
+        "m06_ardennes/leveldesign_chapter2",
+        "m06_ardennes/leveldesign_chapter3"
+      ]
+    },
+    "Building_CaserneLeurreURSS": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeCaserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneLeurreURSS",
+      "used_count": 6,
+      "placement_string": "front.parametres.Classes.Building_CaserneLeurreURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m08_allemagne/leveldesign_chapter1",
+        "m08_allemagne/leveldesign_chapter2",
+        "m08_allemagne/leveldesign_chapter2-ps3"
+      ]
+    },
+    "Building_CaserneLeurreUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeCaserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneLeurreUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_CaserneLeurreUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_CaserneLeurreFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeCaserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneLeurreFR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_CaserneLeurreFR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_CaserneLeurreITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeCaserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneLeurreITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_CaserneLeurreITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_UsineAutomoteurLeurre": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAntiChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurLeurre",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteurLeurre",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_UsineAutomoteurLeurreGER": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAntiChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurLeurreGER",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteurLeurreGER",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_UsineAutomoteurLeurreITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAntiChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurLeurreITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteurLeurreITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Usine_CanonLeurre": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineArtillerie",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonLeurre",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_CanonLeurre",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Usine_CanonLeurreGR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineArtillerie",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonLeurreGR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_CanonLeurreGR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Usine_CanonLeurreURSS": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineArtillerie",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonLeurreURSS",
+      "used_count": 4,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_Usine_CanonLeurreURSS",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m08_allemagne/leveldesign_chapter1"
+      ]
+    },
+    "Building_Usine_CanonLeurreUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineArtillerie",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonLeurreUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_CanonLeurreUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Usine_CanonLeurreFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineArtillerie",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonLeurreFR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_CanonLeurreFR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Usine_CanonLeurreITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineArtillerie",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonLeurreITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_CanonLeurreITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_AeroportLeurre": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAerodrome",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportLeurre",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_AeroportLeurre",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_AeroportLeurreGR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAerodrome",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportLeurreGR",
+      "used_count": 1,
+      "placement_string": "front.parametres.Classes.Building_AeroportLeurreGR",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_3v3_demointel"
+      ]
+    },
+    "Building_AeroportLeurreURSS": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAerodrome",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportLeurreURSS",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_AeroportLeurreURSS",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_AeroportLeurreUK": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAerodrome",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportLeurreUK",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_AeroportLeurreUK",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_AeroportLeurreFR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAerodrome",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportLeurreFR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_AeroportLeurreFR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_AeroportLeurreITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAerodrome",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportLeurreITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_AeroportLeurreITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryLeurre": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsinePrototype",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryLeurre",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_ExperimentalFactoryLeurre",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryLeurreGR": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsinePrototype",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryLeurreGR",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_ExperimentalFactoryLeurreGR",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryLeurreITA": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsinePrototype",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryLeurreITA",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_ExperimentalFactoryLeurreITA",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_DefenseMGNestGERLeurre": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseMGNestGERLeurre",
+      "used_count": 9,
+      "placement_string": "front.parametres.generated_data.ParamsBatiments.Building_DefenseMGNestGERLeurre",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m04_cotentin/leveldesign_chapter1",
+        "m04_cotentin/leveldesign_chapter2",
+        "m04_cotentin/leveldesign_chapter3",
+        "m05_hollande/leveldesign_chapter1",
+        "m05_hollande/leveldesign_chapter2",
+        "m05_hollande/leveldesign_chapter3"
+      ]
+    },
+    "Building_DefenseSiegfriedGERLeurre": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_DefenseSiegfriedGERLeurre",
+      "used_count": 1,
+      "placement_string": "front.parametres.Classes.Building_DefenseSiegfriedGERLeurre",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign_bh"
+      ]
+    },
+    "Building_HeadquarterGRFake": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeHeadquarter",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_HeadquarterGRFake",
+      "used_count": 4,
+      "placement_string": "front.parametres.Classes.Building_HeadquarterGRFake",
+      "ever_placed": true,
+      "example_scenarios": [
+        "m02_tunisie/leveldesign_chapter1",
+        "m02_tunisie/leveldesign_chapter2",
+        "m02_tunisie/leveldesign_chapter3",
+        "m02_tunisie/leveldesign_chapter4"
+      ]
+    },
+    "Building_HeadquarterJAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentHeadquarter",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_HeadquarterJAP",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Building_HeadquarterJAP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_BatimentDepot_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentDepot",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentDepot_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentDepot_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_BatimentAdministratifJAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentAdministratif",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_BatimentAdministratifJAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_BatimentAdministratifJAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_TruckFactoryJAP": {
+      "category": "building",
+      "base": "front.batiment.TruckFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_TruckFactoryJAP",
+      "used_count": 3,
+      "placement_string": "parametres.Classes.Building_TruckFactoryJAP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai"
+      ]
+    },
+    "Building_VehiculeFactory_JAP": {
+      "category": "building",
+      "base": "front.batiment.VehiculeFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactory_JAP",
+      "used_count": 3,
+      "placement_string": "parametres.Classes.Building_VehiculeFactory_JAP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Building_Caserne_JAP": {
+      "category": "building",
+      "base": "front.batiment.Caserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Caserne_JAP",
+      "used_count": 5,
+      "placement_string": "parametres.Classes.Building_Caserne_JAP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Building_Usine_Canon_JAP": {
+      "category": "building",
+      "base": "front.batiment.Usine_Canon",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Canon_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_Canon_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Aeroport_JAP": {
+      "category": "building",
+      "base": "front.batiment.Aeroport",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Aeroport_JAP",
+      "used_count": 3,
+      "placement_string": "parametres.Classes.Building_Aeroport_JAP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Building_ExperimentalFactory_JAP": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactory_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_ExperimentalFactory_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Usine_Atomique_JAP": {
+      "category": "building",
+      "base": "front.batiment.ExperimentalFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_Atomique_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_Atomique_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_UsineAutomoteur_JAP": {
+      "category": "building",
+      "base": "front.batiment.AutomotorFactory",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteur_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteur_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Def_Bunker_enterre_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Def_Bunker_enterre_JAP",
+      "used_count": 11,
+      "placement_string": "parametres.Classes.Building_Def_Bunker_enterre_JAP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "compassrose/leveldesign_banzai",
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Building_Def_Position_105mm_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Def_Position_105mm_JAP",
+      "used_count": 1,
+      "placement_string": "parametres.Classes.Building_Def_Position_105mm_JAP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Building_Def_Position_DCA_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentDefense",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Def_Position_DCA_JAP",
+      "used_count": 4,
+      "placement_string": "parametres.Classes.Building_Def_Position_DCA_JAP",
+      "ever_placed": true,
+      "example_scenarios": [
+        "swamps/leveldesign_challengeorbraves"
+      ]
+    },
+    "Building_VehiculeFactoryLeurre_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_VehiculeFactoryLeurre_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_VehiculeFactoryLeurre_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_CaserneLeurre_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeCaserne",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_CaserneLeurre_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_CaserneLeurre_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_UsineAutomoteurLeurre_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAntiChar",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_UsineAutomoteurLeurre_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_UsineAutomoteurLeurre_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_Usine_CanonLeurre_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineArtillerie",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_Usine_CanonLeurre_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_Usine_CanonLeurre_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_AeroportLeurre_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsineAerodrome",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_AeroportLeurre_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_AeroportLeurre_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "Building_ExperimentalFactoryLeurre_JAP": {
+      "category": "building",
+      "base": "front.batiment.BatimentFakeUsinePrototype",
+      "descriptor": "$/GFX/Everything/Descriptor_Building_ExperimentalFactoryLeurre_JAP",
+      "used_count": 0,
+      "placement_string": "front.parametres.Classes.Building_ExperimentalFactoryLeurre_JAP",
+      "ever_placed": false,
+      "example_scenarios": []
+    },
+    "front.batiment_depot.DalleBatimentDepot": {
+      "category": "depot",
+      "base": null,
+      "descriptor": null,
+      "used_count": 1621,
+      "placement_string": "front.batiment_depot.DalleBatimentDepot",
+      "ever_placed": true,
+      "example_scenarios": [
+        "alpha/leveldesign",
+        "alpha/leveldesign_bh",
+        "battleofthebulge/leveldesign",
+        "battleofthebulge/leveldesign_3v3_v01",
+        "battleofthebulge/leveldesign_challenge",
+        "beta/leveldesign"
+      ]
+    }
+  }
+}

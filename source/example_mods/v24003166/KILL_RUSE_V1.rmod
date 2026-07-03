@@ -1,0 +1,203 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "kill-ruse-v1",
+  "name": "KILL RUSE",
+  "version": "1.0.0",
+  "author": "Prolution",
+  "description": "Kill Ruse activated for multiplayer. Automatically destroy all enemy units and buildings in a sector. Causes the opponent to surrender if it hits their last HQ. How to make it fun?\n\nHide and Seek:\nTo set it up: create a 20-minute match where players can't use ruses until 5 minutes in. One player is the \"killer\" and can intermittently use the kill ruse but is not able to construct buildings or units. Meanwhile, other teams will need to establish depots and secondaries to stay alive the longest. You're still fighting against the player with the kill ruse, but the goal is to survive the longest. Strategies like using camouflage for buildings, deploying decoys to confuse the killer, and employing blitz tactics for quick escapes are essential.\n\nRUSE Killer:\nFor an alternative mode, consider a variation where each player gains a ruse every minute. The objective is to capture the killer's HQ or destroy it. All players can use any ruse except the kill ruse, which is exclusive to the killer. It is important to use radio silence, decryption and strategically using fakes. Also, consider the potential effectiveness of airborne units in this tactical setup.\n\nfyi you can die by your own kill ruse",
+  "game_version": "24003166",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TBluffCardDescriptor",
+          "match": {
+            "_index": "44841"
+          },
+          "set": {
+            "Title": {
+              "type": "LocHash",
+              "value": "a9daa2378d760000"
+            },
+            "ShowInMenu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "LifeDuration": {
+              "type": "Float32",
+              "value": 1.0
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TBluffInfos",
+          "local_id": "inst_63704",
+          "set": {
+            "UseNation": {
+              "type": "Bool",
+              "value": 0
+            },
+            "Textures": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "inst": 46758,
+                  "class": 13
+                }
+              ]
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 46758,
+                "class": 13
+              }
+            },
+            "NameToken": {
+              "type": "LocHash",
+              "value": "a9daa2378d760000"
+            },
+            "DescriptionToken": {
+              "type": "LocHash",
+              "value": "6e6ec66eebce8b03"
+            },
+            "LifeDuration": {
+              "type": "Int32",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInterfaceInGameResourceBluffInfos",
+          "match": {
+            "_index": "45065"
+          },
+          "set": {
+            "BluffInfosDico": {
+              "type": "Map<UInt32,ObjRef>",
+              "value": [
+                [
+                  16,
+                  {
+                    "inst": 45066,
+                    "class": 152
+                  }
+                ],
+                [
+                  12,
+                  {
+                    "inst": 45067,
+                    "class": 152
+                  }
+                ],
+                [
+                  15,
+                  {
+                    "inst": 45068,
+                    "class": 152
+                  }
+                ],
+                [
+                  13,
+                  {
+                    "inst": 45069,
+                    "class": 152
+                  }
+                ],
+                [
+                  2,
+                  {
+                    "inst": 45070,
+                    "class": 152
+                  }
+                ],
+                [
+                  9,
+                  {
+                    "inst": 45071,
+                    "class": 152
+                  }
+                ],
+                [
+                  7,
+                  {
+                    "inst": 45072,
+                    "class": 152
+                  }
+                ],
+                [
+                  4,
+                  {
+                    "inst": 45073,
+                    "class": 152
+                  }
+                ],
+                [
+                  5,
+                  {
+                    "inst": 45074,
+                    "class": 152
+                  }
+                ],
+                [
+                  11,
+                  {
+                    "inst": 45075,
+                    "class": 152
+                  }
+                ],
+                [
+                  20,
+                  {
+                    "inst": 45076,
+                    "class": 152
+                  }
+                ],
+                [
+                  19,
+                  {
+                    "inst": 45077,
+                    "class": 152
+                  }
+                ],
+                [
+                  18,
+                  {
+                    "inst": 45078,
+                    "class": 152
+                  }
+                ],
+                [
+                  10,
+                  {
+                    "inst": 45079,
+                    "class": 152
+                  }
+                ],
+                [
+                  1,
+                  {
+                    "inst": 45080,
+                    "class": 152
+                  }
+                ],
+                [
+                  8,
+                  {
+                    "local_id": "inst_63704",
+                    "class": 152
+                  }
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

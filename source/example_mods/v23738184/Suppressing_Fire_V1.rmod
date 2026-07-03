@@ -1,0 +1,173 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "suppressing-fire-v1",
+  "name": "Suppressing Fire",
+  "version": "1.0.0",
+  "author": "SuperCrumpets",
+  "description": "All Rifles and Mgs have an Area of effect",
+  "game_version": "23738184",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44942"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 260.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44944"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 260.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44945"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 260.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44946"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 260.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44947"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 260.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44951"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 520.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44952"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 780.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44953"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 780.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44954"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 780.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44955"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 1300.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44956"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 1300.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "_index": "44957"
+          },
+          "set": {
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 1300.0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
