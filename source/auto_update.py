@@ -149,7 +149,9 @@ def _download_with_progress(parent, url, dest_path):
 
 def _update_shortcuts(old_exe, new_exe):
     """Best-effort: rewrite any Desktop / Start Menu / Pinned-to-taskbar .lnk whose TargetPath
-    equals the running exe so it points at the new versioned filename.
+    equals the running exe so it points at the new versioned filename — including its icon source
+    (our shortcuts use the exe itself as the icon, so it would otherwise blank out once the old exe
+    is cleaned up).
 
     Pure ctypes against IShellLinkW + IPersistFile (the same COM interfaces WScript.Shell uses
     internally).  No PowerShell, cscript, or other scripting host is invoked — works under any
@@ -197,6 +199,8 @@ def _update_shortcuts(old_exe, new_exe):
     GetPath_t     = WINFUNCTYPE(c_int,  c_void_p, c_wchar_p, c_int, c_void_p, c_ulong)
     SetWorkDir_t  = WINFUNCTYPE(c_int,  c_void_p, c_wchar_p)
     SetPath_t     = WINFUNCTYPE(c_int,  c_void_p, c_wchar_p)
+    GetIconLoc_t  = WINFUNCTYPE(c_int,  c_void_p, c_wchar_p, c_int, POINTER(c_int))
+    SetIconLoc_t  = WINFUNCTYPE(c_int,  c_void_p, c_wchar_p, c_int)
     Load_t        = WINFUNCTYPE(c_int,  c_void_p, c_wchar_p, c_ulong)
     Save_t        = WINFUNCTYPE(c_int,  c_void_p, c_wchar_p, wintypes.BOOL)
 
@@ -204,6 +208,8 @@ def _update_shortcuts(old_exe, new_exe):
     SLOT_Release             = 2
     SL_SLOT_GetPath          = 3
     SL_SLOT_SetWorkDir       = 9
+    SL_SLOT_GetIconLoc       = 16
+    SL_SLOT_SetIconLoc       = 17
     SL_SLOT_SetPath          = 20
     PF_SLOT_Load             = 5
     PF_SLOT_Save             = 6
@@ -274,6 +280,15 @@ def _update_shortcuts(old_exe, new_exe):
                 if _vcall(sl, SL_SLOT_SetPath, SetPath_t, c_wchar_p(new_str)) < 0:
                     continue
                 _vcall(sl, SL_SLOT_SetWorkDir, SetWorkDir_t, c_wchar_p(new_dir))
+                # Repoint the icon too: our shortcuts use the exe ITSELF as the icon source, so one
+                # left pointing at the old (about-to-be-deleted) exe would show a blank icon after
+                # cleanup. Only rewrite when the icon currently resolves to the old exe, so a custom
+                # icon a user set by hand is left untouched.
+                icon_buf = ctypes.create_unicode_buffer(MAX_PATH)
+                icon_idx = c_int(0)
+                if _vcall(sl, SL_SLOT_GetIconLoc, GetIconLoc_t, icon_buf, MAX_PATH, byref(icon_idx)) >= 0 \
+                        and icon_buf.value.lower() == old_str:
+                    _vcall(sl, SL_SLOT_SetIconLoc, SetIconLoc_t, c_wchar_p(new_str), icon_idx.value)
                 _vcall(pf, PF_SLOT_Save, Save_t, None, 1)
             except Exception:
                 pass   # one bad shortcut shouldn't poison the rest of the sweep

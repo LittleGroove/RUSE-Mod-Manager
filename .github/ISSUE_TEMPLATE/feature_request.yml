@@ -1,0 +1,45 @@
+name: "Feature / suggestion"
+description: "Suggest an addition, improvement, or a full change you'd like to see."
+title: "FEATURE: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every suggestion is taken seriously and feeds directly into updates. Don't worry about
+        wording it perfectly — describe what you want and why, and we'll follow up if anything
+        needs clarifying.
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like?
+      description: Describe the feature, change, or addition.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is it useful?
+      description: What problem does it solve, or what does it make easier?
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area of the app?
+      options:
+        - "Mod Manager tab (load order / deploy)"
+        - "Convert tab"
+        - "Mod Editor"
+        - "Settings"
+        - "New tab / whole-app idea"
+        - "Other / not sure"
+    validations:
+      required: true
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups / screenshots / examples
+      description: Drag-and-drop any sketches, screenshots, or references here.
+    validations:
+      required: false

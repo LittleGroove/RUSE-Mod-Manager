@@ -4695,6 +4695,14 @@ if __name__ == "__main__":
     # decode would fork-bomb the app open. No-op when running from source. (terrain perf, issue #15)
     import multiprocessing
     multiprocessing.freeze_support()
+    # Give Windows an explicit AppUserModelID so the taskbar treats us as our own app and uses the
+    # window icon (set via iconphoto) for the taskbar button. Without this, a frozen build shows a
+    # blank white taskbar icon because Windows groups us under the generic host-process identity.
+    # Must run before ANY window (incl. the banlist tk.Tk below) is created. No-op off Windows.
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("RuseModManager.FieldOperations")
+    except Exception:
+        pass
     # Banlist gate: bundled exe only.  Refuses to load if any Steam account that
     # has signed in on this machine is listed in the baked-in banlist.txt.
     if getattr(sys, "frozen", False):
