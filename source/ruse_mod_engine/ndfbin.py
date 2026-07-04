@@ -175,6 +175,15 @@ class NdfBinary:
         for c in self.classes:
             if c.name == name:
                 return c
+        # Case-insensitive fallback — Eugen re-cases symbols between builds (the same
+        # 'GUID' -> 'Guid' re-casing that prop_by_name guards against also hits class
+        # names). Every editor filters instances by exact class name via class_by_name /
+        # class_instances / find_instances, so without this a re-cased class silently
+        # returns [] and the window shows nothing (no error) on a future build.
+        lower = name.lower()
+        for c in self.classes:
+            if c.name.lower() == lower:
+                return c
         return None
 
     def prop_by_name(self, name: str) -> Optional[NdfProperty]:

@@ -11,7 +11,8 @@ DescriptorLaunchEffetMap(CampList, GameRules, EffetMap, PostInit, TagList) -> de
 
 The generator is engine-only (no tkinter, no interpreter) and fully in-project. Source generation is
 deterministic and validated (parses as Python; structurally matches the shipped scripts). The only
-external dependency is the final source->bytecode step (CPython 2.7 worker).
+external dependency is the final source->bytecode step, which MUST use the bundled CPython 2.5.1 worker
+(the game embeds 2.5.1; any other Python emits opcodes the 2.5.1 VM misexecutes — see xyz_compile.py).
 """
 from dataclasses import dataclass, field
 from typing import List, Optional, Any, Dict
@@ -298,7 +299,7 @@ def _all_top_blocks(op):
 
 
 def generate_source(op: Operation) -> str:
-    """Render `op` to a Python-2.7 effetmap.py source string (deterministic, parseable)."""
+    """Render `op` to a Python-2.5 effetmap.py source string (deterministic, parseable)."""
     e = _Emitter()
     out = [_IMPORTS, ""]
 

@@ -141,11 +141,24 @@ def _download_with_progress(parent, url, dest_path):
             pass
 
 
-def _update_shortcuts(old_exe, new_exe):
-    """Best-effort: rewrite any Desktop / Start Menu / Pinned-to-taskbar .lnk whose TargetPath
-    equals the running exe so it points at the new versioned filename — including its icon source
-    (our shortcuts use the exe itself as the icon, so it would otherwise blank out once the old exe
-    is cleaned up).
+def _repoint_shortcuts(new_exe, old_exe=None):
+    """Best-effort: rewrite Desktop / Start Menu / Pinned-to-taskbar .lnk shortcuts to point at
+    ``new_exe`` — BOTH the target and the icon source (our shortcuts use the exe itself as their
+    icon, so an icon left on an old versioned filename shows a blank/broken icon once that exe is
+    gone).
+
+    Two modes:
+      * update (old_exe set)  — match only shortcuts whose target IS ``old_exe`` (the exe this update
+                                replaces) and move them to ``new_exe``.
+      * heal   (old_exe None) — match any shortcut whose target is one of OUR versioned exes
+                                (RUSE_ModManager_v*.exe) in ``new_exe``'s OWN folder, or that already
+                                targets ``new_exe``, and make sure its target AND icon are ``new_exe``.
+                                This repairs a shortcut whose icon drifted to a long-gone version
+                                (updates before this existed never touched the icon) WITHOUT recreating
+                                it — no delete, no regenerate.
+
+    The icon is repointed when it's empty or already points at one of our versioned exes; a genuinely
+    custom icon a user set by hand is left alone.  Only shortcuts that actually change are saved.
 
     Pure ctypes against IShellLinkW + IPersistFile (the same COM interfaces WScript.Shell uses
     internally).  No PowerShell, cscript, or other scripting host is invoked — works under any
@@ -158,6 +171,7 @@ def _update_shortcuts(old_exe, new_exe):
 
     CLSCTX_INPROC_SERVER = 0x1
     STGM_READWRITE       = 0x00000002
+    SLGP_RAWPATH         = 0x4          # read the stored target verbatim — don't resolve/search for it
     MAX_PATH             = 260
 
     # ── COM GUID structure + parser ───────────────────────────────────────────
@@ -242,11 +256,19 @@ def _update_shortcuts(old_exe, new_exe):
     if ole32.CoInitialize(None) < 0:
         return
 
-    try:
-        old_str = str(old_exe).lower()
-        new_str = str(new_exe)
-        new_dir = str(new_exe.parent)
+    def _is_our_exe(p):
+        try:
+            return bool(_NAME_VER_RE.match(os.path.basename(p)))
+        except Exception:
+            return False
 
+    new_str    = str(new_exe)
+    new_low    = new_str.lower()
+    new_dir    = str(new_exe.parent)
+    new_dir_nc = os.path.normcase(new_dir)
+    old_low    = str(old_exe).lower() if old_exe is not None else None
+
+    try:
         for lnk in candidates:
             sl = c_void_p()
             pf = c_void_p()
@@ -267,23 +289,43 @@ def _update_shortcuts(old_exe, new_exe):
                     continue
 
                 buf = ctypes.create_unicode_buffer(MAX_PATH)
-                hr = _vcall(sl, SL_SLOT_GetPath, GetPath_t, buf, MAX_PATH, None, 0)
-                if hr < 0 or buf.value.lower() != old_str:
+                if _vcall(sl, SL_SLOT_GetPath, GetPath_t, buf, MAX_PATH, None, SLGP_RAWPATH) < 0:
+                    continue
+                target  = buf.value
+                tgt_low = target.lower()
+
+                # Is this one of OUR shortcuts we should touch?
+                #   update mode: exactly the exe we're replacing.
+                #   heal mode:   any of our versioned exes in this exe's folder, or one already on us.
+                if old_low is not None:
+                    own = (tgt_low == old_low)
+                else:
+                    own = (tgt_low == new_low) or \
+                          (_is_our_exe(target)
+                           and os.path.normcase(os.path.dirname(target)) == new_dir_nc)
+                if not own:
                     continue
 
-                if _vcall(sl, SL_SLOT_SetPath, SetPath_t, c_wchar_p(new_str)) < 0:
-                    continue
-                _vcall(sl, SL_SLOT_SetWorkDir, SetWorkDir_t, c_wchar_p(new_dir))
-                # Repoint the icon too: our shortcuts use the exe ITSELF as the icon source, so one
-                # left pointing at the old (about-to-be-deleted) exe would show a blank icon after
-                # cleanup. Only rewrite when the icon currently resolves to the old exe, so a custom
-                # icon a user set by hand is left untouched.
+                changed = False
+                if tgt_low != new_low:
+                    if _vcall(sl, SL_SLOT_SetPath, SetPath_t, c_wchar_p(new_str)) < 0:
+                        continue
+                    _vcall(sl, SL_SLOT_SetWorkDir, SetWorkDir_t, c_wchar_p(new_dir))
+                    changed = True
+
+                # Repoint the icon when it's empty or points at ONE OF OUR versioned exes — this heals
+                # an icon stuck on a long-gone version (e.g. v1.0.131).  A genuinely custom icon the
+                # user set by hand is left untouched.  Index 0 = the exe's own default icon.
                 icon_buf = ctypes.create_unicode_buffer(MAX_PATH)
                 icon_idx = c_int(0)
-                if _vcall(sl, SL_SLOT_GetIconLoc, GetIconLoc_t, icon_buf, MAX_PATH, byref(icon_idx)) >= 0 \
-                        and icon_buf.value.lower() == old_str:
-                    _vcall(sl, SL_SLOT_SetIconLoc, SetIconLoc_t, c_wchar_p(new_str), icon_idx.value)
-                _vcall(pf, PF_SLOT_Save, Save_t, None, 1)
+                if _vcall(sl, SL_SLOT_GetIconLoc, GetIconLoc_t, icon_buf, MAX_PATH, byref(icon_idx)) >= 0:
+                    icon = icon_buf.value
+                    if icon.lower() != new_low and (icon == "" or _is_our_exe(icon)):
+                        if _vcall(sl, SL_SLOT_SetIconLoc, SetIconLoc_t, c_wchar_p(new_str), 0) >= 0:
+                            changed = True
+
+                if changed:
+                    _vcall(pf, PF_SLOT_Save, Save_t, None, 1)
             except Exception:
                 pass   # one bad shortcut shouldn't poison the rest of the sweep
             finally:
@@ -385,7 +427,7 @@ def download_and_relaunch(parent, asset_url, latest_version):
 
     # Repoint any Desktop / Start Menu / Pinned-to-taskbar shortcuts at the new exe BEFORE we hand
     # off (the old exe gets cleaned up shortly, so stale shortcuts would otherwise break).
-    _update_shortcuts(exe_path, final_path)
+    _repoint_shortcuts(final_path, old_exe=exe_path)
 
     # Hand the launch to the running shell so the new exe starts OUTSIDE this process/job — silently
     # (no cmd window — the old .bat flashed one and alarmed users) and without pinning our temp dir.
@@ -412,6 +454,20 @@ def download_and_relaunch(parent, asset_url, latest_version):
     sys.exit(0)
 
 
+def heal_shortcuts():
+    """On startup, silently repair any of OUR Desktop / Start Menu / taskbar shortcuts whose target or
+    icon drifted to a version that's no longer here, pointing them at the exe running right now — no
+    recreation, no deletion.  This fixes shortcuts left stale by updates from before the icon-repoint
+    existed, without waiting for the next update.  Best-effort, off the main thread; no-op from source."""
+    if not getattr(sys, "frozen", False):
+        return
+    try:
+        cur = Path(sys.executable).resolve()
+    except Exception:
+        return
+    threading.Thread(target=lambda: _repoint_shortcuts(cur), daemon=True).start()
+
+
 def run_startup_check(parent):
     """Top-level entry. Called from ModManagerApp.__init__ before the main window is shown.
 
@@ -421,6 +477,7 @@ def run_startup_check(parent):
     # Every launch sweeps stale older-version exes — this is what removes the exe a prior update
     # replaced (the new instance deletes the old one, which the old running process couldn't).
     cleanup_old_exes()
+    heal_shortcuts()   # repair shortcuts whose icon/target drifted to a gone version (non-destructive)
     try:
         current = current_version()
         if not current:

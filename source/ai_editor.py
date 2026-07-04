@@ -13,7 +13,6 @@ RE: difficulties 0=Easy/1=Medium/2=Hard; profiles 0=Regular/1=Air Force/2=Howitz
 4=Blitzkrieg/5=Turtle/6=Random (see docs/modding/ai.md). The C++ engine reads these directly.
 """
 import copy
-import io
 import os
 import re
 import sys
@@ -21,8 +20,11 @@ import zlib
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-_PY25_MAGIC = 62131          # Python 2.5 marshal magic (the .xyz are 2.5 bytecode)
-_PY25_VER = (2, 5, 4)
+# The game embeds CPython 2.5.1; its .xyz are 2.5.1 bytecode (marshal magic 62131 = 0xf2b3).  This is
+# the ONLY Python whose bytecode the game VM executes correctly — see ruse_mod_engine/xyz_compile.py,
+# the single source of truth for reading/decompiling/re-emitting .xyz.  This window is READ-ONLY on
+# scripts (decompile/inspect via the canonical codec); it never writes .xyz.
+_PY25_MAGIC = 62131          # CPython 2.5.1 marshal magic — kept in sync with xyz_compile.PY_MAGIC
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 if REPO not in sys.path:
@@ -30,6 +32,7 @@ if REPO not in sys.path:
 from ruse_mod_engine import edata as edata_mod  # noqa: E402
 from ruse_mod_engine import mod_project as mp_mod  # noqa: E402
 from ruse_mod_engine import ndfbin as ndfbin_mod  # noqa: E402
+from ruse_mod_engine import xyz_compile as xyz_mod  # noqa: E402  — canonical 2.5.1 .xyz codec (decompile)
 from i18n import t  # noqa: E402
 import ui_util  # noqa: E402  — zebra-striping (issue #5.2)
 
@@ -528,14 +531,11 @@ class AIEditorWindow(tk.Frame):
         return self._scripts[sel[0]] if sel else None
 
     def _decompile_source(self, path, dec):
-        """Full Python source via uncompyle6 (Py2.5); falls back to a structural analysis."""
+        """Full Python source via the canonical 2.5.1 codec (xyz_compile.decompile — xdis + uncompyle6
+        with the (2,5) opcode table, the module-return artifact stripped); falls back to a structural
+        analysis.  Uses the single-source-of-truth codec so this window can't drift to a wrong Py version."""
         try:
-            from xdis import unmarshal
-            from uncompyle6.main import decompile
-            co = unmarshal.load_code(dec, _PY25_MAGIC)
-            out = io.StringIO()
-            decompile(co, _PY25_VER, out, magic_int=_PY25_MAGIC)
-            src = out.getvalue()
+            src = xyz_mod.decompile(dec)   # 2.5.1 marshal bytes -> recompilable source
             if src and src.strip():
                 return src
         except Exception as e:

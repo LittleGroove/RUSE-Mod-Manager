@@ -341,13 +341,35 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
     assignments = []
     new_inst_indices: set = set()  # mod-NDF global indices of truly new instances
 
+    from collections import Counter as _Counter
+
     for cls_name, mod_insts in sorted(mod_groups.items()):
         orig_insts = orig_groups.get(cls_name, [])
+
+        # A stable key is only usable for matching when it is UNIQUE within this class on BOTH sides.
+        # A DUPLICATE key (repeated ClassNameForDebug / _ShortDatabaseName / Name — common on UI and
+        # 3D-label descriptors like TText3DDescriptor) is ambiguous: orig_by_key would keep only the
+        # last instance per key, so every earlier same-key instance mispairs — spilling into phantom
+        # creates + delete_props.  That made a diff of an NDF against ITSELF report thousands of bogus
+        # changes, which the (now-restored) surgical self-check correctly rejected → every everything.cpp
+        # convert fell back to a raw file patch (issue #18: "surgical differencing has changed").  The
+        # applier also can't target a duplicate key ({"Name":"X"} matches N instances), so such a patch
+        # wouldn't apply to the right one anyway.  Duplicate-keyed instances therefore fall back to
+        # POSITIONAL (_index) matching, exactly like keyless ones — which round-trips for identical /
+        # near-identical NDFs.  Unique keys (the vast majority, and the whole point of key-matching:
+        # surviving index shifts) are unaffected.
+        _ok = _Counter(_stable_key(i, orig_ndf) for _, i in orig_insts)
+        _mk = _Counter(_stable_key(i, mod_ndf) for _, i in mod_insts)
+        _usable_keys = {k for k in _ok if k is not None and _ok[k] == 1 and _mk.get(k) == 1}
+
+        def _match_key(inst, ndf):
+            k = _stable_key(inst, ndf)
+            return k if k in _usable_keys else None
 
         orig_by_key = {}
         orig_no_key = []
         for gi, inst in orig_insts:
-            key = _stable_key(inst, orig_ndf)
+            key = _match_key(inst, orig_ndf)
             if key is not None:
                 orig_by_key[key] = (gi, inst)
             else:
@@ -358,7 +380,7 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
         orig_no_key_i  = 0
 
         for mod_gi, mod_inst in mod_insts:
-            key = _stable_key(mod_inst, mod_ndf)
+            key = _match_key(mod_inst, mod_ndf)
             if key is not None:
                 orig_entry = orig_by_key.get(key)
                 if orig_entry is not None and key not in orig_keys_used:
@@ -378,8 +400,8 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
                     mod_orphans.append((mod_gi, mod_inst))
 
         orig_orphans_keyed   = [(gi, inst) for gi, inst in orig_insts
-                                if _stable_key(inst, orig_ndf) is not None
-                                and _stable_key(inst, orig_ndf) not in orig_keys_used]
+                                if _match_key(inst, orig_ndf) is not None
+                                and _match_key(inst, orig_ndf) not in orig_keys_used]
         orig_orphans_unkeyed = orig_no_key[orig_no_key_i:]
         orig_orphans = sorted(orig_orphans_keyed + orig_orphans_unkeyed, key=lambda x: x[0])
 
@@ -393,7 +415,7 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
 
         # Instances in orig with no mod counterpart → delete them
         for orig_gi, orig_inst in orig_orphans[len(mod_orphans):]:
-            key = _stable_key(orig_inst, orig_ndf)
+            key = _match_key(orig_inst, orig_ndf)
             match_dict = {key[0]: key[1]} if key else {"_index": str(orig_gi)}
             assignments.append((orig_gi, orig_inst, None, None, cls_name, match_dict))
 
@@ -476,8 +498,14 @@ def _surgical_ndf_roundtrips(orig_bytes, mod_ndf, pg_dict, warn_fn) -> bool:
         pg = mod_format._parse_patch_group(pg_dict, 0)
         ndf = ndfbin_mod.read(orig_bytes)
         result = applier.ApplyResult(mod_name="surgical-selfcheck")
-        applier._apply_ref_edits(ndf, pg, result)
+        # Mirror the real apply path exactly: IMPR/EXPR phase A (adds) BEFORE instance changes,
+        # then the changes, then phase B (removes + dense ordinal renumber) AFTER.  (This used to
+        # call a single applier._apply_ref_edits, which was split into _apply_ref_adds +
+        # _finalize_ref_edits — the stale name made every self-check raise and silently fall the
+        # whole NDF back to a raw file patch: issue #18.)
+        applier._apply_ref_adds(ndf, pg, result)
         applier._apply_changes_to_ndf(pg.changes, ndf, result)
+        applier._finalize_ref_edits(ndf, pg, result)
         return _ndf_semantic_equal(ndf, mod_ndf)
     except Exception as e:  # noqa: BLE001
         warn_fn(f"  surgical self-check errored ({e})")
@@ -605,7 +633,23 @@ def _diff_scenario(orig_scn, mod_scn, warn_fn):
     if _impr_expr_differ(ondf, mndf):
         return None                                  # IMPR/EXPR differ — ship raw (lossless)
     changes = diff_ndf(ondf, mndf, warn_fn)
-    return changes or None
+    if not changes:
+        return None
+    # Losslessness guard — mirror the everything.cpp NDF path (see _surgical_ndf_roundtrips at the
+    # is_ndf branch in convert_dat_pair).  The embedded scenario NDF has its OWN per-file CLAS table,
+    # so a placement diff can emit changes that don't round-trip on apply — a `create` naming a class
+    # absent from the target CLAS table (deploy warns "class '…' not found in NDF — skipped"), or an
+    # AddOn patch referencing a local_id whose create was skipped ("local_id not in create_map").
+    # Shipping those produces a BROKEN rmod (issue #18).  Replay the surgical changes onto the original
+    # embedded NDF and confirm they reproduce the modded NDF; if not, return None so convert_dat_pair
+    # ships a byte-exact RAW file patch instead (larger, but always correct).
+    # NB: the self-check loads the original from the bytes we pass (so["ndf_data"]); the pg's "dat"/"ndf"
+    # are only there to satisfy _parse_patch_group's schema, so a placeholder is fine.
+    pg_dict = {"dat": "scenario", "ndf": "scenario", "changes": changes}
+    if not _surgical_ndf_roundtrips(so["ndf_data"], mndf, pg_dict, warn_fn):
+        warn_fn("  scenario NDF surgical diff not lossless — using raw file patch")
+        return None
+    return changes
 
 
 def convert_dat_pair(mod_dat: Path, orig_dat: Path, rmod_dat_path: str,

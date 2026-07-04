@@ -9,14 +9,16 @@ FORMAT is cross-compatible 2.5–2.7 (xdis reads it either way), but the OPCODES
 source with any other Python (e.g. 2.7) emits opcodes the 2.5.1 VM misexecutes, which breaks scripts
 silently in-game. So every from-source compile MUST use the bundled 2.5.1 interpreter.
 
-Two write paths:
-  * `dump_code` / `repack` — re-marshal an EXISTING code object via xdis.marsh (in .venv). Safe: it
-    preserves the original 2.5.1 opcodes byte-for-byte; no interpreter needed.
+Two write paths — BOTH produce genuine 2.5.1 bytecode; NEITHER uses xdis to write:
+  * `repack` (+ script_edit value-edits) — re-marshal an EXISTING code object via `marshal2` (a true
+    Python-2.x marshal writer, in .venv). Byte-IDENTICAL to the game's original, so it loads in-game.
+    xdis is NOT used to write: xdis emits Python-3-style marshal (Py3.4+ FLAG_REF / 0x80 interning) that
+    the embedded 2.5.1 VM cannot read (proven byte-non-identical) — the whole reason marshal2 exists.
   * `compile_source` — compile brand-new SOURCE TEXT. Python 3 cannot emit 2.5.1 bytecode, so this
     delegates to ruse_mod_engine/script_logic.py, which runs the bundled Python-2.5.1 worker
     (ruse_mod_engine/python251/). `have_native_compiler()` reports whether that interpreter is present.
 
-Read path (decompile) uses xdis.unmarshal + uncompyle6 (both in .venv).
+Read path (decompile) uses xdis.unmarshal + uncompyle6 (both in .venv) — decode only, never to write.
 """
 import os  # noqa: F401 (kept for callers/back-compat)
 import zlib
@@ -54,24 +56,24 @@ def unpack(xyz_bytes):
 
 
 def pack(marshal_bytes, hash16=b"\x00" * 16, level=9):
-    """Wrap a 2.7 marshal blob in the XYZ0 container (hash not validated by the engine)."""
+    """Wrap a 2.5.1 marshal blob in the XYZ0 container (hash not validated by the engine)."""
     if len(hash16) != 16:
         raise ValueError("hash16 must be exactly 16 bytes")
     comp = zlib.compress(marshal_bytes, level)
     return MAGIC + VER + len(marshal_bytes).to_bytes(3, "big") + hash16 + comp
 
 
-# ── code object <-> marshal (xdis; no external interpreter) ───────────────────────
+# ── code object <- marshal (xdis; READ / decompile only — never used to write) ────────
 def load_code(marshal_bytes):
-    """Unmarshal a 2.7 code object from raw marshal bytes (xdis)."""
+    """Unmarshal a 2.5.1 code object from raw marshal bytes (xdis) — READ / decompile path only.
+
+    xdis is used ONLY to decode for inspection/decompilation.  It must NOT be used to re-marshal a
+    script for the game: `xdis.marsh` emits Python-3-style marshal (Py3.4+ FLAG_REF / 0x80 interning)
+    that RUSE's embedded 2.5.1 VM cannot read (empirically byte-non-identical to the original).  Every
+    game-loadable WRITE goes through `marshal2` (existing code object, byte-identical — see `repack` and
+    `script_edit`) or the bundled 2.5.1 interpreter (from source — see `compile_to_xyz`)."""
     from xdis import unmarshal
     return unmarshal.load_code(marshal_bytes, PY_MAGIC)
-
-
-def dump_code(code):
-    """Marshal a (2.7) code object back to bytes via xdis.marsh — the in-project WRITE path."""
-    from xdis import marsh
-    return marsh.dumps(code, PY_MAGIC)
 
 
 def _strip_module_return(source):
@@ -100,11 +102,15 @@ def decompile_xyz(xyz_bytes):
 
 
 def repack(xyz_bytes, hash16=None):
-    """Decode a code object and RE-EMIT the XYZ0 (unpack -> load -> dump -> pack). Normalises a script
-    through the in-project codec; the basis for code-object edits (load_code -> mutate -> dump_code)."""
+    """Normalise a script through the in-project codec (unpack -> re-marshal -> pack) and RE-EMIT the
+    XYZ0, producing BYTE-IDENTICAL, game-loadable output.  The re-marshal goes through `marshal2` (true
+    Python-2.x marshal — NOT xdis, which would corrupt it), so a round-tripped game script comes back
+    byte-for-byte.  To EDIT a script, use `script_edit` (marshal2 Node tree for named-value edits) or
+    recompile from source with the bundled 2.5.1 interpreter (`compile_to_xyz`)."""
+    from . import marshal2
     u = unpack(xyz_bytes)
     h = hash16 if hash16 is not None else u["hash"]
-    return pack(dump_code(load_code(u["marshal"])), h)
+    return pack(marshal2.dump(marshal2.load(u["marshal"])), h)
 
 
 # ── from-scratch source compilation (delegates to the bundled Python-2.5.1 path) ──
