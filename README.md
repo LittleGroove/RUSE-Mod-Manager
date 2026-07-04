@@ -13,6 +13,8 @@ It's also a full **mod-making toolkit**. You can:
 
 It works with **every modern version of R.U.S.E.** — the one on Steam and each *Compat* version — plus the very first Ubisoft version (**OG Compat**). The app finds your game and version for you.
 
+![The RUSE Mod Manager main window — your mods in a list, in load order, with one Deploy button](screenshots/main-window.png)
+
 ---
 
 ## Contents
@@ -150,6 +152,7 @@ This page is the **overview and quick start**. Each part of the app has its own 
 |---|---|
 | **[Versions & backups](docs/guide/versions-and-backups.md)** | The build-id system, backups per version, why mods are kept apart, restoring clean |
 | **[Mod Manager tab](docs/guide/mod-manager.md)** | Setup checklist, the mod list, load order, deploy, the cache, dry runs, bundled SAFE mods, sharing load orders |
+| **[Sharing your mods](docs/guide/sharing-mods.md)** | Sending your own `.rmod` to the community pack with the Share Mod button |
 | **[Convert tab](docs/guide/convert.md)** | Turning old mods into `.rmod`, the folder layouts it expects, moving a mod to every version |
 | **[Mod Editor — projects](docs/guide/mod-editor.md)** | Making a project, picking a version, the hub, saving, adding `.dat` files, deploy vs. export |
 | → [Units & Buildings editor](docs/guide/units-editor.md) | Stats, weapons/ammo, upgrade chains, display names, build menus |
@@ -166,6 +169,10 @@ This page is the **overview and quick start**. Each part of the app has its own 
 ## 1. Mod Manager tab
 
 The main tab: your list of mods, in load order, with a Deploy button.
+
+![The Mod Manager tab, with the main steps marked](screenshots/main-window.annotated.png)
+
+*① The setup checklist (both steps must be green). ② Your mod list, in load order. ③ The reorder buttons (⇈ ▲ ▼ ⇊). Then **Deploy Mods** turns the checked mods on in your game.*
 
 **Setup checklist.** The top shows two steps that both need to be green before you can deploy: **Set Game Root** (through Settings or **Detect Game Version**) and **Create Backup** (a safe copy of your original files — you can't deploy until it exists). **Restore Clean** puts those originals back any time you want.
 
@@ -189,6 +196,8 @@ The main tab: your list of mods, in load order, with a Deploy button.
 
 The Convert tab does two jobs:
 
+![The Convert tab](screenshots/convert-tab.png)
+
 1. **Old mod → `.rmod`.** Point it at the **main folder** of an old whole-`.dat` mod. It compares that mod's files to your clean originals and writes down only what's different, saving a clean `.rmod` into the matching `mods/v<buildid>/` folder. It compares things carefully, one file type at a time (gameplay data, text, map AI info, scenarios), and for anything it can't compare that way, it saves a full copy of the change so nothing is lost. Pick the **target version** from the *"Make mod for version"* dropdown — so you can make a mod for a version other than the one you have installed, as long as you have that version's backup.
 
 2. **Make a mod work on every game version.** The lower panel takes an existing `.rmod`, lets you pick a **Source version**, and then **▶ Converts to all versions**. It re-points the mod's inner labels so they match each version's layout, and saves one `.rmod` per version into its `mods/v<buildid>/` folder. This is how one mod is made to work on public + compat-2/3/4.
@@ -200,6 +209,8 @@ The Convert tab does two jobs:
 ## 3. Mod Editor tab
 
 The Mod Editor is a full mod-making toolkit. You make a **project**, edit it using several special windows, then either **deploy** it straight to your game or **export** it as an `.rmod` to share.
+
+![The Mod Editor project hub, with a button for each editor window](screenshots/editor/hub.png)
 
 **Pick the version when you create.** On the start screen, **Create New Mod** lets you type a name **and choose the game version** from a dropdown of every version you have a clean backup for. It defaults to the version you have installed. So you can make a mod for compat-2 even while your game is on public — the editor always reads that version's clean files.
 
@@ -222,6 +233,8 @@ The five editor windows:
 ## 4. Settings tab
 
 Game folders (**Game Root Directory**, plus read-only **Working Directory** and **Mods Folder** with **Open…** buttons), backup controls (**Create Backup**, **Restore Clean**, **Detect Game Version**), the **Profile** tools, and **Accessibility** (UI **language**, Start-Menu / Desktop shortcuts).
+
+![The Settings tab](screenshots/settings.png)
 
 ➡ **Full detail: [Settings guide](docs/guide/settings.md).**
 
@@ -291,6 +304,8 @@ The runnable source code is in the **`source/`** folder on the `main` branch (lo
 ## Contributing
 
 This tool is built together with the community, and your ideas go **straight** into updates — suggestions, bug reports, small tweaks, and big changes are all welcome. Open a **[GitHub Issue](https://github.com/LittleGroove/RUSE-Mod-Manager/issues/new/choose)** (Bug report or Feature / suggestion). Screenshots, which tab or area you were in, the steps to make the bug happen again, your version, and which game version you're on (public / a compat version / OG compat) all help us fix things fast. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full rundown.
+
+**Made a mod you want everyone to have?** In the Mod Manager, select it and click **📤 Share Mod** — the app opens the right page and gets your file ready to send, no GitHub know-how needed. See **[Sharing your mods](docs/guide/sharing-mods.md)** for the full walkthrough.
 
 ---
 

@@ -15,6 +15,8 @@ There are two separate tools on this tab, stacked one above the other:
 2. **Migrate a mod to every game version** (bottom): take one finished `.rmod`
    and make copies that work on every other game version.
 
+![The Convert tab, with the two tools stacked one above the other](../../screenshots/convert-tab.png)
+
 > **Why use `.rmod` at all?** A mod folder holds *whole* game files. An `.rmod`
 > holds only the *changes*. That makes it tiny, easy to mix with other mods, and
 > easy to move between game versions. See [rmod-format.md](rmod-format.md) to
@@ -111,6 +113,8 @@ it uses the newest version in the list instead.
 
 ### Step 3 — Fill in the mod info
 
+![The Mod Info form, with Name, ID, Version, and Author boxes](../../screenshots/convert/mod-info.png)
+
 The **Mod Info** form (on the left of the top part):
 
 | Field           | Notes                                                              |
@@ -141,6 +145,8 @@ Two things to know:
   (`MyMod_V2` stays `MyMod_V2`, not `MyMod_V2_V2`).
 
 ### Step 4 — Scan for Changes
+
+![The Detected .dat Files box, listing the changed game files](../../screenshots/convert/dat-list.png)
 
 Click **Scan for Changes** to see what will be saved before you make the mod. It
 goes through the mod folder, matches every game file with its clean copy for the
@@ -239,6 +245,8 @@ or below the real mod folder.
 ---
 
 ## Tool 2 — Copy a mod to every game version
+
+![The Migrate panel, for copying a mod to every game version](../../screenshots/convert/migrate.png)
 
 The lower **Migrate a mod to every game version** panel takes a **finished
 `.rmod`** and makes copies that work on **every other game version** it has a map

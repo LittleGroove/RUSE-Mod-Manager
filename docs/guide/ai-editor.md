@@ -21,6 +21,8 @@ With this editor you can change four things:
 See also the matching [Economy Editor](economy-editor.md) (it edits the same
 `everything.cpp` file) and the project [README](../../README.md).
 
+![The AI editor with tabs for the computer opponent's settings](../../screenshots/editor/ai.png)
+
 ---
 
 ## Opening the editor

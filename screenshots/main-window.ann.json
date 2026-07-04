@@ -1,0 +1,11 @@
+{
+  "base_size": [1360, 860],
+  "shapes": [
+    {"type": "number", "at": [30, 92], "n": 1, "color": "#ff3b30", "size": 24},
+    {"type": "number", "at": [30, 250], "n": 2, "color": "#ff3b30", "size": 24},
+    {"type": "box", "at": [567, 285], "size": [64, 112], "color": "#ff3b30", "width": 4},
+    {"type": "number", "at": [655, 300], "n": 3, "color": "#ff3b30", "size": 22},
+    {"type": "arrow", "from": [1090, 758], "to": [1012, 804], "color": "#ff3b30", "width": 5},
+    {"type": "label", "at": [1050, 732], "text": "Deploy", "color": "#ff3b30", "size": 26}
+  ]
+}

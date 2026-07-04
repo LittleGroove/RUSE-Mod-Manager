@@ -18,9 +18,13 @@ See also: [Versions & Backups](versions-and-backups.md) ·
 [Profiles](profiles.md) · [Mod Manager](mod-manager.md) ·
 [Project README](../../README.md)
 
+![The Settings tab, split into Paths, Backup, Profile, and Accessibility parts](../../screenshots/settings.png)
+
 ---
 
 ## Paths
+
+![The Paths part, with the Game Root, Working, and Mods folder rows](../../screenshots/settings/paths.png)
 
 This part has three rows. Only the first one can be edited. The other two are
 filled in by the app on their own, based on where the app is running. They're
@@ -77,6 +81,8 @@ the working directory and is shown read-only.
 ---
 
 ## Game File Backup
+
+![The Game File Backup part, with the Create Backup and Restore Clean buttons](../../screenshots/settings/backup.png)
 
 This part is the safety net for the whole app. Before you ever install a mod, you
 make a full copy of your original game files here. That way any change can always
@@ -153,6 +159,8 @@ the folder layout.
 
 ## Profile
 
+![The Profile tools, for saving and setting your in-game player profile](../../screenshots/settings/profile.png)
+
 On the right side of the Game File Backup part are tools for your **in-game
 player profile** (your level, unlocks, and so on). They're listed here in short;
 for the full story see the [Profiles guide](profiles.md).
@@ -188,6 +196,8 @@ or mod for one version can never be mixed up with another. See
 ---
 
 ## Accessibility
+
+![The Accessibility part, with the language dropdown and shortcut buttons](../../screenshots/settings/accessibility.png)
 
 At the bottom of the tab are the app's own ease-of-use options.
 

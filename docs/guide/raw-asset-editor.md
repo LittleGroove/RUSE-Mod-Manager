@@ -13,6 +13,8 @@ can.
 See also: [Mod Editor overview](mod-editor.md) · [Units editor](units-editor.md) ·
 [rmod format](rmod-format.md) · [Project README](../../README.md)
 
+![The Raw / Asset Editor showing every file inside a game pack](../../screenshots/editor/raw-asset.png)
+
 ---
 
 ## When to use it
@@ -83,6 +85,8 @@ Vars**, and **Search**.
 ---
 
 ## 1. Browse / Files
+
+![The file browser with the file list on the left and a preview on the right](../../screenshots/editor/raw-asset-file-tree.png)
 
 This is the main view: a searchable list of **every file** in the chosen dat on the
 left, and a live **Preview** on the right.
@@ -198,6 +202,8 @@ When you're inside a pack-in-a-pack, the Save button is renamed **Apply into par
 
 ## 2. NDF Vars
 
+![The NDF Vars tab: pick a file, then an object, then a property to change](../../screenshots/editor/raw-asset-ndf-vars.png)
+
 This tab lets you drill down **NDF file → object → property** and change any property's
 value with a simple dialog. Because it changes the **shared project objects**, edits
 here combine with the Units / Economy / AI editors — they're all working on the same
@@ -232,6 +238,8 @@ dialog tells you what's wrong and nothing is changed.
 ---
 
 ## 3. Search
+
+![The Search tab finding objects by type, property, or value](../../screenshots/editor/raw-asset-search.png)
 
 The Search tab finds **objects by type / property / value** across the **whole dat** at
 once.

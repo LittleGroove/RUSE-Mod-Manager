@@ -9,6 +9,10 @@ that you turn on and install here.
 This guide walks through the tab from top to bottom: the setup checklist,
 building a list of mods, installing them, sharing them, and the extra options.
 
+![The Mod Manager tab, with the setup checklist, the mod list, and the reorder buttons](../../screenshots/main-window.annotated.png)
+
+*① Setup checklist  ② Mod list (in load order)  ③ Reorder buttons — then Deploy Mods turns them on.*
+
 ---
 
 ## What a mod is
@@ -47,6 +51,8 @@ list changes to that build's mods on its own. See
 ---
 
 ## The setup checklist (two steps)
+
+![The two-step setup checklist at the top of the tab](../../screenshots/manager/setup-checklist.png)
 
 At the top of the tab is a two-step checklist. **You can't install mods until
 both steps are green.** Skipping them would either fail or could harm your game
@@ -110,6 +116,8 @@ honest: what you see is what you can actually install for your build.
 
 ## Reading the mod list
 
+![The mod list, with each mod on its own row](../../screenshots/mod-list.png)
+
 Each row is one mod, shown in an even-spaced font:
 
 ```
@@ -140,6 +148,8 @@ only ever shows `.compat.rmod` files, so this toggle is hidden.
 ---
 
 ## Ordering the load order
+
+![The up and down buttons that reorder the selected mod](../../screenshots/manager/reorder-controls.png)
 
 A column of buttons to the right of the list moves the **one mod you have
 selected**. The column is labeled **earlier** at the top and **later** at the
@@ -175,6 +185,8 @@ normal list.
 ---
 
 ## Deploying, launching, restoring
+
+![The bottom button bar, with Deploy Mods, Launch, and Restore Clean](../../screenshots/manager/action-bar.png)
 
 The button bar at the bottom of the tab holds the main actions.
 

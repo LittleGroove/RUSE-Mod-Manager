@@ -27,6 +27,8 @@ editors changed too.
 Related guides: [Mod Editor hub](mod-editor.md) · [Units editor](units-editor.md) ·
 [AI editor](ai-editor.md) · [Mod Manager README](../../README.md).
 
+![The Economy editor with match-wide economy numbers to change](../../screenshots/editor/economy.png)
+
 ---
 
 ## Opening the editor
@@ -219,6 +221,8 @@ gameplay in big ways.
 ---
 
 ## Tab 2 — Economy Buildings
+
+![The Economy Buildings tab with depots and admin buildings to edit](../../screenshots/editor/economy-buildings.png)
 
 This tab edits the economy buildings. The list on the left shows only economy
 buildings: ones whose code name contains **`Depot`**, **`Administratif`**, or

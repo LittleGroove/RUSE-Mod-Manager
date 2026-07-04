@@ -267,14 +267,19 @@ def apply_row_bg(frame, bg):
     _paint(frame)
 
 
-def flow(container, widgets, gap=4, pady=2):
+def flow(container, widgets, gap=4, pady=2, right=None):
     """Lay ``widgets`` (already children of ``container``) left-to-right, wrapping to new rows when
     they don't fit ``container``'s width — so nothing is ever clipped off the edge in a small window
     (issue #5.3).  ``container`` should be ``pack(fill="x")`` and hold ONLY these widgets.
 
+    ``right`` (optional) is a second list of widgets pinned to the RIGHT edge of the last row — they
+    stay right-aligned as the window resizes.  If they'd overlap the left-flowed widgets in a narrow
+    window they drop to their own new (still right-aligned) row instead of being clipped (issue #5.3).
+
     Uses absolute ``place`` (NOT grid): grid shares column widths across rows, so a wide item on a
     wrapped row would inflate that column on the first row and shove the other items off-screen.
     Place positions each widget independently and we set the container's height to fit the rows."""
+    right = right or []
     def relayout(event=None):
         avail = event.width if event is not None else container.winfo_width()
         if avail <= 1:
@@ -289,6 +294,19 @@ def flow(container, widgets, gap=4, pady=2):
             w.place(x=x, y=y)
             x += ww + gap
             rowh = max(rowh, wh)
+        if right:
+            total_r = sum(w.winfo_reqwidth() for w in right) + gap * (len(right) - 1)
+            if x > 0 and x + total_r > avail:      # won't fit beside left widgets → own new row
+                x = 0
+                y += rowh + pady
+                rowh = 0
+            rx = avail
+            for w in reversed(right):              # place right-to-left from the edge
+                ww, wh = w.winfo_reqwidth(), w.winfo_reqheight()
+                rx -= ww
+                w.place(x=max(rx, 0), y=y)
+                rx -= gap
+                rowh = max(rowh, wh)
         container.configure(height=y + rowh)       # reserve room for all (wrapped) rows
     container.bind("<Configure>", relayout)
     container.after(60, relayout)

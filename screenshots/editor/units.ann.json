@@ -1,0 +1,11 @@
+{
+  "base_size": [1360, 860],
+  "shapes": [
+    {"type": "label", "at": [250, 128], "text": "1. Pick a unit", "color": "#ff3b30", "size": 22},
+    {"type": "arrow", "from": [248, 158], "to": [120, 168], "color": "#ff3b30", "width": 5},
+    {"type": "label", "at": [980, 348], "text": "2. Change its stats", "color": "#ff3b30", "size": 22},
+    {"type": "box", "at": [1158, 382], "size": [152, 352], "color": "#ff3b30", "width": 4},
+    {"type": "label", "at": [648, 686], "text": "3. Apply", "color": "#ff3b30", "size": 22},
+    {"type": "arrow", "from": [648, 712], "to": [518, 748], "color": "#ff3b30", "width": 5}
+  ]
+}

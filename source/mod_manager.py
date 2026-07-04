@@ -1040,15 +1040,20 @@ class ModManagerApp(tk.Tk):
         tb.pack(fill="x", padx=4, pady=(4, 0))
         # Wrapping toolbar: in a narrow window the buttons flow onto a second row instead of the
         # right-hand ones (Share/Import Order) getting clipped off the edge (issue #5.3).
+        # Import Order / Share Order are pinned RIGHT (they act on the whole order, not a selection);
+        # the rest stay left-aligned.
         tb_btns = [
             ttk.Button(tb, text=t("Scan Mods Folder"), command=self._mgr_scan),
             ttk.Button(tb, text=t("Add .rmod…"), command=self._mgr_add),
             ttk.Button(tb, text=t("Remove Selected"), command=self._mgr_remove),
             ttk.Button(tb, text=t("Clear All"), command=self._mgr_clear),
+            ttk.Button(tb, text=t("Browse rmods"), command=self._mgr_browse_mods),
+        ]
+        tb_btns_right = [
             ttk.Button(tb, text=t("Import Order…"), command=self._mgr_import_order),
             ttk.Button(tb, text=t("Share Order"), command=self._mgr_share_order),
         ]
-        ui_util.flow(tb, tb_btns)
+        ui_util.flow(tb, tb_btns, right=tb_btns_right)
 
         ttk.Label(mf,
                   text=t("TOP loads first  —  BOTTOM overrides.  Use ▲ ▼ to reorder."),
@@ -1100,11 +1105,17 @@ class ModManagerApp(tk.Tk):
         eb.pack(fill="x", padx=4, pady=(2, 6))
         self._mgr_update_btn = ttk.Button(eb, text=t("Update .rmod"),
                                           command=self._mgr_update_rmod, state="disabled")
+        # 'Share Mod' opens GitHub's upload page for the selected external rmod, pointed at the exact
+        # source/example_mods/v<buildid>/ folder build.py pulls community mods from — same single-
+        # external-selection gate as 'Update .rmod' (see _mgr_update_btn_state).
+        self._mgr_share_btn = ttk.Button(eb, text=t("📤  Share Mod"),
+                                         command=self._mgr_share_mod, state="disabled")
         eb_btns = [
             ttk.Button(eb, text=t("☑  Enable Selected"), command=self._mgr_enable_selected),
             ttk.Button(eb, text=t("☐  Disable Selected"), command=self._mgr_disable_selected),
             ttk.Button(eb, text=t("All Off"), command=self._mgr_disable_all),
             self._mgr_update_btn,
+            self._mgr_share_btn,
         ]
         ui_util.flow(eb, eb_btns)
 
@@ -1472,21 +1483,26 @@ class ModManagerApp(tk.Tk):
         self._mgr_redraw_list()
 
     def _mgr_update_btn_state(self):
-        """Enable 'Update .rmod' only when exactly one EXTERNAL (non-bundled) mod is selected and no
-        other long-running task is in progress.  Called on selection change and after list redraws."""
-        btn = getattr(self, "_mgr_update_btn", None)
-        if btn is None:
+        """Enable 'Update .rmod' and 'Share Mod' only when exactly one EXTERNAL (non-bundled) mod is
+        selected and no other long-running task is in progress.  Called on selection change and after
+        list redraws."""
+        btns = [b for b in (getattr(self, "_mgr_update_btn", None),
+                            getattr(self, "_mgr_share_btn", None)) if b is not None]
+        if not btns:
             return
+        def _set(state):
+            for b in btns:
+                b.configure(state=state)
         if getattr(self, "_conv_running", False) or getattr(self, "_mgr_running", False):
-            btn.configure(state="disabled"); return
+            _set("disabled"); return
         sel = self._mgr_lb.curselection()
         if len(sel) != 1:
-            btn.configure(state="disabled"); return
+            _set("disabled"); return
         visible = self._visible_mv_indices()
         if sel[0] >= len(visible):
-            btn.configure(state="disabled"); return
+            _set("disabled"); return
         _, path = self._mgr_mod_vars[visible[sel[0]]]
-        btn.configure(state=("disabled" if self._is_bundled(path) else "normal"))
+        _set("disabled" if self._is_bundled(path) else "normal")
 
     def _mgr_update_rmod(self):
         """Re-derive the SELECTED external rmod into the current format (paths, schema, surgical patches)
@@ -1540,6 +1556,82 @@ class ModManagerApp(tk.Tk):
                 _log(self._mgr_log, t("{name}: {label}", name=name, label=label), tag)
             self.after(0, _done)
         threading.Thread(target=_work, daemon=True).start()
+
+    def _mgr_share_mod(self):
+        """Share the SELECTED external rmod with the community by opening GitHub's 'upload files'
+        page pointed at the exact source/example_mods/v<buildid>/ folder build.py pulls community
+        mods from.  A browser can't be handed the file for the user (browser security), so we also
+        reveal the .rmod in Explorer, highlighted, ready to drag onto the page.  GitHub does the
+        rest: a signed-in user without push access is auto-forked and gets a 'Propose changes' pull
+        request, which the PR template then fills in.  No git, no tokens, no folder-picking."""
+        import webbrowser
+        if getattr(self, "_conv_running", False) or getattr(self, "_mgr_running", False):
+            return
+        sel = self._mgr_lb.curselection()
+        if len(sel) != 1:
+            return
+        visible = self._visible_mv_indices()
+        if sel[0] >= len(visible):
+            return
+        _, path = self._mgr_mod_vars[visible[sel[0]]]
+        name = Path(path).name
+        if self._is_bundled(path):
+            messagebox.showinfo(
+                t("Share Mod"),
+                t("“{name}” is already part of the built-in pack — no need to share it.", name=name),
+                parent=self)
+            return
+
+        # The repo folder mirrors the local mods/v<buildid>/ layout, so the file's OWN parent folder
+        # is the target build folder.  Fall back to the currently loaded version if it isn't a
+        # v<buildid> folder (e.g. a mod imported from some other location).
+        sub = Path(path).parent.name
+        if not re.fullmatch(r"v\d+", sub):
+            sub = self._mgr_current_ver or self._version_subname()
+        if not re.fullmatch(r"v\d+", sub or ""):
+            messagebox.showwarning(
+                t("Share Mod"),
+                t("Couldn't tell which game version this mod is for, so it can't be shared "
+                  "automatically.\n\nMake sure the game is detected in Settings, then try again."),
+                parent=self)
+            return
+        try:
+            label = _gv_mod.display_name(sub[1:])
+        except Exception:
+            label = sub
+
+        url = (f"https://github.com/LittleGroove/RUSE-Mod-Manager/upload/main/"
+               f"source/example_mods/{sub}")
+        if not messagebox.askyesno(
+                t("Share Mod"),
+                t("Share “{name}” with the community?\n\n"
+                  "This opens GitHub in your web browser, on the upload page for the {label} folder. "
+                  "Drag the mod file onto that page, then click “Propose changes” — GitHub creates the "
+                  "request for you.\n\n"
+                  "You'll need a free GitHub account and to be signed in. We'll also open the mod's "
+                  "folder so it's ready to drag in.", name=name, label=label),
+                parent=self):
+            return
+
+        try:
+            opened = webbrowser.open(url)
+        except Exception:
+            opened = False
+        if not opened:
+            messagebox.showerror(
+                t("Share Mod"),
+                t("Couldn't open your web browser. You can upload the mod here:\n{url}", url=url),
+                parent=self)
+            return
+        # Reveal the .rmod in Explorer, highlighted, so it's ready to drag onto the upload page.
+        try:
+            if sys.platform == "win32":
+                subprocess.Popen(f'explorer.exe /select,"{os.path.normpath(path)}"')
+        except Exception:
+            pass
+        _log(self._mgr_log,
+             t("Sharing {name}: opened GitHub's upload page for the {label} folder. Drag the file in, "
+               "then click “Propose changes”.", name=name, label=label), "info")
 
     def _mgr_on_select(self, _=None):
         self._mgr_update_btn_state()
@@ -2104,6 +2196,20 @@ class ModManagerApp(tk.Tk):
             pub = [f for f in pub if self._rmod_identity(f) not in self._bundled_keys]
         self._scanned_compat = comp
         self._scanned_public = pub
+
+    def _mgr_browse_mods(self):
+        """Reveal the BASE mods folder in the OS file explorer (not a build-id subfolder — just the
+        root, so the user can browse every rmod file across all builds)."""
+        base = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
+        try:
+            base.mkdir(parents=True, exist_ok=True)
+            if hasattr(os, "startfile"):
+                os.startfile(str(base))               # Windows: open in Explorer
+            else:
+                messagebox.showinfo(t("Folder"), str(base))
+        except Exception as e:
+            messagebox.showerror(t("Open Failed"),
+                                 t("Could not open:\n{path}\n\n{e}", path=base, e=e))
 
     def _mgr_scan(self):
         """Scan both mod dirs, refresh caches, append any newly found mods at the bottom.

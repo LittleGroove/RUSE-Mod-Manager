@@ -23,6 +23,8 @@ See also:
 - [Mod Editor hub](mod-editor.md)
 - [Mod Manager overview / README](../../README.md)
 
+![The Map editor showing a map's minimap with gameplay markers drawn on top](../../screenshots/editor/map.png)
+
 ---
 
 ## ⚠️ The one big limitation: capture zones are look-only

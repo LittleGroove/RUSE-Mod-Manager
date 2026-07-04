@@ -10,6 +10,10 @@ open. It works on the same project as the [Economy editor](economy-editor.md).
 For a big-picture look at the Mod Manager and how mod projects work, see the
 [project README](../../README.md).
 
+![The Units and Buildings editor: unit list on the left, stats on the right](../../screenshots/editor/units.annotated.png)
+
+*① Pick a unit  ② Change its stats (New value column)  ③ Apply.*
+
 ---
 
 > ## ⚠️ Read this first — what does NOT work yet
@@ -71,6 +75,8 @@ original game file), the error reminds you to set the **Game Root** in Settings.
 ## Tab 1 — Units & Buildings
 
 ### What's in the list
+
+![The unit list showing units grouped by nation and category](../../screenshots/editor/units-list.png)
 
 Each row is one unit or building. The editor shows four kinds:
 
@@ -337,6 +343,8 @@ The two controls affect each other:
   table (Upgrade price / Upgrade time).
 
 #### Weapons — pick each weapon's ammo
+
+![The weapons section where you pick each weapon's ammo](../../screenshots/editor/units-weapons.png)
 
 For units that have a weapon, this section lists each **weapon** the unit
 carries. Every weapon points to an ammo, which holds its real stats.

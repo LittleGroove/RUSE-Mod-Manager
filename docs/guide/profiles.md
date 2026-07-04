@@ -76,6 +76,10 @@ folder the first time you back up while that version is the one it finds.
 
 ## The four buttons (Settings → Profile)
 
+![The profile buttons in the Settings tab](../../screenshots/settings/profile.png)
+
+*The profile buttons in Settings.*
+
 The profile buttons are in the **Profile** group on the right of the Settings tab.
 Whether they can be clicked depends on what the Mod Manager has found:
 

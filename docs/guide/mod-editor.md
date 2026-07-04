@@ -10,6 +10,10 @@ into the game to try it out, and turn it into a `.rmod` file you can share. An
 `.rmod` file is a small "update mod" that holds only your changes so other
 people can add them to their own game.
 
+![The Mod Editor screen where you make a new mod project or open one](../../screenshots/mod-editor.png)
+
+*Create a new mod project, or load one you started.*
+
 This guide does **not** explain each individual editor. Each of those has its own
 guide:
 
@@ -158,6 +162,8 @@ the project's files wouldn't be found).
 
 Making or opening a project brings you to the **hub** — the project's home
 screen.
+
+![The project hub with buttons to open each editor](../../screenshots/editor/hub.png)
 
 ### Header
 

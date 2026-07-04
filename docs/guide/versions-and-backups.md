@@ -152,6 +152,10 @@ always knows which game's files it was built against.
 
 ## Create Backup — what it copies and why you need it
 
+![The backup buttons on the Settings tab](../../screenshots/settings/backup.png)
+
+*The backup controls in Settings.*
+
 The **Create Backup** action (Step 2 in the setup checklist) copies your whole
 `Data/` and `Maps/` folders from your game root into
 `output/backups/v<buildid>/`, keeping the same folder layout. Because the `Maps/`
