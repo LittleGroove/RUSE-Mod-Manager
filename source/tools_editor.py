@@ -1243,17 +1243,13 @@ class ToolsEditorWindow(tk.Frame):
         try:
             data = {"Scenario": _struct_scenario, "KDT": _struct_kdt, "SDB": _struct_sdb}[kind](raw)
         except Exception as e:
-            messagebox.showerror(t("View structure"), t("Could not parse {kind}:\n{e}", kind=kind, e=e), parent=self)
+            ui_util.error(self, t("View structure"), t("Could not parse {kind}:\n{e}", kind=kind, e=e))
             return
         self._view_structure_dialog(t("{kind} structure — {name}", kind=kind, name=name), data)
 
     def _view_structure_dialog(self, title, data):
         """Render nested dict/list/scalar `data` in a read-only, expandable two-column tree."""
-        dlg = tk.Toplevel(self)
-        dlg.title(title)
-        dlg.configure(background=_R_BG_PANEL)
-        dlg.transient(self)
-        dlg.geometry("880x640")
+        dlg = ui_util.themed_toplevel(self, title, size=(880, 640), resizable=True, modal=False)
         holder = tk.Frame(dlg, background=_R_BG_PANEL)
         holder.pack(fill="both", expand=True, padx=8, pady=8)
         tree = ttk.Treeview(holder, columns=("val",), show="tree headings")
@@ -1291,11 +1287,11 @@ class ToolsEditorWindow(tk.Frame):
     def _export(self):
         path = self._selected_browse_path()
         if not path or self._arc is None:
-            messagebox.showinfo(t("Export"), t("Select a file in the list first."), parent=self)
+            ui_util.info(self, t("Export"), t("Select a file in the list first."))
             return
         raw = self._entry_bytes(path)
         if raw is None:
-            messagebox.showerror(t("Export"), t("Could not read that entry."), parent=self)
+            ui_util.error(self, t("Export"), t("Could not read that entry."))
             return
         dest = filedialog.asksaveasfilename(title=t("Export file as"), initialfile=path.split("/")[-1],
                                             parent=self, filetypes=[(t("All files"), "*.*")])
@@ -1305,25 +1301,25 @@ class ToolsEditorWindow(tk.Frame):
             Path(dest).write_bytes(raw)
             self._pv_status.configure(text=t("Exported → {name}", name=Path(dest).name))
         except Exception as e:
-            messagebox.showerror(t("Export failed"), str(e), parent=self)
+            ui_util.error(self, t("Export failed"), str(e))
 
     def _import(self):
         path = self._selected_browse_path()
         if not path:
-            messagebox.showinfo(t("Import / Replace"), t("Select the entry you want to replace first."), parent=self)
+            ui_util.info(self, t("Import / Replace"), t("Select the entry you want to replace first."))
             return
         src = filedialog.askopenfilename(title=t("Replacement for  {name}", name=path.split('/')[-1]),
                                          parent=self, filetypes=[(t("All files"), "*.*")])
         if not src:
             return
-        if not messagebox.askyesno(t("Replace entry?"),
+        if not ui_util.confirm(self, t("Replace entry?"),
                                    t("Replace inside the mod:\n  {path}\nwith:\n  {src}\n\n"
-                                     "(Staged now; written when you Save.)", path=path, src=src), parent=self):
+                                     "(Staged now; written when you Save.)", path=path, src=src)):
             return
         try:
             data = Path(src).read_bytes()
         except Exception as e:
-            messagebox.showerror(t("Import failed"), str(e), parent=self)
+            ui_util.error(self, t("Import failed"), str(e))
             return
         self._stage_replace(path, data)
 
@@ -1374,19 +1370,14 @@ class ToolsEditorWindow(tk.Frame):
         elif kind == "text":
             self._edit_text_dialog(path, raw)
         else:
-            messagebox.showinfo(t("Edit"),
-                                t("No in-place editor for this type yet — use Import / Replace."), parent=self)
+            ui_util.info(self, t("Edit"),
+                                t("No in-place editor for this type yet — use Import / Replace."))
 
     def _big_text_edit(self, title, initial, save_cb=None, note="", readonly=False):
         """Editable multiline-text dialog. When editable, `save_cb(text)` returns (ok, err) and the
         dialog closes on ok. When readonly (or no save_cb) it's a scrollable viewer with a Close button."""
         ro = readonly or save_cb is None
-        dlg = tk.Toplevel(self)
-        dlg.title(title)
-        dlg.configure(background=_R_BG_PANEL)
-        dlg.transient(self)
-        dlg.grab_set()
-        dlg.geometry("860x620")
+        dlg = ui_util.themed_toplevel(self, title, size=(860, 620), resizable=True)
         if note:
             tk.Label(dlg, text=note, background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                      anchor="w", justify="left", wraplength=820).pack(fill="x", padx=8, pady=(8, 2))
@@ -1403,7 +1394,7 @@ class ToolsEditorWindow(tk.Frame):
         def do_save():
             ok, msg = save_cb(txt.get("1.0", "end-1c"))
             if not ok:
-                messagebox.showerror(title, msg or t("Could not save."), parent=dlg)
+                ui_util.error(dlg, title, msg or t("Could not save."))
                 return
             dlg.destroy()
 
@@ -1434,8 +1425,8 @@ class ToolsEditorWindow(tk.Frame):
         try:
             source = xyz_mod.decompile_xyz(raw)
         except Exception as e:
-            messagebox.showerror(t("Edit script"),
-                                 t("Could not decompile this .xyz:\n{e}", e=e), parent=self)
+            ui_util.error(self, t("Edit script"),
+                                 t("Could not decompile this .xyz:\n{e}", e=e))
             return
         name = path.split("/")[-1]
         if not xyz_mod.have_native_compiler():
@@ -1459,19 +1450,15 @@ class ToolsEditorWindow(tk.Frame):
         try:
             entries = dic_mod.read(raw)                 # [(key_bytes, string)] in file order
         except Exception as e:
-            messagebox.showerror(t("Edit localization"),
-                                 t("Not an editable TRA .dic:\n{e}", e=e), parent=self)
+            ui_util.error(self, t("Edit localization"),
+                                 t("Not an editable TRA .dic:\n{e}", e=e))
             return
         name = path.split("/")[-1]
         edits = {}                                       # key_bytes -> new string (only changed ones)
         by_key = {k: v for k, v in entries}
 
-        dlg = tk.Toplevel(self)
-        dlg.title(t("Edit localization — {name}", name=name))
-        dlg.configure(background=_R_BG_PANEL)
-        dlg.transient(self)
-        dlg.grab_set()
-        dlg.geometry("900x600")
+        dlg = ui_util.themed_toplevel(self, t("Edit localization — {name}", name=name),
+                                      size=(900, 600), resizable=True)
         tk.Label(dlg, text=t("{n} entries — pick one, edit its text, Update, then Save.", n=len(entries)),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN).pack(fill="x", padx=8, pady=(8, 2))
 
@@ -1541,7 +1528,7 @@ class ToolsEditorWindow(tk.Frame):
                 for k, s in edits.items():
                     b = dic_mod.set_entry(b, k, s)
             except Exception as e:
-                messagebox.showerror(t("Edit localization"), str(e), parent=dlg)
+                ui_util.error(dlg, t("Edit localization"), str(e))
                 return
             self._stage_replace(path, b, status=t("{n} string(s) edited (staged). Save to write.", n=len(edits)))
             dlg.destroy()
@@ -1574,11 +1561,7 @@ class ToolsEditorWindow(tk.Frame):
 
     def _ask_vpath(self, default: str, title_name: str):
         """Modal prompt for the new entry's virtual path inside the dat.  Returns the path or None."""
-        dlg = tk.Toplevel(self)
-        dlg.title(t("Add  {name}", name=title_name))
-        dlg.configure(background=_R_BG_PANEL)
-        dlg.transient(self)
-        dlg.grab_set()
+        dlg = ui_util.themed_toplevel(self, t("Add  {name}", name=title_name), resizable=True)
         pad = {"padx": 8, "pady": 4}
         tk.Label(dlg, text=t("Virtual path inside the .dat"), background=_R_BG_PANEL,
                  foreground=_R_GOLD_BRT, font=_F_HEAD).grid(row=0, column=0, columnspan=2, sticky="w", **pad)
@@ -1622,11 +1605,11 @@ class ToolsEditorWindow(tk.Frame):
         try:
             data = Path(src).read_bytes()
         except Exception as e:
-            messagebox.showerror(t("Add file"), str(e), parent=self)
+            ui_util.error(self, t("Add file"), str(e))
             return
         ok, err = self._do_add_file(vpath, data)
         if not ok:
-            messagebox.showerror(t("Add file"), err, parent=self)
+            ui_util.error(self, t("Add file"), err)
             return
         disp = vpath.strip().strip("/\\").replace("\\", "/")
         self._browse_refresh()
@@ -1650,15 +1633,14 @@ class ToolsEditorWindow(tk.Frame):
             return
         raw = self._entry_bytes(path)
         if not _is_edata(raw):
-            messagebox.showinfo(t("Open nested .dat"),
-                                t("This entry isn't an embedded .dat archive (no 'edat' header)."),
-                                parent=self)
+            ui_util.info(self, t("Open nested .dat"),
+                                t("This entry isn't an embedded .dat archive (no 'edat' header)."))
             return
         try:
             store = NestedDatStore(self._store, self._dat_key, path, raw)
         except Exception as e:
-            messagebox.showerror(t("Open nested .dat"),
-                                 t("Could not open the embedded archive:\n{e}", e=e), parent=self)
+            ui_util.error(self, t("Open nested .dat"),
+                                 t("Could not open the embedded archive:\n{e}", e=e))
             return
         on_applied = lambda p=path: self._on_nested_applied(p)
         if self._open_nested_cb is not None:
@@ -1763,7 +1745,7 @@ class ToolsEditorWindow(tk.Frame):
         try:
             ndf = self._store.get_ndf(self._dat_key, path)
         except Exception as e:
-            messagebox.showerror(t("NDF"), t("Could not load {path}:\n{e}", path=path, e=e), parent=self)
+            ui_util.error(self, t("NDF"), t("Could not load {path}:\n{e}", path=path, e=e))
             return
         self._v_ndf = ndf
         self._v_ndf_path = path
@@ -1880,7 +1862,7 @@ class ToolsEditorWindow(tk.Frame):
         psel = self._v_props.selection()
         isel = self._v_inst.curselection()
         if not psel or not isel or self._v_ndf is None:
-            messagebox.showinfo(t("Edit"), t("Select an instance and a property first."), parent=self)
+            ui_util.info(self, t("Edit"), t("Select an instance and a property first."))
             return
         inst_idx, _c, _d, inst, _l = self._v_shown[isel[0]]
         prop_idx = int(psel[0].split(":")[1])
@@ -1901,11 +1883,7 @@ class ToolsEditorWindow(tk.Frame):
             self._vars_show_readonly(prop_obj, pv, tname)
             return
 
-        dlg = tk.Toplevel(self)
-        dlg.title(t("Edit  {name}", name=prop_obj.name))
-        dlg.configure(background=_R_BG_PANEL)
-        dlg.transient(self)
-        dlg.grab_set()
+        dlg = ui_util.themed_toplevel(self, t("Edit  {name}", name=prop_obj.name), resizable=True)
         pad = {"padx": 8, "pady": 4}
         tk.Label(dlg, text=prop_obj.name, background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
                  font=_F_HEAD).grid(row=0, column=0, columnspan=2, sticky="w", **pad)
@@ -1929,7 +1907,7 @@ class ToolsEditorWindow(tk.Frame):
         def ok():
             okay, err = self._commit_var(inst_idx, inst, prop_idx, type_var.get(), new_var.get())
             if not okay:
-                messagebox.showerror(t("Edit"), err or t("Could not apply value."), parent=dlg)
+                ui_util.error(dlg, t("Edit"), err or t("Could not apply value."))
                 return
             self._vars_refresh_props(isel[0])
             iid = f"{inst_idx}:{prop_idx}"
@@ -1950,11 +1928,7 @@ class ToolsEditorWindow(tk.Frame):
         """Info dialog for a property whose type the raw editor can't author yet.  Shows the
         value read-only instead of opening a scalar box that would corrupt it on save."""
         ndf = self._v_ndf
-        dlg = tk.Toplevel(self)
-        dlg.title(t("Edit  {name}", name=prop_obj.name))
-        dlg.configure(background=_R_BG_PANEL)
-        dlg.transient(self)
-        dlg.grab_set()
+        dlg = ui_util.themed_toplevel(self, t("Edit  {name}", name=prop_obj.name), resizable=True)
         pad = {"padx": 8, "pady": 4}
         tk.Label(dlg, text=prop_obj.name, background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
                  font=_F_HEAD).grid(row=0, column=0, columnspan=2, sticky="w", **pad)
@@ -1996,12 +1970,8 @@ class ToolsEditorWindow(tk.Frame):
 
         rows = [_decode(e) for e in (pv.value.raw or [])]
 
-        dlg = tk.Toplevel(self)
-        dlg.title(t("Edit list  {name}", name=prop_obj.name))
-        dlg.configure(background=_R_BG_PANEL)
-        dlg.transient(self)
-        dlg.grab_set()
-        dlg.minsize(380, 340)
+        dlg = ui_util.themed_toplevel(self, t("Edit list  {name}", name=prop_obj.name),
+                                      min_size=(380, 340), resizable=True)
         pad = {"padx": 8, "pady": 4}
 
         tk.Label(dlg, text=t("Edit list  {name}", name=prop_obj.name), background=_R_BG_PANEL,
@@ -2082,9 +2052,9 @@ class ToolsEditorWindow(tk.Frame):
             def _commit(_=None):
                 parsed = _parse_val(ev.get(), et_var.get())
                 if parsed is None:
-                    messagebox.showerror(t("Edit"),
+                    ui_util.error(dlg, t("Edit"),
                         t("Could not parse '{raw}' as {type_name}.", raw=ev.get(),
-                          type_name=et_var.get()), parent=dlg)
+                          type_name=et_var.get()))
                     ev.focus_set()
                     return "break"
                 rows[i] = parsed
@@ -2138,7 +2108,7 @@ class ToolsEditorWindow(tk.Frame):
             _kill_popup()
             okay, err = self._commit_list_var(inst_idx, inst, prop_idx, et_var.get(), rows)
             if not okay:
-                messagebox.showerror(t("Edit"), err or t("Could not apply value."), parent=dlg)
+                ui_util.error(dlg, t("Edit"), err or t("Could not apply value."))
                 return
             self._vars_refresh_props(shown_idx)
             iid = f"{inst_idx}:{prop_idx}"
@@ -2335,18 +2305,18 @@ class ToolsEditorWindow(tk.Frame):
 
     def _save(self):
         if not self._store.is_dirty():
-            messagebox.showinfo(self._store.save_title, t("No pending changes to save."), parent=self)
+            ui_util.info(self, self._store.save_title, t("No pending changes to save."))
             return
         try:
             msg = self._store.save()
         except Exception as e:
-            messagebox.showerror(t("Save failed"), t("{e}\n\n{hint}", e=e, hint=self._store.save_error_hint), parent=self)
+            ui_util.error(self, t("Save failed"), t("{e}\n\n{hint}", e=e, hint=self._store.save_error_hint))
             return
         # re-open the current dat so listings/sizes reflect what was just written
         self._select_dat(self._dat_key)
         self._notify()
         self._update_status()
-        messagebox.showinfo(self._store.save_title, msg, parent=self)
+        ui_util.info(self, self._store.save_title, msg)
 
     def cleanup(self):
         """Release a nested store's temp working file (no-op for the project store).  Called by the Mod

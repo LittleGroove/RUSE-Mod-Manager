@@ -203,7 +203,7 @@ class AIEditorWindow(tk.Frame):
         try:
             self._ndf = project.everything()
         except Exception as e:
-            messagebox.showerror(t("AI Editor"), t("Could not load gameplay data:\n{e}", e=e), parent=self)
+            ui_util.error(self, t("AI Editor"), t("Could not load gameplay data:\n{e}", e=e))
             self.after(10, self.destroy)
             return
         self._index()
@@ -574,7 +574,7 @@ class AIEditorWindow(tk.Frame):
     def _export_script(self):
         s = self._selected_script()
         if not s or self._scripts_arc is None:
-            messagebox.showinfo(t("Export"), t("Select a script first."), parent=self)
+            ui_util.info(self, t("Export"), t("Select a script first."))
             return
         lbl, path = s
         outdir = os.path.join(REPO, "test_output", "ai_scripts")
@@ -588,9 +588,9 @@ class AIEditorWindow(tk.Frame):
             with open(os.path.join(outdir, base + ".marshal.bin"), "wb") as f:
                 f.write(dec)
         except Exception as e:
-            messagebox.showerror(t("Export"), str(e), parent=self)
+            ui_util.error(self, t("Export"), str(e))
             return
-        messagebox.showinfo(t("Export"), t("Wrote decompiled .py + decompressed marshal to:\n{outdir}", outdir=outdir), parent=self)
+        ui_util.info(self, t("Export"), t("Wrote decompiled .py + decompressed marshal to:\n{outdir}", outdir=outdir))
 
     # ── rendering helpers ───────────────────────────────────────────────────────
 
@@ -688,15 +688,17 @@ class AIEditorWindow(tk.Frame):
         if st.get("sel") is None or not st["rows"]:
             return
         if not self._row_defaults:
-            messagebox.showinfo(
+            ui_util.info(
+                self,
                 t("Reset to defaults"),
                 t("No default values are available — this needs a clean backup of the game for this "
-                  "version. Create one in the Mod Manager tab."), parent=self)
+                  "version. Create one in the Mod Manager tab."))
             return
-        if not messagebox.askyesno(
+        if not ui_util.confirm(
+                self,
                 t("Reset to defaults"),
                 t("Reset every field on this page back to its default (clean-backup) value? Unsaved "
-                  "edits are discarded. Nothing is written to disk until you Save."), parent=self):
+                  "edits are discarded. Nothing is written to disk until you Save.")):
             return
         changed = self._revert(st["rows"])
         if changed:
@@ -812,7 +814,7 @@ class AIEditorWindow(tk.Frame):
             except Exception as e:
                 errors.append(f"{prop}: {e}")
         if errors:
-            messagebox.showerror(t("Invalid value(s)"), "\n".join(errors), parent=self)
+            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
             self._keep_scroll(st["fields"], lambda: self._on_select(st))  # show set values
@@ -830,13 +832,13 @@ class AIEditorWindow(tk.Frame):
             if st.get("sel") is not None and st.get("rows"):
                 self._apply(st)
         if not self.project.is_dirty():
-            messagebox.showinfo(t("Save mod"), t("No pending changes to save."), parent=self)
+            ui_util.info(self, t("Save mod"), t("No pending changes to save."))
             return
         try:
             written = self.project.save_all()
         except Exception as e:
-            messagebox.showerror(t("Save failed"),
-                                 t("{e}\n\nTip: set the Game Root in Settings.", e=e), parent=self)
+            ui_util.error(self, t("Save failed"),
+                          t("{e}\n\nTip: set the Game Root in Settings.", e=e))
             return
         if self._on_change:
             try:
@@ -844,7 +846,7 @@ class AIEditorWindow(tk.Frame):
             except Exception:
                 pass
         self._save_status.configure(text=t("Saved all changes to the mod"))
-        messagebox.showinfo(t("Saved"), t("Saved mod changes to:\n\n{paths}", paths="\n".join(written)), parent=self)
+        ui_util.info(self, t("Saved"), t("Saved mod changes to:\n\n{paths}", paths="\n".join(written)))
 
 
 _NUM_TIDS = {ndfbin_mod.T.Bool, ndfbin_mod.T.Int8, ndfbin_mod.T.Int16, ndfbin_mod.T.UInt16,

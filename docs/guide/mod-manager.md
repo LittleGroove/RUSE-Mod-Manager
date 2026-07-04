@@ -135,6 +135,8 @@ Each row is one mod, shown in an even-spaced font:
 Clicking a row fills the **Selected Mod** panel on the right. It shows the mod's
 name, author, version, how many changes it makes, and its description.
 
+![The Selected Mod panel, showing the picked mod's name, author, version, and description](../../screenshots/manager/selected-detail.png)
+
 > The header reads **"Mods (☑ = active)"**, and a reminder line says
 > *"TOP loads first — BOTTOM overrides. Use ▲ ▼ to reorder."*
 

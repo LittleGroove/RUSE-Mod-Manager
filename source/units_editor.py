@@ -201,8 +201,8 @@ class UnitsEditorWindow(tk.Frame):
         try:
             self._ndf = project.everything()
         except Exception as e:
-            messagebox.showerror(t("Units Editor"),
-                                 t("Could not load the gameplay data:\n{e}", e=e), parent=self)
+            ui_util.error(self, t("Units Editor"),
+                                 t("Could not load the gameplay data:\n{e}", e=e))
             self.after(10, self.destroy)
             return
 
@@ -362,9 +362,8 @@ class UnitsEditorWindow(tk.Frame):
         try:
             new_idx, new_cn, new_token = clone_mod.clone_descriptor(self._ndf, src_idx)
         except Exception as e:
-            messagebox.showerror(t("Duplicate"),
-                                 t("Could not duplicate {name}:\n{e}", name=src_name, e=e),
-                                 parent=self)
+            ui_util.error(self, t("Duplicate"),
+                                 t("Could not duplicate {name}:\n{e}", name=src_name, e=e))
             return
 
         dic_written = 0
@@ -388,12 +387,12 @@ class UnitsEditorWindow(tk.Frame):
             self._lb.see(tgt)
             self._sel = self._shown[tgt]
             self._render_fields()
-        messagebox.showinfo(
+        ui_util.info(
+            self,
             t("Duplicate"),
             t("Cloned {src} -> {dst}. Display name added to {n} language(s). Edit Nationalite in "
               "the raw-properties section to assign it to a different nation.",
-              src=src_name, dst=new_cn, n=dic_written),
-            parent=self)
+              src=src_name, dst=new_cn, n=dic_written))
 
     def _migrate_dialog(self):
         """Pop a small modal Nation picker; on OK, call clone.migrate_descriptor and refresh."""
@@ -403,12 +402,7 @@ class UnitsEditorWindow(tk.Frame):
         src_name = self._sel["name"] or "(unnamed)"
         cur_nat = self._sel["nation"]   # already resolved string, e.g. "Germany" or "US"
 
-        win = tk.Toplevel(self)
-        win.title(t("Migrate {name}", name=src_name))
-        win.configure(background=_R_BG_PANEL)
-        win.transient(self); win.grab_set()
-        win.geometry("420x260")
-        win.minsize(380, 220)
+        win = ui_util.themed_toplevel(self, t("Migrate {name}", name=src_name), size=(420, 260), min_size=(380, 220), resizable=True)
 
         # Pack the button row FIRST with side=bottom so it ALWAYS reserves space, even if the
         # description label below wraps onto extra lines. Otherwise top-packed widgets squeeze
@@ -451,14 +445,13 @@ class UnitsEditorWindow(tk.Frame):
         try:
             result = clone_mod.migrate_descriptor(self._ndf, self._sel["inst_index"], target_int)
         except Exception as e:
-            messagebox.showerror(t("Migrate"),
-                                 t("Could not migrate {name}:\n{e}", name=src_name, e=e),
-                                 parent=self)
+            ui_util.error(self, t("Migrate"),
+                                 t("Could not migrate {name}:\n{e}", name=src_name, e=e))
             return
         if not result["changed"]:
-            messagebox.showinfo(t("Migrate"),
+            ui_util.info(self, t("Migrate"),
                                 t("{name} is already in {nat} — nothing to do.",
-                                  name=src_name, nat=target_label), parent=self)
+                                  name=src_name, nat=target_label))
             return
         self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
         sel_idx = self._sel["inst_index"]
@@ -480,10 +473,9 @@ class UnitsEditorWindow(tk.Frame):
                     if result["new_slot"] is not None else "")
         upg_msg = t(" Upgrade chain cleared (parent was in another nation).") \
             if result["upgrade_cleared"] else ""
-        messagebox.showinfo(t("Migrate"),
+        ui_util.info(self, t("Migrate"),
                             t("Migrated {name} -> {nat}.{slot}{upg}",
-                              name=src_name, nat=target_label, slot=slot_msg, upg=upg_msg),
-                            parent=self)
+                              name=src_name, nat=target_label, slot=slot_msg, upg=upg_msg))
 
     def _duplicate_ammo(self):
         """Clone the selected ammo into a new ammo (own values), on the Ammo tab."""
@@ -506,11 +498,12 @@ class UnitsEditorWindow(tk.Frame):
             self._wpn_lb.see(tgt)
             self._wpn_sel = self._wpn_shown[tgt]
             self._render_wpn_fields()
-        messagebox.showinfo(
+        ui_util.info(
+            self,
             t("Duplicate ammo"),
             t("Created Ammo #{ammo_id} (a copy). Edit it here, then assign it to "
               "a unit's weapon on the Units tab (\"Set weapon's ammo to\").",
-              ammo_id=(new_id.raw if new_id else '?')), parent=self)
+              ammo_id=(new_id.raw if new_id else '?')))
 
     def _commit_weapon_ammo(self):
         """Apply each weapon's chosen ammo from the inline dropdowns (issue #7 — done on the main
@@ -534,10 +527,10 @@ class UnitsEditorWindow(tk.Frame):
         unit = self._sel["inst"]
         p = self._prop_index(unit.class_index, "WeaponDescriptor")
         if p is not None and unit.get(p) is not None:
-            if not messagebox.askyesno(t("Remove weapon"),
+            if not ui_util.confirm(self, t("Remove weapon"),
                                        t("Remove the weapon from {name} "
                                          "(it will be unable to attack)?",
-                                         name=self._sel['name']), parent=self):
+                                         name=self._sel['name'])):
                 return
             unit.remove(p)
             self._after_weapon_change()
@@ -1721,16 +1714,17 @@ class UnitsEditorWindow(tk.Frame):
         if self._wpn_sel is None or not self._wpn_rows:
             return
         if not self._row_defaults:
-            messagebox.showinfo(
+            ui_util.info(
+                self,
                 t("Reset to defaults"),
                 t("No default values are available — this needs a clean backup of the game for this "
-                  "version. Create one in the Mod Manager tab."), parent=self)
+                  "version. Create one in the Mod Manager tab."))
             return
-        if not messagebox.askyesno(
+        if not ui_util.confirm(
+                self,
                 t("Reset to defaults"),
                 t("Reset every field on this ammo back to its default (clean-backup) value? This ammo "
-                  "may be shared by several units. Nothing is written to disk until you Save."),
-                parent=self):
+                  "may be shared by several units. Nothing is written to disk until you Save.")):
             return
         changed = self._revert_rows(self._wpn_rows)
         if changed:
@@ -1745,7 +1739,7 @@ class UnitsEditorWindow(tk.Frame):
             return
         changed, errors = self._commit_rows(self._wpn_rows)
         if errors:
-            messagebox.showerror(t("Invalid value(s)"), "\n".join(errors), parent=self)
+            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
             self._keep_scroll(self._wpn_fields_frame, self._render_wpn_fields)  # show set values
@@ -1836,16 +1830,17 @@ class UnitsEditorWindow(tk.Frame):
         if not self._sel or not self._field_rows:
             return
         if not self._row_defaults:
-            messagebox.showinfo(
+            ui_util.info(
+                self,
                 t("Reset to defaults"),
                 t("No default values are available — this needs a clean backup of the game for this "
-                  "version. Create one in the Mod Manager tab."), parent=self)
+                  "version. Create one in the Mod Manager tab."))
             return
-        if not messagebox.askyesno(
+        if not ui_util.confirm(
+                self,
                 t("Reset to defaults"),
                 t("Reset every field on this page back to its default (clean-backup) value? Unsaved "
-                  "edits to these fields are discarded. Nothing is written to disk until you Save."),
-                parent=self):
+                  "edits to these fields are discarded. Nothing is written to disk until you Save.")):
             return
         changed = self._revert_rows(self._field_rows)
         if changed:
@@ -1910,7 +1905,7 @@ class UnitsEditorWindow(tk.Frame):
         wpn_changed = self._commit_weapon_ammo()
 
         if errors:
-            messagebox.showerror(t("Invalid value(s)"), "\n".join(errors), parent=self)
+            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
         if changed or wpn_changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
         if wpn_changed:
@@ -1941,20 +1936,20 @@ class UnitsEditorWindow(tk.Frame):
         if self._wpn_sel and self._wpn_rows:
             self._apply_wpn()
         if not self.project.is_dirty():
-            messagebox.showinfo(t("Save mod"), t("No pending changes to save."), parent=self)
+            ui_util.info(self, t("Save mod"), t("No pending changes to save."))
             return
         try:
             written = self.project.save_all()
         except Exception as e:
-            messagebox.showerror(
+            ui_util.error(
+                self,
                 t("Save failed"),
                 t("{e}\n\nTip: set the Game Root in Settings — it's needed to obtain the base "
-                  "game file the first time a mod touches it.", e=e), parent=self)
+                  "game file the first time a mod touches it.", e=e))
             return
         self._notify()
         self._save_status.configure(text=t("Saved all changes to the mod"))
-        messagebox.showinfo(t("Saved"), t("Saved all mod changes to:\n\n") + "\n".join(written),
-                            parent=self)
+        ui_util.info(self, t("Saved"), t("Saved all mod changes to:\n\n") + "\n".join(written))
 
 
 # Standalone note (launched from the Mod Editor hub in mod_manager.py)

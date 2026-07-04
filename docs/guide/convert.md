@@ -146,7 +146,7 @@ Two things to know:
 
 ### Step 4 — Scan for Changes
 
-![The Detected .dat Files box, listing the changed game files](../../screenshots/convert/dat-list.png)
+![The Scan for Changes and Convert buttons, above the empty Detected .dat Files list where results appear](../../screenshots/convert/scan.png)
 
 Click **Scan for Changes** to see what will be saved before you make the mod. It
 goes through the mod folder, matches every game file with its clean copy for the

@@ -146,7 +146,7 @@ class EconomyEditorWindow(tk.Frame):
             self._gd = project.get_ndf("gameplay", mp_mod.GDCONSTANTE_PATH)
             self._gd_obj = self._gd.instances[0]
         except Exception as e:
-            messagebox.showerror(t("Economy Editor"), t("Could not load gameplay data:\n{e}", e=e), parent=self)
+            ui_util.error(self, t("Economy Editor"), t("Could not load gameplay data:\n{e}", e=e))
             self.after(10, self.destroy)
             return
         self._index_buildings()
@@ -491,15 +491,17 @@ class EconomyEditorWindow(tk.Frame):
 
     def _confirm_reset(self, scope):
         if not self._row_defaults:
-            messagebox.showinfo(
+            ui_util.info(
+                self,
                 t("Reset to defaults"),
                 t("No default values are available — this needs a clean backup of the game for this "
-                  "version. Create one in the Mod Manager tab."), parent=self)
+                  "version. Create one in the Mod Manager tab."))
             return False
-        return messagebox.askyesno(
+        return ui_util.confirm(
+            self,
             t("Reset to defaults"),
             t("Reset every {scope} field back to its default (clean-backup) value? Unsaved edits are "
-              "discarded. Nothing is written to disk until you Save.", scope=scope), parent=self)
+              "discarded. Nothing is written to disk until you Save.", scope=scope))
 
     def _reset_global(self):
         """Revert the global economy constants to their default (clean-backup) values."""
@@ -528,7 +530,7 @@ class EconomyEditorWindow(tk.Frame):
     def _apply_global(self):
         changed, errors = self._commit(self._g_rows)
         if errors:
-            messagebox.showerror(t("Invalid value(s)"), "\n".join(errors), parent=self)
+            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.GDCONSTANTE_PATH)
             self._keep_scroll(self._g_frame, self._populate_global)  # show the set values
@@ -584,7 +586,7 @@ class EconomyEditorWindow(tk.Frame):
             return
         changed, errors = self._commit(self._b_rows)
         if errors:
-            messagebox.showerror(t("Invalid value(s)"), "\n".join(errors), parent=self)
+            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
             self._keep_scroll(self._b_fields, self._on_bldg_select)  # show set values, keep position
@@ -605,16 +607,16 @@ class EconomyEditorWindow(tk.Frame):
         if self._b_sel is not None and self._b_rows:
             self._apply_bldg()
         if not self.project.is_dirty():
-            messagebox.showinfo(t("Save mod"), t("No pending changes to save."), parent=self)
+            ui_util.info(self, t("Save mod"), t("No pending changes to save."))
             return
         try:
             written = self.project.save_all()
         except Exception as e:
-            messagebox.showerror(t("Save failed"), t("{e}\n\nTip: set the Game Root in Settings.", e=e), parent=self)
+            ui_util.error(self, t("Save failed"), t("{e}\n\nTip: set the Game Root in Settings.", e=e))
             return
         self._notify()
         self._save_status.configure(text=t("Saved all changes to the mod"))
-        messagebox.showinfo(t("Saved"), t("Saved mod changes to:\n\n{paths}", paths="\n".join(written)), parent=self)
+        ui_util.info(self, t("Saved"), t("Saved mod changes to:\n\n{paths}", paths="\n".join(written)))
 
 
 if __name__ == "__main__":

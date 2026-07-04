@@ -14,6 +14,12 @@ import tkinter as tk
 import tkinter.font as tkfont
 from tkinter import ttk
 
+try:                                     # dialogs want translated button labels ("OK", "Yes", …)
+    from i18n import t as _t
+except Exception:                        # i18n not importable (isolated tests) → identity fallback
+    def _t(key, /, **fmt):
+        return key.format(**fmt) if fmt else key
+
 
 def notes_section(parent, save, *, panel_bg, widget_bg, text_fg, dim_fg, gold,
                   font, font_bold, initial="", label="Notes", hint=None, height=4):
@@ -280,6 +286,22 @@ def flow(container, widgets, gap=4, pady=2, right=None):
     wrapped row would inflate that column on the first row and shove the other items off-screen.
     Place positions each widget independently and we set the container's height to fit the rows."""
     right = right or []
+    all_widgets = list(widgets) + list(right)
+
+    # Reserve the natural SINGLE-ROW size synchronously (placed children contribute NOTHING to the
+    # container's requested size, and the wrap-layout below only runs on a deferred <Configure>).
+    # Without this, a parent window measuring its content — e.g. themed_toplevel's min-size guardrail
+    # — sees a zero-height button bar and lets the user shrink the window until these buttons are
+    # clipped off (they look like they vanished).  Setting a width floor also means the window can't
+    # be narrowed below where the buttons fit on one row, so they never need to wrap out of view.
+    if all_widgets:
+        try:
+            nat_w = sum(w.winfo_reqwidth() for w in all_widgets) + gap * (len(all_widgets) - 1)
+            one_row_h = max(w.winfo_reqheight() for w in all_widgets)
+            container.configure(width=nat_w, height=one_row_h)
+        except Exception:
+            pass
+
     def relayout(event=None):
         avail = event.width if event is not None else container.winfo_width()
         if avail <= 1:
@@ -570,3 +592,273 @@ def fit_combobox(combo, values=None, pad=3, minimum=12, maximum=60):
                                         minimum=minimum, maximum=maximum))
     except Exception:
         pass
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Themed message dialogs — ONE place for every popup
+# ═════════════════════════════════════════════════════════════════════════════
+# tkinter.messagebox draws NATIVE OS dialogs (grey Windows boxes) that ignore the app's dark-navy +
+# gold theme, and popups are hard-coded in hundreds of places.  These helpers render the same kinds
+# of prompts (info / error / warning / yes-no confirm / "here's the text I copied") in the app theme
+# from a SINGLE place, so every popup looks and behaves the same.  Drop-in shapes for messagebox:
+#     ui_util.info(parent, title, msg)          ← messagebox.showinfo
+#     ui_util.error(parent, title, msg)         ← messagebox.showerror
+#     ui_util.warning(parent, title, msg)       ← messagebox.showwarning
+#     ui_util.confirm(parent, title, msg)->bool ← messagebox.askyesno
+#     ui_util.show_text(parent, title, msg, body)  info + a scrollable read-only text block
+# Call configure_dialogs(**palette) ONCE at startup so the colours/fonts match the app; until then
+# a sensible dark default is used.
+
+_DIALOG_THEME = {
+    "panel_bg": "#0e1a2a", "widget_bg": "#060d18", "border": "#243a5c",
+    "text": "#ccd8e8", "dim": "#3e5878", "gold": "#c8a020", "gold_brt": "#e0c030",
+    "btn": "#122030", "btn_act": "#1e3250", "sel_bg": "#1a3060", "sel_fg": "#e0c030",
+    "danger": "#e0554a",
+    "font": ("Courier New", 9), "font_bold": ("Courier New", 9, "bold"),
+    "font_head": ("Courier New", 10, "bold"),
+}
+
+# Per-kind accent glyph + colour key (into _DIALOG_THEME).
+_DIALOG_KINDS = {
+    "info":    ("ℹ", "gold"),      # ℹ
+    "warning": ("⚠", "gold_brt"),  # ⚠
+    "error":   ("✖", "danger"),    # ✖
+    "confirm": ("?",      "gold_brt"),
+}
+
+
+def configure_dialogs(**palette):
+    """Set the colours/fonts the themed dialogs use.  Call ONCE at app startup with the app palette so
+    every popup matches the theme.  Only the keys you pass are applied; ``None`` values are ignored."""
+    _DIALOG_THEME.update({k: v for k, v in palette.items() if v is not None})
+
+
+def center_over(win, parent=None):
+    """Move ``win`` so it is CENTRED over ``parent`` (its top-level window) — or on screen if there's
+    no usable parent.  Only repositions; ``win``'s current size is kept.  This is the fix for popups
+    opening in the monitor's top-left corner: call it once the window's content exists.  Safe no-op on
+    any Tk error (e.g. the window was already destroyed)."""
+    try:
+        win.update_idletasks()
+        w = win.winfo_width()
+        h = win.winfo_height()
+        if w <= 1 or h <= 1:                           # not realized yet → fall back to requested
+            w, h = win.winfo_reqwidth(), win.winfo_reqheight()
+        top = parent.winfo_toplevel() if parent is not None else None
+        if top is not None and top.winfo_ismapped() and top.winfo_width() > 1:
+            x = top.winfo_rootx() + (top.winfo_width() - w) // 2
+            y = top.winfo_rooty() + (top.winfo_height() - h) // 3    # a third down looks centred
+        else:                                          # no parent → centre on the screen
+            x = (win.winfo_screenwidth() - w) // 2
+            y = (win.winfo_screenheight() - h) // 3
+        win.geometry(f"+{max(x, 0)}+{max(y, 0)}")      # '+X+Y' with no WxH ⇒ move only, keep size
+    except Exception:
+        pass
+
+
+def themed_toplevel(parent, title, *, size=None, min_size=None, resizable=False,
+                    modal=True, on_escape=False):
+    """Create the standard themed popup window and return it — the ONE base for every small dialog /
+    edit window, so they all share the app look and always open CENTRED OVER THE APP WINDOW instead of
+    the monitor's top-left corner.  Fill the returned Toplevel with your own content and buttons.
+
+    Handles for you: theme background, title, ``transient`` (stays with the app window), optional modal
+    ``grab``, fixed or content sizing, and centring (deferred until the content is built, with the
+    window hidden until then so it doesn't flash at the top-left first).
+
+    Args:
+        size:      ``(w, h)`` fixed size; omit to size the window to its content.
+        min_size:  ``(w, h)`` minimum size (``minsize``).
+        resizable: allow the user to resize (default ``False``).
+        modal:     ``grab_set`` so the popup blocks the parent until closed (default ``True``).
+        on_escape: also bind Escape and the window ✕ to destroy the window (default ``False`` so a
+                   dialog's existing close/cancel behaviour is preserved untouched)."""
+    th = _DIALOG_THEME
+    top = parent.winfo_toplevel() if parent is not None else None
+    win = tk.Toplevel(top) if top is not None else tk.Toplevel()
+    win.withdraw()                                     # hide until centred (no top-left flash)
+    win.title(title)
+    win.configure(background=th["panel_bg"])
+    win.resizable(bool(resizable), bool(resizable))
+    if size:
+        win.geometry(f"{int(size[0])}x{int(size[1])}")
+    if min_size:
+        win.minsize(int(min_size[0]), int(min_size[1]))
+    if top is not None:
+        win.transient(top)                             # keep the popup attached to the app window
+    if on_escape:
+        win.bind("<Escape>", lambda _e: win.destroy())
+        win.protocol("WM_DELETE_WINDOW", win.destroy)
+
+    # Guardrail: floor the window's MINIMUM size at what its content actually needs, so the user can
+    # never shrink it small enough to clip/hide buttons or controls (they'd think a feature vanished
+    # when they only made the window too small).  Resizing can then only ADD space.  Grow-only and
+    # re-applied after deferred layout (e.g. ui_util.flow button bars settle on a timer) so late-sized
+    # content is still fully accounted for.
+    floor = {"w": 0, "h": 0}
+    def _apply_minsize():
+        try:
+            win.update_idletasks()
+            fw = max(win.winfo_reqwidth(), int(min_size[0]) if min_size else 0, floor["w"])
+            fh = max(win.winfo_reqheight(), int(min_size[1]) if min_size else 0, floor["h"])
+            fw = min(fw, win.winfo_screenwidth() - 40)     # never bigger than the screen (stay usable)
+            fh = min(fh, win.winfo_screenheight() - 80)
+            if fw > floor["w"] or fh > floor["h"]:         # grow-only; never shrink the floor
+                floor["w"], floor["h"] = fw, fh
+                win.minsize(fw, fh)                        # also grows a too-small window to fit content
+                return True
+        except Exception:
+            pass
+        return False
+
+    def _reveal():                                     # after the caller has built the content
+        _apply_minsize()
+        center_over(win, top)                          # centre at the final (content-fitting) size
+        win.deiconify()
+        if modal:
+            try:
+                win.grab_set()
+            except Exception:
+                pass
+
+        def _settle():                                 # deferred layouts (flow bars) have run by now
+            if _apply_minsize():                       # if the floor grew, re-centre for the new size
+                center_over(win, top)
+        win.after(150, _settle)
+    win.after_idle(_reveal)
+    return win
+
+
+def _dialog_button(parent, text, command, *, primary=False):
+    th = _DIALOG_THEME
+    return tk.Button(
+        parent, text=text, command=command, cursor="hand2",
+        background=(th["gold"] if primary else th["btn"]),
+        foreground=(th["widget_bg"] if primary else th["text"]),
+        activebackground=(th["gold_brt"] if primary else th["btn_act"]),
+        activeforeground=(th["widget_bg"] if primary else th["gold_brt"]),
+        relief="flat", borderwidth=0, highlightthickness=0,
+        font=th["font_bold"], padx=16, pady=4, width=max(8, len(text) + 2))
+
+
+def _run_dialog(parent, kind, title, message, buttons, *, default_index=-1, cancel_value=None,
+                build_extra=None, min_width=360):
+    """Build a modal, themed Toplevel and block until the user picks a button.
+
+    ``buttons`` is a list of ``(label, value, primary)``, laid out right-aligned in list order (so the
+    LAST entry sits rightmost — put the primary/affirmative action last).  Returns the chosen value.
+    ``default_index`` is the button that Enter triggers and that gets focus (default: the last one).
+    Closing via the window's ✕ or Escape returns ``cancel_value`` (defaults to the last button's
+    value — the safe choice for a single-OK dialog).  Optional ``build_extra(content_frame)`` adds
+    widgets (e.g. a text block) between the message and the buttons."""
+    th = _DIALOG_THEME
+    if cancel_value is None:
+        cancel_value = buttons[-1][1]
+    result = {"value": cancel_value}
+    top = parent.winfo_toplevel() if parent is not None else None
+
+    win = tk.Toplevel(top) if top is not None else tk.Toplevel()
+    win.title(title)
+    win.configure(background=th["panel_bg"])
+    win.resizable(False, False)
+    if top is not None:
+        win.transient(top)
+
+    def _close(value):
+        result["value"] = value
+        try:
+            win.grab_release()
+        except Exception:
+            pass
+        win.destroy()
+
+    win.protocol("WM_DELETE_WINDOW", lambda: _close(cancel_value))
+    win.bind("<Escape>", lambda _e: _close(cancel_value))
+
+    body = tk.Frame(win, background=th["panel_bg"])
+    body.pack(fill="both", expand=True, padx=16, pady=14)
+
+    # Header row: accent glyph + message.
+    glyph, colour_key = _DIALOG_KINDS.get(kind, _DIALOG_KINDS["info"])
+    head = tk.Frame(body, background=th["panel_bg"])
+    head.pack(fill="x")
+    tk.Label(head, text=glyph, background=th["panel_bg"], foreground=th[colour_key],
+             font=("Courier New", 22, "bold")).pack(side="left", anchor="n", padx=(0, 12))
+    tk.Label(head, text=message, background=th["panel_bg"], foreground=th["text"],
+             font=th["font"], justify="left", wraplength=460, anchor="w").pack(
+        side="left", fill="x", expand=True)
+
+    if build_extra is not None:
+        build_extra(body)
+
+    # Button bar: right-aligned, list order left→right (last entry sits rightmost).
+    bar = tk.Frame(body, background=th["panel_bg"])
+    bar.pack(fill="x", pady=(14, 0))
+    default_index %= len(buttons)                      # -1 → last button
+    focus_btn = None
+    for i, (label, value, primary) in reversed(list(enumerate(buttons))):
+        b = _dialog_button(bar, label, (lambda v=value: _close(v)), primary=primary)
+        b.pack(side="right", padx=(8, 0))
+        if i == default_index:
+            focus_btn = b
+            win.bind("<Return>", lambda _e, v=value: _close(v))
+
+    win.update_idletasks()
+    w = max(min_width, win.winfo_reqwidth())
+    win.geometry(f"{w}x{win.winfo_reqheight()}")       # enforce the min width; keep natural height
+    center_over(win, top)                              # then centre over the app window
+
+    win.grab_set()
+    if focus_btn is not None:
+        focus_btn.focus_set()
+    win.wait_window()
+    return result["value"]
+
+
+def info(parent, title, message):
+    """Themed replacement for ``messagebox.showinfo``.  One OK button."""
+    return _run_dialog(parent, "info", title, message, [(_t("OK"), True, True)])
+
+
+def warning(parent, title, message):
+    """Themed replacement for ``messagebox.showwarning``.  One OK button."""
+    return _run_dialog(parent, "warning", title, message, [(_t("OK"), True, True)])
+
+
+def error(parent, title, message):
+    """Themed replacement for ``messagebox.showerror``.  One OK button."""
+    return _run_dialog(parent, "error", title, message, [(_t("OK"), True, True)])
+
+
+def confirm(parent, title, message, *, yes=None, no=None, danger=False):
+    """Themed replacement for ``messagebox.askyesno`` — returns ``True`` for yes, ``False`` for no.
+    ``yes``/``no`` override the button labels; ``danger=True`` styles it as an error (destructive)."""
+    kind = "error" if danger else "confirm"
+    return _run_dialog(parent, kind, title, message,
+                       [(no or _t("No"), False, False), (yes or _t("Yes"), True, True)],
+                       default_index=1, cancel_value=False)
+
+
+def show_text(parent, title, message, body, *, ok_label=None, height=16, width=72):
+    """Info dialog that ALSO shows a block of monospace text (read-only, scrollable, pre-selected) —
+    e.g. the load order that was just copied to the clipboard.  One OK button."""
+    th = _DIALOG_THEME
+
+    def build(content):
+        holder = tk.Frame(content, background=th["panel_bg"])
+        holder.pack(fill="both", expand=True, pady=(12, 0))
+        txt = tk.Text(holder, height=height, width=width, wrap="none",
+                      background=th["widget_bg"], foreground=th["text"],
+                      selectbackground=th["sel_bg"], selectforeground=th["sel_fg"],
+                      insertbackground=th["gold"], relief="flat",
+                      highlightthickness=1, highlightcolor=th["border"],
+                      highlightbackground=th["border"], font=th["font"])
+        sb = ttk.Scrollbar(holder, orient="vertical", command=txt.yview)
+        txt.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y")
+        txt.pack(side="left", fill="both", expand=True)
+        txt.insert("1.0", body)
+        txt.configure(state="disabled")                # read-only, but still selectable/copyable
+
+    return _run_dialog(parent, "info", title, message,
+                       [(ok_label or _t("OK"), True, True)], build_extra=build, min_width=440)

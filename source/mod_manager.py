@@ -384,6 +384,14 @@ class ModManagerApp(tk.Tk):
         s = ttk.Style(self)
         s.theme_use("clam")
 
+        # Point the centralized themed dialogs (ui_util.info/error/warning/confirm/show_text) at this
+        # app's palette, so every popup matches the dark-navy + gold theme instead of the OS default.
+        ui_util.configure_dialogs(
+            panel_bg=_R_BG_PANEL, widget_bg=_R_BG_WIDGET, border=_R_BORDER,
+            text=_R_TEXT, dim=_R_TEXT_DIM, gold=_R_GOLD, gold_brt=_R_GOLD_BRT,
+            btn=_R_BTN, btn_act=_R_BTN_ACT, sel_bg=_R_SEL_BG, sel_fg=_R_SEL_FG,
+            font=_F_MAIN, font_bold=_F_BOLD, font_head=_F_HEAD)
+
         # Base frames
         s.configure("TFrame",
                      background=_R_BG_PANEL)
@@ -594,7 +602,7 @@ class ModManagerApp(tk.Tk):
                 f.flush()
                 os.fsync(f.fileno())   # durable before a restart relaunches and re-reads this file
         except Exception as e:
-            messagebox.showerror(t("Save Error"), str(e))
+            ui_util.error(self, t("Save Error"), str(e))
 
     def _auto_detect_game_root(self):
         """Set game_root from Steam on first launch if not already configured."""
@@ -755,7 +763,8 @@ class ModManagerApp(tk.Tk):
         no backup exists yet, so the caller can abort."""
         if self._has_backup():
             return True
-        messagebox.showwarning(
+        ui_util.warning(
+            self,
             t("Backup required"),
             t("You need a clean backup of your game files before editing a mod.\n\n"
               "The editors load original files from this backup — never from your live game "
@@ -1367,7 +1376,8 @@ class ModManagerApp(tk.Tk):
             return
         # A SAFE (shipped) mod with the same name+major takes precedence — don't add a shadowed copy.
         if self._bundled_keys and self._rmod_identity(path) in self._bundled_keys:
-            messagebox.showinfo(
+            ui_util.info(
+                self,
                 t("Shipped (SAFE) mod takes precedence"),
                 t("A SAFE mod with the same name and major version ships with the app and overrides this "
                   "one, so it wasn't added.\n\nChange its name or major version to add it as a separate mod."))
@@ -1518,7 +1528,8 @@ class ModManagerApp(tk.Tk):
             return
         _, path = self._mgr_mod_vars[visible[sel[0]]]
         if self._is_bundled(path):
-            messagebox.showwarning(
+            ui_util.warning(
+                self,
                 t("Update .rmod"),
                 t("This is a shipped (bundled) mod — it's baked into the exe and can't be updated externally."))
             return
@@ -1526,7 +1537,8 @@ class ModManagerApp(tk.Tk):
         branch = "compat" if name.lower().endswith(".compat.rmod") else "public"
         root = self._clean_root_for_branch(branch)
         if root is None:
-            messagebox.showerror(
+            ui_util.error(
+                self,
                 t("Update .rmod"),
                 t("No clean {branch} originals available — create a {branch} backup (or set a matching Game Root) first.",
                   branch=branch))
@@ -1576,10 +1588,10 @@ class ModManagerApp(tk.Tk):
         _, path = self._mgr_mod_vars[visible[sel[0]]]
         name = Path(path).name
         if self._is_bundled(path):
-            messagebox.showinfo(
+            ui_util.info(
+                self,
                 t("Share Mod"),
-                t("“{name}” is already part of the built-in pack — no need to share it.", name=name),
-                parent=self)
+                t("“{name}” is already part of the built-in pack — no need to share it.", name=name))
             return
 
         # The repo folder mirrors the local mods/v<buildid>/ layout, so the file's OWN parent folder
@@ -1589,11 +1601,11 @@ class ModManagerApp(tk.Tk):
         if not re.fullmatch(r"v\d+", sub):
             sub = self._mgr_current_ver or self._version_subname()
         if not re.fullmatch(r"v\d+", sub or ""):
-            messagebox.showwarning(
+            ui_util.warning(
+                self,
                 t("Share Mod"),
                 t("Couldn't tell which game version this mod is for, so it can't be shared "
-                  "automatically.\n\nMake sure the game is detected in Settings, then try again."),
-                parent=self)
+                  "automatically.\n\nMake sure the game is detected in Settings, then try again."))
             return
         try:
             label = _gv_mod.display_name(sub[1:])
@@ -1602,15 +1614,15 @@ class ModManagerApp(tk.Tk):
 
         url = (f"https://github.com/LittleGroove/RUSE-Mod-Manager/upload/main/"
                f"source/example_mods/{sub}")
-        if not messagebox.askyesno(
+        if not ui_util.confirm(
+                self,
                 t("Share Mod"),
                 t("Share “{name}” with the community?\n\n"
                   "This opens GitHub in your web browser, on the upload page for the {label} folder. "
                   "Drag the mod file onto that page, then click “Propose changes” — GitHub creates the "
                   "request for you.\n\n"
                   "You'll need a free GitHub account and to be signed in. We'll also open the mod's "
-                  "folder so it's ready to drag in.", name=name, label=label),
-                parent=self):
+                  "folder so it's ready to drag in.", name=name, label=label)):
             return
 
         try:
@@ -1618,10 +1630,10 @@ class ModManagerApp(tk.Tk):
         except Exception:
             opened = False
         if not opened:
-            messagebox.showerror(
+            ui_util.error(
+                self,
                 t("Share Mod"),
-                t("Couldn't open your web browser. You can upload the mod here:\n{url}", url=url),
-                parent=self)
+                t("Couldn't open your web browser. You can upload the mod here:\n{url}", url=url))
             return
         # Reveal the .rmod in Explorer, highlighted, so it's ready to drag onto the upload page.
         try:
@@ -1698,7 +1710,7 @@ class ModManagerApp(tk.Tk):
         active = [(var, path) for idx in visible
                   for var, path in [self._mgr_mod_vars[idx]] if var.get()]
         if not active:
-            messagebox.showinfo(t("Nothing to Share"),
+            ui_util.info(self, t("Nothing to Share"),
                                 t("No mods are currently enabled.\n"
                                   "Enable at least one mod before sharing."))
             return
@@ -1723,15 +1735,16 @@ class ModManagerApp(tk.Tk):
             t("Load order ({n} active mod(s)) copied to clipboard — paste it to your friends!",
               n=len(active)))
         self.after(5000, lambda: self._mgr_foot.set(t("Ready.")))
+        ui_util.show_text(
+            self, t("Load Order Copied"),
+            t("Your load order ({n} active mod(s)) has been copied to the clipboard.\n"
+              "Paste it to a friend so they can match it. Here's what was copied:", n=len(active)),
+            text)
 
     def _mgr_import_order(self):
-        dlg = tk.Toplevel(self)
-        dlg.title(t("Import Load Order from Friend"))
-        dlg.configure(background=_R_BG_PANEL)
-        dlg.transient(self)
-        dlg.grab_set()
-        dlg.resizable(True, True)
-        dlg.minsize(540, 500)
+        dlg = ui_util.themed_toplevel(
+            self, t("Import Load Order from Friend"),
+            resizable=True, min_size=(540, 500))
 
         ttk.Label(dlg,
                   text=t("Paste a friend's shared load order below, then click 'Check & Apply'.\n"
@@ -1834,7 +1847,8 @@ class ModManagerApp(tk.Tk):
             _mode_label = {"compat": "R.U.S.E. COMPAT", "public": "R.U.S.E."}
             want = _mode_label.get(detected_mode, detected_mode)
             have = _mode_label.get(current_ver, current_ver)
-            messagebox.showwarning(
+            ui_util.warning(
+                self,
                 t("Wrong Game Version"),
                 t("This load order was made for {want},\n"
                   "but your game is currently set to {have}.\n\n"
@@ -2141,7 +2155,8 @@ class ModManagerApp(tk.Tk):
         shown = "\n".join("  - {n}  (now '{v}')".format(
             n=f.name, v=(o.get("game_version") or "unset")) for f, o in pending[:12])
         more = "" if len(pending) <= 12 else t("\n  …and {n} more", n=len(pending) - 12)
-        ok = messagebox.askyesno(
+        ok = ui_util.confirm(
+            self,
             t("Tag mods for {label}?", label=label),
             t("{n} mod(s) in this folder are tagged for a different version:\n\n{shown}{more}\n\n"
               "You placed them in the {label} folder, so they can be recorded as built for it. "
@@ -2206,9 +2221,9 @@ class ModManagerApp(tk.Tk):
             if hasattr(os, "startfile"):
                 os.startfile(str(base))               # Windows: open in Explorer
             else:
-                messagebox.showinfo(t("Folder"), str(base))
+                ui_util.info(self, t("Folder"), str(base))
         except Exception as e:
-            messagebox.showerror(t("Open Failed"),
+            ui_util.error(self, t("Open Failed"),
                                  t("Could not open:\n{path}\n\n{e}", path=base, e=e))
 
     def _mgr_scan(self):
@@ -2248,7 +2263,7 @@ class ModManagerApp(tk.Tk):
                     mods_dir.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(str(src), str(dest))
                 except Exception as e:
-                    messagebox.showerror(t("Copy Failed"),
+                    ui_util.error(self, t("Copy Failed"),
                         t("Could not copy {name} to mods folder:\n{e}", name=src.name, e=e))
                     continue
             self._mgr_add_path(str(dest))
@@ -2316,16 +2331,16 @@ class ModManagerApp(tk.Tk):
 
     def _mgr_create_backup(self):
         if not self._settings["game_root"]:
-            messagebox.showerror(t("No Game Root"), t("Set Game Root in Settings first."))
+            ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
             return
         game_root = Path(self._settings["game_root"])
         if not _is_dir_safe(game_root / "Data"):
-            messagebox.showerror(t("Not Found"), t("Data folder not found:\n{path}", path=game_root / 'Data'))
+            ui_util.error(self, t("Not Found"), t("Data folder not found:\n{path}", path=game_root / 'Data'))
             return
         bd = self._backup_dir()
         has_files = bd.exists() and any(bd.rglob("*.dat"))
         if has_files:
-            if not messagebox.askyesno(t("Overwrite?"),
+            if not ui_util.confirm(self, t("Overwrite?"),
                                        t("Backup already exists:\n{bd}\n\nOverwrite?", bd=bd)):
                 return
             shutil.rmtree(bd)
@@ -2363,12 +2378,12 @@ class ModManagerApp(tk.Tk):
     def _mgr_restore_clean(self):
         bd = self._backup_dir()
         if not bd.exists():
-            messagebox.showerror(t("No Backup"), t("No backup found. Create one first."))
+            ui_util.error(self, t("No Backup"), t("No backup found. Create one first."))
             return
         if not self._settings["game_root"]:
-            messagebox.showerror(t("No Game Root"), t("Set Game Root in Settings first."))
+            ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
             return
-        if not messagebox.askyesno(t("Restore Clean"),
+        if not ui_util.confirm(self, t("Restore Clean"),
                                    t("Copy original backup files back into the game (Data and Maps),\n"
                                      "removing any deployed mods.\n\nProceed?")):
             return
@@ -2411,11 +2426,11 @@ class ModManagerApp(tk.Tk):
         if self._mgr_running:
             return
         if not self._settings["game_root"]:
-            messagebox.showerror(t("No Game Root"), t("Set Game Root in Settings first."))
+            ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
             return
         bd = self._backup_dir()
         if not bd.exists() or not any(bd.rglob("*.dat")):
-            messagebox.showerror(t("No Backup"),
+            ui_util.error(self, t("No Backup"),
                                  t("No game file backup found.\n\n"
                                    "Click 'Create Backup' (Step 2 in the setup checklist)\n"
                                    "before deploying mods."))
@@ -2427,7 +2442,7 @@ class ModManagerApp(tk.Tk):
         predeploy = list(self._predeploy_order.get(self._game_build_id(), []))
         active = predeploy + active
         if not active:
-            messagebox.showinfo(t("No Active Mods"),
+            ui_util.info(self, t("No Active Mods"),
                                 t("Check at least one mod to deploy."))
             return
         dry = self._mgr_dry.get()
@@ -2442,11 +2457,12 @@ class ModManagerApp(tk.Tk):
             return
         game_root = self._settings.get("game_root", "").strip()
         if not game_root:
-            messagebox.showerror(t("No Game Root"), t("Set Game Root in Settings first."))
+            ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
             return
         exe = Path(game_root) / "RUSE.exe"
         if not _exists_safe(exe):
-            messagebox.showerror(
+            ui_util.error(
+                self,
                 t("RUSE.exe Not Found"),
                 t("Could not find RUSE.exe in the game root:\n\n{game_root}\n\n"
                   "Check that the Game Root Directory in Settings points to your "
@@ -2458,7 +2474,7 @@ class ModManagerApp(tk.Tk):
             self._mgr_foot.set(t("Launched R.U.S.E."))
         except Exception as ex:
             _log(self._mgr_log, t("Failed to launch R.U.S.E.: {ex}", ex=ex), "err")
-            messagebox.showerror(t("Launch Failed"), t("Could not launch R.U.S.E.:\n\n{ex}", ex=ex))
+            ui_util.error(self, t("Launch Failed"), t("Could not launch R.U.S.E.:\n\n{ex}", ex=ex))
 
     def _do_deploy(self, bd: Path, active: list, dry: bool):
         try:
@@ -3111,7 +3127,7 @@ class ModManagerApp(tk.Tk):
     def _cv_scan(self):
         mod_folder = self._cv_mod.get().strip()
         if not mod_folder:
-            messagebox.showerror(t("Missing"), t("Set the Mod Folder first.")); return
+            ui_util.error(self, t("Missing"), t("Set the Mod Folder first.")); return
         self._cv_lb.delete(0, tk.END)
         pairs = scan_mod_folder(mod_folder, str(self._cv_game_data(mod_folder)))
         if not pairs:
@@ -3133,7 +3149,7 @@ class ModManagerApp(tk.Tk):
         thread.  Returns the output path once started, or None (after an error dialog) if it can't start
         (missing name, or no reference originals to diff against)."""
         if not name:
-            messagebox.showerror(t("Missing"), t("Enter a mod Name."))
+            ui_util.error(self, t("Missing"), t("Enter a mod Name."))
             return None
         if not mod_id:
             mod_id = _name_to_id(name)
@@ -3150,7 +3166,8 @@ class ModManagerApp(tk.Tk):
         if not _exists_safe(game_data / "PC"):
             where = _gv_mod.display_name(target_build) if target_build else (
                 'R.U.S.E. COMPAT' if mod_ver == 'compat' else 'R.U.S.E.')
-            messagebox.showerror(
+            ui_util.error(
+                self,
                 t("Missing backup / reference files"),
                 t("Couldn't find clean {game} game files to diff this mod against "
                   "(looked in {game_data}).\n\nCreate a backup for that version on the Mod Manager "
@@ -3197,9 +3214,9 @@ class ModManagerApp(tk.Tk):
         author      = self._cv_author.get().strip()
         description = self._cv_desc.get("1.0", tk.END).strip()
         if not mod_folder:
-            messagebox.showerror(t("Missing"), t("Set the Mod Folder.")); return
+            ui_util.error(self, t("Missing"), t("Set the Mod Folder.")); return
         if not name:
-            messagebox.showerror(t("Missing"), t("Enter a mod Name.")); return
+            ui_util.error(self, t("Missing"), t("Enter a mod Name.")); return
         mod_id = self._cv_id.get().strip() or _name_to_id(name)
         self._cv_id.set(mod_id)     # keep the clean (un-suffixed) id in the box; the hint shows -v#
 
@@ -3289,7 +3306,7 @@ class ModManagerApp(tk.Tk):
         src_path  = self._mig_resolve_rmod_path()
         src_build = self._mig_src_build()
         if not src_path or not src_build:
-            messagebox.showerror(t("Missing"), t("Pick a source version and rmod first."))
+            ui_util.error(self, t("Missing"), t("Pick a source version and rmod first."))
             return
         targets = [e for e in _migrate_mod.registry_timeline(include_og=True)
                    if e["buildid"] != src_build]
@@ -3300,7 +3317,7 @@ class ModManagerApp(tk.Tk):
             targets = [e for e in targets
                        if (_gv_mod.dataver_for_build(e["buildid"]) or "190852") != "99"]
         if not targets:
-            messagebox.showinfo(t("Nothing to do"), t("No other mapped versions to convert to."))
+            ui_util.info(self, t("Nothing to do"), t("No other mapped versions to convert to."))
             return
         base = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
         self._conv_running = True
@@ -3542,7 +3559,7 @@ class ModManagerApp(tk.Tk):
     def _ed_create_project(self):
         name = self._ed_new_name.get().strip()
         if not name:
-            messagebox.showinfo(t("Mod name"), t("Enter a name for the new mod."))
+            ui_util.info(self, t("Mod name"), t("Enter a name for the new mod."))
             return
         # The chosen version comes from the picker (a backed-up version); fall back to the detected
         # build.  If nothing is backed up at all, guide the user to create a backup first.
@@ -3556,13 +3573,13 @@ class ModManagerApp(tk.Tk):
                 self._editor_mods_dir(), name, key,
                 self._settings.get("game_root", ""), str(bdir))
         except FileExistsError:
-            messagebox.showerror(t("Already exists"),
+            ui_util.error(self, t("Already exists"),
                                  t("A mod folder with that name already exists. Pick another name, "
                                    "or load it from the list below."))
             self._ed_refresh_project_list()
             return
         except Exception as e:
-            messagebox.showerror(t("Create failed"), str(e))
+            ui_util.error(self, t("Create failed"), str(e))
             return
         self._project = proj
         self._ed_new_name.set("")
@@ -3571,7 +3588,7 @@ class ModManagerApp(tk.Tk):
     def _ed_load_selected(self):
         sel = self._ed_proj_lb.curselection()
         if not sel:
-            messagebox.showinfo(t("Load"), t("Select a mod folder to load."))
+            ui_util.info(self, t("Load"), t("Select a mod folder to load."))
             return
         folder = self._ed_proj_paths[sel[0]]
         if folder is not None:
@@ -3586,9 +3603,9 @@ class ModManagerApp(tk.Tk):
             if hasattr(os, "startfile"):
                 os.startfile(str(base))               # Windows: open in Explorer
             else:
-                messagebox.showinfo(t("Folder"), str(base))
+                ui_util.info(self, t("Folder"), str(base))
         except Exception as e:
-            messagebox.showerror(t("Open Failed"), t("Could not open:\n{path}\n\n{e}", path=base, e=e))
+            ui_util.error(self, t("Open Failed"), t("Could not open:\n{path}\n\n{e}", path=base, e=e))
 
     def _prompt_branch_build_id(self, current=""):
         """Ask which branch (game version) a project targets; return its build id.
@@ -3601,9 +3618,7 @@ class ModManagerApp(tk.Tk):
         items = sorted(builds.items(), key=lambda kv: kv[1].get("branch", kv[0]))
         labels = [_gv_mod.display_name(b) for b, _ in items]
         ids = [b for b, _ in items]
-        win = tk.Toplevel(self); win.title(t("Which game version?"))
-        win.configure(background=_R_BG_PANEL)
-        win.transient(self); win.grab_set(); win.resizable(False, False)
+        win = ui_util.themed_toplevel(self, t("Which game version?"))
         tk.Label(win, text=t("This mod project was saved for '{v}', which isn't a current "
                              "game build.\nWhich game version (branch) is it built for?", v=current),
                  justify="left").pack(padx=14, pady=(12, 6))
@@ -3638,7 +3653,7 @@ class ModManagerApp(tk.Tk):
             proj = mp_project_mod.ModProject.load(
                 folder, self._settings.get("game_root", ""), str(bdir))
         except Exception as e:
-            messagebox.showerror(t("Load failed"), str(e))
+            ui_util.error(self, t("Load failed"), str(e))
             return
         # Migrate legacy / stale projects to a live build id -> ask which build, store it.
         # Two cases need this: (a) 'version' is a branch NAME (pre-build-id projects), and
@@ -3656,7 +3671,8 @@ class ModManagerApp(tk.Tk):
                 if new_sub == old_sub:
                     proj.set_build_id(bid)
                 else:
-                    messagebox.showwarning(
+                    ui_util.warning(
+                        self,
                         t("Different game format"),
                         t("This project's files are data version {a}, but {b} is {c}. "
                           "Left unchanged — convert the mod instead of relabeling it.",
@@ -3838,7 +3854,7 @@ class ModManagerApp(tk.Tk):
         try:
             self._project.write_description(author, description, version)
         except Exception as e:
-            messagebox.showerror(t("Save Details"), t("Could not write description.txt:\n{e}", e=e))
+            ui_util.error(self, t("Save Details"), t("Could not write description.txt:\n{e}", e=e))
             return
         self._ed_meta_saved = (author, description, version)
         self._ed_meta_check_dirty()
@@ -3882,7 +3898,7 @@ class ModManagerApp(tk.Tk):
                 self._ed_content, self._project, on_change=self._ed_update_status,
                 default_lang=self._settings.get("default_language", "us"))
         except Exception as e:
-            messagebox.showerror(t("Units Editor"), t("Failed to open the units editor:\n{e}", e=e))
+            ui_util.error(self, t("Units Editor"), t("Failed to open the units editor:\n{e}", e=e))
             return
         self._ed_open_view(view, t("Units & Buildings"))
 
@@ -3895,7 +3911,7 @@ class ModManagerApp(tk.Tk):
             view = ai_editor.AIEditorWindow(self._ed_content, self._project,
                                             on_change=self._ed_update_status)
         except Exception as e:
-            messagebox.showerror(t("AI Editor"), t("Failed to open the AI editor:\n{e}", e=e))
+            ui_util.error(self, t("AI Editor"), t("Failed to open the AI editor:\n{e}", e=e))
             return
         self._ed_open_view(view, t("AI"))
 
@@ -3908,7 +3924,7 @@ class ModManagerApp(tk.Tk):
             view = economy_editor.EconomyEditorWindow(self._ed_content, self._project,
                                                       on_change=self._ed_update_status)
         except Exception as e:
-            messagebox.showerror(t("Economy Editor"), t("Failed to open the economy editor:\n{e}", e=e))
+            ui_util.error(self, t("Economy Editor"), t("Failed to open the economy editor:\n{e}", e=e))
             return
         self._ed_open_view(view, t("Economy"))
 
@@ -3919,7 +3935,7 @@ class ModManagerApp(tk.Tk):
         try:
             import tools_editor
         except Exception as e:
-            messagebox.showerror(t("Raw / Asset Editor"), t("Could not load the tools module:\n{e}", e=e))
+            ui_util.error(self, t("Raw / Asset Editor"), t("Could not load the tools module:\n{e}", e=e))
             return
         try:
             view = tools_editor.ToolsEditorWindow(
@@ -3927,7 +3943,7 @@ class ModManagerApp(tk.Tk):
                 open_nested=self._ed_open_nested_tools)
             self._ed_open_view(view, t("Raw / Asset Editor"), cleanup=view.cleanup)
         except Exception as e:
-            messagebox.showerror(t("Raw / Asset Editor"), t("Failed to open the Raw / Asset Editor:\n{e}", e=e))
+            ui_util.error(self, t("Raw / Asset Editor"), t("Failed to open the Raw / Asset Editor:\n{e}", e=e))
 
     def _ed_open_nested_tools(self, store, on_applied):
         """Open an embedded .dat (from the Raw editor's 'Open as nested .dat') as ANOTHER nested view on
@@ -3938,7 +3954,7 @@ class ModManagerApp(tk.Tk):
                 self._ed_content, on_change=on_applied, store=store,
                 open_nested=self._ed_open_nested_tools)
         except Exception as e:
-            messagebox.showerror(t("Raw / Asset Editor"), t("Failed to open the nested archive:\n{e}", e=e))
+            ui_util.error(self, t("Raw / Asset Editor"), t("Failed to open the nested archive:\n{e}", e=e))
             return
         self._ed_open_view(view, t("Raw / Asset Editor — {name}", name=store.name), cleanup=view.cleanup)
 
@@ -3973,7 +3989,7 @@ class ModManagerApp(tk.Tk):
         overwrite = [rel for _, d, rel in plan if d.is_file()]
         if overwrite:
             msg += t("\n\nThis REPLACES file(s) already in the project:\n") + "\n".join("  • " + r for r in overwrite)
-        if not messagebox.askyesno(t("Add .dat files"), msg):
+        if not ui_util.confirm(self, t("Add .dat files"), msg):
             return
         copied = 0
         for sp, dest, rel in plan:
@@ -3983,7 +3999,7 @@ class ModManagerApp(tk.Tk):
                 copied += 1
                 _log(self._ed_log, t("  added .dat: {rel}", rel=rel), "ok")
             except Exception as e:
-                messagebox.showerror(t("Add .dat files"), t("Could not copy {name}:\n{e}", name=sp.name, e=e))
+                ui_util.error(self, t("Add .dat files"), t("Could not copy {name}:\n{e}", name=sp.name, e=e))
                 return
         # Reload the project from disk so the newly-copied dats are what the editor has loaded.
         folder = self._project.folder
@@ -3991,10 +4007,10 @@ class ModManagerApp(tk.Tk):
             self._project = mp_project_mod.ModProject.load(
                 folder, self._settings.get("game_root", ""), str(self._project.backup_dir))
         except Exception as e:
-            messagebox.showerror(t("Load failed"), str(e))
+            ui_util.error(self, t("Load failed"), str(e))
             return
         self._ed_show_hub()
-        messagebox.showinfo(t("Add .dat files"),
+        ui_util.info(self, t("Add .dat files"),
                             t("Added {n} .dat file(s) to the project.", n=copied))
 
     def _ed_deploy(self):
@@ -4002,17 +4018,18 @@ class ModManagerApp(tk.Tk):
             return
         self._ed_sync_project_paths()
         if not self._settings.get("game_root", ""):
-            messagebox.showinfo(t("No Game Root"), t("Set the Game Root Directory in Settings first."))
+            ui_util.info(self, t("No Game Root"), t("Set the Game Root Directory in Settings first."))
             return
         if self._project.is_dirty():
-            messagebox.showinfo(
+            ui_util.info(
+                self,
                 t("Unsaved changes"),
                 t("You have changes that aren't saved to the mod yet. Save them in their editor "
                   "window (each window has a Save button), then deploy."))
             return
         dats = self._project.saved_dats()
         if not dats:
-            messagebox.showinfo(t("Deploy"),
+            ui_util.info(self, t("Deploy"),
                                 t("Nothing to deploy yet — make and save a change in an editor "
                                   "window first to build the mod's .dat."))
             return
@@ -4025,14 +4042,16 @@ class ModManagerApp(tk.Tk):
                 target_lbl = _gv_mod.display_name(target)
             except Exception:
                 target_lbl = target
-            if not messagebox.askyesno(
+            if not ui_util.confirm(
+                    self,
                     t("Wrong game version?"),
                     t("This mod project targets {target}, but your game is currently set to {installed}.\n\n"
                       "Deploying writes {target} files into a {installed} game, which may not load "
                       "correctly. Switch your game to {target} in Steam to test it.\n\nDeploy anyway?",
                       target=target_lbl, installed=self._branch_label())):
                 return
-        if not messagebox.askyesno(
+        if not ui_util.confirm(
+                self,
                 t("Deploy to game?"),
                 t("This will OVERWRITE the live game file(s):\n\n")
                 + "\n".join("  • " + d.name for d in dats)
@@ -4067,7 +4086,7 @@ class ModManagerApp(tk.Tk):
             self._mgr_set_deployed_dats(r.replace(os.sep, "/") for r in proj_rels)
         except Exception as e:
             _log(self._ed_log, t("  ERROR: {e}", e=e), "err")
-            messagebox.showerror(t("Deploy"), str(e))
+            ui_util.error(self, t("Deploy"), str(e))
             return
         _log(self._ed_log, t("Done — deployed {n} file(s), reverted {reverted} leftover(s).",
                              n=len(copied), reverted=reverted), "head")
@@ -4076,23 +4095,24 @@ class ModManagerApp(tk.Tk):
             msg += t("\n\nReverted {reverted} leftover file(s) from a previous deploy to clean.", reverted=reverted)
         if backups:
             msg += t("\n\nBackups saved:\n") + "\n".join(backups)
-        messagebox.showinfo(t("Deployed"), msg)
+        ui_util.info(self, t("Deployed"), msg)
 
     def _ed_convert_to_rmod(self):
         if not self._project or getattr(self, "_ed_converting", False):
             return
         self._ed_sync_project_paths()
         if self._project.is_dirty():
-            messagebox.showinfo(t("Unsaved changes"),
+            ui_util.info(self, t("Unsaved changes"),
                                 t("Save your changes in the editor windows first, then convert."))
             return
         dats = self._project.saved_dats()
         if not dats:
-            messagebox.showinfo(t("Convert to rmod"),
+            ui_util.info(self, t("Convert to rmod"),
                                 t("Nothing to convert yet — make and save a change first."))
             return
         # Offer to flush unsaved Mod Details so the rmod carries the author/version/description shown.
-        if self._ed_meta_dirty() and messagebox.askyesno(
+        if self._ed_meta_dirty() and ui_util.confirm(
+                self,
                 t("Unsaved details"),
                 t("You have unsaved Mod Details (author / version / description). Save them to "
                   "description.txt before converting, so they go into the rmod?")):
@@ -4104,15 +4124,15 @@ class ModManagerApp(tk.Tk):
             self._ed_update_status()
             if err:
                 _log(self._ed_log, t("Error: {err}", err=err), "err")
-                messagebox.showerror(t("Convert to rmod"), err)
+                ui_util.error(self, t("Convert to rmod"), err)
             elif ok:
                 _log(self._ed_log, t("Done — wrote {out_rmod}", out_rmod=out_rmod), "ok")
-                messagebox.showinfo(t("Convert to rmod"),
+                ui_util.info(self, t("Convert to rmod"),
                                     t("Exported update mod (only your changes) to the mods folder:\n\n{out_rmod}",
                                       out_rmod=out_rmod))
             else:
                 _log(self._ed_log, t("No changes found to convert."), "warn")
-                messagebox.showwarning(t("Convert to rmod"), t("No changes were found to convert."))
+                ui_util.warning(self, t("Convert to rmod"), t("No changes were found to convert."))
 
         # Use the SAME conversion path as the Convert tab: versioned _V#/-v# naming, branch detection,
         # shipped to the mods folder, diffed against the clean originals.
@@ -4137,7 +4157,8 @@ class ModManagerApp(tk.Tk):
 
     def _ed_close_project(self):
         if self._project and self._project.is_dirty():
-            if not messagebox.askyesno(
+            if not ui_util.confirm(
+                    self,
                     t("Unsaved changes"),
                     t("There are changes not yet saved to the mod (save them in an editor window "
                       "to keep them). Close the project and discard those unsaved changes?")):
@@ -4156,7 +4177,7 @@ class ModManagerApp(tk.Tk):
             view = map_editor.MapEditorWindow(self._ed_content, self._project,
                                               on_change=self._ed_update_status)
         except Exception as e:
-            messagebox.showerror(t("Map Editor"), t("Failed to open the map editor:\n{e}", e=e))
+            ui_util.error(self, t("Map Editor"), t("Failed to open the map editor:\n{e}", e=e))
             return
         self._ed_open_view(view, t("Map Editor"))
 
@@ -4339,11 +4360,11 @@ class ModManagerApp(tk.Tk):
         i18n.set_language(code)
         if code != prev:
             # The whole UI is built once in the chosen language, so a restart applies it everywhere.
-            if messagebox.askyesno(
+            if ui_util.confirm(
+                    self,
                     t("Restart to change language"),
                     t("The interface language changes when the Mod Manager restarts.\n\n"
-                      "Restart now?"),
-                    parent=self):
+                      "Restart now?")):
                 self._restart_app()
 
     def _restart_app(self):
@@ -4378,7 +4399,7 @@ class ModManagerApp(tk.Tk):
                         else [sys.executable, str(Path(__file__).resolve())])
                 subprocess.Popen(args, cwd=str(_LAUNCH_DIR), close_fds=True, env=env)
         except Exception as e:
-            messagebox.showerror(t("Restart failed"), str(e), parent=self)
+            ui_util.error(self, t("Restart failed"), str(e))
             return
         self.quit()
 
@@ -4434,15 +4455,14 @@ class ModManagerApp(tk.Tk):
                 made = (res.stdout or "").strip().splitlines()
                 path = made[-1] if made else ""
                 _log(self._mgr_log, t("Created shortcut: {path}", path=path), "ok")
-                messagebox.showinfo(t("Shortcut created"),
-                                    t("Created shortcut:\n{path}", path=path) if path else t("Shortcut created."),
-                                    parent=self)
+                ui_util.info(self, t("Shortcut created"),
+                                    t("Created shortcut:\n{path}", path=path) if path else t("Shortcut created."))
             else:
                 err = (res.stderr or res.stdout or "Unknown error").strip()
                 _log(self._mgr_log, t("Shortcut failed: {err}", err=err), "err")
-                messagebox.showerror(t("Shortcut failed"), err, parent=self)
+                ui_util.error(self, t("Shortcut failed"), err)
         except Exception as e:
-            messagebox.showerror(t("Shortcut failed"), str(e), parent=self)
+            ui_util.error(self, t("Shortcut failed"), str(e))
         finally:
             if ps1 and os.path.exists(ps1):
                 try:
@@ -4467,15 +4487,15 @@ class ModManagerApp(tk.Tk):
         except Exception:
             pass
         if not path.is_dir():
-            messagebox.showerror(t("Not Found"), t("Folder does not exist:\n{path}", path=path))
+            ui_util.error(self, t("Not Found"), t("Folder does not exist:\n{path}", path=path))
             return
         try:
             if hasattr(os, "startfile"):
                 os.startfile(str(path))               # Windows: open in Explorer
             else:
-                messagebox.showinfo(t("Folder"), str(path))
+                ui_util.info(self, t("Folder"), str(path))
         except Exception as e:
-            messagebox.showerror(t("Open Failed"), t("Could not open:\n{path}\n\n{e}", path=path, e=e))
+            ui_util.error(self, t("Open Failed"), t("Could not open:\n{path}\n\n{e}", path=path, e=e))
 
     def _set_detect_game(self, silent: bool = False):
         """Detect R.U.S.E. installation via Steam and set game_root.
@@ -4488,7 +4508,7 @@ class ModManagerApp(tk.Tk):
             dirs = _steam_mod.find_ruse_game_dirs()
         except Exception as e:
             if not silent:
-                messagebox.showerror(t("Detection Failed"), t("Could not query Steam:\n{e}", e=e))
+                ui_util.error(self, t("Detection Failed"), t("Could not query Steam:\n{e}", e=e))
             return
 
         compat = dirs.get("compat")
@@ -4496,7 +4516,8 @@ class ModManagerApp(tk.Tk):
 
         if not compat and not public:
             if not silent:
-                messagebox.showinfo(
+                ui_util.info(
+                    self,
                     t("Not Found"),
                     t("Could not find R.U.S.E. or R.U.S.E. COMPAT in any Steam library.\n\n"
                       "Make sure the game is installed and Steam has been run at least once."))
@@ -4509,7 +4530,8 @@ class ModManagerApp(tk.Tk):
                 return
             chosen = str(public or compat)
         elif compat and public:
-            use_compat = messagebox.askyesno(
+            use_compat = ui_util.confirm(
+                self,
                 t("Two Versions Found"),
                 t("Both versions of R.U.S.E. were found:\n\n"
                   "  R.U.S.E. COMPAT:  {compat}\n"
@@ -4657,12 +4679,12 @@ class ModManagerApp(tk.Tk):
         # profiles upgrade forward (the game rebuilds them on launch), so they apply to ANY build.
         src = _PROFILES_DIR / f"{_OG_PROFILE_PREFIX}-lvl{level}" / "PROFILE.ruse"
         if not src.is_file():
-            messagebox.showerror(t("Profile Not Found"),
+            ui_util.error(self, t("Profile Not Found"),
                                  t("Preset profile not found:\n{src}", src=src))
             return
         dirs = _find_steam_profile_dirs()
         if not dirs:
-            messagebox.showerror(t("Steam Not Found"),
+            ui_util.error(self, t("Steam Not Found"),
                                  t("No Steam R.U.S.E. profile directories found.\n\n"
                                    "Expected: C:\\Program Files (x86)\\Steam\\"
                                    "userdata\\<id>\\21970\\{local,remote}"))
@@ -4681,7 +4703,7 @@ class ModManagerApp(tk.Tk):
                      cur=self._branch_label())
         if failed:
             msg += t("\n\nFailed:\n") + "\n".join(f"  {f}" for f in failed)
-        messagebox.showinfo(t("Profile Set"), msg)
+        ui_util.info(self, t("Profile Set"), msg)
 
     def _profile_set_lvl1(self):
         self._profile_set_lvl(1)
@@ -4692,7 +4714,7 @@ class ModManagerApp(tk.Tk):
     def _profile_backup_current(self):
         dirs = _find_steam_profile_dirs()
         if not dirs:
-            messagebox.showerror(t("Steam Not Found"),
+            ui_util.error(self, t("Steam Not Found"),
                                  t("No Steam R.U.S.E. profile directories found."))
             return
         # Pick the most recently modified PROFILE.ruse across all Steam dirs
@@ -4703,7 +4725,7 @@ class ModManagerApp(tk.Tk):
                 if src is None or p.stat().st_mtime > src.stat().st_mtime:
                     src = p
         if src is None:
-            messagebox.showerror(t("No Profile"),
+            ui_util.error(self, t("No Profile"),
                                  t("PROFILE.ruse not found in any Steam directory."))
             return
         ver = self._version_subname()          # per BUILD: profile/v<buildid>/ — archivable per version
@@ -4712,7 +4734,7 @@ class ModManagerApp(tk.Tk):
         backup_dir.mkdir(parents=True, exist_ok=True)
         dest = backup_dir / "PROFILE.ruse"
         shutil.copy2(src, dest)
-        messagebox.showinfo(t("Backup Complete"),
+        ui_util.info(self, t("Backup Complete"),
                             t("Profile backed up for {label}.\n\n"
                               "From: {src}\n"
                               "To:   {dest}", label=label, src=src, dest=dest))
@@ -4725,7 +4747,8 @@ class ModManagerApp(tk.Tk):
         applies it directly. Newer builds' profiles are never offered."""
         options = self._applicable_profile_backups()      # newest-first (current build on top if present)
         if not options:
-            messagebox.showerror(
+            ui_util.error(
+                self,
                 t("No Backup"),
                 t("No applicable backed-up profile found for {label} or any older version.",
                   label=self._branch_label()))
@@ -4735,7 +4758,8 @@ class ModManagerApp(tk.Tk):
             build, label, src = options[0]                # newest applicable
             if build != self._game_build_id():
                 # AUTO fell back to an OLDER profile — confirm the forward-upgrade
-                if not messagebox.askyesno(
+                if not ui_util.confirm(
+                    self,
                     t("Apply older profile?"),
                     t("No profile is backed up for {cur}.\n\nApply the most recent older one, {label}? "
                       "The game rebuilds it for {cur} on next launch.",
@@ -4744,13 +4768,13 @@ class ModManagerApp(tk.Tk):
         else:
             picked = next((o for o in options if o[1] == choice), None)
             if picked is None:
-                messagebox.showerror(t("No Backup"),
+                ui_util.error(self, t("No Backup"),
                                      t("That profile version is no longer available."))
                 return
             build, label, src = picked                    # explicit user pick — no confirm
         dirs = _find_steam_profile_dirs()
         if not dirs:
-            messagebox.showerror(t("Steam Not Found"),
+            ui_util.error(self, t("Steam Not Found"),
                                  t("No Steam R.U.S.E. profile directories found."))
             return
         copied, failed = [], []
@@ -4767,7 +4791,7 @@ class ModManagerApp(tk.Tk):
                + "\n".join(f"  {c}" for c in copied) + note)
         if failed:
             msg += t("\n\nFailed:\n") + "\n".join(f"  {f}" for f in failed)
-        messagebox.showinfo(t("Profile Set"), msg)
+        ui_util.info(self, t("Profile Set"), msg)
 
     # =========================================================================
     # Close
@@ -4776,7 +4800,8 @@ class ModManagerApp(tk.Tk):
     def _on_close(self):
         # Warn about mod-editor changes that were never saved into the mod
         if getattr(self, "_project", None) and self._project.is_dirty():
-            if not messagebox.askyesno(
+            if not ui_util.confirm(
+                    self,
                     t("Unsaved mod changes"),
                     t("Your mod project has changes that weren't saved to the mod's .dat "
                       "(use an editor window's Save button to keep them).\n\nExit anyway?")):
@@ -4817,7 +4842,8 @@ if __name__ == "__main__":
         if _ban is not None:
             _name, _reason = _ban
             _r = tk.Tk(); _r.withdraw()
-            messagebox.showerror(
+            ui_util.error(
+                _r,
                 "Banned",
                 f"{_name} has been banned!\nReason: {_reason}",
             )

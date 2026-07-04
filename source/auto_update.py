@@ -30,6 +30,8 @@ import urllib.request
 from pathlib import Path
 from tkinter import messagebox, ttk
 
+import ui_util
+
 try:
     from i18n import t
 except ImportError:
@@ -93,34 +95,26 @@ def _find_exe_asset(release, version):
 
 
 def prompt_update(parent, current, latest):
-    return messagebox.askyesno(
+    return ui_util.confirm(
+        parent,
         t("Update available"),
         t("A new version is available: {current} → {latest}\n\n"
           "Update now? Selecting No will close the application.",
           current=current, latest=latest),
-        parent=parent,
     )
 
 
 def _download_with_progress(parent, url, dest_path):
     """Stream URL -> dest_path while pumping a small Tk progress Toplevel. Raises on failure."""
-    win = tk.Toplevel(parent)
-    win.title(t("Downloading update..."))
-    win.transient(parent)
-    win.resizable(False, False)
+    # Non-modal (it pumps parent.update() while downloading); themed_toplevel centres it over the app.
+    win = ui_util.themed_toplevel(parent, t("Downloading update..."),
+                                  resizable=False, modal=False)
     win.protocol("WM_DELETE_WINDOW", lambda: None)   # close-box does nothing during the swap
     ttk.Label(win, text=t("Downloading update...")).pack(padx=20, pady=(15, 5))
     pb = ttk.Progressbar(win, length=320, mode="indeterminate")
     pb.pack(padx=20, pady=(0, 15))
     pb.start(50)
-
-    parent.update_idletasks()
-    px, py = parent.winfo_x(), parent.winfo_y()
-    pw, ph = parent.winfo_width(), parent.winfo_height()
-    win.update_idletasks()
-    ww, wh = win.winfo_width(), win.winfo_height()
-    win.geometry(f"+{px + (pw - ww) // 2}+{py + (ph - wh) // 2}")
-    win.update()
+    win.update()                                     # force it visible + centred before the blocking download
 
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "RUSE-ModManager"})
@@ -378,10 +372,10 @@ def download_and_relaunch(parent, asset_url, latest_version):
             tmp_path.unlink(missing_ok=True)
         except Exception:
             pass
-        messagebox.showerror(
+        ui_util.error(
+            parent,
             t("Update failed"),
             t("Update failed: {error}", error=str(e)),
-            parent=parent,
         )
         try:
             parent.destroy()
@@ -404,11 +398,11 @@ def download_and_relaunch(parent, asset_url, latest_version):
     except Exception as e:
         # Couldn't relaunch — don't strand the user. Keep the (old) app running so they can restart
         # manually; the downloaded new exe stays in place for next time.
-        messagebox.showerror(
+        ui_util.error(
+            parent,
             t("Update failed"),
             t("Downloaded the update but couldn't start it: {error}\n\n"
               "Please restart the app manually.", error=str(e)),
-            parent=parent,
         )
         return
     try:
