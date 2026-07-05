@@ -74,6 +74,11 @@ _SETTINGS_FILE  = _LAUNCH_DIR / "settings.json"
 _ENGINE_DEPLOY_VERSION = 3
 
 _MGR_STATE_FILE = _LAUNCH_DIR / ".manager_state.json"
+# Serialises every read-modify-write of _MGR_STATE_FILE.  Worker threads (_do_deploy / _do_restore →
+# _mgr_set_deployed_dats) and the main thread (_save_mgr_state, the 15 s poll) all rewrite this file;
+# without the lock two overlapping RMWs can lose an update or tear the JSON, corrupting the deploy
+# tracker that the NEXT deploy relies on to clean up leftovers.
+_MGR_STATE_LOCK = threading.Lock()
 _PROFILES_DIR   = _LAUNCH_DIR / "profile"
 _PROFILE_AUTO   = "Auto"   # 'Set Backed-Up Profile' default: apply the newest applicable backup
 _OG_PROFILE_PREFIX = "v3591"   # the OG compat build; its lvl1/lvl100 career presets (profile/v3591-lvl*)
@@ -281,7 +286,22 @@ def _make_log(parent, height=12) -> "_ThemedScrolledText":
 
 
 def _log(widget, msg, tag="info"):
-    _append_raw(widget, msg, tag)
+    # Tkinter is single-threaded: a widget may only be mutated on the main (interpreter) thread.
+    # Worker threads (deploy / backup / restore / convert) log freely, so marshal to the main thread
+    # HERE — one safe choke point — instead of wrapping every call site in ``self.after(0, …)``.
+    # after(0) callbacks run FIFO, so message order is preserved.  This is what makes the deploy/backup
+    # logging thread-safe; before it, cross-thread widget.insert() corrupted Tcl state and crashed the
+    # app mid/near deploy.
+    if threading.current_thread() is not threading.main_thread():
+        try:
+            widget.after(0, _log, widget, msg, tag)
+        except (RuntimeError, tk.TclError):
+            pass   # app shutting down or widget already destroyed — drop the line
+        return
+    try:
+        _append_raw(widget, msg, tag)
+    except tk.TclError:
+        return
     # Mirror every per-tab message into the Mod Editor's "all logs" windows — but never back into the
     # same widget (a mirror logging to itself).
     for m in _LOG_MIRRORS:
@@ -358,13 +378,15 @@ class ModManagerApp(tk.Tk):
         self._build_ui()
         self._load_mgr_state()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
-        self.after(15000, self._auto_detect_poll)
+        self._auto_detect_job = self.after(15000, self._auto_detect_poll)
         self.deiconify()   # UI is fully built — show the window (paired with withdraw() at top of __init__)
 
     # ── Bootstrap ─────────────────────────────────────────────────────────────
 
     def _bootstrap_folders(self):
-        """Create required folders next to the exe on first run."""
+        """Create required folders next to the exe on first run.  A failure here (read-only drive,
+        permissions) leaves the app without its working folders, so surface it instead of swallowing it
+        — otherwise the first deploy/backup fails later with a confusing secondary error."""
         try:
             mods = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
             mods.mkdir(parents=True, exist_ok=True)
@@ -375,8 +397,15 @@ class ModManagerApp(tk.Tk):
             if self._settings.get("working_dir"):
                 self._backup_dir().mkdir(parents=True, exist_ok=True)
                 self._mod_out_dir().mkdir(parents=True, exist_ok=True)
-        except Exception:
-            pass
+        except Exception as e:
+            # The log widget doesn't exist yet (called before _build_ui), so surface via a dialog.
+            try:
+                ui_util.warning(
+                    self, t("Couldn't create working folders"),
+                    t("The Mod Manager couldn't create its working folders:\n\n{err}\n\n"
+                      "Check that its folder isn't read-only, then restart.", err=str(e)))
+            except Exception:
+                pass
 
     # ── Theme ─────────────────────────────────────────────────────────────────
 
@@ -885,20 +914,22 @@ class ModManagerApp(tk.Tk):
 
     def _mgr_set_deployed_dats(self, rels):
         """Persist the set of dat rel-paths currently overlaid onto the game (forward-slash form).
-        Read-modify-write so the rest of the manager state is preserved."""
-        existing = {}
-        if _MGR_STATE_FILE.exists():
+        Read-modify-write so the rest of the manager state is preserved.  Called from worker threads —
+        the module lock keeps it from racing _save_mgr_state on the main thread."""
+        with _MGR_STATE_LOCK:
+            existing = {}
+            if _MGR_STATE_FILE.exists():
+                try:
+                    with open(_MGR_STATE_FILE, encoding="utf-8") as f:
+                        existing = json.load(f)
+                except Exception:
+                    existing = {}
+            existing["deployed_dats"] = sorted(set(rels))
             try:
-                with open(_MGR_STATE_FILE, encoding="utf-8") as f:
-                    existing = json.load(f)
+                with open(_MGR_STATE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(existing, f, indent=2)
             except Exception:
-                existing = {}
-        existing["deployed_dats"] = sorted(set(rels))
-        try:
-            with open(_MGR_STATE_FILE, "w", encoding="utf-8") as f:
-                json.dump(existing, f, indent=2)
-        except Exception:
-            pass
+                pass
 
     def _conv_out_dir(self) -> Path:
         return Path(self._settings["working_dir"]) / "output" / "converter_output"
@@ -2330,6 +2361,8 @@ class ModManagerApp(tk.Tk):
     # ── Backup / Restore ──────────────────────────────────────────────────────
 
     def _mgr_create_backup(self):
+        if self._mgr_running:   # a deploy/backup/restore is already touching the game files
+            return
         if not self._settings["game_root"]:
             ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
             return
@@ -2367,7 +2400,11 @@ class ModManagerApp(tk.Tk):
                         dest.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(src, dest)
                         count += 1
-                        _log(self._mgr_log, f"  {rel}", "info")
+                        # The Maps tree can be thousands of files; logging EVERY one floods the (now
+                        # main-thread-marshalled) log queue and stutters the UI.  Report progress
+                        # periodically plus the folder currently being copied.
+                        if count % 200 == 0:
+                            _log(self._mgr_log, t("  … {count} files copied ({top})", count=count, top=top), "info")
             _log(self._mgr_log, t("Backup complete: {count} files.", count=count), "ok")
         except Exception as e:
             _log(self._mgr_log, t("Backup error: {e}", e=e), "err")
@@ -2376,6 +2413,8 @@ class ModManagerApp(tk.Tk):
             self.after(0, lambda: self._mgr_set_busy(False))
 
     def _mgr_restore_clean(self):
+        if self._mgr_running:   # a deploy/backup/restore is already touching the game files
+            return
         bd = self._backup_dir()
         if not bd.exists():
             ui_util.error(self, t("No Backup"), t("No backup found. Create one first."))
@@ -2446,10 +2485,19 @@ class ModManagerApp(tk.Tk):
                                 t("Check at least one mod to deploy."))
             return
         dry = self._mgr_dry.get()
+        # Read every Tk variable the deploy needs HERE, on the main thread — the worker thread must not
+        # touch the Tk interpreter (a cross-thread .get() is as unsafe as a cross-thread widget insert).
+        # Mirrors how `dry` is already snapshotted and passed in as an argument.
+        cache_on = bool(self._mgr_cache_enabled.get())
+        per_mod  = bool(self._mgr_per_mod_cache.get())
+        regen    = bool(self._mgr_regen.get())
+        per_mod_flags = {str(p): bool(self._mod_cache_var(p).get()) for p in active}
         self._mgr_set_busy(True)
         self._mgr_foot.set(t("Deploying mods…"))
-        threading.Thread(target=self._do_deploy,
-                         args=(bd, active, dry), daemon=True).start()
+        threading.Thread(
+            target=self._do_deploy,
+            args=(bd, active, dry, cache_on, per_mod, regen, per_mod_flags),
+            daemon=True).start()
 
     def _mgr_launch_game(self):
         """Launch RUSE.exe from the configured game root."""
@@ -2476,7 +2524,8 @@ class ModManagerApp(tk.Tk):
             _log(self._mgr_log, t("Failed to launch R.U.S.E.: {ex}", ex=ex), "err")
             ui_util.error(self, t("Launch Failed"), t("Could not launch R.U.S.E.:\n\n{ex}", ex=ex))
 
-    def _do_deploy(self, bd: Path, active: list, dry: bool):
+    def _do_deploy(self, bd: Path, active: list, dry: bool,
+                   cache_on: bool, per_mod: bool, regen: bool, per_mod_flags: dict):
         try:
             # rmod dat paths are GAME-ROOT-relative now (Data/PC/<sub>/<dat>, Maps/PC/<dat>), and the
             # backup `bd` mirrors the game root — so the applier reads clean dats from `bd`, and we
@@ -2496,9 +2545,8 @@ class ModManagerApp(tk.Tk):
             # touched starts from the clean backup).  No hit → apply all from the backup.
             #   WHAT GETS WRITTEN (to bound disk): "Per-mod cache points" OFF → only the full result;
             #   ON → only the prefixes ending at an rmod the user ticked.  Dry runs never read/write.
-            cache_on = bool(self._mgr_cache_enabled.get())
-            per_mod  = bool(self._mgr_per_mod_cache.get())
-            regen    = bool(self._mgr_regen.get())
+            # cache_on / per_mod / regen were read from their Tk vars on the MAIN thread in _mgr_deploy
+            # and passed in — never read a Tk var from this worker thread.
             prefix_base = None      # cache dir whose dats already have mods[0:k] applied
             tail = list(active)     # mods still to apply on top of the base
             if cache_on and (not dry) and (not regen):
@@ -2570,7 +2618,7 @@ class ModManagerApp(tk.Tk):
                     # so it never has to be re-applied.  Per-mod mode → only when THIS mod is ticked for
                     # caching; otherwise → only the full result (the last mod).
                     gpos = reused + i           # this mod's index in the full active list
-                    want_cache = (self._mod_cache_var(active[gpos]).get() if per_mod
+                    want_cache = (per_mod_flags.get(str(active[gpos]), False) if per_mod
                                   else i == len(tail) - 1)
                     if cache_on and want_cache and ok and not dry and any(mod_out.rglob("*.dat")):
                         plen = gpos + 1
@@ -2714,12 +2762,13 @@ class ModManagerApp(tk.Tk):
         build keeps its OWN independent list.  Cache toggles + the deploy tracker stay global; the mod
         list is per build (`builds: {v<buildid>: [...]}`)."""
         existing = {}
-        if _MGR_STATE_FILE.exists():
-            try:
-                with open(_MGR_STATE_FILE, encoding="utf-8") as f:
-                    existing = json.load(f)
-            except Exception:
-                pass
+        with _MGR_STATE_LOCK:
+            if _MGR_STATE_FILE.exists():
+                try:
+                    with open(_MGR_STATE_FILE, encoding="utf-8") as f:
+                        existing = json.load(f)
+                except Exception:
+                    pass
         builds = existing.get("builds")
         if not isinstance(builds, dict):
             builds = {}
@@ -2756,11 +2805,23 @@ class ModManagerApp(tk.Tk):
             existing["cache_enabled"] = bool(self._mgr_cache_enabled.get())
         if hasattr(self, "_mgr_per_mod_cache"):
             existing["per_mod_cache"] = bool(self._mgr_per_mod_cache.get())
-        try:
-            with open(_MGR_STATE_FILE, "w", encoding="utf-8") as f:
-                json.dump(existing, f, indent=2)
-        except Exception:
-            pass
+        with _MGR_STATE_LOCK:
+            # A worker thread (deploy/restore → _mgr_set_deployed_dats) may have rewritten
+            # deployed_dats since we read `existing` above.  Re-read it under the lock and merge it in
+            # so our stale copy can't clobber that update.
+            if _MGR_STATE_FILE.exists():
+                try:
+                    with open(_MGR_STATE_FILE, encoding="utf-8") as f:
+                        latest = json.load(f).get("deployed_dats")
+                    if latest is not None:
+                        existing["deployed_dats"] = latest
+                except Exception:
+                    pass
+            try:
+                with open(_MGR_STATE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(existing, f, indent=2)
+            except Exception:
+                pass
 
     def _mgr_load_mode(self, ver: str):
         """Clear the mod list, restore saved state, then append any newly found mods. `ver` is the
@@ -4555,18 +4616,21 @@ class ModManagerApp(tk.Tk):
         appmanifest), the detected version key changes — so re-key the mod list / backups / labels to
         the new build automatically, no "Detect Game Version" press needed."""
         try:
-            self._set_detect_game(silent=True)
-            gr = self._settings.get("game_root", "").strip()
-            if gr and _is_dir_safe(Path(gr)):
-                new_ver = self._version_subname()
-                if self._mgr_current_ver and new_ver != self._mgr_current_ver:
-                    _log(self._mgr_log,
-                         t("Game version changed to {label} — refreshing the mod list.",
-                           label=self._branch_label()), "head")
-                    self._apply_version_change(new_ver)
+            # Don't rescan/rebuild the UI while a deploy/backup/restore is writing game files — a
+            # version-change rebuild mid-operation would race it.  Skip this tick; the next one catches up.
+            if not self._mgr_running:
+                self._set_detect_game(silent=True)
+                gr = self._settings.get("game_root", "").strip()
+                if gr and _is_dir_safe(Path(gr)):
+                    new_ver = self._version_subname()
+                    if self._mgr_current_ver and new_ver != self._mgr_current_ver:
+                        _log(self._mgr_log,
+                             t("Game version changed to {label} — refreshing the mod list.",
+                               label=self._branch_label()), "head")
+                        self._apply_version_change(new_ver)
         except Exception:
             pass
-        self.after(15000, self._auto_detect_poll)
+        self._auto_detect_job = self.after(15000, self._auto_detect_poll)
 
     def _set_schedule_save(self):
         if self._set_save_job:
@@ -4610,6 +4674,12 @@ class ModManagerApp(tk.Tk):
 
     def _set_auto_backup(self):
         """Start a backup automatically when game root is newly set, if none exists yet."""
+        # Fires from a Settings var trace, which can happen WHILE a deploy/backup/restore is running.
+        # Without this guard it would start a second worker; whichever finishes first flips
+        # ``_mgr_running`` off and re-enables Deploy over the still-running op — letting two operations
+        # write the same game files at once.  Bail if the manager is already busy.
+        if self._mgr_running:
+            return
         gr = self._settings.get("game_root", "")
         if not gr:
             return
@@ -4794,6 +4864,28 @@ class ModManagerApp(tk.Tk):
         ui_util.info(self, t("Profile Set"), msg)
 
     # =========================================================================
+    # Errors
+    # =========================================================================
+
+    def report_callback_exception(self, exc, val, tb):
+        """Tk calls this for any exception raised inside an event callback (button handlers, ``after``
+        jobs, nested ``wait_window`` loops).  The default just prints — and in a --noconsole frozen
+        build stderr is None, so errors vanish and a broken callback can silently spin a nested loop
+        with the main window still hidden ("running, no window").  Surface it as a dialog so it can't
+        hide, and always dump the traceback for dev runs.  We do NOT tear the app down (a single bad
+        callback shouldn't kill a working session), but the error is now visible."""
+        import traceback
+        try:
+            sys.stderr.write("".join(traceback.format_exception(exc, val, tb)))
+        except Exception:
+            pass
+        try:
+            ui_util.error(self, t("Something went wrong"),
+                          t("An unexpected error occurred:\n\n{err}", err=str(val)))
+        except Exception:
+            pass
+
+    # =========================================================================
     # Close
     # =========================================================================
 
@@ -4812,6 +4904,14 @@ class ModManagerApp(tk.Tk):
             self._set_save_job = None
             for key, var in self._set_vars.items():
                 self._settings[key] = var.get().strip()
+        # Cancel the recurring 15 s game-version poll so it can't fire against tearing-down widgets
+        # (matters if a nested modal loop runs during shutdown).
+        if getattr(self, "_auto_detect_job", None):
+            try:
+                self.after_cancel(self._auto_detect_job)
+            except Exception:
+                pass
+            self._auto_detect_job = None
         self._save_settings()
         self._save_mgr_state()
         self.quit()
@@ -4826,6 +4926,18 @@ if __name__ == "__main__":
     # decode would fork-bomb the app open. No-op when running from source. (terrain perf, issue #15)
     import multiprocessing
     multiprocessing.freeze_support()
+    # Single-instance guard.  MUST come after freeze_support() (so terrain-decode worker processes,
+    # which re-launch this exe, have already short-circuited and never reach here) but before any
+    # window is built.  If another live instance already holds the lock we bow out silently — this is
+    # what stops the "I launched once but got two windows" reports.  Fail-open on any error.
+    try:
+        import single_instance
+        if not single_instance.acquire():
+            sys.exit(0)
+    except SystemExit:
+        raise
+    except Exception:
+        pass
     # Give Windows an explicit AppUserModelID so the taskbar treats us as our own app and uses the
     # window icon (set via iconphoto) for the taskbar button. Without this, a frozen build shows a
     # blank white taskbar icon because Windows groups us under the generic host-process identity.
@@ -4849,5 +4961,27 @@ if __name__ == "__main__":
             )
             _r.destroy()
             sys.exit(1)
-    app = ModManagerApp()
+    # Guard the whole startup.  __init__ withdraws the window and only deiconifies at the very end, so
+    # ANY unhandled error in between would otherwise leave a live-but-invisible process ("running in
+    # Task Manager, no window").  Surface it as a dialog and exit non-zero instead of vanishing.
+    try:
+        app = ModManagerApp()
+    except SystemExit:
+        raise
+    except Exception as _startup_err:
+        import traceback
+        _tb = traceback.format_exc()
+        try:
+            _r = tk.Tk(); _r.withdraw()
+            ui_util.error(_r, t("Startup failed"),
+                          t("The Mod Manager couldn't finish starting up:\n\n{err}\n\n"
+                            "Please report this.", err=str(_startup_err)))
+            _r.destroy()
+        except Exception:
+            pass
+        try:
+            sys.stderr.write(_tb)
+        except Exception:
+            pass
+        sys.exit(1)
     app.mainloop()

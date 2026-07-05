@@ -809,6 +809,18 @@ def _run_dialog(parent, kind, title, message, buttons, *, default_index=-1, canc
     center_over(win, top)                              # then centre over the app window
 
     win.grab_set()
+    # Force the dialog to the front.  Critical when the parent window is still WITHDRAWN (e.g. the
+    # startup auto-update prompt, shown before the main window is mapped): a transient of a hidden
+    # window has no taskbar button, so if it opened behind another app the user would have no way to
+    # reach it and the app would appear hung ("running, no window").  lift + a brief topmost pulse
+    # guarantees it surfaces; we drop topmost again so it doesn't stay pinned over everything.
+    try:
+        win.lift()
+        win.attributes("-topmost", True)
+        win.focus_force()
+        win.after(300, lambda: win.winfo_exists() and win.attributes("-topmost", False))
+    except Exception:
+        pass
     if focus_btn is not None:
         focus_btn.focus_set()
     win.wait_window()
