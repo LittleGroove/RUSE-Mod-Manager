@@ -1,5 +1,7 @@
 # RUSE Mod Manager
 
+CRITICAL: 1.0.166 fails to load and therefore cant be updated from, grab the new exe and you should not have to worry about updating manually after that
+
 A Windows app that makes modding **R.U.S.E.** way easier. A "mod" is a change you make to the game — like giving a tank more health, or building a new map.
 
 Old-style mods each replaced a whole game file (a `.dat` file — one of the game's big data packs). Two mods that touched the same file couldn't be used together. You had to pick one.
