@@ -466,21 +466,37 @@ def heal_shortcuts():
     threading.Thread(target=lambda: _repoint_shortcuts(cur), daemon=True).start()
 
 
-def run_startup_check(parent):
-    """Top-level entry. Called from ModManagerApp.__init__ before the main window is shown.
-
-    Skips silently on any prerequisite failure (offline, dev run, no newer release). On a Yes
-    the process is replaced before init continues; on a No the process exits.  On the Yes/No paths
-    this function does not return (it exits); otherwise it returns and startup continues."""
-    # Every launch sweeps stale older-version exes — this is what removes the exe a prior update
-    # replaced (the new instance deletes the old one, which the old running process couldn't).
+def run_startup_housekeeping():
+    """Non-interactive startup chores that need no window and never prompt — safe to call early, while
+    the main window is still hidden:
+      * sweep the stale older-version exe a prior update replaced (the new instance deletes the old one,
+        which the old running process couldn't), plus any leftover *.exe.tmp partial downloads;
+      * heal Desktop / Start-Menu / taskbar shortcuts whose icon/target drifted to a gone version.
+    Both run on background threads and no-op when running from source."""
     cleanup_old_exes()
     heal_shortcuts()   # repair shortcuts whose icon/target drifted to a gone version (non-destructive)
+
+
+def check_for_update(app):
+    """Window-safe update check.  MUST be scheduled via ``after()`` to run AFTER the main window is shown
+    and the event loop is live (see ModManagerApp.__init__) — NOT before the window is deiconified.
+
+    Why the ordering is load-bearing: this shows a modal Yes/No prompt.  When the check used to run
+    before the window was shown, that modal's parent was a WITHDRAWN (invisible) window — so the prompt
+    had no taskbar button and no reliable way to hold the foreground.  A stray click/scroll could bury
+    it, and its ``wait_window`` loop would then block forever: the app sat running with no visible,
+    clickable window — the "hangs when there's an update, won't open" bug.  Running here instead gives
+    the prompt a real, mapped, foreground parent, so it can't be buried.
+
+    Skips silently on any prerequisite failure (offline, dev run, no newer release, missing asset).  On
+    Yes it downloads + relaunches + exits; on No it closes the app; otherwise it returns and the app
+    keeps running.  The ``sys.exit`` on the Yes/No paths propagates out of the Tk callback and ends
+    ``mainloop`` (tkinter's CallWrapper re-raises SystemExit)."""
     try:
         current = current_version()
         if not current:
             return
-        release = fetch_latest()
+        release = fetch_latest()   # bounded by API_TIMEOUT; typically well under a second
         if not release:
             return
         latest = (release.get("tag_name") or "").lstrip("v")
@@ -491,11 +507,13 @@ def run_startup_check(parent):
             print(f"[auto_update] release v{latest} has no "
                   f"{ASSET_NAME_TEMPLATE.format(version=latest)} asset; skipping")
             return
-        if prompt_update(parent, current, latest):
-            download_and_relaunch(parent, asset_url, latest)
+        if not app.winfo_exists():                 # window torn down before the deferred check ran
+            return
+        if prompt_update(app, current, latest):
+            download_and_relaunch(app, asset_url, latest)
         else:
             try:
-                parent.destroy()
+                app.destroy()
             except Exception:
                 pass
             sys.exit(0)

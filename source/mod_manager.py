@@ -359,12 +359,16 @@ class ModManagerApp(tk.Tk):
         self.title(t("mgr.r_u_s_e_mod"))   # after i18n.load so it localizes
         if getattr(self, "_lang_autodetected", False):
             self._save_settings()   # record the OS-detected language so it persists from now on
-        # In-exe auto-update.  If a newer release exists on GitHub, the user gets a Yes/No prompt:
-        # Yes -> downloads and relaunches; No -> closes the app.  Skipped silently for dev runs,
-        # offline users, and up-to-date builds.  Runs BEFORE the main UI is built so the user
-        # doesn't see a half-built window flash when declining.
+        # In-exe auto-update.  Split in two so the interactive part can't hang startup:
+        #   * housekeeping (sweep the old exe / heal shortcuts) is non-interactive → run it now.
+        #   * the version check SHOWS A MODAL Yes/No prompt, so it must wait until the main window is
+        #     actually on screen.  Shown against the still-withdrawn window (as it used to be) the prompt
+        #     had no taskbar button and could open buried + unclickable, wedging its wait_window loop —
+        #     the "hangs when there's an update, won't open" bug.  It's deferred to after deiconify()
+        #     via self.after() at the end of __init__, so it runs in the live event loop over a real,
+        #     foreground parent.  Skipped silently for dev runs, offline users, and up-to-date builds.
         import auto_update
-        auto_update.run_startup_check(self)
+        auto_update.run_startup_housekeeping()
         if not self._settings.get("game_root"):
             self._auto_detect_game_root()
         self._selected_mod_build = None   # default: follow the INSTALLED build; must precede _bootstrap_folders
@@ -424,6 +428,12 @@ class ModManagerApp(tk.Tk):
         except Exception:
             pass
         self.deiconify()   # UI is fully built — show the window (paired with withdraw() at top of __init__)
+        # Now that the window is mapped and about to enter mainloop, run the in-exe update check (see the
+        # split note near the top of __init__).  Deferred so its modal Yes/No prompt has a real, visible,
+        # foreground parent — never the withdrawn window that used to let the prompt open buried and hang.
+        # A short delay lets the window paint first; the check is a silent no-op unless a newer release
+        # exists (dev runs / offline / up-to-date all return immediately).
+        self.after(200, lambda: auto_update.check_for_update(self))
 
     # ── Bootstrap ─────────────────────────────────────────────────────────────
 
