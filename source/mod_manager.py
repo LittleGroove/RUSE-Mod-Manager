@@ -643,7 +643,17 @@ class ModManagerApp(tk.Tk):
                     saved = json.load(f) or {}
             except Exception:
                 saved = {}
+        # A corrupt / hand-edited settings.json can be valid JSON but the WRONG SHAPE — a list,
+        # string or number instead of an object.  json.load() happily returns those, and then
+        # dict.update() blows up, which the outer startup guard turns into "the app won't open".
+        # Treat any non-object as "no saved settings" so a bad file degrades to first-run defaults.
+        if not isinstance(saved, dict):
+            saved = {}
         d.update(saved)
+        # Likewise coerce individual values whose type later feeds a Path()/string API: a numeric
+        # game_root (e.g. someone typed a bare number) would crash _game_version's Path(game_root).
+        if not isinstance(d.get("game_root"), str):
+            d["game_root"] = ""
         # First launch (no language ever chosen): follow the OS UI language, falling back to English
         # for anything we don't ship.  The resolved choice is then persisted, and any later change in
         # Settings overrides it.  `_lang_autodetected` tells __init__ to save it once.
@@ -3056,6 +3066,8 @@ class ModManagerApp(tk.Tk):
                 st = json.load(f)
         except Exception:
             return None
+        if not isinstance(st, dict):   # valid JSON but wrong shape (list/str/number) → no saved view
+            return None
         sel = st.get("selected_mod_build")
         same_ctx = str(st.get("selected_for_build") or "") == str(self._game_build_id() or "")
         if sel and str(sel).isdigit() and same_ctx and self._build_has_rmods(str(sel)):
@@ -3086,6 +3098,8 @@ class ModManagerApp(tk.Tk):
                         existing = json.load(f)
                 except Exception:
                     pass
+        if not isinstance(existing, dict):   # wrong-shape JSON on disk → don't let .get() crash the save
+            existing = {}
         builds = existing.get("builds")
         if not isinstance(builds, dict):
             builds = {}
@@ -3169,6 +3183,8 @@ class ModManagerApp(tk.Tk):
                     state = json.load(f)
             except Exception:
                 pass
+        if not isinstance(state, dict):   # wrong-shape JSON (list/str/number) → start from empty state
+            state = {}
         # Per-build mod list: `builds[ver]` is THIS build's own list (active set + order).  Migrate a
         # legacy UNIFIED "mods" list losslessly — take this build's slice: bundled entries (they
         # resolve per-build by identity below) + external entries whose path lives under this build's
