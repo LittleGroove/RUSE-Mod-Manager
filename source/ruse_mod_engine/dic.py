@@ -51,6 +51,10 @@ def _records(b: bytes):
     if b[:3] != b"TRA":
         raise ValueError("not a TRA .dic")
     count = struct.unpack_from("<I", b, 4)[0]
+    # Bound the record count against the actual buffer (each record is 16 bytes after the 8-byte header)
+    # so a bogus count can't unpack_from past the end (struct.error) on a corrupt/hostile .dic.
+    if count < 0 or 8 + count * 16 > len(b):
+        raise ValueError(f"TRA .dic claims {count} records but buffer is only {len(b)} bytes")
     recs = []
     for i in range(count):
         o = 8 + i * 16

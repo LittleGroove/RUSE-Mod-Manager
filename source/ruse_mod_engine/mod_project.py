@@ -626,24 +626,21 @@ class ModProject:
         track exactly what a project deploy modified (shared deploy/restore state)."""
         return ["/".join(self._rel_parts(dk)) for dk in self._saved_dat_keys()]
 
-    def deploy(self, backup_dir) -> tuple:
-        """Copy each saved project .dat (core dats + any terrain dats) over the matching live game file,
-        backing the original up first.  Returns (copied, backups)."""
-        copied, backups = [], []
-        backup_dir = Path(backup_dir)
+    def deploy(self) -> list:
+        """Copy each saved project .dat (core dats + any terrain dats) over the matching live game file.
+        Returns the list of copied game paths.
+
+        No per-file ``.bak`` backups are made: the app keeps a FULL clean backup of the game
+        (output/backups/v<build>/) and 'Restore Clean' reverts the install from it, so a timestamped
+        ``.bak`` beside every dat would only clutter the game folder and never be touched.  Cleaning up
+        after a deploy is handled by the Mod Editor's shared deploy tracker + Restore Clean button."""
+        copied = []
         for dk in self._saved_dat_keys():
             pj = self.project_dat_path(dk)
             if not pj.is_file():
                 continue
             dest = self.game_dat_path(dk)
-            if dest.is_file():
-                backup_dir.mkdir(parents=True, exist_ok=True)
-                stamp = time.strftime("%Y%m%d-%H%M%S")
-                bak = backup_dir / f"{dest.name}.{stamp}.bak"
-                shutil.copy2(dest, bak)
-                backups.append(str(bak))
-            else:
-                dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(pj, dest)
             copied.append(str(dest))
-        return copied, backups
+        return copied

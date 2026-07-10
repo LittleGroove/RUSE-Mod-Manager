@@ -4,10 +4,15 @@ produce .rmod patch files.  Used by both mod_manager.py and convert_mod_gui.py.
 """
 
 import base64
+import copy
 import json
+import logging
+import os
 import re
 import zlib
 from pathlib import Path
+
+_log = logging.getLogger(__name__)
 
 from . import edata as edata_mod
 from . import ndfbin as ndfbin_mod
@@ -47,6 +52,26 @@ _SCALAR_TYPES = {
     T.PathRef:   "PathRef",
     T.WideStr:   "WideStr",
 }
+
+
+def _atomic_write_text(path, text: str) -> None:
+    """Write `text` via a sibling .tmp + atomic replace so an interrupted write (app closed / killed
+    mid-convert) never leaves a truncated file — a half-written .rmod would fail to load later."""
+    p = Path(path)
+    tmp = p.with_name(p.name + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+        f.flush()
+        os.fsync(f.fileno())
+    tmp.replace(p)                                    # atomic on the same filesystem
+
+
+class _UnrepresentableChange(Exception):
+    """Raised when a CHANGED/new property value can't be expressed as an rmod change (val_to_rmod → None,
+    e.g. a Reference with an unknown marker, or a value type the rmod format doesn't model).  Silently
+    dropping it would ship a lossy patch that the self-check can't catch (the self-check re-runs the same
+    diff, so it's blind to the same drop).  Instead we raise, and the NDF/scenario caller ships a byte-exact
+    RAW file patch — the lossless-or-raw guarantee.  Carries a human message for the warn log."""
 
 
 def val_to_rmod(ndf, val, new_inst_indices=None, orig_ndf=None):
@@ -138,11 +163,24 @@ def val_to_rmod(ndf, val, new_inst_indices=None, orig_ndf=None):
         marker, ref = val.raw
         if marker == ndfbin_mod.OBJ_REF_MARKER:
             obj_idx, cls_idx = ref
+            # The ObjRef's DECLARED class is a raw, BUILD-SPECIFIC class-table index — it shifts when the
+            # game updates (proven: TGfxDescriptorModeleSousMobile 244->243, so index 246 goes
+            # TGfxDescriptorBoneOperatorDispatcher->TBoneAlgorithmBase between builds).  version_map only
+            # remaps ObjRef INST indices, not the class, so a migrated raw class points at the WRONG class on
+            # the target build and the engine lazily constructs the wrong type -> crash (see
+            # RE_DATA/EVIDENCE_DOSSIER.md root cause).  Emit the class NAME too so the applier resolves it to
+            # the TARGET build's index (identity same-build = lossless; correct cross-build).
+            _cls_name = ndf.classes[cls_idx].name if 0 <= cls_idx < len(ndf.classes) else None
+            def _oref(**kw):
+                kw["class"] = cls_idx
+                if _cls_name is not None:
+                    kw["class_name"] = _cls_name
+                return ("ObjRef", kw)
             # Intra-rmod reference: target is a newly-created instance in this diff.
             # Store as local_id so the applier resolves it via create_map regardless
             # of raw index differences between the mod file and the OG game.
             if new_inst_indices and obj_idx in new_inst_indices:
-                return ("ObjRef", {"local_id": f"inst_{obj_idx}", "class": cls_idx})
+                return _oref(local_id=f"inst_{obj_idx}")
             # Cross-file stable key: only use stable_ref when the key is unchanged
             # between OG and mod NDF. If the mod renames the instance, the OG key
             # won't be found at apply time (rename patch may already have run), and
@@ -166,7 +204,7 @@ def val_to_rmod(ndf, val, new_inst_indices=None, orig_ndf=None):
                     mod_key  = str(ndf.resolve_value(mv))
                     if orig_key == mod_key:
                         # Key is stable — safe to use as stable_ref
-                        return ("ObjRef", {"stable_ref": kp, "key_val": orig_key, "class": cls_idx})
+                        return _oref(stable_ref=kp, key_val=orig_key)
                     # Key differs (mod renamed this instance) — fall through to inst
                     break
             elif orig_ndf is None and 0 <= obj_idx < len(ndf.instances):
@@ -177,9 +215,16 @@ def val_to_rmod(ndf, val, new_inst_indices=None, orig_ndf=None):
                     if p is not None:
                         v = target.get(p.index)
                         if v is not None:
-                            return ("ObjRef", {"stable_ref": kp, "key_val": str(ndf.resolve_value(v)), "class": cls_idx})
-            # Fall back to raw index (renamed instance or no stable key)
-            return ("ObjRef", {"inst": obj_idx, "class": cls_idx})
+                            return _oref(stable_ref=kp, key_val=str(ndf.resolve_value(v)))
+            # H3: a keyless OG-range target gets a durable ANCHOR (keyed ancestor + path) so the reference
+            # survives index shifts across builds — same tier as instance-match addressing, resolved on the
+            # target NDF at apply time.  Computed from orig_ndf (what the applier resolves against).
+            if orig_ndf is not None and 0 <= obj_idx < len(orig_ndf.instances):
+                anchor = orig_ndf.anchor_of(obj_idx)
+                if anchor is not None:
+                    return _oref(anchor=anchor)
+            # Fall back to raw index (renamed instance, no stable key, unanchorable)
+            return _oref(inst=obj_idx)
         if marker == ndfbin_mod.TRANS_REF_MARKER:
             # `ref` is an IMPORT ORDINAL (not a TRAN index) — resolve to the import's
             # full path so it stays portable across NDF files and builds. The applier
@@ -226,9 +271,10 @@ def _serialize_props(inst, ndf, warn_fn, new_inst_indices=None, orig_ndf=None) -
             continue
         result = val_to_rmod(ndf, pv.value, new_inst_indices, orig_ndf)
         if result is None:
-            warn_fn(f"    SKIP unsupported type 0x{pv.value.type_id:02X} "
-                    f"on prop '{prop.name}' (new instance)")
-            continue
+            # Can't express this new-instance prop → don't silently drop it (the self-check would miss the
+            # loss); force the caller to ship the whole NDF as a raw file patch instead.
+            raise _UnrepresentableChange(
+                f"unrepresentable type 0x{pv.value.type_id:02X} on prop '{prop.name}' (new instance)")
         set_props[prop.name] = {"type": result[0], "value": result[1]}
     return set_props
 
@@ -246,21 +292,23 @@ def _stable_key(inst, ndf):
     instance). See docs/design and migrate.match_instances.
     """
     cls_idx = inst.class_index
-    # Authoritative keys — behavior unchanged (always used when present).
+    # Only STRING values (StringRef/PathRef) are durable keys — a binary DescriptorId/Name (Hash/Guid/Blob)
+    # isn't a real key.  Matches ndfbin.stable_key + the tree so converter / applier / anchors / maps agree
+    # (a binary Name used to become a bogus 'key' that never resolved -> whole-NDF raw fallback).
     for prop_name in ("ClassNameForDebug", "DescriptorId"):
         p = ndf.prop_by_name_and_class(prop_name, cls_idx)
         if p is not None:
             v = inst.get(p.index)
-            if v is not None:
-                return (prop_name, str(ndf.resolve_value(v)))
+            if v is not None and v.type_id in (T.StringRef, T.PathRef):
+                return (prop_name, ndf.get_string(v.raw))
     # Name fallbacks for OTHERWISE-KEYLESS instances (GFX/turret/camera-path/etc.).
     # Empty/null values are skipped so null-named placements don't all collide into one key.
     for prop_name in ("_ShortDatabaseName", "Name"):
         p = ndf.prop_by_name_and_class(prop_name, cls_idx)
         if p is not None:
             v = inst.get(p.index)
-            if v is not None:
-                rv = str(ndf.resolve_value(v))
+            if v is not None and v.type_id in (T.StringRef, T.PathRef):
+                rv = ndf.get_string(v.raw)
                 if rv and rv != "None":
                     return (prop_name, rv)
     return None
@@ -272,13 +320,13 @@ def _diff_instance_pair(orig_inst, mod_inst, orig_ndf, mod_ndf,
     # Build name→value maps (by property name, not index, for cross-file robustness)
     orig_pmap = {}
     for pv in orig_inst.props:
-        prop = next((p for p in orig_ndf.properties if p.index == pv.prop_index), None)
+        prop = orig_ndf.prop_by_index(pv.prop_index)
         if prop:
             orig_pmap[prop.name] = pv.value
 
     mod_pmap = {}
     for pv in mod_inst.props:
-        prop = next((p for p in mod_ndf.properties if p.index == pv.prop_index), None)
+        prop = mod_ndf.prop_by_index(pv.prop_index)
         if prop:
             mod_pmap[prop.name] = pv.value
 
@@ -290,9 +338,10 @@ def _diff_instance_pair(orig_inst, mod_inst, orig_ndf, mod_ndf,
             continue
         result = val_to_rmod(mod_ndf, cv, new_inst_indices, orig_ndf)
         if result is None:
-            warn_fn(f"    SKIP unsupported type 0x{cv.type_id:02X} "
-                    f"on prop '{prop_name}'")
-            continue
+            # A CHANGED prop we can't express — raise so the whole NDF ships raw (lossless-or-raw), rather
+            # than silently dropping the change (which the self-check, re-running this same diff, can't see).
+            raise _UnrepresentableChange(
+                f"unrepresentable type 0x{cv.type_id:02X} on changed prop '{prop_name}'")
         changed_set[prop_name] = {"type": result[0], "value": result[1]}
 
     removed = [pn for pn in orig_pmap if pn not in mod_pmap]
@@ -342,6 +391,33 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
     new_inst_indices: set = set()  # mod-NDF global indices of truly new instances
 
     from collections import Counter as _Counter
+
+    # H1 (durable addressing): precompute which orig instances carry a key that is UNIQUE within their class
+    # in ORIG.  The applier resolves a match against the TARGET (clean) game NDF, so a key unique in orig is a
+    # safe, durable address even where the diff had to PAIR positionally (e.g. the mod side made the key
+    # non-unique).  _orig_addr() then emits that key instead of a fragile _index wherever we'd otherwise fall
+    # back to position — decoupling the emitted ADDRESS from the diff PAIRING.
+    _orig_key_of = {}          # orig_gi -> (class_index, (keyprop, keyval))
+    _orig_cls_keycount = {}    # (class_index, (keyprop, keyval)) -> count in orig
+    for _gi, _inst in enumerate(orig_ndf.instances):
+        _k = _stable_key(_inst, orig_ndf)
+        if _k is not None:
+            _info = (_inst.class_index, _k)
+            _orig_key_of[_gi] = _info
+            _orig_cls_keycount[_info] = _orig_cls_keycount.get(_info, 0) + 1
+
+    def _orig_addr(orig_gi):
+        """Tiered durable address for an orig instance (H1+H3):
+        1. unique-in-orig stable key   -> {keyprop: keyval}
+        2. keyless but reachable        -> {"anchor": {root, steps}}  (keyed ancestor + path, survives shifts)
+        3. otherwise                    -> {"_index": N}              (positional, last resort)."""
+        info = _orig_key_of.get(orig_gi)
+        if info is not None and _orig_cls_keycount.get(info) == 1:
+            return {info[1][0]: info[1][1]}
+        anchor = orig_ndf.anchor_of(orig_gi)
+        if anchor is not None:
+            return {"anchor": anchor}
+        return {"_index": str(orig_gi)}
 
     for cls_name, mod_insts in sorted(mod_groups.items()):
         orig_insts = orig_groups.get(cls_name, [])
@@ -395,7 +471,7 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
                     orig_gi, orig_inst = orig_no_key[orig_no_key_i]
                     orig_no_key_i += 1
                     assignments.append((orig_gi, orig_inst, mod_gi, mod_inst,
-                                        cls_name, {"_index": str(orig_gi)}))
+                                        cls_name, _orig_addr(orig_gi)))
                 else:
                     mod_orphans.append((mod_gi, mod_inst))
 
@@ -407,7 +483,7 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
 
         for (orig_gi, orig_inst), (mod_gi, mod_inst) in zip(orig_orphans, mod_orphans):
             assignments.append((orig_gi, orig_inst, mod_gi, mod_inst,
-                                 cls_name, {"_index": str(orig_gi)}))
+                                 cls_name, _orig_addr(orig_gi)))
 
         for mod_gi, mod_inst in mod_orphans[len(orig_orphans):]:
             assignments.append((None, None, mod_gi, mod_inst, cls_name, None))
@@ -416,7 +492,7 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
         # Instances in orig with no mod counterpart → delete them
         for orig_gi, orig_inst in orig_orphans[len(mod_orphans):]:
             key = _match_key(orig_inst, orig_ndf)
-            match_dict = {key[0]: key[1]} if key else {"_index": str(orig_gi)}
+            match_dict = {key[0]: key[1]} if key else _orig_addr(orig_gi)
             assignments.append((orig_gi, orig_inst, None, None, cls_name, match_dict))
 
     # Classes present in ORIG but ENTIRELY ABSENT from MOD (whole class removed
@@ -427,8 +503,9 @@ def diff_ndf(orig_ndf, mod_ndf, warn_fn) -> list:
         if cls_name in mod_groups:
             continue
         for orig_gi, orig_inst in orig_insts:
-            key = _stable_key(orig_inst, orig_ndf)
-            match_dict = {key[0]: key[1]} if key else {"_index": str(orig_gi)}
+            # _orig_addr emits the key only when it is UNIQUE in orig (a duplicate key would mis-target
+            # multiple instances at apply time), else a positional _index — safer than a raw key.
+            match_dict = _orig_addr(orig_gi)
             assignments.append((orig_gi, orig_inst, None, None, cls_name, match_dict))
 
     # ── Phase 2: generate changes with create-index awareness ─────────────────
@@ -495,8 +572,18 @@ def _surgical_ndf_roundtrips(orig_bytes, mod_ndf, pg_dict, warn_fn) -> bool:
     surgical form can't perfectly recreate the modded NDF, the caller ships raw."""
     try:
         from . import mod_format, applier
-        pg = mod_format._parse_patch_group(pg_dict, 0)
+        # Parse a DEEP COPY: the apply path pre-resolves anchors in place (applier._preresolve_objref_anchors
+        # rewrites an ObjRef {"anchor":...} -> {"inst": idx} on the SAME nested dict the parser shares with
+        # pg_dict["changes"]).  Without this copy the self-check would mutate the caller's change list, so the
+        # rmod we ship would carry positional {"inst"} instead of the durable {"anchor"} the diff emitted —
+        # silently defeating anchor addressing.  The self-check is a verification; it must have no side effects.
+        pg = mod_format._parse_patch_group(copy.deepcopy(pg_dict), 0)
         ndf = ndfbin_mod.read(orig_bytes)
+        # Faithful replay: keep each ObjRef's SOURCE class so the self-check verifies the surgical form
+        # reproduces the modded bytes exactly.  (At real deploy the applier coerces an ObjRef's class to its
+        # target instance's actual class — the proven clean-data invariant — which fixes self-inconsistent
+        # legacy mods without whole-file raw fallback here.)  See applier._objref_value.
+        ndf._coerce_objref_class = False
         result = applier.ApplyResult(mod_name="surgical-selfcheck")
         # Mirror the real apply path exactly: IMPR/EXPR phase A (adds) BEFORE instance changes,
         # then the changes, then phase B (removes + dense ordinal renumber) AFTER.  (This used to
@@ -521,6 +608,11 @@ def _diff_import_export(orig_ndf, mod_ndf):
         try:
             return set(ndfbin_mod.ref_ordinal_paths(ndfbin_mod.parse_ref_tree(lst), ndf.trans).values())
         except Exception:
+            # An empty set here makes every original import look REMOVED → the surgical import diff can
+            # emit a dense-table violation that crashes in-game (see surgical-import-density notes).  We
+            # keep the historical empty-set behaviour for now but no longer hide the parse failure.
+            # TODO(bug-hunting): abort/flag this NDF instead of returning a bad diff (needs game-data test).
+            _log.warning("import/export ref-tree parse failed; diff may be wrong for one NDF", exc_info=True)
             return set()
     o_imp = _paths(orig_ndf, orig_ndf.import_list); m_imp = _paths(mod_ndf, mod_ndf.import_list)
     o_exp = _paths(orig_ndf, orig_ndf.export_list); m_exp = _paths(mod_ndf, mod_ndf.export_list)
@@ -548,6 +640,29 @@ def _diff_dic(orig_bytes, mod_bytes):
         elif orig[k] != v:
             entries.append({"key": k.hex(), "value": v})
     return entries
+
+
+def _surgical_dic_roundtrip(orig_bytes, mod_bytes, entries) -> bool:
+    """Replay surgical loc entries onto the original .dic and confirm they reproduce the mod's .dic by
+    CONTENT (the key->string map), mirroring the applier's loc-patch loop (dic.get_entry -> add_entry /
+    set_entry).  Content, not bytes, is the right correctness bar for a TRA .dic: the game looks entries up
+    by binary-searching sorted keys, so any TRA with the correct key->string map works in-game, and the
+    incremental writers keep records sorted (orphaned blob bytes from a set_entry are unreferenced and
+    harmless).  A byte-for-byte match is impossible anyway — the modder's external tool chose the string
+    blob order/packing, which isn't deterministically reconstructable.  This is the .dic analogue of
+    _ndf_semantic_equal (bytes may differ, content must not).  Returns False -> caller ships raw (used only
+    when the .dic genuinely can't be reproduced, e.g. a value we can't round-trip)."""
+    try:
+        blob = orig_bytes
+        for e in entries:
+            key = bytes.fromhex(e["key"])
+            if dic_mod.get_entry(blob, key) is None:
+                blob = dic_mod.add_entry(blob, key, e["value"])
+            else:
+                blob = dic_mod.set_entry(blob, key, e["value"])
+        return dict(dic_mod.read(blob)) == dict(dic_mod.read(mod_bytes))
+    except Exception:
+        return False
 
 
 def _diff_sdb(orig_win, mod_win):
@@ -632,7 +747,11 @@ def _diff_scenario(orig_scn, mod_scn, warn_fn):
         return None
     if _impr_expr_differ(ondf, mndf):
         return None                                  # IMPR/EXPR differ — ship raw (lossless)
-    changes = diff_ndf(ondf, mndf, warn_fn)
+    try:
+        changes = diff_ndf(ondf, mndf, warn_fn)
+    except _UnrepresentableChange as e:
+        warn_fn(f"  scenario NDF has an unrepresentable change ({e}) — raw file patch")
+        return None                                  # lossless-or-raw
     if not changes:
         return None
     # Losslessness guard — mirror the everything.cpp NDF path (see _surgical_ndf_roundtrips at the
@@ -721,7 +840,9 @@ def convert_dat_pair(mod_dat: Path, orig_dat: Path, rmod_dat_path: str,
                         "data": base64.b64encode(mod_bytes).decode("ascii"),
                     })
             except Exception as e:
-                warn_fn(f"  NDF parse failed ({e}) — adding as raw file patch")
+                # Parse failure OR an unrepresentable change (_UnrepresentableChange) — either way the
+                # surgical form isn't safe, so ship the whole NDF byte-exact as a raw file patch.
+                warn_fn(f"  NDF not surgically representable ({e}) — adding as raw file patch")
                 raw_file_patches.append({
                     "path": entry_fwd,
                     "data": base64.b64encode(mod_bytes).decode("ascii"),
@@ -730,11 +851,15 @@ def convert_dat_pair(mod_dat: Path, orig_dat: Path, rmod_dat_path: str,
             # Localization dictionary — emit a surgical per-entry loc patch instead of a bloated
             # full-file replacement (and so multiple name-mods compose).
             entries = _diff_dic(orig_bytes, mod_bytes)
-            if entries:
+            if entries and _surgical_dic_roundtrip(orig_bytes, mod_bytes, entries):
+                # Verified: replaying these entries reproduces the mod's .dic by content (see
+                # _surgical_dic_roundtrip).  Ship the surgical form — small, and composable with other
+                # name-mods — instead of a whole-file raw replacement.
                 log_fn(f"  Loc .dic: {entry_fwd.split('/')[-1]} — {len(entries)} entry change(s)")
                 loc_groups.append({"dat": rmod_dat_path, "dic": entry_fwd, "entries": entries})
             else:
-                # not TRA, a key was removed, or no semantic change → raw fallback (lossless)
+                # not TRA, a key was removed, no semantic change, or the surgical form didn't reproduce the
+                # content → raw fallback (lossless)
                 log_fn(f"  Changed (.dic, raw fallback): {entry_fwd.split('/')[-1]}")
                 raw_file_patches.append({
                     "path": entry_fwd,
@@ -960,8 +1085,7 @@ def run_conversion(mod_folder, game_data_dir, output_rmod,
 
     out = Path(output_rmod)
     out.parent.mkdir(parents=True, exist_ok=True)
-    with open(out, "w", encoding="utf-8") as f:
-        json.dump(rmod_obj, f, indent=2, ensure_ascii=False)
+    _atomic_write_text(out, json.dumps(rmod_obj, indent=2, ensure_ascii=False))
     log_fn(f"Wrote: {output_rmod}")
 
     # Readiness check — surface the issues a migration CANNOT auto-fix (wrong/incomplete scenario,
@@ -979,7 +1103,8 @@ def run_conversion(mod_folder, game_data_dir, output_rmod,
         elif rep.is_operation:
             log_fn("  readiness: OK (all script tags bind, no crash-usage issues)")
     except Exception as _e:  # noqa: BLE001
-        pass
+        # Don't let a validator crash hide the fact that the readiness gate was skipped.
+        warn_fn(f"  ⚠ readiness check could not run ({_e}) — proceeding without it")
     return True
 
 
@@ -1043,8 +1168,7 @@ def update_rmod(rmod_path: str, clean_root: str, game_version: str,
         if mod_format.dump(original) == new_text:
             return "unchanged"
         _shutil.copyfile(rmod_path, rmod_path + ".bak")
-        with open(rmod_path, "w", encoding="utf-8") as f:
-            f.write(new_text)
+        _atomic_write_text(rmod_path, new_text)
         return "updated"
     finally:
         _shutil.rmtree(tmp, ignore_errors=True)
@@ -1075,8 +1199,7 @@ def convert_compat_to_public(input_rmod: str, output_rmod: str,
 
     dest = Path(output_rmod)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with open(dest, "w", encoding="utf-8") as f:
-        json.dump(out, f, indent=2, ensure_ascii=False)
+    _atomic_write_text(dest, json.dumps(out, indent=2, ensure_ascii=False))
 
     total_ndf = sum(len(pg.get("changes", [])) for pg in out.get("patches", []))
     total_raw = sum(len(fg.get("files", []))   for fg in out.get("file_patches", []))

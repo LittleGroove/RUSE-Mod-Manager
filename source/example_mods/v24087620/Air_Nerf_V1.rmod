@@ -1,0 +1,51 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "air-nerf-v1",
+  "name": "Air Nerf",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Avion_ME109_GR"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "Ammunition"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Puissance": {
+              "type": "Float32",
+              "value": 30.0
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "game_version": "24087620",
+  "author": "SuperCrumpets",
+  "description": "Fighter Strafing:\nAll except Shinden(ammoid1113): Shots to kill unarmoured 2->3 / 3->4 coverbonus\nDamage 50*6->30*6"
+}

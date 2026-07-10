@@ -18,7 +18,7 @@ import re
 import sys
 import zlib
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 
 # The game embeds CPython 2.5.1; its .xyz are 2.5.1 bytecode (marshal magic 62131 = 0xf2b3).  This is
 # the ONLY Python whose bytecode the game VM executes correctly — see ruse_mod_engine/xyz_compile.py,
@@ -36,99 +36,100 @@ from ruse_mod_engine import xyz_compile as xyz_mod  # noqa: E402  — canonical 
 from i18n import t  # noqa: E402
 import ui_util  # noqa: E402  — zebra-striping (issue #5.2)
 
-_R_BG, _R_BG_PANEL, _R_BG_WIDGET = "#08101c", "#0e1a2a", "#060d18"
-_R_GOLD, _R_GOLD_BRT, _R_TEXT, _R_TEXT_DIM, _R_SEL_BG = "#c8a020", "#e0c030", "#ccd8e8", "#3e5878", "#1a3060"
-_F_MAIN = ("Courier New", 9)
-_F_BOLD = ("Courier New", 9, "bold")
-_F_HEAD = ("Courier New", 10, "bold")
+import theme                # single source of truth for the palette; local _R_* names kept unchanged
+_R_BG, _R_BG_PANEL, _R_BG_WIDGET = theme.BG, theme.PANEL, theme.WIDGET
+_R_GOLD, _R_GOLD_BRT, _R_TEXT, _R_TEXT_DIM, _R_SEL_BG = theme.GOLD, theme.GOLD_BRT, theme.TEXT, theme.DIM, theme.SEL_BG
+_F_MAIN = theme.F
+_F_BOLD = theme.FB
+_F_HEAD = theme.FHEAD
 
-_DIFF_NAMES = [t("Easy"), t("Medium"), t("Hard")]
-_PROFILE_NAMES = [t("Regular"), t("Air Force"), t("Howitzer"), t("Prototype"), t("Blitzkrieg"), t("Turtle"), t("Random")]
+_DIFF_NAMES = [t("ai.easy"), t("ai.medium"), t("ai.hard")]
+_PROFILE_NAMES = [t("ai.regular"), t("ai.air_force"), t("ai.howitzer"), t("ai.prototype"), t("ai.blitzkrieg"), t("ai.turtle"), t("ai.random")]
 
 # TIAProfil fields grouped for the UI. kind inferred from the value (scalar/bool); all are numbers.
 _PROFILE_GROUPS = [
-    (t("Attack / offense"), [
-        (t("Attack activation time (s)"), "AttaqueTempsActivation"),
-        (t("Max offensive missions (-1=inf)"), "OffensiveNbMissionMax"),
-        (t("Attack launch factor"), "MissionFacteurLancementAttaque"),
-        (t("Commit (enough-to-destroy) factor"), "MissionFacteurEnoughToDestroy"),
+    (t("ai.attack_offense"), [
+        (t("ai.attack_activation_time_s"), "AttaqueTempsActivation"),
+        (t("ai.max_offensive_missions_1_inf"), "OffensiveNbMissionMax"),
+        (t("ai.attack_launch_factor"), "MissionFacteurLancementAttaque"),
+        (t("ai.commit_enough_destroy_factor"), "MissionFacteurEnoughToDestroy"),
     ]),
-    (t("Defense"), [
-        (t("Threat distance"), "DefenseDistanceMenace"),
-        (t("Urgent distance"), "DefenseDistanceUrgent"),
-        (t("Max units per position"), "DefenseMaxUnitOnPosition"),
-        (t("Max defense missions"), "DefenseNbMissionMax"),
+    (t("ai.defense"), [
+        (t("ai.threat_distance"), "DefenseDistanceMenace"),
+        (t("ai.urgent_distance"), "DefenseDistanceUrgent"),
+        (t("ai.max_units_per_position"), "DefenseMaxUnitOnPosition"),
+        (t("ai.max_defense_missions"), "DefenseNbMissionMax"),
     ]),
-    (t("Harassment"), [
-        (t("Harassment active (0/1)"), "HarcelementActif"),
-        (t("Upgrade for harassment (0/1)"), "UpgradeActifPourHarcelement"),
+    (t("ai.harassment"), [
+        (t("ai.harassment_active_0_1"), "HarcelementActif"),
+        (t("ai.upgrade_harassment_0_1"), "UpgradeActifPourHarcelement"),
     ]),
-    (t("Economy"), [
-        (t("Cash-reserve activation (s)"), "CashReserveTempsActivation"),
-        (t("% money reserved for admin"), "PercentMoneyToReserveForBatimentAdmin"),
-        (t("% money used for idle build"), "PercentMoneyToUseForIdle"),
-        (t("Money bonus (cheat)"), "DeviseBonusIA"),
-        (t("Income bonus (cheat)"), "IncomeBonusIA"),
-        (t("Extra admin bldgs before deactivate"), "NbBatimentAdministratifEnPlusAvantDesactivation"),
+    (t("common.economy"), [
+        (t("ai.cash_reserve_activation_s"), "CashReserveTempsActivation"),
+        (t("ai.money_reserved_admin"), "PercentMoneyToReserveForBatimentAdmin"),
+        (t("ai.money_used_idle_build"), "PercentMoneyToUseForIdle"),
+        (t("ai.money_bonus_cheat"), "DeviseBonusIA"),
+        (t("ai.income_bonus_cheat"), "IncomeBonusIA"),
+        (t("ai.extra_admin_bldgs_before_deactivate"), "NbBatimentAdministratifEnPlusAvantDesactivation"),
     ]),
-    (t("Logistics / depots"), [
-        (t("Extra depots before deactivate"), "DepotNbEnPlusAvantDesactivation"),
-        (t("Min depot value for truck factory"), "ValueDepotMinForTruckFactory"),
-        (t("Min minutes left for truck factory"), "MinutesLeftMinForTruckFactory"),
-        (t("Min depots for truck factory"), "NbDepotMinForTruckFactory"),
-        (t("Units = dangerous depot"), "NbUnitsDangerousDepot"),
-        (t("Depot group distance"), "SeuilDistanceGroupeDepot"),
-        (t("Truck factory distance"), "SeuilDistanceTruckFactory"),
+    (t("ai.logistics_depots"), [
+        (t("ai.extra_depots_before_deactivate"), "DepotNbEnPlusAvantDesactivation"),
+        (t("ai.min_depot_value_truck_factory"), "ValueDepotMinForTruckFactory"),
+        (t("ai.min_minutes_left_truck_factory"), "MinutesLeftMinForTruckFactory"),
+        (t("ai.min_depots_truck_factory"), "NbDepotMinForTruckFactory"),
+        (t("ai.units_dangerous_depot"), "NbUnitsDangerousDepot"),
+        (t("ai.depot_group_distance"), "SeuilDistanceGroupeDepot"),
+        (t("ai.truck_factory_distance"), "SeuilDistanceTruckFactory"),
     ]),
-    (t("Production (idle build counts)"), [
-        (t("Max production vs enemy unit"), "NbMaxProductionForEnnemyUnit"),
-        (t("Idle infantry"), "NbProdIdleInfanterie"),
-        (t("Idle tanks"), "NbProdIdleTank"),
-        (t("Idle anti-tank"), "NbProdIdleAntitank"),
-        (t("Idle artillery"), "NbProdIdleArti"),
-        (t("Idle AA (DCA)"), "NbProdIdleDCA"),
-        (t("Idle fighters"), "NbProdIdleChasseur"),
-        (t("Idle bombers"), "NbProdIdleBomber"),
-        (t("Idle fighter-bombers"), "NbProdIdleChasseurBomber"),
-        (t("Idle can launch research (0/1)"), "ProdIdleCanLaunchResearch"),
+    (t("ai.production_idle_build_counts"), [
+        (t("ai.max_production_vs_enemy_unit"), "NbMaxProductionForEnnemyUnit"),
+        (t("ai.idle_infantry"), "NbProdIdleInfanterie"),
+        (t("ai.idle_tanks"), "NbProdIdleTank"),
+        (t("ai.idle_anti_tank"), "NbProdIdleAntitank"),
+        (t("ai.idle_artillery"), "NbProdIdleArti"),
+        (t("ai.idle_aa_dca"), "NbProdIdleDCA"),
+        (t("ai.idle_fighters"), "NbProdIdleChasseur"),
+        (t("ai.idle_bombers"), "NbProdIdleBomber"),
+        (t("ai.idle_fighter_bombers"), "NbProdIdleChasseurBomber"),
+        (t("ai.idle_can_launch_research_0"), "ProdIdleCanLaunchResearch"),
     ]),
-    (t("Unit-type weighting"), [
-        (t("Aircraft weight"), "BonusUnitesAvions"),
-        (t("Artillery weight"), "BonusUnitesArtillerie"),
-        (t("Experimental weight"), "BonusUnitesExperimentales"),
-        (t("Research weight"), "BonusUnitesRecherche"),
-        (t("On-the-fly building weight"), "BonusBatimentOTF"),
+    (t("ai.unit_type_weighting"), [
+        (t("ai.aircraft_weight"), "BonusUnitesAvions"),
+        (t("ai.artillery_weight"), "BonusUnitesArtillerie"),
+        (t("ai.experimental_weight"), "BonusUnitesExperimentales"),
+        (t("ai.research_weight"), "BonusUnitesRecherche"),
+        (t("ai.fly_building_weight"), "BonusBatimentOTF"),
     ]),
-    (t("Deception (ruse cards)"), [
-        (t("% open with a manip card"), "PourcentChanceUtiliserCarteManipAuDebut"),
-        (t("Cards in reserve (difficulty)"), "NbCarteDansLaReservePourLaDifficulte"),
-        (t("Cards in reserve (profile)"), "NbCarteDansLaReservePourLeProfil"),
+    (t("ai.deception_ruse_cards"), [
+        (t("ai.open_manip_card"), "PourcentChanceUtiliserCarteManipAuDebut"),
+        (t("ai.cards_reserve_difficulty"), "NbCarteDansLaReservePourLaDifficulte"),
+        (t("ai.cards_reserve_profile"), "NbCarteDansLaReservePourLeProfil"),
     ]),
-    (t("Retaliation"), [
-        (t("Combatant retaliation factor"), "RepresailleFacteurUniteCombattante"),
-        (t("Non-combatant retaliation factor"), "RepresailleFacteurUniteNonCombattante"),
-        (t("Retaliation timeout (s)"), "TimeOutRepresailles"),
+    (t("ai.retaliation"), [
+        (t("ai.combatant_retaliation_factor"), "RepresailleFacteurUniteCombattante"),
+        (t("ai.non_combatant_retaliation_factor"), "RepresailleFacteurUniteNonCombattante"),
+        (t("ai.retaliation_timeout_s"), "TimeOutRepresailles"),
     ]),
-    (t("Intel / stealth"), [
-        (t("Chance to spot fakes/bluffs"), "ProbaRepereFake"),
-        (t("Invisible-unit memory (s)"), "TempsMemorisationUnitInvisible"),
-        (t("Camouflaged-building activation (s)"), "TempsActivationBatimentCamoufle"),
+    (t("ai.intel_stealth"), [
+        (t("ai.chance_spot_fakes_bluffs"), "ProbaRepereFake"),
+        (t("ai.invisible_unit_memory_s"), "TempsMemorisationUnitInvisible"),
+        (t("ai.camouflaged_building_activation_s"), "TempsActivationBatimentCamoufle"),
     ]),
 ]
 
 _BONUS_FIELDS = [
-    (t("Bonus value (the cheat amount)"), "BonusValue", "scalar"),
-    (t("Consider stack as one enemy (0/1)"), "ConsiderStackAsOneEnnemy", "scalar"),
-    (t("AI difficulties scope (0=Easy,1=Med,2=Hard)"), "AIDifficulties", "list"),
-    (t("AI profiles scope (0..6)"), "AIProfiles", "list"),
-    (t("War modes scope"), "WarModes", "list"),
-    (t("Unit IDs scope"), "UnitIDs", "list"),
+    (t("ai.bonus_value_cheat_amount"), "BonusValue", "scalar"),
+    (t("ai.consider_stack_as_one_enemy"), "ConsiderStackAsOneEnnemy", "scalar"),
+    (t("ai.ai_difficulties_scope_0_easy"), "AIDifficulties", "list"),
+    (t("ai.ai_profiles_scope_0_6"), "AIProfiles", "list"),
+    (t("ai.war_modes_scope"), "WarModes", "list"),
+    (t("ai.unit_ids_scope"), "UnitIDs", "list"),
 ]
 
 _CARD_FIELDS = [
-    (t("Effect duration (LifeDuration s)"), "LifeDuration", "scalar"),
-    (t("Shown in menu (0/1)"), "ShowInMenu", "scalar"),
-    (t("Menu slot"), "PositionInMenu", "scalar"),
+    (t("ai.effect_duration_lifeduration_s"), "LifeDuration", "scalar"),
+    (t("ai.shown_menu_0_1"), "ShowInMenu", "scalar"),
+    (t("ai.menu_slot"), "PositionInMenu", "scalar"),
 ]
 
 # Ruse-card identity keyed by the descriptor's Title LocHash (the in-game name pointer). RUSE's
@@ -206,7 +207,7 @@ class AIEditorWindow(tk.Frame):
         try:
             self._ndf = project.everything()
         except Exception as e:
-            ui_util.error(self, t("AI Editor"), t("Could not load gameplay data:\n{e}", e=e))
+            ui_util.error(self, t("common.ai_editor"), t("common.could_not_load_gameplay_data", e=e))
             self.after(10, self.destroy)
             return
         self._index()
@@ -290,14 +291,14 @@ class AIEditorWindow(tk.Frame):
                     if prof is None:
                         continue
                     if gi == 1:
-                        lbl = t("Difficulty: {name}", name=_DIFF_NAMES[oi] if oi < len(_DIFF_NAMES) else oi)
+                        lbl = t("ai.difficulty_name", name=_DIFF_NAMES[oi] if oi < len(_DIFF_NAMES) else oi)
                     elif gi == 2:
-                        lbl = t("AI: {name}", name=_PROFILE_NAMES[oi] if oi < len(_PROFILE_NAMES) else oi)
+                        lbl = t("ai.ai_name", name=_PROFILE_NAMES[oi] if oi < len(_PROFILE_NAMES) else oi)
                     else:
-                        lbl = t("Default")
+                        lbl = t("common.default")
                     self._profiles.append((lbl, prof))
         if not self._profiles:   # fallback
-            self._profiles = [(t("Profile {i}", i=i), p) for i, p in enumerate(self._ndf.class_instances("TIAProfil"))]
+            self._profiles = [(t("ai.profile_i", i=i), p) for i, p in enumerate(self._ndf.class_instances("TIAProfil"))]
 
         # difficulty handicap bonuses
         self._bonuses = []
@@ -308,7 +309,7 @@ class AIEditorWindow(tk.Frame):
                 b = self._follow(it)
                 if b is not None and id(b) not in seen:
                     seen.add(id(b))
-                    self._bonuses.append((t("Bonus {n}", n=len(self._bonuses)), b))
+                    self._bonuses.append((t("ai.bonus_n", n=len(self._bonuses)), b))
         for i, b in enumerate(self._ndf.class_instances("TAISpecificBonus")):
             if id(b) not in seen:
                 self._bonuses.append((f"Bonus {len(self._bonuses)}", b))
@@ -322,7 +323,7 @@ class AIEditorWindow(tk.Frame):
             if info is not None:
                 lbl = t(info[0])   # known card -> friendly name (e.g. "Blitz", "Decoy Armor")
             else:
-                lbl = t("Card (slot {slot})", slot=pos.raw if pos else '?')
+                lbl = t("ai.card_slot_slot", slot=pos.raw if pos else '?')
             self._cards.append((lbl, c))
         self._cards.sort(key=lambda t: (self._pv(t[1], "PositionInMenu").raw
                                         if self._pv(t[1], "PositionInMenu") else 1 << 30))
@@ -347,23 +348,21 @@ class AIEditorWindow(tk.Frame):
         nb = ttk.Notebook(self)
         nb.pack(fill="both", expand=True, padx=4, pady=(6, 2))
         t1, t2, t3, t4 = ttk.Frame(nb), ttk.Frame(nb), ttk.Frame(nb), ttk.Frame(nb)
-        nb.add(t1, text=t("  AI Profiles  "))
-        nb.add(t2, text=t("  Difficulty Handicap  "))
-        nb.add(t3, text=t("  Ruse Cards  "))
-        nb.add(t4, text=t("  AI Scripts  "))
-        self._prof = self._build_list_tab(t1, self._profiles, self._render_profile, t("AI profile"))
-        self._bon = self._build_list_tab(t2, self._bonuses, self._render_bonus, t("difficulty bonus"))
-        self._card = self._build_list_tab(t3, self._cards, self._render_card, t("ruse card"))
+        nb.add(t1, text=t("ai.ai_profiles"))
+        nb.add(t2, text=t("ai.difficulty_handicap"))
+        nb.add(t3, text=t("ai.ruse_cards"))
+        nb.add(t4, text=t("ai.ai_scripts"))
+        self._prof = self._build_list_tab(t1, self._profiles, self._render_profile, t("ai.ai_profile"))
+        self._bon = self._build_list_tab(t2, self._bonuses, self._render_bonus, t("ai.difficulty_bonus"))
+        self._card = self._build_list_tab(t3, self._cards, self._render_card, t("ai.ruse_card_2"))
         self._build_scripts_tab(t4)
 
         bottom = tk.Frame(self, background=_R_BG)
         bottom.pack(fill="x", padx=8, pady=(0, 2))
-        ttk.Button(bottom, text=t("Save mod (.dat)"), command=self._save).pack(side="left")
+        ttk.Button(bottom, text=t("common.save_mod_dat"), command=self._save).pack(side="left")
         self._save_status = tk.Label(bottom, text="", background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._save_status.pack(side="right")
-        tk.Label(self, text=t("Apply commits the current selection into the project. “Save mod (.dat)” "
-                              "writes ALL accumulated changes to the mod's .dat. These TIAProfil / "
-                              "TAISpecificBonus values are read by the C++ skirmish AI."),
+        tk.Label(self, text=t("ai.apply_commits_current_selection_into"),
                  background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN, justify="left",
                  wraplength=1020).pack(fill="x", padx=8, pady=(0, 6))
 
@@ -384,15 +383,15 @@ class AIEditorWindow(tk.Frame):
 
         right = tk.Frame(body, background=_R_BG_PANEL)
         right.pack(side="left", fill="both", expand=True, padx=(8, 0))
-        st["hdr"] = tk.Label(right, text=t("Select a {what}", what=what), background=_R_BG_PANEL,
+        st["hdr"] = tk.Label(right, text=t("ai.select_what", what=what), background=_R_BG_PANEL,
                              foreground=_R_GOLD_BRT, font=_F_HEAD, anchor="w")
         st["hdr"].pack(fill="x", padx=6, pady=(4, 0))
         btn = tk.Frame(right, background=_R_BG_PANEL)
         btn.pack(side="bottom", fill="x", padx=6, pady=(0, 6))
-        st["apply"] = ttk.Button(btn, text=t("Apply changes"), state="disabled",
+        st["apply"] = ttk.Button(btn, text=t("common.apply_changes"), state="disabled",
                                  command=lambda s=st: self._apply(s))
         st["apply"].pack(side="left")
-        st["reset"] = ttk.Button(btn, text=t("Reset to defaults"), state="disabled",
+        st["reset"] = ttk.Button(btn, text=t("common.reset_defaults"), state="disabled",
                                  command=lambda s=st: self._reset(s))
         st["reset"].pack(side="left", padx=8)
         st["status"] = tk.Label(btn, text="", background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN)
@@ -410,7 +409,7 @@ class AIEditorWindow(tk.Frame):
         """Instant 'Loading <item>…' feedback before the (slower) field render for a profile/bonus/card."""
         sel = st["lb"].curselection()
         if sel and 0 <= sel[0] < len(st["items"]):
-            st["hdr"].configure(text=t("Loading {name}…", name=st["items"][sel[0]][0]))
+            st["hdr"].configure(text=t("common.loading_name", name=st["items"][sel[0]][0]))
 
     # ── AI scripts tab (IA_Common .xyz) ───────────────────────────────────────
 
@@ -433,8 +432,7 @@ class AIEditorWindow(tk.Frame):
 
     def _build_scripts_tab(self, parent):
         if not self._scripts:
-            tk.Label(parent, text=t("Could not read IA_Common.dat (set the Game Root in Settings, or create "
-                                    "a backup). The AI/mission scripts live there."),
+            tk.Label(parent, text=t("ai.could_not_read_ia_common"),
                      background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                      wraplength=700, justify="left").pack(padx=12, pady=12, anchor="w")
             return
@@ -454,10 +452,10 @@ class AIEditorWindow(tk.Frame):
         right.pack(side="left", fill="both", expand=True, padx=(8, 0))
         top = tk.Frame(right, background=_R_BG_PANEL)
         top.pack(fill="x", padx=6, pady=(4, 0))
-        self._scripts_hdr = tk.Label(top, text=t("Select a script to decompile"),
+        self._scripts_hdr = tk.Label(top, text=t("ai.select_script_decompile"),
                                      background=_R_BG_PANEL, foreground=_R_GOLD_BRT, font=_F_HEAD, anchor="w")
         self._scripts_hdr.pack(side="left")
-        ttk.Button(top, text=t("Export…"), command=self._export_script).pack(side="right")
+        ttk.Button(top, text=t("common.export_2"), command=self._export_script).pack(side="right")
         txtwrap = tk.Frame(right, background=_R_BG_PANEL)
         txtwrap.pack(fill="both", expand=True, padx=6, pady=4)
         self._scripts_txt = tk.Text(txtwrap, background=_R_BG_WIDGET, foreground=_R_TEXT, font=_F_MAIN,
@@ -466,10 +464,7 @@ class AIEditorWindow(tk.Frame):
         self._scripts_txt.configure(yscrollcommand=tsb.set, state="disabled")
         tsb.pack(side="right", fill="y")
         self._scripts_txt.pack(side="left", fill="both", expand=True)
-        tk.Label(right, text=t("{n} AI/mission scripts (IA_Common.dat), shown as full "
-                               "decompiled Python source (uncompyle6, Py2.5). Read-only for now — saving "
-                               "edited script behaviour needs the Py2.5 re-compile (the .xyz container "
-                               "repack is already cracked). Framework library = ZZ_Win.dat .ipk packs.",
+        tk.Label(right, text=t("ai.n_ai_mission_scripts_ia",
                                n=len(self._scripts)),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN, justify="left",
                  wraplength=620).pack(fill="x", padx=6, pady=(0, 4))
@@ -485,8 +480,8 @@ class AIEditorWindow(tk.Frame):
         raise ValueError("no zlib stream found")
 
     def _analyze_script(self, path, dec):
-        out = [t("Path : {path}", path=path),
-               t("Body : {n} bytes (Python 2.5 marshalled code)", n=len(dec)), ""]
+        out = [t("ai.path_path", path=path),
+               t("ai.body_n_bytes_python_2", n=len(dec)), ""]
         names, strings = set(), []
         try:
             from xdis import unmarshal
@@ -502,7 +497,7 @@ class AIEditorWindow(tk.Frame):
                         strings.append(c)
             walk(code)
         except Exception as e:
-            out.append(t("(xdis unmarshal failed: {e} — showing raw strings)", e=e))
+            out.append(t("ai.xdis_unmarshal_failed_e_showing", e=e))
             strings = [m.decode("latin1") for m in re.findall(rb"[ -~]{4,}", dec)]
         dsl_pref = ("Descriptor", "Condition", "Comportement", "Contrainte", "Sequential",
                     "Simultaneous", "Competition", "IfThenElse", "Wait", "SetVariable",
@@ -512,17 +507,17 @@ class AIEditorWindow(tk.Frame):
                           "manipulation_card", "leveldesign", "leveldesignsolo", "leveldesigntest"))
         dsl = sorted(n for n in names if any(n.startswith(p) for p in dsl_pref))
         other = sorted(n for n in names if n not in set(imports) and n not in set(dsl))
-        out.append(t("Imports / framework used:"))
-        out += ["   " + i for i in imports] or ["   " + t("(none)")]
+        out.append(t("ai.imports_framework_used"))
+        out += ["   " + i for i in imports] or ["   " + t("common.none")]
         out.append("")
-        out.append(t("AI / DSL actions & conditions called:"))
-        out += ["   " + d for d in dsl] or ["   " + t("(none)")]
+        out.append(t("ai.ai_dsl_actions_conditions_called"))
+        out += ["   " + d for d in dsl] or ["   " + t("common.none")]
         out.append("")
-        out.append(t("String literals ({n}; first 80):", n=len(strings)))
+        out.append(t("ai.string_literals_n_first_80", n=len(strings)))
         out += ["   " + repr(s) for s in strings[:80]]
         if other:
             out.append("")
-            out.append(t("Other referenced names:"))
+            out.append(t("ai.other_referenced_names"))
             out.append("   " + ", ".join(other[:60]))
         return "\n".join(out)
 
@@ -539,8 +534,7 @@ class AIEditorWindow(tk.Frame):
             if src and src.strip():
                 return src
         except Exception as e:
-            return (t("# Full decompile failed: {e}\n"
-                      "# Showing structural analysis instead.\n\n", e=e)
+            return (t("ai.full_decompile_failed_e_showing", e=e)
                     + self._analyze_script(path, dec))
         return self._analyze_script(path, dec)
 
@@ -554,7 +548,7 @@ class AIEditorWindow(tk.Frame):
         """Instant feedback: show the picked script's name + 'Loading…' before the heavy decompile."""
         s = self._selected_script()
         if s:
-            self._scripts_hdr.configure(text=t("Loading {name}…", name=s[0]))
+            self._scripts_hdr.configure(text=t("common.loading_name", name=s[0]))
 
     def _on_script_select(self, _=None):
         s = self._selected_script()
@@ -562,19 +556,19 @@ class AIEditorWindow(tk.Frame):
             return
         lbl, path = s
         self._scripts_hdr.configure(text=lbl)
-        self._set_script_text(t("Decompiling…"))
+        self._set_script_text(t("ai.decompiling"))
         self.update_idletasks()
         try:
             dec = self._decompress_xyz(bytes(self._scripts_arc.get(path)))
             text = self._decompile_source(path, dec)
         except Exception as e:
-            text = t("Could not read/decompress {path}:\n{e}", path=path, e=e)
+            text = t("ai.could_not_read_decompress_path", path=path, e=e)
         self._set_script_text(text)
 
     def _export_script(self):
         s = self._selected_script()
         if not s or self._scripts_arc is None:
-            ui_util.info(self, t("Export"), t("Select a script first."))
+            ui_util.info(self, t("common.export"), t("ai.select_script_first"))
             return
         lbl, path = s
         outdir = os.path.join(REPO, "test_output", "ai_scripts")
@@ -588,9 +582,9 @@ class AIEditorWindow(tk.Frame):
             with open(os.path.join(outdir, base + ".marshal.bin"), "wb") as f:
                 f.write(dec)
         except Exception as e:
-            ui_util.error(self, t("Export"), str(e))
+            ui_util.error(self, t("common.export"), str(e))
             return
-        ui_util.info(self, t("Export"), t("Wrote decompiled .py + decompressed marshal to:\n{outdir}", outdir=outdir))
+        ui_util.info(self, t("common.export"), t("ai.wrote_decompiled_py_decompressed_marshal", outdir=outdir))
 
     # ── rendering helpers ───────────────────────────────────────────────────────
 
@@ -651,7 +645,7 @@ class AIEditorWindow(tk.Frame):
             container, lambda text, k=key: self.project.set_note(k, text),
             panel_bg=_R_BG_PANEL, widget_bg=_R_BG_WIDGET, text_fg=_R_TEXT, dim_fg=_R_TEXT_DIM,
             gold=_R_GOLD, font=_F_MAIN, font_bold=_F_BOLD,
-            initial=self.project.get_note(key), label=t("Notes"), hint=hint)
+            initial=self.project.get_note(key), label=t("common.notes"), hint=hint)
 
     def _on_select(self, st):
         sel = st["lb"].curselection()
@@ -690,15 +684,13 @@ class AIEditorWindow(tk.Frame):
         if not self._row_defaults:
             ui_util.info(
                 self,
-                t("Reset to defaults"),
-                t("No default values are available — this needs a clean backup of the game for this "
-                  "version. Create one in the Mod Manager tab."))
+                t("common.reset_defaults"),
+                t("common.no_default_values_are_available"))
             return
         if not ui_util.confirm(
                 self,
-                t("Reset to defaults"),
-                t("Reset every field on this page back to its default (clean-backup) value? Unsaved "
-                  "edits are discarded. Nothing is written to disk until you Save.")):
+                t("common.reset_defaults"),
+                t("ai.reset_every_field_page_back")):
             return
         changed = self._revert(st["rows"])
         if changed:
@@ -709,10 +701,10 @@ class AIEditorWindow(tk.Frame):
                     self._on_change()
                 except Exception:
                     pass
-        st["status"].configure(text=t("Reset {n} field(s) to default", n=changed))
+        st["status"].configure(text=t("common.reset_n_field_s_default", n=changed))
 
     def _render_profile(self, st, inst):
-        st["hdr"].configure(text=next((l for l, i in self._profiles if i is inst), t("AI profile")))
+        st["hdr"].configure(text=next((l for l, i in self._profiles if i is inst), t("ai.ai_profile")))
         shown = set()
         for gtitle, fields in _PROFILE_GROUPS:
             present = [(lbl, prop) for lbl, prop in fields if self._pv(inst, prop) is not None]
@@ -729,40 +721,38 @@ class AIEditorWindow(tk.Frame):
                  if self._ndf.properties[pv.prop_index].name not in shown
                  and pv.value.type_id in _NUM_TIDS]
         if extra:
-            self._section(st["fields"], t("Other"))
+            self._section(st["fields"], t("ai.other"))
             for pv in extra:
                 nm = self._ndf.properties[pv.prop_index].name
                 self._row(st["fields"], st["rows"], nm, nm, "scalar", pv.value,
                           self._default_val(inst, nm))
         label = next((l for l, i in self._profiles if i is inst), "")
         self._notes_section(st["fields"], "ai_profile:" + label,
-                            hint=t("Private notes for this AI profile — saved with the mod project."))
+                            hint=t("ai.private_notes_ai_profile_saved"))
 
     def _render_bonus(self, st, inst):
-        st["hdr"].configure(text=t("AI difficulty handicap (cheat bonus)"))
+        st["hdr"].configure(text=t("ai.ai_difficulty_handicap_cheat_bonus"))
         for lbl, prop, kind in _BONUS_FIELDS:
             val = self._pv(inst, prop)
             if val is not None:
                 self._row(st["fields"], st["rows"], lbl, prop, kind, val,
                           self._default_val(inst, prop))
-        tk.Label(st["fields"], text=t("Scope lists target which difficulties/profiles get the bonus. "
-                                      "Difficulties: 0=Easy,1=Medium,2=Hard. Profiles: 0=Regular,1=Air "
-                                      "Force,2=Howitzer,3=Prototype,4=Blitzkrieg,5=Turtle,6=Random."),
+        tk.Label(st["fields"], text=t("ai.scope_lists_target_which_difficulties"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN, justify="left",
                  wraplength=560).pack(anchor="w", padx=2, pady=(8, 0))
         label = next((l for l, i in self._bonuses if i is inst), "")
         self._notes_section(st["fields"], "ai_bonus:" + label,
-                            hint=t("Private notes for this difficulty bonus — saved with the mod project."))
+                            hint=t("ai.private_notes_difficulty_bonus_saved"))
 
     def _render_card(self, st, inst):
-        st["hdr"].configure(text=next((l for l, i in self._cards if i is inst), t("Ruse card")))
+        st["hdr"].configure(text=next((l for l, i in self._cards if i is inst), t("ai.ruse_card")))
         title = self._pv(inst, "Title")
         info = _CARD_INFO.get(bytes(title.raw).hex()) if title is not None else None
         if info is not None:
             _name, enum_id, effect = info
             tk.Label(st["fields"], background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                      justify="left", wraplength=620, anchor="w",
-                     text=t("{effect}\nIn-engine card: BluffCardEnum.{enum}", effect=t(effect), enum=enum_id)
+                     text=t("ai.effect_engine_card_bluffcardenum_enum", effect=t(effect), enum=enum_id)
                      ).pack(fill="x", padx=4, pady=(2, 6))
         for lbl, prop, kind in _CARD_FIELDS:
             val = self._pv(inst, prop)
@@ -771,7 +761,7 @@ class AIEditorWindow(tk.Frame):
                           self._default_val(inst, prop))
         label = next((l for l, i in self._cards if i is inst), "")
         self._notes_section(st["fields"], "ai_card:" + label,
-                            hint=t("Private notes for this ruse card — saved with the mod project."))
+                            hint=t("ai.private_notes_ruse_card_saved"))
 
     # ── apply / save ─────────────────────────────────────────────────────────────
 
@@ -814,7 +804,7 @@ class AIEditorWindow(tk.Frame):
             except Exception as e:
                 errors.append(f"{prop}: {e}")
         if errors:
-            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
+            ui_util.error(self, t("common.invalid_value_s"), "\n".join(errors))
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
             self._keep_scroll(st["fields"], lambda: self._on_select(st))  # show set values
@@ -823,7 +813,7 @@ class AIEditorWindow(tk.Frame):
                     self._on_change()
                 except Exception:
                     pass
-        st["status"].configure(text=(t("Applied {n} change(s)", n=changed) if changed else t("No changes")))
+        st["status"].configure(text=(t("common.applied_n_change_s", n=changed) if changed else t("common.no_changes")))
 
     def _save(self):
         # Commit any pending (typed-but-not-applied) edits across all tabs first, so what's saved
@@ -832,21 +822,21 @@ class AIEditorWindow(tk.Frame):
             if st.get("sel") is not None and st.get("rows"):
                 self._apply(st)
         if not self.project.is_dirty():
-            ui_util.info(self, t("Save mod"), t("No pending changes to save."))
+            ui_util.info(self, t("common.save_mod"), t("common.no_pending_changes_save"))
             return
         try:
             written = self.project.save_all()
         except Exception as e:
-            ui_util.error(self, t("Save failed"),
-                          t("{e}\n\nTip: set the Game Root in Settings.", e=e))
+            ui_util.error(self, t("common.save_failed"),
+                          t("common.e_tip_set_game_root", e=e))
             return
         if self._on_change:
             try:
                 self._on_change()
             except Exception:
                 pass
-        self._save_status.configure(text=t("Saved all changes to the mod"))
-        ui_util.info(self, t("Saved"), t("Saved mod changes to:\n\n{paths}", paths="\n".join(written)))
+        self._save_status.configure(text=t("common.saved_all_changes_mod"))
+        ui_util.info(self, t("common.saved"), t("common.saved_mod_changes_paths", paths="\n".join(written)))
 
 
 _NUM_TIDS = {ndfbin_mod.T.Bool, ndfbin_mod.T.Int8, ndfbin_mod.T.Int16, ndfbin_mod.T.UInt16,

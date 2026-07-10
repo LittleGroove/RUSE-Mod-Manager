@@ -52,6 +52,12 @@ def decode_grid(sdb: bytes):
                 depth(ci + q, d + 1)
     depth(0, 0)
     L = md[0]
+    # Guard against a crafted mapinfo whose quadtree nests to the depth cap: L can reach 23, so R*R would
+    # be (1<<23)² ≈ 70 TB → an un-catchable MemoryError / machine-hang.  A real terrain grid is tiny by
+    # comparison (well under 1<<13 = 8192 per side); anything larger is malformed, so refuse it (the caller
+    # falls back to a raw file patch).  This is a hard safety cap, not a format limit.
+    if L > 13:
+        raise ValueError(f"SDB grid depth {L} implausible (grid {1 << L}×{1 << L}) — refusing to allocate")
     R = 1 << L
     grid = bytearray(R * R)
 
@@ -335,14 +341,24 @@ def tree_grid_R(p) -> int:
     # decode_grid's R exactly when leaf depth is used.)
     nodes = p["nodes"]; ns = p["node_start"]
     def depth(off, d):
+        idx = (off - ns) // _NODE
+        # Depth cap + index bounds: a malformed/cyclic node graph could otherwise recurse forever or index
+        # past the node list.  A real terrain quadtree is shallow, so d>20 (or a bad pointer) = malformed.
+        if d > 20 or not (0 <= idx < len(nodes)):
+            return d
         m = d
-        for V in nodes[(off - ns) // _NODE]:
+        for V in nodes[idx]:
             if V & 1:
                 m = max(m, d + 1)
             else:
                 m = max(m, depth(V, d + 1))
         return m
-    return 1 << (depth(ns, 0) + 1)
+    L = depth(ns, 0) + 1
+    # Hard safety cap: R = 1<<L, and to_grid allocates R*R.  1<<14 = 16384 per side is already far beyond
+    # any real map; anything larger is a crafted/corrupt tree, so refuse (caller ships raw).
+    if L > 14:
+        raise ValueError(f"SDB tree depth {L} implausible (grid {1 << L}×{1 << L}) — refusing to allocate")
+    return 1 << L
 
 
 def to_grid(p):
@@ -356,9 +372,21 @@ def to_grid(p):
     except Exception:
         g = bytearray(R * R); use_np = False
     stack = [(ns, 0, 0, R)]
+    # Bound the walk: a valid tree visits each node once, so a cyclic / over-visiting (malformed) tree
+    # trips this and stops with a partial grid instead of looping forever (an un-catchable hang).
+    max_pops = len(nodes) * 4 + 16
+    pops = 0
     while stack:
+        pops += 1
+        if pops > max_pops:
+            break
         off, x0, y0, sz = stack.pop()
-        node = nodes[(off - ns) // _NODE]; h = sz >> 1; hh = h >> 1
+        idx = (off - ns) // _NODE
+        # A branch can't subdivide below a single cell, and a pointer must land inside the node list;
+        # either would be malformed — skip it rather than descend into a runaway/OOB read.
+        if sz < 2 or not (0 <= idx < len(nodes)):
+            continue
+        node = nodes[idx]; h = sz >> 1; hh = h >> 1
         quad = ((x0, y0), (x0 + h, y0), (x0, y0 + h), (x0 + h, y0 + h))
         for q in range(4):
             V = node[q]; qx, qy = quad[q]

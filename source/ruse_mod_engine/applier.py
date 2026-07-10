@@ -112,6 +112,10 @@ def apply_mod(
     dry_run: bool = False,
     output_dir: Optional[str] = None,
     game_version: str = "compat",
+    progress=None,
+    deploy_state: Optional[dict] = None,
+    source_build: Optional[str] = None,
+    target_build: Optional[str] = None,
 ) -> "ApplyResult":
     """Apply a single .rmod file to the game data directory.
 
@@ -120,12 +124,25 @@ def apply_mod(
 
     .compat.rmod files applied in public mode receive runtime path/index
     translation.  Fully pre-translated .rmod files are applied verbatim.
+
+    ``progress`` (optional): a callable ``progress(dat_rel)`` invoked just before each .dat is opened —
+    the slow step for large data files.  Lets the caller show live "preparing <dat>…" feedback.
     """
     mod = mod_format.load(mod_path)
     is_compat_mod = Path(mod_path).name.lower().endswith(".compat.rmod")
-    return _apply(mod, game_data_dir, backup=backup, dry_run=dry_run,
-                  output_dir=output_dir, game_version=game_version,
-                  is_compat_mod=is_compat_mod)
+    # Cross-build deploy: if the mod was made for a DIFFERENT build than we're deploying onto, pre-translate
+    # its positional addresses via the direct version map so the applier can run it verbatim.  from_build
+    # defaults to the mod's own game_version stamp.  No-op (map_report.map False) when same build / no map.
+    src = source_build or getattr(mod, "game_version", None)
+    map_report = {"map": False, "remapped": 0, "stale": []}
+    if target_build and src and str(src) != str(target_build):
+        from . import version_map as _vm
+        mod, map_report = _vm.remap_mod(mod, src, target_build)
+    result = _apply(mod, game_data_dir, backup=backup, dry_run=dry_run,
+                    output_dir=output_dir, game_version=game_version,
+                    is_compat_mod=is_compat_mod, progress=progress, deploy_state=deploy_state)
+    result.map_report = map_report
+    return result
 
 
 def apply_mods(
@@ -145,9 +162,11 @@ def apply_mods(
     if output_dir and not dry_run:
         clear_output_dats(mod_paths, output_dir, game_version=game_version)
     results = []
+    deploy_state: dict = {}   # shared touched-set across the stack → cross-mod conflict detection
     for path in mod_paths:
         result = apply_mod(path, game_data_dir, backup=backup, dry_run=dry_run,
-                           output_dir=output_dir, game_version=game_version)
+                           output_dir=output_dir, game_version=game_version,
+                           deploy_state=deploy_state)
         results.append(result)
     return results
 
@@ -172,7 +191,10 @@ def clear_output_dats(mod_paths: List[str], output_dir: str,
             for sg in mod.scenario_patches:
                 to_delete.add(resolve_dat_for_version(sg.dat, game_version).replace("/", os.sep))
         except Exception:
-            pass
+            # A mod we can't load here won't get its stale output dats cleared → a fresh apply could
+            # build on stale output. Record which mod rather than silently skipping it.
+            logging.getLogger(__name__).warning(
+                "Output-dat cleanup skipped for unreadable mod: %s", path, exc_info=True)
     for dat_rel in to_delete:
         p = out_root / dat_rel
         if not _within(out_root, p):
@@ -201,6 +223,37 @@ class ChangeRecord:
         return f"  {self.table}[{self.instance_id}].{self.prop}: {self.old_val!r} -> {self.new_val!r}"
 
 
+class RepairFinding:
+    """A change whose target could not be resolved on THIS game build — the mod no longer fits and
+    needs repair/re-migration.  Raised (not silently skipped) so the manager can tell the user WHICH
+    changes broke and WHY: a key that was renamed between builds, an instance that was removed, or a
+    positional _index that drifted off its class.  Feeds the harden-further / rmod_validate loop."""
+    def __init__(self, dat, ndf, table, match, reason):
+        self.dat = dat
+        self.ndf = ndf
+        self.table = table
+        self.match = match
+        self.reason = reason
+
+    def __str__(self):
+        return f"  {self.dat}::{self.ndf} {self.table} match={self.match}: {self.reason}"
+
+
+class ConflictFinding:
+    """This mod overwrote an edit an EARLIER mod in the same deploy already made to the same
+    instance+property.  Not an error — last-writer-wins is intended — but the user should know the
+    earlier mod's change was superseded (e.g. stacking two balance mods that both set the same HP)."""
+    def __init__(self, dat, ndf, instance_id, prop, overwrote_mod):
+        self.dat = dat
+        self.ndf = ndf
+        self.instance_id = instance_id
+        self.prop = prop
+        self.overwrote_mod = overwrote_mod
+
+    def __str__(self):
+        return f"{self.instance_id}.{self.prop} — overwrites '{self.overwrote_mod}'"
+
+
 class ApplyResult:
     def __init__(self, mod_name: str):
         self.mod_name = mod_name
@@ -208,6 +261,11 @@ class ApplyResult:
         self.warnings: List[str] = []
         self.errors: List[str] = []
         self.change_log: List[ChangeRecord] = []
+        self.requires_repair: List[RepairFinding] = []
+        self.conflicts: List[ConflictFinding] = []
+        self.map_report: dict = {"map": False, "remapped": 0, "stale": []}  # cross-build remap outcome
+        self._ctx_dat = None   # set per patch group so findings carry dat/ndf context
+        self._ctx_ndf = None
 
     def warn(self, msg: str):
         self.warnings.append(msg)
@@ -217,13 +275,34 @@ class ApplyResult:
         self.errors.append(msg)
         log.error("[%s] %s", self.mod_name, msg)
 
+    def set_ndf_context(self, dat, ndf):
+        self._ctx_dat, self._ctx_ndf = dat, ndf
+
+    def flag_repair(self, table, match, reason):
+        """Record an unresolved-target finding as its own category (NOT a generic warning), so the manager
+        can surface 'this mod needs repair for build X' distinctly.  Still logged for dev visibility."""
+        f = RepairFinding(self._ctx_dat, self._ctx_ndf, table, match, reason)
+        self.requires_repair.append(f)
+        log.warning("[%s] REQUIRES REPAIR: %s", self.mod_name, f)
+
+    def flag_conflict(self, instance_id, prop, overwrote_mod):
+        """Record that this mod overwrote an earlier mod's edit to instance_id.prop (soft; last wins)."""
+        f = ConflictFinding(self._ctx_dat, self._ctx_ndf, instance_id, prop, overwrote_mod)
+        self.conflicts.append(f)
+        log.info("[%s] conflict: %s", self.mod_name, f)
+
+    def needs_repair(self) -> bool:
+        return len(self.requires_repair) > 0
+
     def ok(self):
         return len(self.errors) == 0
 
     def summary(self) -> str:
         status = "OK" if self.ok() else "ERRORS"
+        rep = f", {len(self.requires_repair)} need-repair" if self.requires_repair else ""
+        con = f", {len(self.conflicts)} conflict(s)" if self.conflicts else ""
         return (f"[{status}] {self.mod_name}: {self.changes_applied} change(s) applied, "
-                f"{len(self.warnings)} warning(s), {len(self.errors)} error(s)")
+                f"{len(self.warnings)} warning(s), {len(self.errors)} error(s){rep}{con}")
 
     def __repr__(self):
         return self.summary()
@@ -239,8 +318,15 @@ def _apply(
     output_dir: Optional[str] = None,
     game_version: str = "compat",
     is_compat_mod: bool = False,
+    progress=None,
+    deploy_state: Optional[dict] = None,
 ) -> ApplyResult:
     result = ApplyResult(mod.name)
+    # touched-set shared across a deploy stack: (dat, ndf, inst_identity, prop) -> mod that wrote it.
+    # None caller (single mod) → a local dict, so intra-mod tracking still works but there is nothing to
+    # conflict with.
+    if deploy_state is None:
+        deploy_state = {}
     data_root = Path(game_data_dir)
     out_root = Path(output_dir) if output_dir else None
     # Tracks which .dat files have already been copied to output this run.
@@ -281,6 +367,8 @@ def _apply(
 
         log.info("Opening %s", work_dat_path)
 
+        if progress:
+            progress(dat_rel)          # about to open this .dat — the slow step for large files
         try:
             edat = edata_mod.open_dat(str(work_dat_path))
         except Exception as e:
@@ -341,6 +429,12 @@ def _apply(
             except Exception as e:
                 result.error(f"Failed to parse NDF {ndf_path_in_dat!r}: {e}")
                 continue
+
+        # Enable ObjRef class coercion ONLY for the everything.cpp descriptor NDF, where clean data proves
+        # declared==actual universally and a stale class (compat index or a mis-captured legacy-mod class)
+        # makes the engine build the wrong type over the target's memory -> deterministic main-menu crash.
+        # All other NDFs keep the source class (see applier._objref_value).
+        ndf._coerce_objref_class = path_map_mod.is_everything_cpp_ndf(ndf_path_in_dat)
 
         # local_id → (inst_idx, class_idx): populated by create actions for $ref resolution
         create_map: dict = {}
@@ -431,6 +525,7 @@ def _apply(
                 return int(lid[5:])
             return 10 ** 9
 
+        result.set_ndf_context(patch_group.dat, patch_group.ndf)
         non_creates = []
         raw_creates = []
         for change in patch_group.changes:
@@ -444,6 +539,18 @@ def _apply(
                 non_creates.append(change)
         raw_creates.sort(key=_inst_sort_key)
 
+        # Snapshot every non-create match address to a concrete index against the PRISTINE NDF — BEFORE
+        # the create pass runs.  A mod's own create can introduce a duplicate stable key (e.g. Balanced
+        # Realism adds a 2nd Unit_Sniper), and a duplicate key destroys the GLOBAL-key uniqueness an anchor
+        # root (or a key match) relies on — so an anchor resolved AFTER creates returns None and the target
+        # is stranded.  That silently dropped ~1000 everything.cpp edits: it failed the converter's lossless
+        # self-check (whole-file raw fallback) AND mis-applied in-game (main-menu crash).  Creates only
+        # APPEND (existing instance indices never shift), so an index snapshotted here stays valid through
+        # the create pass.  A match that instead targets a to-be-created instance simply gets 0 hits now and
+        # is resolved later in the apply loop (the create-then-patch-by-new-key case still works).
+        _preresolve_addresses(non_creates, ndf)
+
+        # Pass 1: creates only — populate create_map so local_id refs resolve in patches.
         for change in raw_creates:
             # Use deferred variant so stable_ref ObjRefs that reference instances
             # not yet created are retried after all creates are registered.
@@ -455,9 +562,24 @@ def _apply(
                     inst_idx = create_map.get(change.local_id, (len(ndf.instances) - 1, 0))[0]
                     deferred_objref.append((ndf.instances[inst_idx], change.table, deferred))
 
-        # Pass 2: patches, deletes, etc. (create_map is fully populated)
+        # Pass 2: patches, deletes, etc. (create_map is now fully populated).
+        # Then apply whole-instance DELETES last, in DESCENDING index order, regardless of the order they
+        # appear in the rmod.  A delete does `del instances[idx]`, shifting every higher index down by one;
+        # running deletes after all patches (and highest-first) means a delete can never invalidate a
+        # patch/delete_props address that was just snapshotted to a now-stale _index.  Converter output is
+        # already ordered this way, so this is a no-op for our own rmods and a safety net for hand-authored
+        # or hostile ones that interleave a delete before a later patch.  (stable sort keeps non-delete order.)
+        def _apply_order_key(ch):
+            if ch.action == "delete":
+                try:
+                    idx = int((ch.match or {}).get("_index", -1))
+                except (TypeError, ValueError):
+                    idx = -1
+                return (1, -idx)
+            return (0, 0)
+        non_creates.sort(key=_apply_order_key)
         for change in non_creates:
-            n = _apply_change(change, ndf, result, create_map)
+            n = _apply_change(change, ndf, result, create_map, deploy_state)
             if n > 0:
                 changed = True
                 result.changes_applied += n
@@ -531,6 +653,8 @@ def _apply(
             if not dry_run and backup:
                 _make_backup(work_dat_path)
 
+        if progress:
+            progress(dat_rel)          # about to open this .dat — the slow step for large files
         try:
             edat = edata_mod.open_dat(str(work_dat_path))
         except Exception as e:
@@ -619,6 +743,8 @@ def _apply(
             work_dat_path = src_dat_path
             if not dry_run and backup:
                 _make_backup(work_dat_path)
+        if progress:
+            progress(dat_rel)          # about to open this .dat — the slow step for large files
         try:
             edat = edata_mod.open_dat(str(work_dat_path))
         except Exception as e:
@@ -702,6 +828,8 @@ def _apply(
             work_dat_path = src_dat_path
             if not dry_run and backup:
                 _make_backup(work_dat_path)
+        if progress:
+            progress(dat_rel)          # about to open this .dat — the slow step for large files
         try:
             edat = edata_mod.open_dat(str(work_dat_path))
         except Exception as e:
@@ -793,6 +921,8 @@ def _apply(
             work_dat_path = src_dat_path
             if not dry_run and backup:
                 _make_backup(work_dat_path)
+        if progress:
+            progress(dat_rel)          # about to open this .dat — the slow step for large files
         try:
             edat = edata_mod.open_dat(str(work_dat_path))
         except Exception as e:
@@ -992,16 +1122,71 @@ def _translate_change_for_public(
     )
 
 
+def _preresolve_addresses(changes, ndf):
+    """Snapshot every change's match ADDRESS to a concrete {"_index": idx} against the CURRENT (post-create,
+    pre-patch) NDF, in place, BEFORE any patch mutates instances.  Covers all durable address forms:
+      * {"anchor": {...}}          — keyed-ancestor + path (H3)
+      * {"ClassNameForDebug": ...} — a stable key (also DescriptorId / _ShortDatabaseName / Name)
+
+    Why up front: a change's target must be resolved while it is still findable.  Two ways a later change
+    would otherwise break an earlier address if resolved lazily during the patch loop:
+      1. A PATCH that RENAMES the instance's key (e.g. the Zombie/Endless mod patches Unit_..._Antichar's
+         ClassNameForDebug to "Undead").  A following delete_props/patch matched on the OLD key then finds
+         nothing — the edit is silently dropped and the whole NDF falls back to a raw file patch.
+      2. A patch that edits a list/ObjRef ON an anchor's path, moving where that anchor resolves.
+    Snapshotting fixes each target index while the address is still valid; ORDER between the remaining
+    index-addressed changes then no longer matters.  The address's cross-BUILD durability job is already
+    done at resolve time (it resolved against THIS build's pristine NDF), so applying by index afterwards is
+    exact.  Only a UNIQUELY-resolving match is snapshotted; 0 matches (renamed/removed on this build) or an
+    ambiguous >1 are left as-is so find_instances -> requires-repair still reports them (the durability
+    report and the create-then-patch-by-new-key case both keep working)."""
+    for ch in changes:
+        m = getattr(ch, "match", None)
+        if m and "_index" not in m:
+            if "anchor" in m:
+                idx = ndf.resolve_anchor(m["anchor"])
+                if idx is not None:
+                    ch.match = {"_index": str(idx)}
+            else:
+                # A stable-key match: snapshot to index so an intra-batch rename can't strand it.  find_
+                # instances here also REPLACES the O(n) key search the apply loop would do — net perf-neutral
+                # (the expensive scan happens once; apply then takes the O(1) _index fast-path).
+                hits = ndf.find_instances(ch.table, m)
+                if len(hits) == 1:
+                    ch.match = {"_index": str(hits[0][0])}
+        # ObjRef-value anchors nested in set_props (single ObjRef, List<ObjRef>, Map/Pair) — same risk.
+        for vd in (getattr(ch, "set_props", None) or {}).values():
+            _preresolve_objref_anchors(getattr(vd, "value", None), ndf)
+
+
+def _preresolve_objref_anchors(value, ndf):
+    """Rewrite ObjRef {"anchor":...} -> {"inst": idx} in a set-block value (recursing lists/dicts) against
+    the pristine NDF, so a mid-apply patch can't break the reference's path."""
+    if isinstance(value, dict):
+        if "anchor" in value and "class" in value:      # an ObjRef anchor
+            idx = ndf.resolve_anchor(value["anchor"])
+            if idx is not None:
+                value.pop("anchor")
+                value["inst"] = idx
+        else:
+            for v in value.values():
+                _preresolve_objref_anchors(v, ndf)
+    elif isinstance(value, list):
+        for v in value:
+            _preresolve_objref_anchors(v, ndf)
+
+
 def _apply_change(
     change: mod_format.ModChange,
     ndf: ndfbin_mod.NdfBinary,
     result: ApplyResult,
     create_map: dict,
+    deploy_state: Optional[dict] = None,
 ) -> int:
     """Apply one ModChange.  Returns number of instances affected."""
 
     if change.action == "patch":
-        return _action_patch(change, ndf, result, create_map)
+        return _action_patch(change, ndf, result, create_map, deploy_state)
     if change.action == "delete":
         return _action_delete(change, ndf, result)
     if change.action == "delete_props":
@@ -1013,18 +1198,40 @@ def _apply_change(
     return 0
 
 
+def _inst_identity(inst, ndf, idx):
+    """A hashable identity for an instance, stable across the mods in one deploy: its stable key when it
+    has one (units/buildings do), else its position.  Used to key the deploy touched-set for conflict
+    detection so two mods that address the same object by different means still collide."""
+    for kp in ("ClassNameForDebug", "DescriptorId", "_ShortDatabaseName", "Name"):
+        p = ndf.prop_by_name_and_class(kp, inst.class_index)
+        if p is not None:
+            v = inst.get(p.index)
+            if v is not None and v.type_id in (ndfbin_mod.T.StringRef, ndfbin_mod.T.PathRef):
+                s = ndf.get_string(v.raw)
+                if s and s != "None":
+                    return ("k", kp, s)
+    return ("i", idx)
+
+
+def _repair_reason(match, action: str) -> str:
+    """Why an unresolved match needs repair — distinguishes a drifted position from a changed/removed key."""
+    if match and "_index" in match:
+        return (f"{action}: positional _index target not found on this build "
+                f"(index drifted off class, or the instance was removed)")
+    return (f"{action}: keyed target not found on this build "
+            f"(the key was renamed, or the instance was removed)")
+
+
 def _action_patch(
     change: mod_format.ModChange,
     ndf: ndfbin_mod.NdfBinary,
     result: ApplyResult,
     create_map: dict,
+    deploy_state: Optional[dict] = None,
 ) -> int:
     matches = ndf.find_instances(change.table, change.match or None)
     if not matches:
-        result.warn(
-            f"patch: no instances of '{change.table}' matched "
-            f"{change.match} — skipped"
-        )
+        result.flag_repair(change.table, change.match, _repair_reason(change.match, "patch"))
         return 0
 
     # Key-based patches (no _index) must not hit instances created in this session.
@@ -1045,6 +1252,7 @@ def _action_patch(
     for inst_idx, inst in matches:
         # Determine a human-readable id for this instance (ClassNameForDebug preferred)
         instance_id = _instance_label(inst, ndf, inst_idx)
+        identity = _inst_identity(inst, ndf, inst_idx) if deploy_state is not None else None
 
         for prop_name, val_def in change.set_props.items():
             try:
@@ -1070,6 +1278,14 @@ def _action_patch(
                                    old_val_str, new_val_str)
                 result.change_log.append(rec)
                 log.info("%s", rec)
+                # Conflict detection: did an EARLIER mod in this deploy already set this instance+prop?
+                # Last-writer-wins is intended, but tell the user the earlier edit was superseded.
+                if deploy_state is not None:
+                    tkey = (result._ctx_dat, result._ctx_ndf, identity, prop_name)
+                    prev = deploy_state.get(tkey)
+                    if prev is not None and prev != result.mod_name:
+                        result.flag_conflict(instance_id, prop_name, prev)
+                    deploy_state[tkey] = result.mod_name
         affected += 1
 
     return affected
@@ -1109,10 +1325,7 @@ def _action_delete(
     import bisect
     matches = ndf.find_instances(change.table, change.match or None)
     if not matches:
-        result.warn(
-            f"delete: no instances of '{change.table}' matched "
-            f"{change.match} — skipped"
-        )
+        result.flag_repair(change.table, change.match, _repair_reason(change.match, "delete"))
         return 0
 
     indices_to_remove = sorted([idx for idx, _ in matches], reverse=True)
@@ -1128,6 +1341,29 @@ def _action_delete(
 
     ndf.top_objects = [remap(i) for i in ndf.top_objects if i not in removed_set]
 
+    # Remap inbound ObjRef VALUES too: deleting instances shifts every higher index down by one, so any
+    # Reference that points ABOVE a deletion is now off by the number of deletions below it.  top_objects
+    # was the only list remapped before, leaving in-instance ObjRefs dangling.  Walk all values and fix
+    # OBJ_REF targets; a ref to a just-deleted instance is genuinely dangling (its target is gone) — remap
+    # it to the deletion point and count it so the loss isn't silent.  (No-op when nothing points above a
+    # deletion, e.g. deletes at the tail — so it doesn't perturb mods whose deletes don't move any ref.)
+    dangling = 0
+    for v in ndf.iter_values():
+        if (v.type_id == ndfbin_mod.T.Reference and isinstance(v.raw, tuple)
+                and v.raw[0] == ndfbin_mod.OBJ_REF_MARKER and isinstance(v.raw[1], tuple)):
+            oi, ci = v.raw[1]
+            if isinstance(oi, int) and oi >= 0:
+                if oi in removed_set:
+                    dangling += 1
+                new_oi = remap(oi)
+                if new_oi != oi:
+                    v.raw = (ndfbin_mod.OBJ_REF_MARKER, (new_oi, ci))
+    if dangling:
+        # Info, not a user warning: real mods (e.g. the Operation clustermaps) legitimately delete a whole
+        # cluster whose members reference each other, so refs to deleted instances are expected and harmless
+        # (byte-identical to the long-shipped output).  Log for diagnostics without alarming the user.
+        log.info("delete: %d ObjRef(s) referenced a deleted '%s' instance", dangling, change.table)
+
     log.info("delete: removed %d instance(s) of '%s'", len(indices_to_remove), change.table)
     return len(indices_to_remove)
 
@@ -1139,10 +1375,7 @@ def _action_delete_props(
 ) -> int:
     matches = ndf.find_instances(change.table, change.match or None)
     if not matches:
-        result.warn(
-            f"delete_props: no instances of '{change.table}' matched "
-            f"{change.match} — skipped"
-        )
+        result.flag_repair(change.table, change.match, _repair_reason(change.match, "delete_props"))
         return 0
 
     affected = 0
@@ -1234,6 +1467,47 @@ def _action_create_deferred(
 
 # ── Value construction ────────────────────────────────────────────────────────
 
+def _objref_value(ndf: ndfbin_mod.NdfBinary, idx, stored_cls, class_name=None) -> ndfbin_mod.NdfValue:
+    """Build an ObjRef NdfValue, choosing its declared class by a clear precedence:
+
+      1. the resolved TARGET instance's actual class (only when coercion is enabled for this NDF);
+      2. the portable ``class_name`` resolved against THIS build's class table (cross-build remap);
+      3. the raw stored class.
+
+    (1) enforces the PROVEN clean-data invariant "declared class == target's actual class" (0 declared!=actual
+    across 240k+ ObjRefs on both builds) — a no-op on valid refs, and the fix for a stale/mis-captured class
+    that would make the engine build the wrong type and crash.  Coercion is OPT-IN (default off) because that
+    invariant is NOT universal: it holds in everything.cpp but not e.g. camera-path .ndfbin (a TCameraPathKey
+    ref legitimately targets a TCameraPath).  The deploy loop enables it only for everything.cpp; every other
+    NDF and the converter self-check keep the source class faithfully.
+
+    ``idx``/``class`` are normalised with int() to match ndfbin.make_value (rmod JSON may encode them as
+    strings).  A NULL ObjRef (idx 0xFFFFFFFF, out of range) keeps its stored class.  Raises ValueError on a
+    non-integer index or when no class can be determined, instead of emitting a malformed NdfValue.
+    """
+    try:
+        idx = int(idx)
+    except (TypeError, ValueError):
+        raise ValueError(f"ObjRef 'inst' must be an integer, got {idx!r}")
+    cls = None
+    if getattr(ndf, "_coerce_objref_class", False) and 0 <= idx < len(ndf.instances):
+        cls = ndf.instances[idx].class_index
+    if cls is None and isinstance(class_name, str):
+        cls = ndf.class_index_by_name(class_name)
+    if cls is None:
+        cls = stored_cls
+    if cls is None:
+        raise ValueError(
+            f"ObjRef to inst {idx}: cannot determine class (no coercion target, "
+            f"no resolvable class_name, and no stored 'class')"
+        )
+    try:
+        cls = int(cls)
+    except (TypeError, ValueError):
+        raise ValueError(f"ObjRef 'class' must be an integer, got {cls!r}")
+    return ndfbin_mod.NdfValue(ndfbin_mod.T.Reference, (ndfbin_mod.OBJ_REF_MARKER, (idx, cls)))
+
+
 def _resolve_stable_ref_objref(value: dict, ndf: ndfbin_mod.NdfBinary,
                                create_map: dict) -> ndfbin_mod.NdfValue:
     """Resolve an ObjRef dict that carries a stable_ref key into an NdfValue.
@@ -1262,7 +1536,11 @@ def _make_ndf_value(
     ndf: ndfbin_mod.NdfBinary,
     create_map: dict = None,
 ) -> ndfbin_mod.NdfValue:
-    """Convert a ModValueDef into an NdfValue, resolving string refs and $refs."""
+    """Convert a ModValueDef into an NdfValue, resolving string refs and $refs.
+
+    ObjRef class selection (target-coercion / portable class_name / stored class) is centralised in
+    _objref_value — see it for the precedence and why (a stale, build-specific class index otherwise makes
+    the engine construct the WRONG type and crash; see RE_DATA/EVIDENCE_DOSSIER.md)."""
     # Resolve symbolic reference to a created instance
     if val_def.type_name == "$ref":
         if create_map is None or val_def.value not in create_map:
@@ -1282,6 +1560,24 @@ def _make_ndf_value(
             and "stable_ref" in val_def.value):
         return _resolve_stable_ref_objref(val_def.value, ndf, create_map or {})
 
+    # Resolve anchor ObjRef (H3): a durable keyless reference — keyed ancestor + path — resolved on the
+    # target NDF.  (Match anchors are pre-resolved before the patch loop; ObjRef-value anchors likewise via
+    # _preresolve_addresses, so by here it's usually already an {inst}; this is the direct/deferred path.)
+    if (val_def.type_name.lower() == "objref"
+            and isinstance(val_def.value, dict)
+            and "anchor" in val_def.value):
+        idx = ndf.resolve_anchor(val_def.value["anchor"])
+        if idx is None or not (0 <= idx < len(ndf.instances)):
+            raise ValueError(f"ObjRef anchor did not resolve on target NDF: {val_def.value.get('anchor')}")
+        # An ObjRef's declared class MUST equal the target instance's actual runtime class.  This is a
+        # PROVEN invariant of clean R.U.S.E. data: 0 declared!=actual across 240k+ ObjRefs on both builds
+        # (compat-2 & public).  A stale stored class (a compat index, or a class the source mod captured
+        # wrong) makes the engine construct the WRONG type over the target's memory and crash on load
+        # (proven root cause: class 246 -> TBoneAlgorithmBase half-built AddRef; see RE_DATA dossier).
+        # Derive the class from the resolved target — identical to the stable_ref path — so the output
+        # always satisfies the invariant.  No-op on valid refs (stored already == target); build-agnostic.
+        return _objref_value(ndf, idx, val_def.value.get("class"), val_def.value.get("class_name"))
+
     # Resolve local_id ObjRef (intra-rmod reference to a sibling create action)
     if (val_def.type_name.lower() == "objref"
             and isinstance(val_def.value, dict)
@@ -1298,6 +1594,15 @@ def _make_ndf_value(
             (ndfbin_mod.OBJ_REF_MARKER, (inst_idx, cls_idx))
         )
 
+    # Plain {inst, class} ObjRef: derive the declared class from the resolved target instead of trusting
+    # the stored class.  Same invariant as the stable_ref/anchor paths — see _objref_value.  (Anchors are
+    # usually pre-resolved to {inst} before we get here, so this is the dominant coercion site.)
+    if (val_def.type_name.lower() == "objref"
+            and isinstance(val_def.value, dict)
+            and "inst" in val_def.value):
+        return _objref_value(ndf, val_def.value["inst"], val_def.value.get("class"),
+                             val_def.value.get("class_name"))
+
     # For List types, elements in the raw list may themselves be $ref dicts, stable_ref
     # ObjRef dicts, local_id ObjRef dicts, or plain ObjRef dicts
     key = val_def.type_name.lower().strip()
@@ -1312,6 +1617,9 @@ def _make_ndf_value(
                 elem_def = mod_format.ModValueDef(type_name="ObjRef", value=elem)
             elif isinstance(elem, dict) and "local_id" in elem:
                 # Intra-rmod create reference stored as local_id
+                elem_def = mod_format.ModValueDef(type_name="ObjRef", value=elem)
+            elif isinstance(elem, dict) and "anchor" in elem:
+                # Durable keyless reference (H3)
                 elem_def = mod_format.ModValueDef(type_name="ObjRef", value=elem)
             elif isinstance(elem, dict) and "type" in elem:
                 elem_type_here = elem["type"]
@@ -1403,6 +1711,13 @@ def _resolve_string_refs(
             if "/" in ref:
                 ndf_val.raw = (marker, ndf.add_import_path(ref))
             else:
+                # Legacy bare-name TransRef: resolves to a TRAN index, but the game reads a TransRef ordinal
+                # as an IMPR IMPORT ordinal — so this only points correctly when the TRAN index coincidentally
+                # equals the intended import's ordinal on the ORIGIN build; it mis-points after migration/
+                # reconversion on another build. Re-convert the rmod on its origin build to get a portable
+                # '$/...' path. (See RE_DATA/EVIDENCE_DOSSIER.md Evidence #1.) Behaviour unchanged; flagged.
+                log.warning("legacy bare-name TransRef %r resolved via TRAN index — migration-unsafe; "
+                            "re-convert this rmod on its origin build for a portable '$/' import path", ref)
                 ndf_val.raw = (marker, ndf.ensure_trans(ref))
     elif t == ndfbin_mod.T.List:
         for item in ndf_val.raw:
@@ -1510,6 +1825,11 @@ def _apply_changes_to_ndf(changes, ndf, result) -> bool:
     creates = sorted([c for c in changes if c.action == "create"], key=_inst_sort_key)
     non_creates = [c for c in changes if c.action != "create"]
 
+    # Snapshot every match address against the PRISTINE NDF — BEFORE creates run.  A mod's own create can
+    # introduce a duplicate stable key that destroys the global-key uniqueness an anchor root/key match
+    # needs, stranding the target if resolved post-create (see the mirror comment in the patch-group path).
+    _preresolve_addresses(non_creates, ndf)
+
     for change in creates:
         n, deferred = _action_create_deferred(change, ndf, result, create_map)
         if n > 0:
@@ -1580,12 +1900,18 @@ def check_conflicts(
     conflicts: List[str] = []
 
     for mod_path in mod_paths:
-        mod = mod_format.load(mod_path)
+        try:
+            mod = mod_format.load(mod_path)
+        except Exception as e:
+            # A single unreadable/hostile rmod must not crash the whole dry-run conflict preview.
+            conflicts.append(f"(could not read {os.path.basename(mod_path)} for conflict check: {e})")
+            continue
         for pg in mod.patches:
             for ch in pg.changes:
                 if ch.action != "patch":
                     continue
-                match_key = ";".join(f"{k}={v}" for k, v in sorted(ch.match.items()))
+                # `match` can be absent on a malformed patch — treat as empty rather than AttributeError.
+                match_key = ";".join(f"{k}={v}" for k, v in sorted((ch.match or {}).items()))
                 for prop_name in ch.set_props:
                     key = (pg.dat, pg.ndf, ch.table, match_key, prop_name)
                     if key not in patches:

@@ -137,7 +137,7 @@ def _parse_dict_v2(data: bytes, hdr: EdataHeader) -> List[EdataEntry]:
         [1 skip if name.length % 2 == 0]
     """
     pos = hdr.dict_offset
-    end = hdr.dict_offset + hdr.dict_length
+    end = min(hdr.dict_offset + hdr.dict_length, len(data))   # never walk past the actual buffer
     entries = []
     dir_stack: List[str] = []
     ending_stack: List[int] = []
@@ -198,7 +198,7 @@ def _parse_dict_v1(data: bytes, hdr: EdataHeader) -> List[EdataEntry]:
         [1 skip if (name.length+1) % 2 == 1]
     """
     pos = hdr.dict_offset
-    end = hdr.dict_offset + hdr.dict_length
+    end = min(hdr.dict_offset + hdr.dict_length, len(data))   # never walk past the actual buffer
     entries = []
     dir_stack: List[str] = []
     ending_stack: List[int] = []
@@ -350,14 +350,19 @@ class EdataFile:
         if not data.startswith(EDATA_MAGIC):
             raise ValueError(f"Not an edata file: {self.path}")
         version = struct.unpack_from("<I", data, 4)[0]
-        if version == 1:
-            self._header = _parse_header_v1(data)
-            self._entries = _parse_dict_v1(data, self._header)
-        elif version == 2:
-            self._header = _parse_header_v2(data)
-            self._entries = _parse_dict_v2(data, self._header)
-        else:
-            raise ValueError(f"Unsupported edata version {version} in {self.path}")
+        try:
+            if version == 1:
+                self._header = _parse_header_v1(data)
+                self._entries = _parse_dict_v1(data, self._header)
+            elif version == 2:
+                self._header = _parse_header_v2(data)
+                self._entries = _parse_dict_v2(data, self._header)
+            else:
+                raise ValueError(f"Unsupported edata version {version} in {self.path}")
+        except struct.error as e:
+            # A truncated/oversized header or directory record would unpack past the buffer — surface a
+            # clean ValueError (callers already handle it) instead of a raw struct.error.
+            raise ValueError(f"corrupt edata dictionary in {self.path}: {e}")
         # Build a case-insensitive lookup map (paths use backslash or forward slash interchangeably)
         self._entry_map = {}
         for e in self._entries:

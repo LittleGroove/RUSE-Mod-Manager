@@ -26,7 +26,13 @@ class _Reader:
         self.pos = 0
 
     def read(self, n: int) -> bytes:
+        # Bounds-check like ndfbin's reader: a truncated/hostile .scenario would otherwise slice short and
+        # let the next struct.unpack_from raise a raw struct.error (or a negative n move the cursor back).
+        if n < 0:
+            raise ValueError(f"negative read length {n} at pos {self.pos}")
         r = self.buf[self.pos:self.pos + n]
+        if len(r) < n:
+            raise ValueError(f"unexpected end of scenario at pos {self.pos} (need {n}, have {len(r)})")
         self.pos += n
         return r
 

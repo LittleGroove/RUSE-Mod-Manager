@@ -147,6 +147,19 @@ def _global_wheel(event):
         w = anchor.winfo_containing(event.x_root, event.y_root)
     except (KeyError, tk.TclError, AttributeError):
         return
+    # Respect an active modal grab.  This router is bound via bind_all, so without this check a wheel
+    # turn over the BACKGROUND (outside an open modal popup) would still scroll — and raise — whatever's
+    # under the pointer, burying the modal and stranding its wait_window loop (a confirm you can no
+    # longer see or answer → the app hangs on close).  While a modal holds the grab, only scroll inside
+    # it; swallow everything else.
+    try:
+        grab = anchor.grab_current()
+    except (tk.TclError, AttributeError):
+        grab = None
+    if grab is not None:
+        gp = str(grab)
+        if w is None or not (str(w) == gp or str(w).startswith(gp + ".")):
+            return "break"
     # An open dropdown/menu would float out of place if the background scrolled under it — close it
     # (unless the pointer is over the dropdown itself, in which case it scrolls its own list).  Never
     # let a dismiss hiccup break scrolling.
@@ -594,6 +607,34 @@ def fit_combobox(combo, values=None, pad=3, minimum=12, maximum=60):
         pass
 
 
+def populate_version_combo(combo, var, versions, default_key="", fit=True):
+    """Shared behaviour for the "which backed-up version?" pickers — the Mod Editor's *Game Version*
+    box and the Convert tab's *Make mod for version* box.  Both list EXACTLY the versions the user
+    has a clean backup for (the pristine dats every edit/convert diffs against), so they must behave
+    identically; keeping that behaviour here in ui_util is what guarantees it.
+
+    ``versions`` is the ``[(key, label, path), ...]`` list of backed-up versions the caller gathered.
+    Fills the drop-down with the friendly labels, selects the one whose ``key == default_key`` (else
+    the first available), sizes the box to its content, and returns the ``{label: key}`` map the
+    caller uses to resolve a selection back to a build key.  Safe no-op on any Tk error."""
+    mapping = {}
+    try:
+        mapping = {lbl: key for key, lbl, _ in versions}
+        labels = list(mapping)
+        combo.configure(values=labels)
+        # Keep a still-valid selection across a refresh (so revisiting a tab doesn't reset the user's
+        # pick); only fall back to the default when the current value is gone or unset.
+        if var.get() not in mapping:
+            default = next((lbl for key, lbl, _ in versions if key == default_key),
+                           labels[0] if labels else "")
+            var.set(default)
+        if fit:
+            fit_combobox(combo, labels)
+    except Exception:
+        pass
+    return mapping
+
+
 # ═════════════════════════════════════════════════════════════════════════════
 # Themed message dialogs — ONE place for every popup
 # ═════════════════════════════════════════════════════════════════════════════
@@ -633,27 +674,98 @@ def configure_dialogs(**palette):
     _DIALOG_THEME.update({k: v for k, v in palette.items() if v is not None})
 
 
-def center_over(win, parent=None):
+def center_over(win, parent=None, size=None):
     """Move ``win`` so it is CENTRED over ``parent`` (its top-level window) — or on screen if there's
     no usable parent.  Only repositions; ``win``'s current size is kept.  This is the fix for popups
     opening in the monitor's top-left corner: call it once the window's content exists.  Safe no-op on
-    any Tk error (e.g. the window was already destroyed)."""
+    any Tk error (e.g. the window was already destroyed).
+
+    ``size=(w, h)`` overrides the size used for the centring maths.  Pass it when the window is still
+    withdrawn/unmapped (``winfo_width`` is 1 and ``winfo_reqwidth`` reflects only the bare content, not
+    the ``geometry()``-configured size) — otherwise a window opened at an explicit size larger than its
+    content is centred as if it were content-sized and ends up shifted right/down by half the gap.
+
+    GUARANTEE: this ALWAYS sets a position.  If the preferred parent-relative centring can't run (no or
+    unmapped parent) OR it raises for any reason, it falls back to centring on the primary screen — a
+    popup is never left sitting at Tk's default top-left corner."""
     try:
         win.update_idletasks()
-        w = win.winfo_width()
-        h = win.winfo_height()
-        if w <= 1 or h <= 1:                           # not realized yet → fall back to requested
-            w, h = win.winfo_reqwidth(), win.winfo_reqheight()
-        top = parent.winfo_toplevel() if parent is not None else None
-        if top is not None and top.winfo_ismapped() and top.winfo_width() > 1:
-            x = top.winfo_rootx() + (top.winfo_width() - w) // 2
-            y = top.winfo_rooty() + (top.winfo_height() - h) // 3    # a third down looks centred
-        else:                                          # no parent → centre on the screen
-            x = (win.winfo_screenwidth() - w) // 2
-            y = (win.winfo_screenheight() - h) // 3
-        win.geometry(f"+{max(x, 0)}+{max(y, 0)}")      # '+X+Y' with no WxH ⇒ move only, keep size
     except Exception:
         pass
+    # Size used for the centring maths (explicit override, else realized size, else requested content).
+    try:
+        if size is not None:
+            w, h = int(size[0]), int(size[1])
+        else:
+            w = win.winfo_width()
+            h = win.winfo_height()
+            if w <= 1 or h <= 1:                       # not realized yet → fall back to requested
+                w, h = win.winfo_reqwidth(), win.winfo_reqheight()
+    except Exception:
+        w, h = 0, 0
+
+    # Preferred: centre over the parent's REAL on-screen position.
+    placed = False
+    try:
+        top = parent.winfo_toplevel() if parent is not None else None
+        if top is not None and top.winfo_ismapped() and top.winfo_width() > 1:
+            # WM decoration insets: geometry('+x+y') positions the window's OUTER FRAME, but
+            # winfo_rootx/y + winfo_width/height describe the CLIENT area.  Without correcting for the
+            # frame, the popup's client lands ~one border/title-bar too far right + down.  The child
+            # shares the parent's window style, so measure the insets off the parent (rootx-x = left
+            # border, rooty-y = title-bar height) and subtract them so the CLIENT areas line up.
+            bx = max(0, top.winfo_rootx() - top.winfo_x())
+            by = max(0, top.winfo_rooty() - top.winfo_y())
+            x = top.winfo_rootx() + (top.winfo_width() - w) // 2 - bx
+            y = top.winfo_rooty() + (top.winfo_height() - h) // 3 - by   # a third down looks centred
+            # NO clamp to 0 here: the coords are derived from the parent's real screen position, so on a
+            # multi-monitor desktop the parent (and thus these coords) may legitimately be NEGATIVE — the
+            # app is on a monitor left of / above the primary.  Clamping to 0 would yank every popup onto
+            # the primary monitor's corner instead of centring it over the app.  Trust the parent-relative
+            # coords; they keep the popup on the parent's own monitor by construction.
+            win.geometry(f"+{x}+{y}")                  # '+X+Y' with no WxH ⇒ move only, keep size
+            placed = True
+    except Exception:
+        placed = False
+
+    # Guaranteed fallback: centre on the primary screen.  Runs whenever the parent-relative path didn't
+    # place the window (no/unmapped parent, or it raised) — so the popup can never default to top-left.
+    if not placed:
+        try:
+            x = (win.winfo_screenwidth() - w) // 2
+            y = (win.winfo_screenheight() - h) // 3
+            win.geometry(f"+{max(x, 0)}+{max(y, 0)}")  # clamp: no parent to anchor to, keep on-screen
+        except Exception:
+            pass
+
+
+def _reveal_centered(win, top, *, size=None, modal=True, surface=False):
+    """The ONE reveal path for every managed popup: centre it (while still withdrawn) → show it →
+    optionally grab it modal → optionally force it to the front.  Shared by ``themed_toplevel``,
+    ``_run_dialog`` and (via ``themed_toplevel``) ``operation_forms._modal`` so they behave identically:
+    a popup is placed BEFORE it is ever visible, so it can neither flash nor strand at the top-left.
+
+    ``size`` is passed straight to :func:`center_over` (needed while withdrawn).  ``surface`` lifts the
+    window to the top with a brief topmost pulse — critical when the parent is itself withdrawn (e.g. the
+    startup prompt before the main window is mapped): a transient of a hidden window has no taskbar
+    button, so without this it could open behind another app and look like a hang."""
+    if not win.winfo_exists():                         # closed before this (possibly deferred) call ran
+        return
+    center_over(win, top, size=size)
+    win.deiconify()
+    if modal:
+        try:
+            win.grab_set()
+        except Exception:
+            pass
+    if surface:
+        try:
+            win.lift()
+            win.attributes("-topmost", True)
+            win.focus_force()
+            win.after(300, lambda: win.winfo_exists() and win.attributes("-topmost", False))
+        except Exception:
+            pass
 
 
 def themed_toplevel(parent, title, *, size=None, min_size=None, resizable=False,
@@ -711,19 +823,29 @@ def themed_toplevel(parent, title, *, size=None, min_size=None, resizable=False,
             pass
         return False
 
+    def _effective_size():
+        # The real on-screen size the window will have once shown: the LARGEST of its requested content,
+        # the explicit ``size=``, ``min_size``, and the grown floor.  center_over needs this because the
+        # window is still WITHDRAWN here — winfo_width is 1 and winfo_reqwidth reflects only bare content,
+        # not the geometry()-set ``size`` — so without it a size= window centres off to the right/down.
+        win.update_idletasks()
+        w = max(win.winfo_reqwidth(), int(size[0]) if size else 0,
+                int(min_size[0]) if min_size else 0, floor["w"])
+        h = max(win.winfo_reqheight(), int(size[1]) if size else 0,
+                int(min_size[1]) if min_size else 0, floor["h"])
+        return (w, h)
+
     def _reveal():                                     # after the caller has built the content
+        if not win.winfo_exists():                     # dialog closed before this deferred call ran
+            return
         _apply_minsize()
-        center_over(win, top)                          # centre at the final (content-fitting) size
-        win.deiconify()
-        if modal:
-            try:
-                win.grab_set()
-            except Exception:
-                pass
+        _reveal_centered(win, top, size=_effective_size(), modal=modal)
 
         def _settle():                                 # deferred layouts (flow bars) have run by now
+            if not win.winfo_exists():                 # closed within the settle delay — nothing to do
+                return
             if _apply_minsize():                       # if the floor grew, re-centre for the new size
-                center_over(win, top)
+                center_over(win, top, size=_effective_size())
         win.after(150, _settle)
     win.after_idle(_reveal)
     return win
@@ -758,6 +880,7 @@ def _run_dialog(parent, kind, title, message, buttons, *, default_index=-1, canc
     top = parent.winfo_toplevel() if parent is not None else None
 
     win = tk.Toplevel(top) if top is not None else tk.Toplevel()
+    win.withdraw()                                     # hide until centred (no top-left flash / strand)
     win.title(title)
     win.configure(background=th["panel_bg"])
     win.resizable(False, False)
@@ -805,22 +928,11 @@ def _run_dialog(parent, kind, title, message, buttons, *, default_index=-1, canc
 
     win.update_idletasks()
     w = max(min_width, win.winfo_reqwidth())
-    win.geometry(f"{w}x{win.winfo_reqheight()}")       # enforce the min width; keep natural height
-    center_over(win, top)                              # then centre over the app window
-
-    win.grab_set()
-    # Force the dialog to the front.  Critical when the parent window is still WITHDRAWN (e.g. the
-    # startup auto-update prompt, shown before the main window is mapped): a transient of a hidden
-    # window has no taskbar button, so if it opened behind another app the user would have no way to
-    # reach it and the app would appear hung ("running, no window").  lift + a brief topmost pulse
-    # guarantees it surfaces; we drop topmost again so it doesn't stay pinned over everything.
-    try:
-        win.lift()
-        win.attributes("-topmost", True)
-        win.focus_force()
-        win.after(300, lambda: win.winfo_exists() and win.attributes("-topmost", False))
-    except Exception:
-        pass
+    h = win.winfo_reqheight()
+    win.geometry(f"{w}x{h}")                           # enforce the min width; keep natural height
+    # Shared reveal: centre while withdrawn → show → grab → surface to front.  ``surface`` matters here
+    # because a message dialog can be shown while its parent is still withdrawn (startup prompts).
+    _reveal_centered(win, top, size=(w, h), modal=True, surface=True)
     if focus_btn is not None:
         focus_btn.focus_set()
     win.wait_window()
@@ -829,17 +941,17 @@ def _run_dialog(parent, kind, title, message, buttons, *, default_index=-1, canc
 
 def info(parent, title, message):
     """Themed replacement for ``messagebox.showinfo``.  One OK button."""
-    return _run_dialog(parent, "info", title, message, [(_t("OK"), True, True)])
+    return _run_dialog(parent, "info", title, message, [(_t("common.ok"), True, True)])
 
 
 def warning(parent, title, message):
     """Themed replacement for ``messagebox.showwarning``.  One OK button."""
-    return _run_dialog(parent, "warning", title, message, [(_t("OK"), True, True)])
+    return _run_dialog(parent, "warning", title, message, [(_t("common.ok"), True, True)])
 
 
 def error(parent, title, message):
     """Themed replacement for ``messagebox.showerror``.  One OK button."""
-    return _run_dialog(parent, "error", title, message, [(_t("OK"), True, True)])
+    return _run_dialog(parent, "error", title, message, [(_t("common.ok"), True, True)])
 
 
 def confirm(parent, title, message, *, yes=None, no=None, danger=False):
@@ -847,7 +959,7 @@ def confirm(parent, title, message, *, yes=None, no=None, danger=False):
     ``yes``/``no`` override the button labels; ``danger=True`` styles it as an error (destructive)."""
     kind = "error" if danger else "confirm"
     return _run_dialog(parent, kind, title, message,
-                       [(no or _t("No"), False, False), (yes or _t("Yes"), True, True)],
+                       [(no or _t("ui.no"), False, False), (yes or _t("ui.yes"), True, True)],
                        default_index=1, cancel_value=False)
 
 
@@ -873,4 +985,4 @@ def show_text(parent, title, message, body, *, ok_label=None, height=16, width=7
         txt.configure(state="disabled")                # read-only, but still selectable/copyable
 
     return _run_dialog(parent, "info", title, message,
-                       [(ok_label or _t("OK"), True, True)], build_extra=build, min_width=440)
+                       [(ok_label or _t("common.ok"), True, True)], build_extra=build, min_width=440)

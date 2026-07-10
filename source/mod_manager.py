@@ -29,8 +29,9 @@ import sys
 import threading
 import time
 import tkinter as tk
+import webbrowser
 from pathlib import Path
-from tkinter import filedialog, font, messagebox, ttk
+from tkinter import filedialog, font, ttk
 
 # When running as a PyInstaller --onefile exe, __file__ points to a temp
 # extraction dir; sys.executable is always the real exe location.
@@ -79,6 +80,21 @@ _MGR_STATE_FILE = _LAUNCH_DIR / ".manager_state.json"
 # without the lock two overlapping RMWs can lose an update or tear the JSON, corrupting the deploy
 # tracker that the NEXT deploy relies on to clean up leftovers.
 _MGR_STATE_LOCK = threading.Lock()
+
+
+def _atomic_write_json(path: Path, obj) -> None:
+    """Write ``obj`` as JSON to ``path`` atomically: dump to a sibling ``.tmp`` then ``os.replace`` it
+    into place.  A crash/full-disk mid-write leaves the old file intact (or the ``.tmp``), never a
+    truncated ``path`` — which every reader would silently treat as ``{}`` and thereby wipe the user's
+    whole per-build mod configuration.  Callers must already hold ``_MGR_STATE_LOCK``."""
+    tmp = path.with_name(path.name + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
 _PROFILES_DIR   = _LAUNCH_DIR / "profile"
 _PROFILE_AUTO   = "Auto"   # 'Set Backed-Up Profile' default: apply the newest applicable backup
 _OG_PROFILE_PREFIX = "v3591"   # the OG compat build; its lvl1/lvl100 career presets (profile/v3591-lvl*)
@@ -138,37 +154,42 @@ _ICON_B64: str = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAZjElEQVR4nNV7CZ
 
 # ── RUSE Military Theme ───────────────────────────────────────────────────────
 # Dark navy command-room steel, scratched metallic silver text, military gold
-_R_BG        = "#08101c"   # deep navy black — window bg
-_R_BG_PANEL  = "#0e1a2a"   # navy blue — frame / panel bg
-_R_BG_WIDGET = "#060d18"   # near-black navy — listbox / entry / log bg
-_R_BORDER    = "#243a5c"   # steel blue border
-_R_GOLD      = "#c8a020"   # military gold — primary accent
-_R_GOLD_BRT  = "#e0c030"   # bright gold — headings / selected text
-_R_RED       = "#b03020"   # danger red
-_R_GREEN     = "#3a8030"   # success / OK green (status only)
-_R_TEXT      = "#ccd8e8"   # metallic scratched silver-white — body text
-_R_TEXT_DIM  = "#3e5878"   # muted steel blue — hint / secondary text
-_R_SEL_BG    = "#1a3060"   # selection background
-_R_SEL_FG    = "#e0c030"   # selection foreground
-_R_BTN       = "#122030"   # button face
-_R_BTN_ACT   = "#1e3250"   # button active / hover
+import theme                # single source of truth for the palette; local _R_* names kept unchanged
+_R_BG        = theme.BG
+_R_BG_PANEL  = theme.PANEL
+_R_BG_WIDGET = theme.WIDGET
+_R_BORDER    = theme.BORDER
+_R_GOLD      = theme.GOLD
+_R_GOLD_BRT  = theme.GOLD_BRT
+_R_RED       = theme.RED
+_R_GREEN     = theme.GREEN
+_R_TEXT      = theme.TEXT
+_R_TEXT_DIM  = theme.DIM
+_R_SEL_BG    = theme.SEL_BG
+_R_SEL_FG    = theme.SEL_FG
+_R_BTN       = theme.BTN
+_R_BTN_ACT   = theme.BTN_ACT
 
-# Log tag colors
+# Log tag colours — SEMANTIC by state so the user can read progress at a glance:
+#   step = IN PROGRESS (cyan), ok = DONE (green, reserved for real completion),
+#   warn = warning (yellow), err = failure (red), head = section title, info = neutral detail.
 _DARK_BG  = _R_BG_WIDGET
-_COL_INFO = "#ccd8e8"
-_COL_WARN = _R_GOLD
-_COL_ERR  = "#cc3030"
-_COL_OK   = "#4a9a38"
-_COL_HEAD = _R_GOLD_BRT
+_COL_INFO = "#ccd8e8"   # neutral detail
+_COL_STEP = "#49b7cc"   # cyan — an operation IN PROGRESS / a progress milestone (never means "done")
+_COL_WARN = "#e6c62a"   # yellow — warning
+_COL_ERR  = "#cc3030"   # red — failure
+_COL_OK   = "#46b04a"   # green — DONE (only for actual completion messages)
+_COL_HEAD = _R_GOLD_BRT   # gold — section title
 
 # Fonts
-_F_MAIN = ("Courier New", 9)
-_F_BOLD = ("Courier New", 9,  "bold")
-_F_HEAD = ("Courier New", 10, "bold")
-_F_LOG  = ("Courier New", 9)
+_F_MAIN = theme.F
+_F_BOLD = theme.FB
+_F_HEAD = theme.FHEAD
+_F_LOG  = theme.F
 
-# Matches a numbered line of a shared load order:  1. Mod Name | v1.2.0
-_LO_LINE = re.compile(r'^\d+\.\s+(.+?)(?:\s*\|\s*v?(.+))?$')
+# Strips the leading "N. " from a shared-load-order line, leaving "Name" or "Name | vVersion".  We then
+# split the version off the RIGHT (rsplit on " | v") so a mod NAME that itself contains " | " survives.
+_LO_NUM = re.compile(r'^\d+\.\s+(.+)$')
 
 
 def _is_dir_safe(p: Path) -> bool:
@@ -276,6 +297,7 @@ def _make_log(parent, height=12) -> "_ThemedScrolledText":
     w = _ThemedScrolledText(parent, state="disabled", font=_F_LOG,
                                   wrap="none", height=height)
     w.tag_configure("info", foreground=_COL_INFO)
+    w.tag_configure("step", foreground=_COL_STEP)   # in-progress / milestone (cyan)
     w.tag_configure("warn", foreground=_COL_WARN)
     w.tag_configure("err",  foreground=_COL_ERR)
     w.tag_configure("ok",   foreground=_COL_OK)
@@ -288,7 +310,7 @@ def _make_log(parent, height=12) -> "_ThemedScrolledText":
 def _log(widget, msg, tag="info"):
     # Tkinter is single-threaded: a widget may only be mutated on the main (interpreter) thread.
     # Worker threads (deploy / backup / restore / convert) log freely, so marshal to the main thread
-    # HERE — one safe choke point — instead of wrapping every call site in ``self.after(0, …)``.
+    # HERE — one safe choke point — instead of wrapping every call site in ``self._ui(…)``.
     # after(0) callbacks run FIFO, so message order is preserved.  This is what makes the deploy/backup
     # logging thread-safe; before it, cross-thread widget.insert() corrupted Tcl state and crashed the
     # app mid/near deploy.
@@ -331,10 +353,10 @@ class ModManagerApp(tk.Tk):
         self._set_window_icon()
         self._apply_titlebar_theme()
         self._settings = self._load_settings()
-        # Load the UI language catalog before any widgets are built (English-as-key with fallback, so
-        # this is safe even if lang.json is missing).  Changing the language prompts a restart.
+        # Load the UI language catalog before any widgets are built (stable keys with English
+        # fallback, so this is safe even if lang/ is missing).  Changing the language prompts a restart.
         i18n.load(self._settings.get("default_language", "us"))
-        self.title(t("R.U.S.E. MOD MANAGER — Field Operations"))   # after i18n.load so it localizes
+        self.title(t("mgr.r_u_s_e_mod"))   # after i18n.load so it localizes
         if getattr(self, "_lang_autodetected", False):
             self._save_settings()   # record the OS-detected language so it persists from now on
         # In-exe auto-update.  If a newer release exists on GitHub, the user gets a Yes/No prompt:
@@ -345,12 +367,22 @@ class ModManagerApp(tk.Tk):
         auto_update.run_startup_check(self)
         if not self._settings.get("game_root"):
             self._auto_detect_game_root()
+        self._selected_mod_build = None   # default: follow the INSTALLED build; must precede _bootstrap_folders
+        # Baseline for the 15-s version-check poll: the last installed build it acted on.  Kept SEPARATE
+        # from _mgr_current_ver (which tracks the VIEWED build, and may be a user-selected non-installed
+        # one) so the poll only refreshes on a real installed-build change — not when the user is just
+        # viewing another build's mods.
+        self._last_installed_ver = self._version_subname()
         self._bootstrap_folders()
         self._apply_theme()
         self._mgr_running  = False
         self._conv_running = False
         self._mgr_mod_vars: list = []     # [(BooleanVar, path), ...] — ALL mods, always
         self._mgr_current_ver: str = ""   # BUILD-ID key (v<buildid>) of the currently loaded mod list
+        # _selected_mod_build (set above, before _bootstrap_folders): build id whose mod library is being
+        # viewed/used.  None = follow the installed game.  Lets the user pick a different build's mods
+        # (mods/v<id>/) and deploy them onto the installed build via the version maps.  Deploy target /
+        # cache / backups always stay keyed to the INSTALLED build (_game_build_id).
         self._show_compat_var = tk.BooleanVar(value=False)
         self._scanned_compat: list = []   # Path list from last scan of mods/compat/
         self._scanned_public: list = []   # Path list from last scan of mods/public/
@@ -379,6 +411,18 @@ class ModManagerApp(tk.Tk):
         self._load_mgr_state()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._auto_detect_job = self.after(15000, self._auto_detect_poll)
+        # Centre the MAIN window on screen before showing it.  Tk otherwise leaves an unplaced window at
+        # the WM's default (often a monitor corner) — and since every popup centres over THIS window, a
+        # corner-placed main window makes all the dialogs look corner-placed too.  Move-only (+x+y keeps
+        # the natural/content size); a third down reads as centred.
+        try:
+            self.update_idletasks()
+            w, h = self.winfo_reqwidth(), self.winfo_reqheight()
+            x = (self.winfo_screenwidth() - w) // 2
+            y = (self.winfo_screenheight() - h) // 3
+            self.geometry(f"+{max(x, 0)}+{max(y, 0)}")
+        except Exception:
+            pass
         self.deiconify()   # UI is fully built — show the window (paired with withdraw() at top of __init__)
 
     # ── Bootstrap ─────────────────────────────────────────────────────────────
@@ -398,12 +442,15 @@ class ModManagerApp(tk.Tk):
                 self._backup_dir().mkdir(parents=True, exist_ok=True)
                 self._mod_out_dir().mkdir(parents=True, exist_ok=True)
         except Exception as e:
+            # Always log the real traceback first: this runs before _build_ui, and the friendly dialog
+            # below can MASK a plain bug (e.g. an AttributeError) as a "folder" error — leaving a trail
+            # makes such early-init bugs diagnosable instead of a mystery hang.
+            logging.getLogger(__name__).exception("bootstrap_folders failed")
             # The log widget doesn't exist yet (called before _build_ui), so surface via a dialog.
             try:
                 ui_util.warning(
-                    self, t("Couldn't create working folders"),
-                    t("The Mod Manager couldn't create its working folders:\n\n{err}\n\n"
-                      "Check that its folder isn't read-only, then restart.", err=str(e)))
+                    self, t("mgr.couldn_t_create_working_folders"),
+                    t("mgr.mod_manager_couldn_t_create", err=str(e)))
             except Exception:
                 pass
 
@@ -631,7 +678,7 @@ class ModManagerApp(tk.Tk):
                 f.flush()
                 os.fsync(f.fileno())   # durable before a restart relaunches and re-reads this file
         except Exception as e:
-            ui_util.error(self, t("Save Error"), str(e))
+            ui_util.error(self, t("mgr.save_error"), str(e))
 
     def _auto_detect_game_root(self):
         """Set game_root from Steam on first launch if not already configured."""
@@ -708,6 +755,77 @@ class ModManagerApp(tk.Tk):
         except Exception:
             return ""
 
+    def _effective_mod_build(self) -> str:
+        """Which build's MOD LIBRARY to view/use: the user-selected build if set, else the installed
+        game's build.  Drives the mod folder (_mods_dir) and the game_version gate (_rmod_matches_build).
+        NOT the deploy target — that stays the installed build (_game_build_id)."""
+        # getattr default: _mods_dir runs from _bootstrap_folders early in __init__, before this attr is
+        # assigned — without the default that AttributeError got swallowed into a blocking error dialog.
+        return getattr(self, "_selected_mod_build", None) or self._game_build_id()
+
+    def _available_mod_builds(self) -> list:
+        """Build ids that have a mod library, newest-first (build id descending ~= release order).
+        A build qualifies if it has a mods/v<id>/ folder OR bundled mods, plus the installed build."""
+        base = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
+        found = set()
+        try:
+            for d in base.glob("v*"):
+                if d.is_dir() and d.name[1:].isdigit():
+                    found.add(d.name[1:])
+        except Exception:
+            pass
+        try:
+            found.update(str(b) for b in _gv_mod.known_builds())   # registry builds
+        except Exception:
+            pass
+        if _BUNDLED_MODS_DIR:   # builds whose mods are baked into the exe (bundled_mods/v<id>/)
+            try:
+                for d in _BUNDLED_MODS_DIR.glob("v*"):
+                    if d.is_dir() and d.name[1:].isdigit():
+                        found.add(d.name[1:])
+            except Exception:
+                pass
+        inst = self._game_build_id()
+        if inst:
+            found.add(inst)
+        return sorted((b for b in found if str(b).isdigit()), key=lambda x: int(x), reverse=True)
+
+    def _build_has_rmods(self, bid: str) -> bool:
+        """True if a build has mods in EITHER its mods/v<id>/ folder OR the exe's baked-in
+        bundled_mods/v<id>/ (so a build whose only mods are shipped still counts)."""
+        base = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
+        try:
+            for d in (base / f"v{bid}",
+                      (_BUNDLED_MODS_DIR / f"v{bid}") if _BUNDLED_MODS_DIR else None):
+                if d and d.is_dir() and any(d.glob("*.rmod")):
+                    return True
+        except Exception:
+            pass
+        return False
+
+    def _default_mod_build(self):
+        """Which build to VIEW by default so the list isn't empty on launch: the installed build if it has
+        mods, else the newest OTHER build that does (its mods deploy onto the installed build via the maps).
+        None = follow installed.  Computed WITHOUT _mods_dir/_effective (avoids reading _selected_mod_build
+        while we're deciding it)."""
+        inst = self._game_build_id()
+        if not inst or self._build_has_rmods(inst):
+            return None
+        for b in self._available_mod_builds():
+            if b != inst and self._build_has_rmods(b):
+                return b
+        return None
+
+    def _maybe_suggest_mod_build(self):
+        """If the user is viewing the installed build and it has NO mods, but another build does, log a
+        hint that they can pick that build in the selector to use its mods here."""
+        if not hasattr(self, "_mgr_log") or self._selected_mod_build is not None:
+            return
+        alt = self._default_mod_build()   # non-None only when installed has no mods but another does
+        if alt:
+            _log(self._mgr_log,
+                 t("mgr.no_mods_game_version_v", inst=self._game_build_id(), alt=alt), "warn")
+
     def _version_key(self) -> str:
         """Folder key for build-id-scoped storage (backups, mods): the build id if
         detected, else the legacy format name so things still work without a manifest."""
@@ -767,7 +885,23 @@ class ModManagerApp(tk.Tk):
             except Exception:
                 label = name
             out.append((key, label, d))
+        # Newest-first: build-id backups by descending id (matches the Mod Manager build selector), then
+        # any legacy format-name backups alphabetically.  So a picker's default (first entry, used when the
+        # installed build isn't backed up) lands on the newest version, not the alphabetically-first.
+        out.sort(key=lambda e: (0, -int(e[0])) if str(e[0]).isdigit() else (1, str(e[0]).lower()))
         return out
+
+    def _build_installable(self, build_id) -> bool:
+        """True when `build_id` is a build a Steam branch CURRENTLY serves — i.e. the user could switch
+        to that branch and get exactly this build, then back it up.  A superseded build (its branch has
+        since moved to a newer build) or one absent from the shipped registry is NOT installable as that
+        exact build; its clean files can only come from someone else's backup.  Drives the two variants
+        of the 'backup required' guidance when opening a project."""
+        try:
+            br = _gv_mod.branch_for_build(str(build_id))
+            return bool(br) and str(_gv_mod.build_for_branch(br)) == str(build_id)
+        except Exception:
+            return False
 
     def _read_project_version(self, folder) -> str:
         """The build id / version a project targets, read from its project.json (or '' if unknown)."""
@@ -794,12 +928,8 @@ class ModManagerApp(tk.Tk):
             return True
         ui_util.warning(
             self,
-            t("Backup required"),
-            t("You need a clean backup of your game files before editing a mod.\n\n"
-              "The editors load original files from this backup — never from your live game "
-              "install, which may already contain mods.\n\n"
-              "Go to the Mod Manager tab, set your Game Root if needed, then click "
-              "“Create Backup”. Once that's done, you can open or create a mod project."))
+            t("mgr.backup_required"),
+            t("mgr.need_clean_backup_game_files"))
         return False
 
     def _mod_out_dir(self) -> Path:
@@ -827,36 +957,55 @@ class ModManagerApp(tk.Tk):
                     st = pth.stat()
                     size, mtime = st.st_size, st.st_mtime_ns
                 except OSError:
-                    size, mtime = "?", "?"
+                    # Can't read this mod's bytes right now (transiently locked?) — return None so this
+                    # deploy neither REUSES nor WRITES a cache.  Folding a "?" placeholder into the key
+                    # would let two locked same-name mods collide and defeat the size+mtime invalidation.
+                    return None
             parts.append(f"{pth.name}:{size}:{mtime}")
         return hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()
 
-    def _deploy_cache_dir(self, active: list) -> Path:
+    def _deploy_cache_dir(self, active: list):
         """Folder holding the generated dats for one deployment, keyed by BUILD ID (like the mods
         folder): output/cached_deployments/v<buildid>/<hash>/.  Build-id keying (not the format
         branch) keeps caches distinct between two builds of the same format (e.g. compat-2 vs
         compat-3 vs public, all 'public' format), so a cache hit can't reuse one build's dats on
-        another."""
+        another.  Returns None when the cache key can't be computed (a mod's bytes weren't readable) —
+        callers then skip caching for this deploy."""
+        key = self._deploy_cache_key(active)
+        if key is None:
+            return None
         return (Path(self._settings["working_dir"]) / "output" / "cached_deployments"
-                / self._version_subname() / self._deploy_cache_key(active))
+                / self._version_subname() / key)
 
     @staticmethod
     def _write_deploy_cache(cache_dir: Path, src_root: Path) -> int:
-        """Snapshot the generated dats under src_root into cache_dir (replacing any prior contents).
-        Returns the number of files cached, or -1 on failure."""
+        """Snapshot the generated dats under src_root into cache_dir ATOMICALLY: build a sibling ``.tmp``
+        tree, then rename it into place only once every file is copied.  An interrupted write leaves the
+        ``.tmp`` (harmless, cleaned next time), NEVER a half-populated ``cache_dir`` — so the longest-prefix
+        probe can't reuse a partially-written cache and silently drop mods' edits.  Returns the file count,
+        or -1 on failure."""
+        tmp = cache_dir.parent / (cache_dir.name + ".tmp")
         try:
-            if cache_dir.exists():
-                shutil.rmtree(cache_dir)
-            cache_dir.mkdir(parents=True, exist_ok=True)
+            if tmp.exists():
+                shutil.rmtree(tmp)
+            tmp.mkdir(parents=True, exist_ok=True)
             n = 0
             for src in src_root.rglob("*"):
                 if src.is_file():
-                    dest = cache_dir / src.relative_to(src_root)
+                    dest = tmp / src.relative_to(src_root)
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dest)
                     n += 1
+            if cache_dir.exists():
+                shutil.rmtree(cache_dir)
+            os.replace(tmp, cache_dir)                  # atomic publish — only a complete cache appears
             return n
         except Exception:
+            try:
+                if tmp.exists():
+                    shutil.rmtree(tmp)                  # don't leave a partial temp behind
+            except Exception:
+                pass
             return -1
 
     def _mgr_saved_flag(self, key: str, default: bool) -> bool:
@@ -878,6 +1027,17 @@ class ModManagerApp(tk.Tk):
             self._mgr_cache_flags[key] = v
         return v
 
+    def _saved_entries_for_current_build(self, st: dict) -> list:
+        """The saved mod entries for the CURRENT build id from a loaded state dict.  After migration the
+        per-build list lives under ``builds[ver]``; a pre-migration state file still has the legacy
+        unified ``mods`` list.  (Reading ``mods`` directly is wrong once ``_save_mgr_state`` has run — it
+        migrates to ``builds`` and drops ``mods`` — which silently lost bundled enable/cache choices.)"""
+        cur = self._mgr_current_ver or self._version_subname()
+        builds = st.get("builds")
+        if isinstance(builds, dict):
+            return builds.get(cur, [])
+        return st.get("mods", [])
+
     def _bundled_saved_cache(self) -> dict:
         """{identity-string: cache-flag} for bundled mods from saved state — keyed by stable identity
         (their _MEIPASS path isn't stable across launches), mirroring _bundled_saved_enabled."""
@@ -886,7 +1046,7 @@ class ModManagerApp(tk.Tk):
             try:
                 with open(_MGR_STATE_FILE, encoding="utf-8") as f:
                     st = json.load(f)
-                for e in st.get("mods", []):
+                for e in self._saved_entries_for_current_build(st):
                     bid = e.get("bundled_id")
                     if bid:
                         out[bid] = bool(e.get("cache", False))
@@ -904,12 +1064,15 @@ class ModManagerApp(tk.Tk):
         """Dat rel-paths (forward-slash) the LAST deploy overlaid onto the game, persisted so the NEXT
         deploy can also restore them to clean — even dats the new mod list no longer touches (otherwise
         a dat modified by a previous deploy stays dirty)."""
-        if _MGR_STATE_FILE.exists():
-            try:
-                with open(_MGR_STATE_FILE, encoding="utf-8") as f:
-                    return list(json.load(f).get("deployed_dats", []))
-            except Exception:
-                pass
+        # Read under the lock: a worker's _mgr_set_deployed_dats / _save_mgr_state could otherwise be
+        # mid-write and this read would see a torn file and wrongly return [] (skipping leftover cleanup).
+        with _MGR_STATE_LOCK:
+            if _MGR_STATE_FILE.exists():
+                try:
+                    with open(_MGR_STATE_FILE, encoding="utf-8") as f:
+                        return list(json.load(f).get("deployed_dats", []))
+                except Exception:
+                    pass
         return []
 
     def _mgr_set_deployed_dats(self, rels):
@@ -926,10 +1089,11 @@ class ModManagerApp(tk.Tk):
                     existing = {}
             existing["deployed_dats"] = sorted(set(rels))
             try:
-                with open(_MGR_STATE_FILE, "w", encoding="utf-8") as f:
-                    json.dump(existing, f, indent=2)
+                _atomic_write_json(_MGR_STATE_FILE, existing)
             except Exception:
-                pass
+                # This tracker drives leftover-dat cleanup on the NEXT deploy — a silent write failure
+                # would leave modded dats dirty in the install while the user is told it deployed.
+                logging.exception("Failed to persist deployed_dats to %s", _MGR_STATE_FILE)
 
     def _conv_out_dir(self) -> Path:
         return Path(self._settings["working_dir"]) / "output" / "converter_output"
@@ -942,7 +1106,7 @@ class ModManagerApp(tk.Tk):
         _stamp_legacy_rmods). When no build id is detected, returns the mods ROOT (no rmods
         live there → empty list)."""
         base = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
-        bid = self._game_build_id()
+        bid = self._effective_mod_build()
         if not bid:
             return base
         dest = base / f"v{bid}"
@@ -959,8 +1123,8 @@ class ModManagerApp(tk.Tk):
     def _rmod_filter(self) -> list:
         """Return the file dialog filter list for the current game mode."""
         if self._game_version() == "compat":
-            return [(t("R.U.S.E. COMPAT Mod files"), "*.compat.rmod"), (t("All files"), "*.*")]
-        return [(t("R.U.S.E. Mod files"), "*.rmod"), (t("All files"), "*.*")]
+            return [(t("mgr.r_u_s_e_compat"), "*.compat.rmod"), (t("common.all_files"), "*.*")]
+        return [(t("mgr.r_u_s_e_mod_2"), "*.rmod"), (t("common.all_files"), "*.*")]
 
     def _get_mod_files(self) -> list:
         """Return the filtered list of mod paths to show, from the scan caches.
@@ -1021,7 +1185,9 @@ class ModManagerApp(tk.Tk):
     def _on_tab_changed(self, _=None):
         idx = self._nb.index("current")
         if idx == 1:
-            self._reset_convert_tab()
+            self._reset_convert_tab()          # also re-lists the backed-up versions (Make mod for version)
+        elif idx == 2:
+            self._ed_refresh_target_versions()  # re-list the backed-up versions in the Game Version picker
 
     # =========================================================================
     # MOD MANAGER TAB
@@ -1031,33 +1197,33 @@ class ModManagerApp(tk.Tk):
         pad = {"padx": 6, "pady": 3}
 
         # ── Setup checklist ───────────────────────────────────────────────────
-        sf = ttk.LabelFrame(p, text=t("Setup Checklist  —  complete steps 1 and 2 before deploying mods"))
+        sf = ttk.LabelFrame(p, text=t("mgr.setup_checklist_complete_steps_1"))
         sf.pack(fill="x", **pad)
         sf.columnconfigure(1, weight=1)
 
-        ttk.Label(sf, text=t("Step 1"), font=_F_BOLD, foreground=_R_GOLD
+        ttk.Label(sf, text=t("mgr.step_1"), font=_F_BOLD, foreground=_R_GOLD
                   ).grid(row=0, column=0, padx=(8, 4), pady=(6, 2), sticky="w")
-        self._mgr_s1_lbl = tk.Label(sf, text=t("Checking…"),
+        self._mgr_s1_lbl = tk.Label(sf, text=t("mgr.checking"),
                                     font=_F_LOG, background=_R_BG_PANEL,
                                     foreground=_R_GOLD, anchor="w")
         self._mgr_s1_lbl.grid(row=0, column=1, sticky="ew", padx=4, pady=(6, 2))
-        ttk.Button(sf, text=t("Open Settings"),
+        ttk.Button(sf, text=t("mgr.open_settings"),
                    command=lambda: self._nb.select(3)
                    ).grid(row=0, column=2, padx=6, pady=(6, 2))
 
-        ttk.Label(sf, text=t("Step 2"), font=_F_BOLD, foreground=_R_GOLD
+        ttk.Label(sf, text=t("mgr.step_2"), font=_F_BOLD, foreground=_R_GOLD
                   ).grid(row=1, column=0, padx=(8, 4), pady=(2, 6), sticky="w")
-        self._mgr_s2_lbl = tk.Label(sf, text=t("Checking…"),
+        self._mgr_s2_lbl = tk.Label(sf, text=t("mgr.checking"),
                                     font=_F_LOG, background=_R_BG_PANEL,
                                     foreground=_R_GOLD, anchor="w")
         self._mgr_s2_lbl.grid(row=1, column=1, sticky="ew", padx=4, pady=(2, 6))
         bbf = ttk.Frame(sf)
         bbf.grid(row=1, column=2, padx=6, pady=(2, 6))
-        self._mgr_backup_btn = ttk.Button(bbf, text=t("Create Backup"),
+        self._mgr_backup_btn = ttk.Button(bbf, text=t("mgr.create_backup"),
                                           command=self._mgr_create_backup,
                                           state="disabled")
         self._mgr_backup_btn.pack(side="left", padx=2)
-        self._mgr_restore_btn = ttk.Button(bbf, text=t("Restore Clean"),
+        self._mgr_restore_btn = ttk.Button(bbf, text=t("mgr.restore_clean"),
                                            command=self._mgr_restore_clean,
                                            state="disabled")
         self._mgr_restore_btn.pack(side="left", padx=2)
@@ -1073,7 +1239,7 @@ class ModManagerApp(tk.Tk):
         vpw.add(hpw, weight=3)
 
         # ── Mod list ──────────────────────────────────────────────────────────
-        mf = ttk.LabelFrame(hpw, text=t("Mods  (☑ = active)"))
+        mf = ttk.LabelFrame(hpw, text=t("mgr.mods_active"))
         hpw.add(mf, weight=2)
 
         tb = ttk.Frame(mf)
@@ -1083,20 +1249,20 @@ class ModManagerApp(tk.Tk):
         # Import Order / Share Order are pinned RIGHT (they act on the whole order, not a selection);
         # the rest stay left-aligned.
         tb_btns = [
-            ttk.Button(tb, text=t("Scan Mods Folder"), command=self._mgr_scan),
-            ttk.Button(tb, text=t("Add .rmod…"), command=self._mgr_add),
-            ttk.Button(tb, text=t("Remove Selected"), command=self._mgr_remove),
-            ttk.Button(tb, text=t("Clear All"), command=self._mgr_clear),
-            ttk.Button(tb, text=t("Browse rmods"), command=self._mgr_browse_mods),
+            ttk.Button(tb, text=t("mgr.scan_mods_folder"), command=self._mgr_scan),
+            ttk.Button(tb, text=t("mgr.add_rmod"), command=self._mgr_add),
+            ttk.Button(tb, text=t("mgr.remove_selected"), command=self._mgr_remove),
+            ttk.Button(tb, text=t("mgr.clear_all"), command=self._mgr_clear),
+            ttk.Button(tb, text=t("mgr.browse_rmods"), command=self._mgr_browse_mods),
         ]
         tb_btns_right = [
-            ttk.Button(tb, text=t("Import Order…"), command=self._mgr_import_order),
-            ttk.Button(tb, text=t("Share Order"), command=self._mgr_share_order),
+            ttk.Button(tb, text=t("mgr.import_order"), command=self._mgr_import_order),
+            ttk.Button(tb, text=t("mgr.share_order"), command=self._mgr_share_order),
         ]
         ui_util.flow(tb, tb_btns, right=tb_btns_right)
 
         ttk.Label(mf,
-                  text=t("TOP loads first  —  BOTTOM overrides.  Use ▲ ▼ to reorder."),
+                  text=t("mgr.top_loads_first_bottom_overrides"),
                   font=_F_LOG, foreground=_R_GOLD,
                   ).pack(anchor="w", padx=6, pady=(4, 2))
 
@@ -1105,7 +1271,7 @@ class ModManagerApp(tk.Tk):
 
         ob = ttk.Frame(lf)
         ob.pack(side="right", fill="y", padx=(2, 2), pady=2)
-        ttk.Label(ob, text=t("earlier"), font=_F_LOG,
+        ttk.Label(ob, text=t("mgr.earlier"), font=_F_LOG,
                   foreground=_R_TEXT_DIM).pack(pady=(2, 0))
         ttk.Button(ob, text="⇈", width=3, command=self._mgr_top).pack(fill="x")
         ttk.Button(ob, text="▲", width=3, command=self._mgr_up).pack(
@@ -1114,14 +1280,17 @@ class ModManagerApp(tk.Tk):
             fill="x", pady=(2, 0))
         ttk.Button(ob, text="⇊", width=3, command=self._mgr_bottom).pack(
             fill="x", pady=(2, 0))
-        ttk.Label(ob, text=t("later"), font=_F_LOG,
+        ttk.Label(ob, text=t("mgr.later"), font=_F_LOG,
                   foreground=_R_TEXT_DIM).pack()
-        self._compat_toggle_btn = tk.Button(
-            ob, text=t("COMPAT  ○"), width=9,
-            background=_R_BTN, foreground=_R_TEXT_DIM,
-            activebackground=_R_BTN_ACT, activeforeground=_R_TEXT,
-            relief="flat", font=_F_LOG,
-            command=self._mgr_toggle_compat)
+        # Build selector: which build's mod library to view/use.  Replaces the old COMPAT toggle — instead
+        # of mixing formats, you pick a build; deploying onto a different installed build uses the version
+        # maps (remap + stale flags).  Newest-first (release order).
+        ttk.Label(ob, text=t("mgr.mods"), font=_F_LOG,
+                  foreground=_R_TEXT_DIM).pack(pady=(8, 0))
+        self._mod_build_var = tk.StringVar()
+        self._mod_build_cb = ttk.Combobox(ob, textvariable=self._mod_build_var,
+                                          state="readonly", width=11, font=_F_LOG)
+        self._mod_build_cb.bind("<<ComboboxSelected>>", self._on_mod_build_select)
 
         self._mgr_lb = tk.Listbox(lf, selectmode="extended",
                                   activestyle="none",
@@ -1143,26 +1312,26 @@ class ModManagerApp(tk.Tk):
         # unless exactly one external (non-bundled) mod is selected (see _mgr_update_btn_state).
         eb = ttk.Frame(mf)
         eb.pack(fill="x", padx=4, pady=(2, 6))
-        self._mgr_update_btn = ttk.Button(eb, text=t("Update .rmod"),
+        self._mgr_update_btn = ttk.Button(eb, text=t("mgr.update_rmod"),
                                           command=self._mgr_update_rmod, state="disabled")
         # 'Share Mod' opens GitHub's upload page for the selected external rmod, pointed at the exact
         # source/example_mods/v<buildid>/ folder build.py pulls community mods from — same single-
         # external-selection gate as 'Update .rmod' (see _mgr_update_btn_state).
-        self._mgr_share_btn = ttk.Button(eb, text=t("📤  Share Mod"),
+        self._mgr_share_btn = ttk.Button(eb, text=t("mgr.share_mod_2"),
                                          command=self._mgr_share_mod, state="disabled")
         eb_btns = [
-            ttk.Button(eb, text=t("☑  Enable Selected"), command=self._mgr_enable_selected),
-            ttk.Button(eb, text=t("☐  Disable Selected"), command=self._mgr_disable_selected),
-            ttk.Button(eb, text=t("All Off"), command=self._mgr_disable_all),
+            ttk.Button(eb, text=t("mgr.enable_selected"), command=self._mgr_enable_selected),
+            ttk.Button(eb, text=t("mgr.disable_selected"), command=self._mgr_disable_selected),
+            ttk.Button(eb, text=t("mgr.all_off"), command=self._mgr_disable_all),
             self._mgr_update_btn,
             self._mgr_share_btn,
         ]
         ui_util.flow(eb, eb_btns)
 
         # ── Selected mod detail ───────────────────────────────────────────────
-        df = ttk.LabelFrame(hpw, text=t("Selected Mod"))
+        df = ttk.LabelFrame(hpw, text=t("mgr.selected_mod"))
         hpw.add(df, weight=1)
-        self._mgr_detail_meta = tk.StringVar(value=t("Select a mod to see details."))
+        self._mgr_detail_meta = tk.StringVar(value=t("mgr.select_mod_see_details"))
         ttk.Label(df, textvariable=self._mgr_detail_meta,
                   justify="left", font=_F_LOG).pack(padx=8, pady=(6, 2), anchor="w")
         self._mgr_detail_desc = _ThemedScrolledText(
@@ -1173,7 +1342,7 @@ class ModManagerApp(tk.Tk):
         self._mgr_detail_desc.pack(fill="both", expand=True, padx=6, pady=(2, 6))
 
         # ── Log ───────────────────────────────────────────────────────────────
-        lf2 = ttk.LabelFrame(vpw, text=t("Log"))
+        lf2 = ttk.LabelFrame(vpw, text=t("mgr.log"))
         vpw.add(lf2, weight=1)
         self._mgr_log = _make_log(lf2)
         self._mgr_log.pack(fill="both", expand=True, padx=4, pady=4)
@@ -1184,34 +1353,34 @@ class ModManagerApp(tk.Tk):
         # ── Actions bar ───────────────────────────────────────────────────────
         af = ttk.Frame(p)
         self._mgr_dry = tk.BooleanVar(value=False)
-        cb_dry = ttk.Checkbutton(af, text=t("Dry run (no files written)"),
+        cb_dry = ttk.Checkbutton(af, text=t("mgr.dry_run_no_files_written"),
                                  variable=self._mgr_dry)
         cb_dry.pack(side="left", padx=4)
         # Master switch (default ON): when off, never cache or reuse — always apply patches fresh.
         self._mgr_cache_enabled = tk.BooleanVar(value=self._mgr_saved_flag("cache_enabled", True))
-        cb_cache = ttk.Checkbutton(af, text=t("Cache enabled"), variable=self._mgr_cache_enabled,
+        cb_cache = ttk.Checkbutton(af, text=t("mgr.cache_enabled"), variable=self._mgr_cache_enabled,
                                    command=self._save_mgr_state)
         cb_cache.pack(side="left", padx=4)
         # When ON (default), each rmod row shows a far-right "cache" toggle; only the prefixes ending at a
         # ticked mod are cached (controls disk).  When OFF, only the full deployment result is cached.
         self._mgr_per_mod_cache = tk.BooleanVar(value=self._mgr_saved_flag("per_mod_cache", True))
-        cb_pmc = ttk.Checkbutton(af, text=t("Per-mod cache points"), variable=self._mgr_per_mod_cache,
+        cb_pmc = ttk.Checkbutton(af, text=t("mgr.per_mod_cache_points"), variable=self._mgr_per_mod_cache,
                                  command=self._mgr_on_per_mod_cache_toggle)
         cb_pmc.pack(side="left", padx=4)
         # When OFF (default), reuse cached generated dats instead of re-applying patches; when ON, always
         # rebuild the dats (bypasses cache reuse) and re-cache them.
         self._mgr_regen = tk.BooleanVar(value=False)
-        cb_regen = ttk.Checkbutton(af, text=t("Always regenerate dat files"),
+        cb_regen = ttk.Checkbutton(af, text=t("mgr.always_regenerate_dat_files"),
                                    variable=self._mgr_regen)
         cb_regen.pack(side="left", padx=4)
-        ttk.Button(af, text=t("Clear Log"),
+        ttk.Button(af, text=t("mgr.clear_log"),
                    command=lambda: _log_clear(self._mgr_log)).pack(
             side="right", padx=4)
         # Right cluster packs right→left, so packing Launch then Deploy renders them Deploy | Launch.
-        self._mgr_launch_btn = ttk.Button(af, text=t("🎮  Launch R.U.S.E."),
+        self._mgr_launch_btn = ttk.Button(af, text=t("mgr.launch_r_u_s_e"),
                                           command=self._mgr_launch_game)
         self._mgr_launch_btn.pack(side="right", padx=4)
-        self._mgr_deploy_btn = ttk.Button(af, text=t("▶  Deploy Mods"),
+        self._mgr_deploy_btn = ttk.Button(af, text=t("mgr.deploy_mods"),
                                           command=self._mgr_deploy)
         self._mgr_deploy_btn.pack(side="right", padx=4)
 
@@ -1222,15 +1391,15 @@ class ModManagerApp(tk.Tk):
         self._mgr_af_compact = False
         self._mgr_af_full_req = 0
         self._mgr_af_labels = [
-            (cb_dry,                t("Dry run (no files written)"), t("Dry run")),
-            (cb_cache,              t("Cache enabled"),              t("Cache")),
-            (cb_pmc,                t("Per-mod cache points"),       t("Per-mod")),
-            (cb_regen,              t("Always regenerate dat files"), t("Regen")),
-            (self._mgr_launch_btn,  t("🎮  Launch R.U.S.E."),         t("🎮  Launch")),
+            (cb_dry,                t("mgr.dry_run_no_files_written"), t("mgr.dry_run")),
+            (cb_cache,              t("mgr.cache_enabled"),              t("mgr.cache")),
+            (cb_pmc,                t("mgr.per_mod_cache_points"),       t("mgr.per_mod")),
+            (cb_regen,              t("mgr.always_regenerate_dat_files"), t("mgr.regen")),
+            (self._mgr_launch_btn,  t("mgr.launch_r_u_s_e"),         t("mgr.launch")),
         ]
         af.bind("<Configure>", self._mgr_af_relayout)
 
-        self._mgr_foot = tk.StringVar(value=t("Ready."))
+        self._mgr_foot = tk.StringVar(value=t("mgr.ready"))
         foot_lbl = ttk.Label(p, textvariable=self._mgr_foot, anchor="w")
 
         # ── Pack order (the part that keeps the bottom buttons visible) ─────────
@@ -1284,20 +1453,17 @@ class ModManagerApp(tk.Tk):
         if game_ready:
             ver = self._game_version()
             ver_label = "R.U.S.E." if ver == "public" else "R.U.S.E. COMPAT"
-            s1_text     = t("Done  —  {ver_label}  |  {game_root}", ver_label=ver_label, game_root=game_root)
+            s1_text     = t("mgr.done_ver_label_game_root", ver_label=ver_label, game_root=game_root)
             s1_text_set = s1_text
             s1_color    = _COL_OK
         elif game_root:
             s1_text = s1_text_set = t(
-                "Game Root unreachable  —  {game_root}\nThe folder can't be found "
-                "(its drive may have been removed).  Re-set the Game Root Directory in Settings.",
+                "mgr.game_root_unreachable_game_root",
                 game_root=game_root)
             s1_color = _COL_ERR
         else:
-            s1_text     = t("Incomplete  —  Click 'Open Settings', set the Game Root Directory"
-                            " to your R.U.S.E. install folder, then come back.")
-            s1_text_set = t("Incomplete  —  Browse to your R.U.S.E. install folder"
-                            " using the Game Root Directory field below.")
+            s1_text     = t("mgr.incomplete_click_open_settings_set")
+            s1_text_set = t("mgr.incomplete_browse_r_u_s")
             s1_color    = _COL_ERR
         self._mgr_s1_lbl.configure(text=s1_text, foreground=s1_color)
         if hasattr(self, "_set_s1_lbl"):
@@ -1322,15 +1488,14 @@ class ModManagerApp(tk.Tk):
             ver_label = "R.U.S.E. COMPAT " if self._game_version() == "compat" else ""
         n = sum(1 for _ in bd.rglob("*.dat")) if bd.exists() else 0
         if not game_root:
-            s2_text  = t("Incomplete  —  Set the Game Root Directory first.")
+            s2_text  = t("mgr.incomplete_set_game_root_directory")
             s2_color = _COL_ERR
         elif n > 0:
-            s2_text  = t("Done  —  {ver_label}backup ready ({n} .dat files).  You can now deploy mods.",
+            s2_text  = t("mgr.done_ver_label_backup_ready",
                          ver_label=ver_label, n=n)
             s2_color = _COL_OK
         else:
-            s2_text  = t("Incomplete  —  No {ver_label}backup found."
-                         "  Click 'Create Backup' before deploying.", ver_label=ver_label)
+            s2_text  = t("mgr.incomplete_no_ver_label_backup", ver_label=ver_label)
             s2_color = _COL_ERR
         self._mgr_s2_lbl.configure(text=s2_text, foreground=s2_color)
         if hasattr(self, "_set_s2_lbl"):
@@ -1341,23 +1506,20 @@ class ModManagerApp(tk.Tk):
         if hasattr(self, "_set_restore_btn"):
             self._set_restore_btn.configure(state=restore_state)
 
-        if hasattr(self, "_compat_toggle_btn"):
-            if self._game_version() == "public":
-                self._compat_toggle_btn.pack(fill="x", pady=(8, 0))
-                self._mgr_update_compat_btn()
-            else:
-                self._compat_toggle_btn.pack_forget()
+        if hasattr(self, "_mod_build_cb"):
+            self._mod_build_cb.pack(fill="x", pady=(0, 2))
+            self._refresh_mod_build_cb()
         self._cv_refresh_labels()
 
     def _cv_refresh_labels(self):
         """Update Convert/Create tab button labels and hints to reflect current game mode."""
         ext = self._rmod_ext()
         if hasattr(self, "_cv_btn"):
-            self._cv_btn.configure(text=t("▶  Convert to {ext}", ext=ext))
+            self._cv_btn.configure(text=t("mgr.convert_ext", ext=ext))
         if hasattr(self, "_cr_load_btn"):
-            self._cr_load_btn.configure(text=t("Load {ext} to Edit", ext=ext))
+            self._cr_load_btn.configure(text=t("mgr.load_ext_edit", ext=ext))
         if hasattr(self, "_cr_save_btn"):
-            self._cr_save_btn.configure(text=t("Save as {ext}", ext=ext))
+            self._cr_save_btn.configure(text=t("mgr.save_as_ext", ext=ext))
 
     def _mgr_label(self, var, path) -> str:
         chk = "☑" if var.get() else "☐"
@@ -1381,25 +1543,39 @@ class ModManagerApp(tk.Tk):
             base = base.ljust(_CACHE_MARK_COL) + mark
         return base
 
-    def _mgr_toggle_compat(self):
-        self._show_compat_var.set(not self._show_compat_var.get())
-        self._mgr_update_compat_btn()
-        if self._game_version() == "public":
-            self._mgr_rebuild()
-
-    def _mgr_update_compat_btn(self):
-        if not hasattr(self, "_compat_toggle_btn"):
+    def _refresh_mod_build_cb(self):
+        """Populate the build selector with available mod-library builds (newest-first) and show the
+        current effective build.  Labels are the raw build id 'v<id>' (friendly branch names aren't
+        reliable across builds), with '(installed)' marking the installed one."""
+        if not hasattr(self, "_mod_build_cb"):
             return
-        if self._show_compat_var.get():
-            self._compat_toggle_btn.configure(
-                text=t("COMPAT  ●"),
-                foreground=_R_GOLD,
-                background=_R_BTN_ACT)
-        else:
-            self._compat_toggle_btn.configure(
-                text=t("COMPAT  ○"),
-                foreground=_R_TEXT_DIM,
-                background=_R_BTN)
+        builds = self._available_mod_builds()
+        inst = self._game_build_id()
+        self._mod_build_choices = {}   # label -> build id
+        labels = []
+        for b in builds:
+            label = f"v{b}" + (t("mgr.installed") if b == inst else "")
+            self._mod_build_choices[label] = b
+            labels.append(label)
+        self._mod_build_cb.configure(values=labels)
+        cur = self._effective_mod_build()
+        for label, b in self._mod_build_choices.items():
+            if b == cur:
+                self._mod_build_var.set(label)
+                break
+
+    def _on_mod_build_select(self, _evt=None):
+        """User picked a build in the selector: repoint the whole mod list to that build's library and
+        RELOAD it (re-scan mods/v<id>/ + rebuild the list for that build), not just redraw.  Selecting
+        the installed build clears the override.  Deploy still targets the installed build."""
+        label = self._mod_build_var.get()
+        picked = getattr(self, "_mod_build_choices", {}).get(label)
+        if not picked:
+            return
+        self._selected_mod_build = None if picked == self._game_build_id() else picked
+        self._scan_bundled()                               # re-scan bundled_mods/v<selected>/ (baked-in mods)
+        self._mgr_scan_both()                              # re-scan the now-repointed mods/v<selected>/
+        self._mgr_load_mode(self._effective_mod_build())   # rebuild the list for the selected build
 
     def _mgr_add_path(self, path: str):
         key = self._norm_path(path)
@@ -1409,9 +1585,8 @@ class ModManagerApp(tk.Tk):
         if self._bundled_keys and self._rmod_identity(path) in self._bundled_keys:
             ui_util.info(
                 self,
-                t("Shipped (SAFE) mod takes precedence"),
-                t("A SAFE mod with the same name and major version ships with the app and overrides this "
-                  "one, so it wasn't added.\n\nChange its name or major version to add it as a separate mod."))
+                t("mgr.shipped_safe_mod_takes_precedence"),
+                t("mgr.safe_mod_same_name_major"))
             return
         var = tk.BooleanVar(value=False)
         self._mgr_mod_vars.append((var, path))
@@ -1463,6 +1638,7 @@ class ModManagerApp(tk.Tk):
         self._mgr_lb.insert(lb_idx, self._mgr_label(var, path))
         self._mgr_lb.selection_set(lb_idx)
         self._mgr_lb.yview_moveto(yview[0])
+        self._mgr_update_btn_state()   # selection just changed → keep Update/Share enablement honest
 
     def _mgr_lb_click(self, event):
         lb_idx  = self._mgr_lb.nearest(event.y)
@@ -1472,6 +1648,10 @@ class ModManagerApp(tk.Tk):
         mv_idx = visible[lb_idx]
         bb = self._mgr_lb.bbox(lb_idx)
         if not bb:
+            return
+        # `nearest()` clamps to the last row, so a click in the empty area BELOW the list would otherwise
+        # toggle the last mod's enabled/cache state. Only act if the click is inside the row's y-span.
+        if not (bb[1] <= event.y <= bb[1] + bb[3]):
             return
         f = font.Font(font=self._mgr_lb.cget("font"))
         # Far-right "cache" marker (only present in Per-mod cache mode): the trailing fixed-length
@@ -1514,13 +1694,18 @@ class ModManagerApp(tk.Tk):
         self._mgr_redraw_list()
 
     def _mgr_enable_all(self):
-        for var, _ in self._mgr_mod_vars:
-            var.set(True)
+        # Only the VISIBLE rows — never flip a mod hidden by the compat toggle or the current mode.
+        # Enabling a hidden compat mod would let it deploy against a public game (Deploy reads raw
+        # v.get()); _mgr_redraw_list (unlike _mgr_rebuild) does not re-hide it.
+        for mv_idx in self._visible_mv_indices():
+            self._mgr_mod_vars[mv_idx][0].set(True)
         self._mgr_redraw_list()
 
     def _mgr_disable_all(self):
-        for var, _ in self._mgr_mod_vars:
-            var.set(False)
+        # Only the VISIBLE rows — a hidden mod's enabled flag is preserved on disk by _save_mgr_state's
+        # prior_enabled path, so "All Off" must not silently clear (or leave) hidden mods.
+        for mv_idx in self._visible_mv_indices():
+            self._mgr_mod_vars[mv_idx][0].set(False)
         self._mgr_redraw_list()
 
     def _mgr_update_btn_state(self):
@@ -1561,8 +1746,8 @@ class ModManagerApp(tk.Tk):
         if self._is_bundled(path):
             ui_util.warning(
                 self,
-                t("Update .rmod"),
-                t("This is a shipped (bundled) mod — it's baked into the exe and can't be updated externally."))
+                t("mgr.update_rmod"),
+                t("mgr.shipped_bundled_mod_s_baked"))
             return
         name = Path(path).name
         branch = "compat" if name.lower().endswith(".compat.rmod") else "public"
@@ -1570,16 +1755,16 @@ class ModManagerApp(tk.Tk):
         if root is None:
             ui_util.error(
                 self,
-                t("Update .rmod"),
-                t("No clean {branch} originals available — create a {branch} backup (or set a matching Game Root) first.",
+                t("mgr.update_rmod"),
+                t("mgr.no_clean_branch_originals_available",
                   branch=branch))
             return
         self._conv_running = True
         self._mgr_update_btn.configure(state="disabled")
-        _log(self._mgr_log, t("Updating {name} to the current format…", name=name), "head")
+        _log(self._mgr_log, t("mgr.updating_name_current_format", name=name), "head")
 
         def _work():
-            def wf(m): self.after(0, lambda m=m: _log(self._mgr_log, f"  {m}", "warn"))
+            def wf(m): self._ui(lambda m=m: _log(self._mgr_log, f"  {m}", "warn"))
             err = None
             try:
                 status = update_rmod(path, str(root), branch,
@@ -1591,13 +1776,13 @@ class ModManagerApp(tk.Tk):
                 self._conv_running = False
                 self._mgr_update_btn_state()
                 if err:
-                    _log(self._mgr_log, t("ERROR: {e}", e=err), "err")
+                    _log(self._mgr_log, t("mgr.error_e_3", e=err), "err")
                 tag = {"updated": "ok", "unchanged": "info",
                        "skipped": "warn", "failed": "err"}.get(status, "info")
-                label = {"updated": t("updated"), "unchanged": t("unchanged"),
-                         "skipped": t("skipped"), "failed": t("failed")}.get(status, status)
-                _log(self._mgr_log, t("{name}: {label}", name=name, label=label), tag)
-            self.after(0, _done)
+                label = {"updated": t("mgr.updated"), "unchanged": t("mgr.unchanged"),
+                         "skipped": t("mgr.skipped"), "failed": t("mgr.failed_2")}.get(status, status)
+                _log(self._mgr_log, t("mgr.name_label", name=name, label=label), tag)
+            self._ui(_done)
         threading.Thread(target=_work, daemon=True).start()
 
     def _mgr_share_mod(self):
@@ -1607,7 +1792,6 @@ class ModManagerApp(tk.Tk):
         reveal the .rmod in Explorer, highlighted, ready to drag onto the page.  GitHub does the
         rest: a signed-in user without push access is auto-forked and gets a 'Propose changes' pull
         request, which the PR template then fills in.  No git, no tokens, no folder-picking."""
-        import webbrowser
         if getattr(self, "_conv_running", False) or getattr(self, "_mgr_running", False):
             return
         sel = self._mgr_lb.curselection()
@@ -1621,8 +1805,8 @@ class ModManagerApp(tk.Tk):
         if self._is_bundled(path):
             ui_util.info(
                 self,
-                t("Share Mod"),
-                t("“{name}” is already part of the built-in pack — no need to share it.", name=name))
+                t("mgr.share_mod"),
+                t("mgr.name_already_part_built_pack", name=name))
             return
 
         # The repo folder mirrors the local mods/v<buildid>/ layout, so the file's OWN parent folder
@@ -1634,9 +1818,8 @@ class ModManagerApp(tk.Tk):
         if not re.fullmatch(r"v\d+", sub or ""):
             ui_util.warning(
                 self,
-                t("Share Mod"),
-                t("Couldn't tell which game version this mod is for, so it can't be shared "
-                  "automatically.\n\nMake sure the game is detected in Settings, then try again."))
+                t("mgr.share_mod"),
+                t("mgr.couldn_t_tell_which_game"))
             return
         try:
             label = _gv_mod.display_name(sub[1:])
@@ -1647,13 +1830,8 @@ class ModManagerApp(tk.Tk):
                f"source/example_mods/{sub}")
         if not ui_util.confirm(
                 self,
-                t("Share Mod"),
-                t("Share “{name}” with the community?\n\n"
-                  "This opens GitHub in your web browser, on the upload page for the {label} folder. "
-                  "Drag the mod file onto that page, then click “Propose changes” — GitHub creates the "
-                  "request for you.\n\n"
-                  "You'll need a free GitHub account and to be signed in. We'll also open the mod's "
-                  "folder so it's ready to drag in.", name=name, label=label)):
+                t("mgr.share_mod"),
+                t("mgr.share_name_community_opens_github", name=name, label=label)):
             return
 
         try:
@@ -1663,8 +1841,8 @@ class ModManagerApp(tk.Tk):
         if not opened:
             ui_util.error(
                 self,
-                t("Share Mod"),
-                t("Couldn't open your web browser. You can upload the mod here:\n{url}", url=url))
+                t("mgr.share_mod"),
+                t("mgr.couldn_t_open_web_browser", url=url))
             return
         # Reveal the .rmod in Explorer, highlighted, so it's ready to drag onto the upload page.
         try:
@@ -1673,14 +1851,13 @@ class ModManagerApp(tk.Tk):
         except Exception:
             pass
         _log(self._mgr_log,
-             t("Sharing {name}: opened GitHub's upload page for the {label} folder. Drag the file in, "
-               "then click “Propose changes”.", name=name, label=label), "info")
+             t("mgr.sharing_name_opened_github_s", name=name, label=label), "info")
 
     def _mgr_on_select(self, _=None):
         self._mgr_update_btn_state()
         sel = self._mgr_lb.curselection()
         if not sel:
-            self._mgr_detail_meta.set(t("Select a mod to see details."))
+            self._mgr_detail_meta.set(t("mgr.select_mod_see_details"))
             self._mgr_set_desc("")
             return
         visible = self._visible_mv_indices()
@@ -1693,16 +1870,16 @@ class ModManagerApp(tk.Tk):
                 d = json.load(f)
             line1 = "   |   ".join(
                 f"{label}: {d[k]}"
-                for k, label in [("name", t("Name")), ("author", t("Author"))]
+                for k, label in [("name", t("mgr.name_2")), ("author", t("common.author"))]
                 if k in d
             )
             n = sum(len(pg.get("changes", [])) for pg in d.get("patches", []))
-            ver   = t("Version: {version}", version=d['version']) if "version" in d else ""
-            line2 = "   |   ".join(filter(None, [ver, t("NDF changes: {n}", n=n)]))
+            ver   = t("mgr.version_version", version=d['version']) if "version" in d else ""
+            line2 = "   |   ".join(filter(None, [ver, t("mgr.ndf_changes_n", n=n)]))
             self._mgr_detail_meta.set(f"{line1}\n{line2}" if line1 else line2)
             self._mgr_set_desc(d.get("description", ""))
         except Exception:
-            self._mgr_detail_meta.set(t("File: {path}", path=path))
+            self._mgr_detail_meta.set(t("mgr.file_path", path=path))
             self._mgr_set_desc("")
 
     def _mgr_set_desc(self, text: str):
@@ -1741,9 +1918,8 @@ class ModManagerApp(tk.Tk):
         active = [(var, path) for idx in visible
                   for var, path in [self._mgr_mod_vars[idx]] if var.get()]
         if not active:
-            ui_util.info(self, t("Nothing to Share"),
-                                t("No mods are currently enabled.\n"
-                                  "Enable at least one mod before sharing."))
+            ui_util.info(self, t("mgr.nothing_share"),
+                                t("mgr.no_mods_are_currently_enabled"))
             return
         lines = [f"=== {mode_label} Load Order ==="]
         for i, (_, path) in enumerate(active, 1):
@@ -1763,28 +1939,25 @@ class ModManagerApp(tk.Tk):
         self.clipboard_clear()
         self.clipboard_append(text)
         self._mgr_foot.set(
-            t("Load order ({n} active mod(s)) copied to clipboard — paste it to your friends!",
+            t("mgr.load_order_n_active_mod",
               n=len(active)))
-        self.after(5000, lambda: self._mgr_foot.set(t("Ready.")))
+        self.after(5000, lambda: self._mgr_foot.set(t("mgr.ready")))
         ui_util.show_text(
-            self, t("Load Order Copied"),
-            t("Your load order ({n} active mod(s)) has been copied to the clipboard.\n"
-              "Paste it to a friend so they can match it. Here's what was copied:", n=len(active)),
+            self, t("mgr.load_order_copied"),
+            t("mgr.load_order_n_active_mod_2", n=len(active)),
             text)
 
     def _mgr_import_order(self):
         dlg = ui_util.themed_toplevel(
-            self, t("Import Load Order from Friend"),
+            self, t("mgr.import_load_order_from_friend"),
             resizable=True, min_size=(540, 500))
 
         ttk.Label(dlg,
-                  text=t("Paste a friend's shared load order below, then click 'Check & Apply'.\n"
-                         "The mod manager will verify you have all mods at the correct versions\n"
-                         "and rearrange your list to match."),
+                  text=t("mgr.paste_friend_s_shared_load"),
                   foreground=_R_TEXT, justify="left", font=_F_LOG,
                   ).pack(padx=10, pady=(10, 4), anchor="w")
 
-        txt_frame = ttk.LabelFrame(dlg, text=t("Paste Load Order Here"))
+        txt_frame = ttk.LabelFrame(dlg, text=t("mgr.paste_load_order_here"))
         txt_frame.pack(fill="both", expand=True, padx=10, pady=4)
         txt = _ThemedScrolledText(
             txt_frame, height=7, font=_F_LOG,
@@ -1803,7 +1976,7 @@ class ModManagerApp(tk.Tk):
         bf = ttk.Frame(dlg)
         bf.pack(fill="x", padx=10, pady=4)
 
-        res_frame = ttk.LabelFrame(dlg, text=t("Results"))
+        res_frame = ttk.LabelFrame(dlg, text=t("mgr.results"))
         res_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         res_log = _make_log(res_frame, height=7)
         res_log.pack(fill="both", expand=True, padx=4, pady=4)
@@ -1815,13 +1988,13 @@ class ModManagerApp(tk.Tk):
             except Exception:
                 pass
 
-        ttk.Button(bf, text=t("Paste from Clipboard"),
+        ttk.Button(bf, text=t("mgr.paste_from_clipboard"),
                    command=do_paste).pack(side="left", padx=4)
-        ttk.Button(bf, text=t("Check & Apply"),
+        ttk.Button(bf, text=t("mgr.check_apply"),
                    command=lambda: self._mgr_do_import(
                        txt.get("1.0", tk.END).strip(), res_log)
                    ).pack(side="left", padx=4)
-        ttk.Button(bf, text=t("Close"),
+        ttk.Button(bf, text=t("common.close"),
                    command=dlg.destroy).pack(side="right", padx=4)
 
     def _mgr_parse_load_order(self, text: str) -> tuple:
@@ -1844,12 +2017,18 @@ class ModManagerApp(tk.Tk):
                 break
             if not in_block or not stripped:
                 continue
-            m = _LO_LINE.match(stripped)
+            m = _LO_NUM.match(stripped)
             if m:
-                raw_name = m.group(1).strip()
+                body = m.group(1).strip()
+                # Version is the LAST " | v…" on the line; a mod name may itself contain " | ".
+                if " | v" in body:
+                    raw_name, ver = body.rsplit(" | v", 1)
+                    raw_name, ver = raw_name.strip(), ver.strip()
+                else:
+                    raw_name, ver = body, ""
                 is_compat = raw_name.startswith("[COMPAT] ")
                 name = raw_name[len("[COMPAT] "):] if is_compat else raw_name
-                entries.append((name, (m.group(2) or "").strip(), is_compat))
+                entries.append((name, ver, is_compat))
         return entries, detected_mode
 
     def _mgr_scan_mods_meta(self) -> list:
@@ -1870,7 +2049,7 @@ class ModManagerApp(tk.Tk):
         _log_clear(log_widget)
         entries, detected_mode = self._mgr_parse_load_order(text)
         if not entries:
-            _log(log_widget, t("No valid load order entries found in the pasted text."), "err")
+            _log(log_widget, t("mgr.no_valid_load_order_entries"), "err")
             return
 
         current_ver = self._game_version()
@@ -1880,11 +2059,8 @@ class ModManagerApp(tk.Tk):
             have = _mode_label.get(current_ver, current_ver)
             ui_util.warning(
                 self,
-                t("Wrong Game Version"),
-                t("This load order was made for {want},\n"
-                  "but your game is currently set to {have}.\n\n"
-                  "Switch to {want} in Settings → Detect Game Version,\n"
-                  "then try importing again.", want=want, have=have))
+                t("mgr.wrong_game_version"),
+                t("mgr.load_order_was_made_want", want=want, have=have))
             return
 
         available = self._mgr_scan_mods_meta()
@@ -1902,8 +2078,8 @@ class ModManagerApp(tk.Tk):
             tag = "[COMPAT] " if is_compat else ""
             if not candidates:
                 _log(log_widget,
-                     t("MISSING  {tag}{name}", tag=tag, name=name)
-                     + (t("  (need v{req_ver})", req_ver=req_ver) if req_ver else ""),
+                     t("mgr.missing_tag_name", tag=tag, name=name)
+                     + (t("mgr.need_v_req_ver", req_ver=req_ver) if req_ver else ""),
                      "err")
                 all_ok = False
                 continue
@@ -1912,19 +2088,31 @@ class ModManagerApp(tk.Tk):
             if exact:
                 ver, path = exact[0]
                 _log(log_widget,
-                     t("OK       {tag}{name}", tag=tag, name=name)
-                     + (t("  v{ver}", ver=ver) if ver else ""), "ok")
+                     t("mgr.ok_tag_name", tag=tag, name=name)
+                     + (t("mgr.v_ver", ver=ver) if ver else ""), "ok")
                 matched_paths.append(path)
             else:
                 ver, path = candidates[0]
                 _log(log_widget,
-                     t("VERSION  {tag}{name}  — you have v{ver}, need v{req_ver}",
+                     t("mgr.version_tag_name_have_v",
                        tag=tag, name=name, ver=ver, req_ver=req_ver), "warn")
                 all_ok = False
                 matched_paths.append(path)
 
+        # A friend's order might list the same mod twice — keep the FIRST occurrence and drop repeats
+        # (and say so), so the applied count is honest and the list isn't doubled before _ensure_bundled
+        # silently de-dups it.
+        seen_mp, deduped = set(), []
+        for p in matched_paths:
+            if p in seen_mp:
+                _log(log_widget, t("mgr.skip_stem_listed_more_than", stem=Path(p).stem), "warn")
+                continue
+            seen_mp.add(p)
+            deduped.append(p)
+        matched_paths = deduped
+
         if not matched_paths:
-            _log(log_widget, t("\nNone of the mods in the order were found."), "err")
+            _log(log_widget, t("mgr.none_mods_order_were_found"), "err")
             return
 
         # Everything not in the shared order goes AFTER the imported mods and is switched OFF — INCLUDING
@@ -1944,24 +2132,21 @@ class ModManagerApp(tk.Tk):
         for _, path in extra:
             self._mgr_mod_vars.append((tk.BooleanVar(value=False), path))
             _log(log_widget,
-                 t("OFF      {stem}  (not in shared order)", stem=Path(path).stem), "info")
+                 t("mgr.off_stem_not_shared_order", stem=Path(path).stem), "info")
 
         self._ensure_bundled_in_list()   # dedup + re-inject any shipped mod somehow missing (invariant)
 
-        # In public mode: if the order contains compat mods, auto-enable the
-        # compat toggle so they become visible and aren't auto-disabled by rebuild.
+        # Legacy .compat.rmod visibility is superseded by the build selector (pick that build's library).
         if (self._game_version() == "public"
                 and not self._show_compat_var.get()
                 and any(p.lower().endswith(".compat.rmod") for p in matched_paths)):
             self._show_compat_var.set(True)
-            self._mgr_update_compat_btn()
-            _log(log_widget, t("COMPAT toggle enabled — compat mods are now visible."), "info")
 
         self._mgr_rebuild()
 
-        status = t("All mods matched.") if all_ok else t("Some mods missing or version mismatched — see above.")
+        status = t("mgr.all_mods_matched") if all_ok else t("mgr.some_mods_missing_version_mismatched")
         _log(log_widget,
-             t("\nApplied: {n} mod(s) enabled in order.  {status}",
+             t("mgr.applied_n_mod_s_enabled",
                n=len(matched_paths), status=status), "head")
 
     # ── Bundled (shipped) mods — baked into the exe, authoritative for multiplayer ──────────────
@@ -2012,9 +2197,10 @@ class ModManagerApp(tk.Tk):
                     stamp_by_file[(m.get("sub"), m.get("file"))] = (m.get("size"), m.get("mtime"))
             except Exception:
                 stamp_by_file = {}
-        # Bundled mods are baked per BUILD-ID folder (bundled_mods/v<buildid>/); load the set for
-        # the installed build. (.compat.rmod also ends in .rmod, so one glob covers both formats.)
-        bid = self._game_build_id()
+        # Bundled mods are baked per BUILD-ID folder (bundled_mods/v<buildid>/); load the set for the
+        # EFFECTIVE (viewed) build — so picking a build in the selector lists ITS bundled mods, just like
+        # its folder mods. (.compat.rmod also ends in .rmod, so one glob covers both formats.)
+        bid = self._effective_mod_build()
         files = []
         if bid:
             bdir = _BUNDLED_MODS_DIR / f"v{bid}"
@@ -2076,7 +2262,7 @@ class ModManagerApp(tk.Tk):
             try:
                 with open(_MGR_STATE_FILE, encoding="utf-8") as f:
                     st = json.load(f)
-                for e in st.get("mods", []):
+                for e in self._saved_entries_for_current_build(st):
                     bid = e.get("bundled_id")
                     if bid:
                         out[bid] = bool(e.get("enabled", True))
@@ -2185,13 +2371,11 @@ class ModManagerApp(tk.Tk):
         label = self._branch_label()
         shown = "\n".join("  - {n}  (now '{v}')".format(
             n=f.name, v=(o.get("game_version") or "unset")) for f, o in pending[:12])
-        more = "" if len(pending) <= 12 else t("\n  …and {n} more", n=len(pending) - 12)
+        more = "" if len(pending) <= 12 else t("mgr.n_more", n=len(pending) - 12)
         ok = ui_util.confirm(
             self,
-            t("Tag mods for {label}?", label=label),
-            t("{n} mod(s) in this folder are tagged for a different version:\n\n{shown}{more}\n\n"
-              "You placed them in the {label} folder, so they can be recorded as built for it. "
-              "This PERMANENTLY updates each mod's version field. Tag them now?",
+            t("mgr.tag_mods_label", label=label),
+            t("mgr.n_mod_s_folder_are",
               n=len(pending), shown=shown, more=more, label=label))
         if not ok:
             for f, _ in pending:
@@ -2204,9 +2388,22 @@ class ModManagerApp(tk.Tk):
                 f.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding="utf-8")
                 n += 1
             except Exception:
-                pass
+                logging.exception("Couldn't stamp game_version into %s", f)
         if hasattr(self, "_mgr_log"):
-            _log(self._mgr_log, t("Tagged {n} mod(s) as built for {label}.", n=n, label=label), "head")
+            _log(self._mgr_log, t("mgr.tagged_n_mod_s_as", n=n, label=label), "head")
+
+    def _rmod_matches_build(self, path) -> bool:
+        """True if the rmod at ``path`` is tagged (``game_version``) for the current build id — or no
+        build id is detected, so we can't gate.  The SINGLE source of the game_version gate, shared by the
+        folder scan and by state-restore, so a saved mod tagged for a different build can't slip back into
+        the list.  Gates on the EFFECTIVE (viewed) build so selecting a build shows that build's mods."""
+        bid = self._effective_mod_build()
+        if not bid:
+            return True
+        try:
+            return str(json.loads(Path(path).read_text(encoding="utf-8-sig")).get("game_version", "")) == bid
+        except Exception:
+            return False
 
     def _mgr_scan_both(self, prompt_stamp: bool = False):
         """Scan the mods folder for the DETECTED BUILD ID (mods/v<buildid>/) and update the
@@ -2219,17 +2416,7 @@ class ModManagerApp(tk.Tk):
         mdir = self._mods_dir()
         if prompt_stamp:                                   # only the deliberate 'Scan Mods Folder'
             self._stamp_build_on_rmods(mdir)
-        bid = self._game_build_id()
-
-        def _is_for_build(f) -> bool:
-            # No build id detected -> can't gate; show what's there. Otherwise require an exact
-            # game_version match (stamped to this build), so mismatched/untagged mods are hidden.
-            if not bid:
-                return True
-            try:
-                return str(json.loads(f.read_text(encoding="utf-8-sig")).get("game_version", "")) == bid
-            except Exception:
-                return False
+        _is_for_build = self._rmod_matches_build         # single source of the game_version gate
 
         comp = sorted(f for f in (mdir.glob("*.compat.rmod") if mdir.exists() else [])
                       if _is_for_build(f))
@@ -2252,25 +2439,25 @@ class ModManagerApp(tk.Tk):
             if hasattr(os, "startfile"):
                 os.startfile(str(base))               # Windows: open in Explorer
             else:
-                ui_util.info(self, t("Folder"), str(base))
+                ui_util.info(self, t("mgr.folder"), str(base))
         except Exception as e:
-            ui_util.error(self, t("Open Failed"),
-                                 t("Could not open:\n{path}\n\n{e}", path=base, e=e))
+            ui_util.error(self, t("mgr.open_failed"),
+                                 t("mgr.could_not_open_path_e", path=base, e=e))
 
     def _mgr_scan(self):
         """Scan both mod dirs, refresh caches, append any newly found mods at the bottom.
         This is the user-initiated scan, so it offers to tag legacy rmods for this build."""
         self._mgr_scan_both(prompt_stamp=True)
         before   = len(self._mgr_mod_vars)
-        existing = {p for _, p in self._mgr_mod_vars}
+        existing = {self._norm_path(p) for _, p in self._mgr_mod_vars}   # case/slash-insensitive dedupe
         ver = self._game_version()
         scan_files = (self._scanned_compat if ver == "compat"
                       else list(self._scanned_public) + list(self._scanned_compat))
         for f in scan_files:
             path = str(f)
-            if path not in existing:
+            if self._norm_path(path) not in existing:
                 self._mgr_mod_vars.append((tk.BooleanVar(value=False), path))
-                existing.add(path)
+                existing.add(self._norm_path(path))
         self._ensure_bundled_in_list()
         added = len(self._mgr_mod_vars) - before
         if added:
@@ -2285,7 +2472,8 @@ class ModManagerApp(tk.Tk):
         mods_dir = self._mods_dir()
         ext = self._rmod_ext()
         for p in filedialog.askopenfilenames(
-                title=f"Select {ext} files",
+                parent=self,
+                title=t("mgr.select_ext_files", ext=ext),
                 filetypes=self._rmod_filter()):
             src = Path(p)
             dest = mods_dir / src.name
@@ -2294,8 +2482,8 @@ class ModManagerApp(tk.Tk):
                     mods_dir.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(str(src), str(dest))
                 except Exception as e:
-                    ui_util.error(self, t("Copy Failed"),
-                        t("Could not copy {name} to mods folder:\n{e}", name=src.name, e=e))
+                    ui_util.error(self, t("mgr.copy_failed"),
+                        t("mgr.could_not_copy_name_mods", name=src.name, e=e))
                     continue
             self._mgr_add_path(str(dest))
 
@@ -2364,30 +2552,45 @@ class ModManagerApp(tk.Tk):
         if self._mgr_running:   # a deploy/backup/restore is already touching the game files
             return
         if not self._settings["game_root"]:
-            ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
+            ui_util.error(self, t("mgr.no_game_root"), t("mgr.set_game_root_settings_first"))
             return
         game_root = Path(self._settings["game_root"])
         if not _is_dir_safe(game_root / "Data"):
-            ui_util.error(self, t("Not Found"), t("Data folder not found:\n{path}", path=game_root / 'Data'))
+            ui_util.error(self, t("mgr.not_found"), t("mgr.data_folder_not_found_path", path=game_root / 'Data'))
             return
         bd = self._backup_dir()
         has_files = bd.exists() and any(bd.rglob("*.dat"))
         if has_files:
-            if not ui_util.confirm(self, t("Overwrite?"),
-                                       t("Backup already exists:\n{bd}\n\nOverwrite?", bd=bd)):
+            if not ui_util.confirm(self, t("mgr.overwrite"),
+                                       t("mgr.backup_already_exists_bd_overwrite", bd=bd)):
                 return
-            shutil.rmtree(bd)
+            # NOTE: do NOT delete the existing backup here.  _do_backup builds the new copy in a sibling
+            # .tmp and only swaps it in atomically (rmtree(bd) + os.replace) AFTER the whole copy succeeds,
+            # so the old backup must stay intact until then — deleting it up front means a failed/interrupted
+            # copy (disk full, locked file, kill) would leave the user with NO backup at all.
         self._mgr_set_busy(True)
-        self._mgr_show_backup_warn()
-        threading.Thread(target=self._do_backup,
-                         args=(game_root, bd), daemon=True).start()
+        try:
+            self._mgr_show_backup_warn()
+            threading.Thread(target=self._do_backup,
+                             args=(game_root, bd), daemon=True).start()
+        except Exception:
+            self._mgr_set_busy(False)   # worker never started — don't leave the UI stuck-busy
+            raise
 
     def _do_backup(self, game_root: Path, bd: Path):
         # Mirror the game ROOT into the backup: Data/PC/<sub>/<dat> and Maps/PC/<terrain dats>.  The Maps
         # folder (per-terrain world/minimap dats) is large, so this can take a while.
+        # Build the backup in a sibling ``.tmp`` folder and rename it into place only when the WHOLE copy
+        # finishes.  An interrupted backup (crash, disk full, kill) then leaves the .tmp — never a partial
+        # `bd`.  This matters because a partial backup passes the "has a .dat" check everywhere: deploy
+        # would read clean source from an incomplete backup, and Restore Clean would leave the un-backed-up
+        # dats still modded — the opposite of what the button promises.
+        tmp = bd.with_name(bd.name + ".tmp")
         try:
-            _log(self._mgr_log, t("Creating backup: {game_root} → {bd}", game_root=game_root, bd=bd), "head")
-            bd.mkdir(parents=True, exist_ok=True)
+            _log(self._mgr_log, t("mgr.creating_backup_game_root_bd", game_root=game_root, bd=bd), "head")
+            if tmp.exists():
+                shutil.rmtree(tmp)
+            tmp.mkdir(parents=True, exist_ok=True)
             count = 0
             for top in ("Data", "Maps"):
                 src_root = game_root / top
@@ -2396,46 +2599,57 @@ class ModManagerApp(tk.Tk):
                 for src in src_root.rglob("*"):
                     if src.is_file():
                         rel  = src.relative_to(game_root)     # e.g. Data\PC\190852\X.dat, Maps\PC\Y.dat
-                        dest = bd / rel
+                        dest = tmp / rel
                         dest.parent.mkdir(parents=True, exist_ok=True)
+                        # Show each file BEFORE copying it, so the user sees activity — especially the
+                        # pause on a big .dat.  "step" = in-progress (cyan).  Footer mirrors the current
+                        # file for a smooth live indicator.
+                        _log(self._mgr_log, t("mgr.backing_up_rel", rel=rel), "step")
+                        self._ui(lambda r=rel: self._mgr_foot.set(t("mgr.backing_up_r", r=r)))
                         shutil.copy2(src, dest)
                         count += 1
-                        # The Maps tree can be thousands of files; logging EVERY one floods the (now
-                        # main-thread-marshalled) log queue and stutters the UI.  Report progress
-                        # periodically plus the folder currently being copied.
-                        if count % 200 == 0:
-                            _log(self._mgr_log, t("  … {count} files copied ({top})", count=count, top=top), "info")
-            _log(self._mgr_log, t("Backup complete: {count} files.", count=count), "ok")
+            if bd.exists():
+                shutil.rmtree(bd)
+            os.replace(tmp, bd)                               # atomic publish — partial backups never appear
+            _log(self._mgr_log, t("mgr.backup_complete_count_files", count=count), "ok")   # DONE = green
         except Exception as e:
-            _log(self._mgr_log, t("Backup error: {e}", e=e), "err")
+            _log(self._mgr_log, t("mgr.backup_error_e", e=e), "err")
+            try:
+                if tmp.exists():
+                    shutil.rmtree(tmp)                        # don't leave a partial temp behind
+            except Exception:
+                pass
         finally:
-            self.after(0, self._mgr_refresh_status)
-            self.after(0, lambda: self._mgr_set_busy(False))
+            self._ui(self._mgr_refresh_status)
+            self._ui(lambda: self._mgr_set_busy(False))
 
     def _mgr_restore_clean(self):
         if self._mgr_running:   # a deploy/backup/restore is already touching the game files
             return
         bd = self._backup_dir()
         if not bd.exists():
-            ui_util.error(self, t("No Backup"), t("No backup found. Create one first."))
+            ui_util.error(self, t("mgr.no_backup"), t("mgr.no_backup_found_create_one"))
             return
         if not self._settings["game_root"]:
-            ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
+            ui_util.error(self, t("mgr.no_game_root"), t("mgr.set_game_root_settings_first"))
             return
-        if not ui_util.confirm(self, t("Restore Clean"),
-                                   t("Copy original backup files back into the game (Data and Maps),\n"
-                                     "removing any deployed mods.\n\nProceed?")):
+        if not ui_util.confirm(self, t("mgr.restore_clean"),
+                                   t("mgr.copy_original_backup_files_back")):
             return
         self._mgr_set_busy(True)
-        threading.Thread(target=self._do_restore,
-                         args=(bd, Path(self._settings["game_root"])), daemon=True).start()
+        try:
+            threading.Thread(target=self._do_restore,
+                             args=(bd, Path(self._settings["game_root"])), daemon=True).start()
+        except Exception:
+            self._mgr_set_busy(False)   # worker never started — don't leave the UI stuck-busy
+            raise
 
     def _do_restore(self, bd: Path, game_root: Path):
         # The backup mirrors the game root (Data/… and Maps/…), so copy those subtrees back over the
         # install.  Only Data/ and Maps/ are restored — stray files at the backup root (e.g. deploy-time
         # timestamped .bak copies) are deliberately ignored.
         try:
-            _log(self._mgr_log, t("Restoring clean game files…"), "head")
+            _log(self._mgr_log, t("mgr.restoring_clean_game_files"), "head")
             count = 0
             for top in ("Data", "Maps"):
                 sroot = bd / top
@@ -2446,33 +2660,45 @@ class ModManagerApp(tk.Tk):
                         rel  = src.relative_to(bd)
                         dest = game_root / rel
                         dest.parent.mkdir(parents=True, exist_ok=True)
+                        _log(self._mgr_log, t("mgr.restoring_rel", rel=rel), "step")  # in-progress (cyan)
+                        self._ui(lambda r=rel: self._mgr_foot.set(t("mgr.restoring_r", r=r)))
                         shutil.copy2(src, dest)
                         count += 1
             mod_out = self._mod_out_dir()
             if mod_out.exists():
                 shutil.rmtree(mod_out)
+            # Reclaim deploy-cache disk here too.  Caches are fully regenerable on the next deploy, and
+            # Restore Clean is the natural point to clear them — otherwise old cached_deployments/v<bid>/
+            # trees accumulate forever across game updates.
+            cache_root = Path(self._settings["working_dir"]) / "output" / "cached_deployments"
+            if cache_root.exists():
+                shutil.rmtree(cache_root, ignore_errors=True)
             self._mgr_set_deployed_dats([])   # game is fully clean now — nothing left deployed to track
-            _log(self._mgr_log, t("Restored {count} files — game is clean.", count=count), "ok")
-            self.after(0, lambda: self._mgr_foot.set(t("Game restored to clean state.")))
+            _log(self._mgr_log, t("mgr.restored_count_files_game_clean", count=count), "ok")   # DONE = green
+            self._ui(lambda: self._mgr_foot.set(t("mgr.game_restored_clean_state")))
         except Exception as e:
-            _log(self._mgr_log, t("Restore error: {e}", e=e), "err")
+            _log(self._mgr_log, t("mgr.restore_error_e", e=e), "err")
         finally:
-            self.after(0, lambda: self._mgr_set_busy(False))
+            self._ui(lambda: self._mgr_set_busy(False))
 
     # ── Deploy ────────────────────────────────────────────────────────────────
 
     def _mgr_deploy(self):
         if self._mgr_running:
             return
+        # A Convert-tab job (make / update / migrate an .rmod) may be REWRITING a mod file that this deploy
+        # would read — deploying now could pick up a half-written .rmod.  Block until it finishes.
+        if getattr(self, "_conv_running", False):
+            ui_util.info(self, t("mgr.please_wait"),
+                         t("mgr.conversion_still_running_let_finish"))
+            return
         if not self._settings["game_root"]:
-            ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
+            ui_util.error(self, t("mgr.no_game_root"), t("mgr.set_game_root_settings_first"))
             return
         bd = self._backup_dir()
         if not bd.exists() or not any(bd.rglob("*.dat")):
-            ui_util.error(self, t("No Backup"),
-                                 t("No game file backup found.\n\n"
-                                   "Click 'Create Backup' (Step 2 in the setup checklist)\n"
-                                   "before deploying mods."))
+            ui_util.error(self, t("mgr.no_backup"),
+                                 t("mgr.no_game_file_backup_found"))
             return
         active = [p for v, p in self._mgr_mod_vars if v.get()]
         # Auto-deployed 'unofficial patch' rmods baked into the exe (predeploy/<branch>/) — always
@@ -2481,8 +2707,8 @@ class ModManagerApp(tk.Tk):
         predeploy = list(self._predeploy_order.get(self._game_build_id(), []))
         active = predeploy + active
         if not active:
-            ui_util.info(self, t("No Active Mods"),
-                                t("Check at least one mod to deploy."))
+            ui_util.info(self, t("mgr.no_active_mods"),
+                                t("mgr.check_least_one_mod_deploy"))
             return
         dry = self._mgr_dry.get()
         # Read every Tk variable the deploy needs HERE, on the main thread — the worker thread must not
@@ -2493,11 +2719,15 @@ class ModManagerApp(tk.Tk):
         regen    = bool(self._mgr_regen.get())
         per_mod_flags = {str(p): bool(self._mod_cache_var(p).get()) for p in active}
         self._mgr_set_busy(True)
-        self._mgr_foot.set(t("Deploying mods…"))
-        threading.Thread(
-            target=self._do_deploy,
-            args=(bd, active, dry, cache_on, per_mod, regen, per_mod_flags),
-            daemon=True).start()
+        try:
+            self._mgr_foot.set(t("mgr.deploying_mods"))
+            threading.Thread(
+                target=self._do_deploy,
+                args=(bd, active, dry, cache_on, per_mod, regen, per_mod_flags),
+                daemon=True).start()
+        except Exception:
+            self._mgr_set_busy(False)   # worker never started — don't leave the UI stuck-busy
+            raise
 
     def _mgr_launch_game(self):
         """Launch RUSE.exe from the configured game root."""
@@ -2505,24 +2735,22 @@ class ModManagerApp(tk.Tk):
             return
         game_root = self._settings.get("game_root", "").strip()
         if not game_root:
-            ui_util.error(self, t("No Game Root"), t("Set Game Root in Settings first."))
+            ui_util.error(self, t("mgr.no_game_root"), t("mgr.set_game_root_settings_first"))
             return
         exe = Path(game_root) / "RUSE.exe"
         if not _exists_safe(exe):
             ui_util.error(
                 self,
-                t("RUSE.exe Not Found"),
-                t("Could not find RUSE.exe in the game root:\n\n{game_root}\n\n"
-                  "Check that the Game Root Directory in Settings points to your "
-                  "R.U.S.E. install folder.", game_root=game_root))
+                t("mgr.ruse_exe_not_found"),
+                t("mgr.could_not_find_ruse_exe", game_root=game_root))
             return
         try:
             subprocess.Popen([str(exe)], cwd=game_root)
-            _log(self._mgr_log, t("Launched R.U.S.E.  ({exe})", exe=exe), "ok")
-            self._mgr_foot.set(t("Launched R.U.S.E."))
+            _log(self._mgr_log, t("mgr.launched_r_u_s_e_2", exe=exe), "ok")
+            self._mgr_foot.set(t("mgr.launched_r_u_s_e"))
         except Exception as ex:
-            _log(self._mgr_log, t("Failed to launch R.U.S.E.: {ex}", ex=ex), "err")
-            ui_util.error(self, t("Launch Failed"), t("Could not launch R.U.S.E.:\n\n{ex}", ex=ex))
+            _log(self._mgr_log, t("mgr.failed_launch_r_u_s", ex=ex), "err")
+            ui_util.error(self, t("mgr.launch_failed"), t("mgr.could_not_launch_r_u", ex=ex))
 
     def _do_deploy(self, bd: Path, active: list, dry: bool,
                    cache_on: bool, per_mod: bool, regen: bool, per_mod_flags: dict):
@@ -2552,26 +2780,25 @@ class ModManagerApp(tk.Tk):
             if cache_on and (not dry) and (not regen):
                 for k in range(len(active), 0, -1):
                     cdir = self._deploy_cache_dir(active[:k])
-                    if cdir.is_dir() and any(cdir.rglob("*.dat")):
+                    if cdir is not None and cdir.is_dir() and any(cdir.rglob("*.dat")):
                         prefix_base, tail = cdir, active[k:]
                         break
             reused = len(active) - len(tail)
             exact  = (prefix_base is not None and not tail)
 
             _log(self._mgr_log,
-                 t("{prefix}Deploying {n} mod(s)  [{ver_label}]  "
-                   "source={bd}  output={mod_out}",
+                 t("mgr.prefix_deploying_n_mod_s",
                    prefix=prefix, n=len(active), ver_label=ver_label, bd=bd, mod_out=mod_out), "head")
             if prefix_base is not None:
                 _log(self._mgr_log,
-                     (t("Cache hit: all {reused} mod(s) reused from {name}… — no patching.",
+                     (t("mgr.cache_hit_all_reused_mod",
                         reused=reused, name=prefix_base.name[:12])
                       if exact else
-                      t("Cache hit: {reused}/{n} mod(s) reused from {name}… — "
-                        "applying the remaining {tail} on top.",
-                        reused=reused, n=len(active), name=prefix_base.name[:12], tail=len(tail))), "ok")
+                      t("mgr.cache_hit_reused_n_mod",
+                        reused=reused, n=len(active), name=prefix_base.name[:12], tail=len(tail))), "step")
 
             all_results = []
+            apply_raised = False                # any mod whose apply_mod() RAISED (partial/corrupt output)
             if exact:
                 gen_root = prefix_base          # whole set already cached — overlay it directly
             else:
@@ -2583,13 +2810,22 @@ class ModManagerApp(tk.Tk):
                     if prefix_base is not None:
                         # Seed the work area with the cached prefix's dats; the applier layers the tail
                         # mods straight onto them (and pulls any dat the prefix didn't touch from bd).
+                        _log(self._mgr_log, t("mgr.reusing_cached_base_copying_prepared"), "step")
                         for src in prefix_base.rglob("*"):
                             if src.is_file():
                                 dest = mod_out / src.relative_to(prefix_base)
                                 dest.parent.mkdir(parents=True, exist_ok=True)
                                 shutil.copy2(src, dest)
+                # Per-dat progress: the applier calls this just before it opens each .dat — the slow step
+                # for large data files.  Cyan "step" tells the user WHY a mod can pause for a while.
+                def _prep(dr):
+                    _log(self._mgr_log, t("mgr.preparing_dat_large_data_files", dat=dr), "step")
+                # Shared touched-set across the freshly-applied mods → cross-mod conflict detection
+                # (which later mod overwrote which earlier one).  Covers the `tail`; a reused cached prefix
+                # isn't re-applied this run, so prefix↔tail conflicts aren't detected until a full deploy.
+                deploy_state: dict = {}
                 for i, mod_path in enumerate(tail):
-                    _log(self._mgr_log, t("\n── {name} ──", name=Path(mod_path).name), "head")
+                    _log(self._mgr_log, t("mgr.name", name=Path(mod_path).name), "head")
                     ok = False
                     try:
                         result = applier_mod.apply_mod(
@@ -2599,37 +2835,82 @@ class ModManagerApp(tk.Tk):
                             dry_run       = dry,
                             output_dir    = str(mod_out) if not dry else None,
                             game_version  = game_ver,
+                            progress      = _prep,      # live "preparing <dat>…" feedback during the slow part
+                            deploy_state  = deploy_state,   # cross-mod conflict detection
+                            source_build  = self._effective_mod_build(),   # mods' build (may be selected)
+                            target_build  = self._game_build_id(),         # deploy onto the INSTALLED build
                         )
                         all_results.append(result)
                         for rec in result.change_log:
                             _log(self._mgr_log,
                                  f"  {rec.table}[{rec.instance_id}].{rec.prop}: "
-                                 f"{rec.old_val} → {rec.new_val}", "ok")
+                                 f"{rec.old_val} → {rec.new_val}", "info")   # detail (neutral, not "done")
                         for w in result.warnings:
-                            _log(self._mgr_log, t("  WARN  {w}", w=w), "warn")
+                            _log(self._mgr_log, t("mgr.warn_w", w=w), "warn")
                         for e in result.errors:
-                            _log(self._mgr_log, t("  ERROR {e}", e=e), "err")
+                            _log(self._mgr_log, t("mgr.error_e", e=e), "err")
+                        for rf in result.requires_repair:
+                            _log(self._mgr_log, t("mgr.needs_repair_d", d=str(rf).strip()), "warn")
+                        if result.requires_repair:
+                            _log(self._mgr_log,
+                                 t("mgr.n_change_s_could_not", n=len(result.requires_repair)), "warn")
+                        if result.conflicts:
+                            _log(self._mgr_log,
+                                 t("mgr.n_edit_s_overwrite_earlier",
+                                   n=len(result.conflicts)), "warn")
+                            for cf in result.conflicts[:12]:
+                                _log(self._mgr_log, t("mgr.d", d=str(cf)), "warn")
+                            if len(result.conflicts) > 12:
+                                _log(self._mgr_log,
+                                     t("mgr.n_more_2", n=len(result.conflicts) - 12), "warn")
+                        mrep = getattr(result, "map_report", None) or {}
+                        if mrep.get("map"):
+                            _log(self._mgr_log,
+                                 t("mgr.built_v_deployed_v_b",
+                                   a=mrep.get("from"), b=mrep.get("to"), n=mrep.get("remapped", 0)), "step")
+                            if mrep.get("stale"):
+                                _log(self._mgr_log,
+                                     t("mgr.n_edit_s_target_values",
+                                       n=len(mrep["stale"]), a=mrep.get("from")), "warn")
+                                for pg, ch in mrep["stale"][:12]:
+                                    nm = pg.ndf.replace("\\", "/").split("/")[-1]
+                                    _log(self._mgr_log, t("mgr.d_tbl_m",
+                                         d=nm, tbl=ch.table, m=ch.match), "warn")
                         _log(self._mgr_log, f"  {result.summary()}", "info")
                         ok = True
                     except Exception as ex:
-                        _log(self._mgr_log, t("  ERROR: {ex}", ex=ex), "err")
+                        _log(self._mgr_log, t("mgr.error_ex", ex=ex), "err")
+                        apply_raised = True         # its output dat may be half-written — must not overlay
 
                     # Cache the cumulative result for the prefix ending at this mod (active[:reused+i+1]),
                     # so it never has to be re-applied.  Per-mod mode → only when THIS mod is ticked for
                     # caching; otherwise → only the full result (the last mod).
                     gpos = reused + i           # this mod's index in the full active list
+                    plen = gpos + 1
                     want_cache = (per_mod_flags.get(str(active[gpos]), False) if per_mod
                                   else i == len(tail) - 1)
-                    if cache_on and want_cache and ok and not dry and any(mod_out.rglob("*.dat")):
-                        plen = gpos + 1
-                        pc = self._deploy_cache_dir(active[:plen])
+                    pc = self._deploy_cache_dir(active[:plen]) if (
+                        cache_on and want_cache and ok and not dry) else None
+                    if pc is not None and any(mod_out.rglob("*.dat")):
                         n = self._write_deploy_cache(pc, mod_out)
                         if n >= 0:
                             _log(self._mgr_log,
-                                 t("  cached {plen}/{n}-mod prefix → {name}…",
-                                   plen=plen, n=len(active), name=pc.name[:12]), "info")
+                                 t("mgr.cached_plen_n_mod_prefix",
+                                   plen=plen, n=len(active), name=pc.name[:12]), "step")
                         else:
-                            _log(self._mgr_log, t("  WARN could not cache prefix {plen}", plen=plen), "warn")
+                            _log(self._mgr_log, t("mgr.warn_could_not_cache_prefix", plen=plen), "warn")
+
+            # A mod that RAISED during apply may have left a half-written dat in mod_out.  Overlaying that
+            # would ship a corrupt dat AND (because `touched` is scanned from the rmod JSON regardless of
+            # apply success) could orphan a leftover dat the tracker then forgets.  Abort BEFORE touching
+            # the live install: leave the game exactly as the previous deploy left it (tracker intact),
+            # and tell the user which state we're in so they can fix/disable the failing mod and retry.
+            if not dry and apply_raised:
+                _log(self._mgr_log,
+                     t("mgr.deploy_aborted_mod_failed_apply"), "err")
+                self._ui(lambda: self._mgr_foot.set(
+                    t("mgr.deploy_aborted_mod_failed_game")))
+                return
 
             if not dry:
                 # Every dat any patch type touches must be reset to clean before the overlay.  (Read
@@ -2645,7 +2926,9 @@ class ModManagerApp(tk.Tk):
                                 dat = applier_mod.resolve_dat_for_version(g["dat"], game_ver)
                                 touched.add(dat.replace("/", os.sep))
                     except Exception:
-                        pass
+                        # A mod we can't parse here is missing from `touched`, which skews leftover-dat
+                        # restore — record which one rather than silently skewing the set.
+                        logging.exception("Couldn't scan %s for touched dats", mod_path)
 
                 # Only restore the LEFTOVERS — dats a PREVIOUS deploy modified that this mod list does
                 # NOT touch.  The dats it DOES touch are rebuilt from the clean backup and fully
@@ -2653,8 +2936,7 @@ class ModManagerApp(tk.Tk):
                 prev = {r.replace("/", os.sep) for r in self._mgr_saved_deployed_dats()}
                 restore_targets = sorted(prev - touched)
                 _log(self._mgr_log,
-                     t("\nRestoring {n} leftover file(s) from a previous deploy to "
-                       "clean state…", n=len(restore_targets)), "head")
+                     t("mgr.restoring_n_leftover_file_s", n=len(restore_targets)), "head")
                 restored = 0
                 for dat_rel in restore_targets:
                     src = bd / dat_rel
@@ -2663,13 +2945,13 @@ class ModManagerApp(tk.Tk):
                         dest.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(src, dest)
                         restored += 1
-                        _log(self._mgr_log, t("  restored: {dat_rel}", dat_rel=dat_rel), "info")
+                        _log(self._mgr_log, t("mgr.restored_dat_rel", dat_rel=dat_rel), "step")
                     else:
                         # a previous-deploy dat with no clean backup (e.g. branch changed) — can't revert
-                        _log(self._mgr_log, t("  WARN no clean backup to restore: {dat_rel}", dat_rel=dat_rel), "warn")
-                _log(self._mgr_log, t("Restored {restored} file(s).", restored=restored), "ok")
+                        _log(self._mgr_log, t("mgr.warn_no_clean_backup_restore", dat_rel=dat_rel), "warn")
+                _log(self._mgr_log, t("mgr.restored_restored_leftover_file_s", restored=restored), "step")
 
-                _log(self._mgr_log, t("Overlaying modded files…"), "head")
+                _log(self._mgr_log, t("mgr.overlaying_modded_files_onto_game"), "head")
                 overlay = 0
                 overlaid: set = set()       # the dats now non-clean in the game (persist for next deploy)
                 for src in gen_root.rglob("*"):
@@ -2677,32 +2959,38 @@ class ModManagerApp(tk.Tk):
                         rel  = src.relative_to(gen_root)
                         dest = game_root / rel
                         dest.parent.mkdir(parents=True, exist_ok=True)
+                        _log(self._mgr_log, t("mgr.installing_rel", rel=rel), "step")
+                        self._ui(lambda r=rel: self._mgr_foot.set(t("mgr.installing_r", r=r)))
                         shutil.copy2(src, dest)
                         overlay += 1
                         overlaid.add(str(rel).replace(os.sep, "/"))
-                _log(self._mgr_log, t("Deployed {overlay} modded file(s) to game.", overlay=overlay), "ok")
+                _log(self._mgr_log, t("mgr.deployed_overlay_modded_file_s", overlay=overlay), "step")
                 # Record exactly what's now overlaid so the next deploy can clean it even if its mod
                 # list doesn't touch these dats.
                 self._mgr_set_deployed_dats(overlaid)
 
             if exact:
-                summary = t("Done — deployed {n} cached file(s) (no patching)",
+                summary = t("mgr.done_deployed_n_cached_file",
                             n=sum(1 for f in gen_root.rglob('*') if f.is_file()))
+                done_tag = "ok"
             else:
                 total_ch = sum(r.changes_applied for r in all_results)
                 total_w  = sum(len(r.warnings)   for r in all_results)
                 total_e  = sum(len(r.errors)     for r in all_results)
-                summary  = (t("Done — {total_ch} change(s), {total_w} warning(s), {total_e} error(s)",
+                summary  = (t("mgr.done_total_ch_change_s",
                               total_ch=total_ch, total_w=total_w, total_e=total_e)
-                            + (t("  ({reused} of {n} mod(s) reused from cache)",
+                            + (t("mgr.reused_n_mod_s_reused",
                                  reused=reused, n=len(active)) if reused else ""))
-            _log(self._mgr_log, f"\n{summary}", "head")
-            self.after(0, lambda: self._mgr_foot.set(summary))
+                # Completion colour reflects the outcome: green = clean, yellow = finished but some
+                # changes warned / couldn't apply (a hard failure aborts earlier, in red).
+                done_tag = "ok" if (total_w == 0 and total_e == 0) else "warn"
+            _log(self._mgr_log, f"\n{summary}", done_tag)
+            self._ui(lambda: self._mgr_foot.set(summary))
         except Exception as ex:
-            _log(self._mgr_log, t("\nDeploy error: {ex}", ex=ex), "err")
-            self.after(0, lambda: self._mgr_foot.set(t("Deploy failed — see log.")))
+            _log(self._mgr_log, t("mgr.deploy_error_ex", ex=ex), "err")
+            self._ui(lambda: self._mgr_foot.set(t("mgr.deploy_failed_see_log")))
         finally:
-            self.after(0, lambda: self._mgr_set_busy(False))
+            self._ui(lambda: self._mgr_set_busy(False))
 
     def _mgr_set_busy(self, busy: bool):
         self._mgr_running = busy
@@ -2742,20 +3030,49 @@ class ModManagerApp(tk.Tk):
             self._mgr_restore_btn.configure(state=restore_state)
         if hasattr(self, "_set_restore_btn"):
             self._set_restore_btn.configure(state=restore_state)
+        # Mod Editor hub buttons (present only once a project is open): Restore Clean mirrors the shared
+        # restore gate; Deploy is disabled while any game-file op runs so it can't race the restore.
+        if hasattr(self, "_ed_restore_btn"):
+            self._ed_restore_btn.configure(state=restore_state)
+        if hasattr(self, "_ed_deploy_btn"):
+            self._ed_deploy_btn.configure(state=("disabled" if busy else "normal"))
 
     def _mgr_show_backup_warn(self):
         ver_label = " [R.U.S.E. COMPAT]" if self._game_version() == "compat" else ""
-        text = t("Backup in progress{ver_label}…", ver_label=ver_label)
+        text = t("mgr.backup_progress_ver_label", ver_label=ver_label)
         self._mgr_s2_lbl.configure(text=text, foreground=_COL_WARN)
         if hasattr(self, "_set_s2_lbl"):
             self._set_s2_lbl.configure(text=text, foreground=_COL_WARN)
 
     # ── Manager state persistence ─────────────────────────────────────────────
 
+    def _load_saved_view(self):
+        """The build the user was last VIEWING in the selector, restored only if it's still valid: chosen
+        against the SAME installed build and still has mods.  Otherwise None (follow the installed build)."""
+        if not _MGR_STATE_FILE.exists():
+            return None
+        try:
+            with open(_MGR_STATE_FILE, encoding="utf-8") as f:
+                st = json.load(f)
+        except Exception:
+            return None
+        sel = st.get("selected_mod_build")
+        same_ctx = str(st.get("selected_for_build") or "") == str(self._game_build_id() or "")
+        if sel and str(sel).isdigit() and same_ctx and self._build_has_rmods(str(sel)):
+            return str(sel)
+        return None
+
     def _load_mgr_state(self):
-        # Always warm the caches so the toggle works immediately
+        # Restore the last-viewed build so the user returns exactly where they left off (validated).
+        self._selected_mod_build = self._load_saved_view()
+        self._scan_bundled()   # re-scan bundled for the restored view (installed's set was loaded in __init__)
+        # Always warm the caches so the toggle works immediately.  Load the EFFECTIVE build's list (the
+        # selected build, which may differ from the installed one) so scan folder and state key agree.
         self._mgr_scan_both()
-        self._mgr_load_mode(self._version_subname())   # mode key = build id (not format)
+        eff = self._effective_mod_build()
+        self._mgr_load_mode(f"v{eff}" if str(eff).isdigit() else self._version_subname())
+        self._refresh_mod_build_cb()   # populate the build selector on first load (not only on refresh)
+        self._maybe_suggest_mod_build()   # if installed build has no mods, hint at one that does
 
     def _save_mgr_state(self):
         """Save the CURRENT build's mod list (active set + ORDER) under its build-id key, so every game
@@ -2805,6 +3122,14 @@ class ModManagerApp(tk.Tk):
             existing["cache_enabled"] = bool(self._mgr_cache_enabled.get())
         if hasattr(self, "_mgr_per_mod_cache"):
             existing["per_mod_cache"] = bool(self._mgr_per_mod_cache.get())
+        # Persist the build selector so the user returns to the build they were VIEWING (with the installed
+        # build it was chosen against, so we don't restore it into a different game after a branch switch).
+        if self._selected_mod_build:
+            existing["selected_mod_build"] = self._selected_mod_build
+            existing["selected_for_build"] = self._game_build_id()
+        else:
+            existing.pop("selected_mod_build", None)
+            existing.pop("selected_for_build", None)
         with _MGR_STATE_LOCK:
             # A worker thread (deploy/restore → _mgr_set_deployed_dats) may have rewritten
             # deployed_dats since we read `existing` above.  Re-read it under the lock and merge it in
@@ -2816,12 +3141,12 @@ class ModManagerApp(tk.Tk):
                     if latest is not None:
                         existing["deployed_dats"] = latest
                 except Exception:
-                    pass
+                    logging.exception("Couldn't re-read deployed_dats under lock; state may be stale")
             try:
-                with open(_MGR_STATE_FILE, "w", encoding="utf-8") as f:
-                    json.dump(existing, f, indent=2)
+                _atomic_write_json(_MGR_STATE_FILE, existing)   # never leave a truncated state file
             except Exception:
-                pass
+                # Silent failure here loses the user's whole mod configuration for this build.
+                logging.exception("Failed to write manager state to %s", _MGR_STATE_FILE)
 
     def _mgr_load_mode(self, ver: str):
         """Clear the mod list, restore saved state, then append any newly found mods. `ver` is the
@@ -2877,19 +3202,27 @@ class ModManagerApp(tk.Tk):
             # An external file hidden by a shipped mod (same name+major) is not restored.
             if self._is_bundled(p) or self._rmod_identity(p) in self._bundled_keys:
                 continue
+            # Apply the SAME game_version gate as the folder scan: a saved+enabled mod whose tag no longer
+            # matches this build (user retagged it, or it entered the list during a no-build-id window)
+            # must not be resurrected into the list and deployed against the wrong build.
+            if not self._rmod_matches_build(p):
+                continue
             var = tk.BooleanVar(value=bool(entry.get("enabled", False)))
             self._mgr_mod_vars.append((var, p))
             self._mgr_cache_flags[str(p)] = tk.BooleanVar(value=bool(entry.get("cache", False)))
         # Append any newly discovered mods not in saved state.  `ver` is the build-id mode key now,
-        # so the compat-vs-remaster split keys off the FORMAT (_game_version()), not `ver`.
-        existing = {p for _, p in self._mgr_mod_vars}
+        # so the compat-vs-remaster split keys off the FORMAT (_game_version()), not `ver`.  Dedupe by
+        # _norm_path (case/slash-insensitive) so a saved path in a different form can't double a row.
+        existing = {self._norm_path(p) for _, p in self._mgr_mod_vars}
         scan_files = (self._scanned_compat if self._game_version() == "compat"
                       else list(self._scanned_public) + list(self._scanned_compat))
         for f in scan_files:
             path = str(f)
-            if path not in existing:
+            if self._norm_path(path) not in existing:
                 self._mgr_mod_vars.append((tk.BooleanVar(value=False), path))
-        self._ensure_bundled_in_list()   # shipped mods always present, on top, enabled
+                existing.add(self._norm_path(path))
+        self._ensure_bundled_in_list()   # shipped (SAFE) mods always PRESENT on top; default disabled,
+                                         # user-enabled (enable/cache state remembered by identity)
         self._mgr_rebuild()
 
     # =========================================================================
@@ -2900,16 +3233,24 @@ class ModManagerApp(tk.Tk):
         pad  = {"padx": 6, "pady": 3}
         padg = {"padx": 6, "pady": 3}
 
+        # ── Section ① — build an .rmod FROM a mod folder ──────────────────────
+        # Big visual break: users kept reading the mod-folder→rmod tool as part of the rmod→all-versions
+        # tool below.  A bold numbered banner + the ② separator later make them two distinct tools.
+        ttk.Label(p, text=t("mgr.make_rmod_from_mod_folder"),
+                  foreground=_R_GOLD_BRT, font=_F_HEAD).pack(anchor="w", padx=8, pady=(8, 0))
+        ttk.Label(p, text=t("mgr.turn_folder_modded_game_files"),
+                  foreground=_R_TEXT_DIM).pack(anchor="w", padx=8, pady=(0, 4))
+
         # ── Directories ───────────────────────────────────────────────────────
-        df = ttk.LabelFrame(p, text=t("Directories"))
+        df = ttk.LabelFrame(p, text=t("mgr.directories"))
         df.pack(fill="x", **pad)
         df.columnconfigure(1, weight=1)
 
-        ttk.Label(df, text=t("Mod Folder:")).grid(row=0, column=0, sticky="e", **padg)
+        ttk.Label(df, text=t("mgr.mod_folder")).grid(row=0, column=0, sticky="e", **padg)
         self._cv_mod = tk.StringVar()
         ttk.Entry(df, textvariable=self._cv_mod).grid(
             row=0, column=1, sticky="ew", **padg)
-        ttk.Button(df, text=t("Browse…"),
+        ttk.Button(df, text=t("mgr.browse"),
                    command=self._cv_browse_mod).grid(row=0, column=2, **padg)
         # Dynamic mode line: the mod's branch is auto-detected from its version folder (99/1360 =
         # COMPAT → .compat.rmod; 190852 = public → .rmod), found anywhere in the game-root-relative
@@ -2922,16 +3263,14 @@ class ModManagerApp(tk.Tk):
 
         # Which game VERSION (build) is this mod for? Picks the clean backup to diff against
         # and where the rmod lands. Defaults to the detected installed build.
-        ttk.Label(df, text=t("Make mod for version:")).grid(row=2, column=0, sticky="e", **padg)
+        ttk.Label(df, text=t("mgr.make_mod_version")).grid(row=2, column=0, sticky="e", **padg)
         self._cv_build = tk.StringVar()
-        self._cv_build_cb = ttk.Combobox(df, textvariable=self._cv_build, state="readonly",
-                                         values=self._cv_build_choices(), width=26)
+        self._cv_build_cb = ttk.Combobox(df, textvariable=self._cv_build, state="readonly", width=26)
         self._cv_build_cb.grid(row=2, column=1, sticky="w", **padg)
-        _det_bid = self._game_build_id()
-        if _det_bid:
-            self._cv_build.set(_gv_mod.display_name(_det_bid))
-        elif self._cv_build_cb["values"]:
-            self._cv_build.set(self._cv_build_cb["values"][-1])
+        # Make mod for version: EXACTLY the versions the user has a clean backup for — those backups
+        # are the pristine dats the convert diffs the mod against.  Same box behaviour as the Mod
+        # Editor's Game Version picker (both go through ui_util.populate_version_combo).
+        self._cv_refresh_target_versions()
 
         # ── Main body: vertical paned ─────────────────────────────────────────
         vpw = ttk.PanedWindow(p, orient=tk.VERTICAL)
@@ -2942,63 +3281,56 @@ class ModManagerApp(tk.Tk):
         vpw.add(hpw, weight=2)
 
         # ── Left: Mod Info form + Detected Changes listbox ────────────────────
-        left = ttk.LabelFrame(hpw, text=t("Mod Info"))
+        left = ttk.LabelFrame(hpw, text=t("mgr.mod_info"))
         hpw.add(left, weight=1)
         left.columnconfigure(1, weight=1)
-        left.rowconfigure(5, weight=1)
+        left.rowconfigure(4, weight=1)
 
         # Name + the auto-appended "_V#" file-name suffix (driven by the major version below).
-        ttk.Label(left, text=t("Name:")).grid(row=0, column=0, sticky="e", **padg)
+        ttk.Label(left, text=t("common.name")).grid(row=0, column=0, sticky="e", **padg)
         self._cv_name = tk.StringVar()
         self._cv_name.trace_add("write", lambda *_: self._cv_update_preview())
         ne = ttk.Entry(left, textvariable=self._cv_name)
         ne.grid(row=0, column=1, columnspan=2, sticky="ew", **padg)
-        ne.bind("<FocusOut>", self._cv_auto_id)
         self._cv_name_suffix = tk.StringVar()
         ttk.Label(left, textvariable=self._cv_name_suffix, foreground=_R_GOLD,
                   font=_F_BOLD).grid(row=0, column=3, sticky="w", padx=(0, 8))
 
-        # ID + the auto-appended "-v#" id suffix.
-        ttk.Label(left, text=t("ID:")).grid(row=1, column=0, sticky="e", **padg)
-        self._cv_id = tk.StringVar()
-        ttk.Entry(left, textvariable=self._cv_id).grid(
-            row=1, column=1, columnspan=2, sticky="ew", **padg)
-        self._cv_id_suffix = tk.StringVar()
-        ttk.Label(left, textvariable=self._cv_id_suffix, foreground=_R_GOLD,
-                  font=_F_BOLD).grid(row=1, column=3, sticky="w", padx=(0, 8))
+        # No ID field: the id is derived from the Name — exactly like converting an open Mod Editor
+        # project — so both convert paths behave identically.  _start_rmod_convert appends the -v# suffix.
 
-        # Version — its MAJOR number becomes the _V# / -v# suffix above.
-        ttk.Label(left, text=t("Version:")).grid(row=2, column=0, sticky="e", **padg)
+        # Version — its MAJOR number becomes the _V# suffix on the rmod file name (and the -v# id suffix).
+        ttk.Label(left, text=t("mgr.version")).grid(row=1, column=0, sticky="e", **padg)
         self._cv_ver = tk.StringVar(value="1.0.0")
         self._cv_ver.trace_add("write", lambda *_: self._cv_refresh_suffix())
         cv_ver_ent = ttk.Entry(left, textvariable=self._cv_ver, width=8)
-        cv_ver_ent.grid(row=2, column=1, sticky="w", **padg)
+        cv_ver_ent.grid(row=1, column=1, sticky="w", **padg)
         # On leaving the field, snap a non-conforming entry (blank, "v1.0", free text) back to x.x.x.
         cv_ver_ent.bind("<FocusOut>",
                         lambda *_: self._cv_ver.set(_normalize_version(self._cv_ver.get())))
-        ttk.Label(left, text=t("major # → auto-added as _V# (file) / -v# (id)"),
-                  foreground=_R_TEXT_DIM).grid(row=2, column=2, columnspan=2, sticky="w", padx=4)
+        ttk.Label(left, text=t("mgr.major_auto_added_as_v"),
+                  foreground=_R_TEXT_DIM).grid(row=1, column=2, columnspan=2, sticky="w", padx=4)
 
-        ttk.Label(left, text=t("Author:")).grid(row=3, column=0, sticky="e", **padg)
+        ttk.Label(left, text=t("mgr.author")).grid(row=2, column=0, sticky="e", **padg)
         self._cv_author = tk.StringVar()
         ttk.Entry(left, textvariable=self._cv_author).grid(
-            row=3, column=1, columnspan=3, sticky="ew", **padg)
+            row=2, column=1, columnspan=3, sticky="ew", **padg)
 
         self._cv_preview = tk.StringVar()
         ttk.Label(left, textvariable=self._cv_preview,
                   foreground=_R_TEXT_DIM).grid(
-            row=4, column=1, columnspan=3, sticky="w", padx=6, pady=(0, 2))
+            row=3, column=1, columnspan=3, sticky="w", padx=6, pady=(0, 2))
 
-        det = ttk.LabelFrame(left, text=t("Detected .dat Files"))
-        det.grid(row=5, column=0, columnspan=4, sticky="nsew", padx=6, pady=(2, 6))
+        det = ttk.LabelFrame(left, text=t("mgr.detected_dat_files"))
+        det.grid(row=4, column=0, columnspan=4, sticky="nsew", padx=6, pady=(2, 6))
         det.columnconfigure(0, weight=1)
         det.rowconfigure(1, weight=1)
 
         sb2 = ttk.Frame(det)
         sb2.pack(fill="x", pady=(4, 0), padx=4)
-        ttk.Button(sb2, text=t("Scan for Changes"),
+        ttk.Button(sb2, text=t("mgr.scan_changes"),
                    command=self._cv_scan).pack(side="left", padx=2)
-        self._cv_btn = ttk.Button(sb2, text=t("▶  Convert"), command=self._cv_convert)
+        self._cv_btn = ttk.Button(sb2, text=t("mgr.convert"), command=self._cv_convert)
         self._cv_btn.pack(side="left", padx=2)
         self._cv_scan_status = tk.StringVar()
         ttk.Label(sb2, textvariable=self._cv_scan_status,
@@ -3019,7 +3351,7 @@ class ModManagerApp(tk.Tk):
         self._cv_lb.pack(side="left", fill="both", expand=True)
 
         # ── Right: Description ────────────────────────────────────────────────
-        right = ttk.LabelFrame(hpw, text=t("Description"))
+        right = ttk.LabelFrame(hpw, text=t("mgr.description"))
         hpw.add(right, weight=1)
         self._cv_desc = _ThemedScrolledText(
             right, font=_F_MAIN, wrap="word", relief="flat",
@@ -3037,49 +3369,47 @@ class ModManagerApp(tk.Tk):
         self._cv_refresh_mode()
         self.after(160, self._cv_refresh_labels)
 
-        # ── Migrate an existing rmod to EVERY game version (forward + backward) ──────
-        tf = ttk.LabelFrame(bot, text=t("Migrate a mod to every game version"))
+        # ── Section ② — convert an EXISTING .rmod to every game version ───────
+        ttk.Separator(bot, orient="horizontal").pack(fill="x", padx=6, pady=(10, 2))
+        ttk.Label(bot, text=t("mgr.convert_existing_rmod_every_game"),
+                  foreground=_R_GOLD_BRT, font=_F_HEAD).pack(anchor="w", padx=8, pady=(0, 4))
+        # Title now lives in the banner above; keep the border to group the fields.
+        tf = ttk.LabelFrame(bot, text="")
         tf.pack(fill="x", **pad)
         tf.columnconfigure(1, weight=1)
 
-        ttk.Label(tf, text=t("Source version:")).grid(row=0, column=0, sticky="e", **padg)
+        ttk.Label(tf, text=t("mgr.source_version")).grid(row=0, column=0, sticky="e", **padg)
         self._mig_ver = tk.StringVar()
-        self._mig_ver_cb = ttk.Combobox(tf, textvariable=self._mig_ver, state="readonly",
-                                        values=self._cv_build_choices(), width=26)
+        self._mig_ver_cb = ttk.Combobox(tf, textvariable=self._mig_ver, state="readonly", width=26)
         self._mig_ver_cb.grid(row=0, column=1, sticky="w", **padg)
         self._mig_ver_cb.bind("<<ComboboxSelected>>", lambda *_: self._mig_refresh_rmods())
 
-        ttk.Label(tf, text=t("rmod:")).grid(row=1, column=0, sticky="e", **padg)
+        ttk.Label(tf, text=t("mgr.rmod")).grid(row=1, column=0, sticky="e", **padg)
         self._mig_src = tk.StringVar()
         self._mig_rmod_cb = ttk.Combobox(tf, textvariable=self._mig_src, state="readonly")
         self._mig_rmod_cb.grid(row=1, column=1, sticky="ew", **padg)
-        ttk.Button(tf, text=t("Browse…"), command=self._mig_browse).grid(row=1, column=2, **padg)
-        ttk.Label(tf, text=t("  Converts the selected rmod to every OTHER game version that has a shipped "
-                             "mapping (forward + backward), writing each into its mods/v<build>/ folder."),
+        ttk.Button(tf, text=t("mgr.browse"), command=self._mig_browse).grid(row=1, column=2, **padg)
+        ttk.Label(tf, text=t("mgr.converts_selected_rmod_every_other"),
                   foreground=_R_TEXT_DIM, justify="left").grid(
             row=2, column=0, columnspan=3, sticky="w", padx=8, pady=(0, 4))
         af2 = ttk.Frame(tf)
         af2.grid(row=3, column=0, columnspan=3, sticky="ew", **padg)
-        self._tr_btn = ttk.Button(af2, text=t("▶  Convert to all versions"),
+        self._tr_btn = ttk.Button(af2, text=t("mgr.convert_all_versions"),
                                   command=self._mig_convert_all)
         self._tr_btn.pack(side="right", padx=4)
         self._tr_status = tk.StringVar()
         ttk.Label(af2, textvariable=self._tr_status,
                   foreground=_R_TEXT_DIM).pack(side="left", padx=4)
-        # default the source version to the detected install + list its mods
-        if _det_bid:
-            self._mig_ver.set(_gv_mod.display_name(_det_bid))
-        elif self._mig_ver_cb["values"]:
-            self._mig_ver.set(self._mig_ver_cb["values"][-1])
-        self.after(200, self._mig_refresh_rmods)
+        # Populate with every build that has a mod library (default = installed) + list its rmods.
+        self._mig_refresh_versions()
 
         # Pin the footer to the bottom of this pane FIRST (side=bottom, packed before the
         # log) so Tk clips the log — not the status line — when the pane gets short.
-        self._cv_foot = tk.StringVar(value=t("Ready."))
+        self._cv_foot = tk.StringVar(value=t("mgr.ready"))
         ttk.Label(bot, textvariable=self._cv_foot, anchor="w").pack(
             side=tk.BOTTOM, fill="x", padx=6, pady=(0, 4))
 
-        lf2 = ttk.LabelFrame(bot, text=t("Log"))
+        lf2 = ttk.LabelFrame(bot, text=t("mgr.log"))
         lf2.pack(side=tk.TOP, fill="both", expand=True, **pad)
         self._cv_log = _make_log(lf2)
         self._cv_log.pack(fill="both", expand=True, padx=4, pady=4)
@@ -3089,7 +3419,6 @@ class ModManagerApp(tk.Tk):
     def _reset_convert_tab(self):
         self._cv_mod.set("")
         self._cv_name.set("")
-        self._cv_id.set("")
         self._cv_ver.set("1.0.0")
         self._cv_author.set("")
         self._cv_desc.delete("1.0", tk.END)
@@ -3098,21 +3427,25 @@ class ModManagerApp(tk.Tk):
         self._cv_scan_status.set("")
         self._mig_src.set("")
         self._tr_status.set("")
+        # Refresh both version pickers so backups / mod-library builds created since this tab was last
+        # shown appear: 'Make mod for version' (backed-up versions) and Section ② 'Source version'
+        # (every build with a mod library).
+        self._cv_refresh_target_versions()
+        self._mig_refresh_versions()
         _log_clear(self._cv_log)
-        self._cv_foot.set(t("Ready."))
+        self._cv_foot.set(t("mgr.ready"))
 
 
     def _cv_browse_mod(self):
         d = filedialog.askdirectory(
-            title=t("Select mod ROOT (mirrors the game: Data\\PC\\<ver>\\…, Maps\\PC\\…)"))
+            parent=self,
+            title=t("mgr.select_mod_root_mirrors_game_2"))
         if not d:
             return
         self._cv_mod.set(d)
         name = Path(d).name
         if not self._cv_name.get():
             self._cv_name.set(name)
-        if not self._cv_id.get():
-            self._cv_id.set(_name_to_id(name))
         # If the folder carries a well-formed description.txt, prefill author / version / description
         # from it; otherwise (missing / corrupt / not in format) just keep the folder name above.
         meta = mp_project_mod.read_folder_description(d)
@@ -3134,24 +3467,17 @@ class ModManagerApp(tk.Tk):
         ver = _detect_mod_folder_version(mod_folder) if mod_folder else None
         btn = getattr(self, "_cv_btn", None)
         if ver == "compat":
-            if btn: btn.configure(text=t("▶  Convert to .compat.rmod"))
-            self._cv_mode.set(t("Detected:  R.U.S.E. COMPAT mod  →  .compat.rmod   ·   saved to  "
-                                "{dest}", dest=self._cv_dest_dir(mod_folder)))
+            if btn: btn.configure(text=t("mgr.convert_compat_rmod"))
+            self._cv_mode.set(t("mgr.detected_r_u_s_e_2", dest=self._cv_dest_dir(mod_folder)))
         elif ver == "public":
-            if btn: btn.configure(text=t("▶  Convert to .rmod"))
-            self._cv_mode.set(t("Detected:  R.U.S.E. (public) mod  →  .rmod   ·   saved to  "
-                                "{dest}", dest=self._cv_dest_dir(mod_folder)))
+            if btn: btn.configure(text=t("mgr.convert_rmod_3"))
+            self._cv_mode.set(t("mgr.detected_r_u_s_e", dest=self._cv_dest_dir(mod_folder)))
         elif mod_folder:
-            if btn: btn.configure(text=t("▶  Convert"))
-            self._cv_mode.set(t("⚠  No 99/, 1360/ or 190852/ version folder found — pick the mod's ROOT. "
-                                "It should mirror the game root, e.g. "
-                                "mod\\Data\\PC\\190852\\ZZ_GladPatchableWin.dat (and mod\\Maps\\PC\\… for "
-                                "terrain).  Older flat PC\\ or loose layouts still convert."))
+            if btn: btn.configure(text=t("mgr.convert"))
+            self._cv_mode.set(t("mgr.no_99_1360_190852_version"))
         else:
-            if btn: btn.configure(text=t("▶  Convert"))
-            self._cv_mode.set(t("Select a mod ROOT (mirrors the game root: Data\\PC\\<ver>\\…, Maps\\PC\\… "
-                                "for terrain).  Branch is auto-detected from the version folder "
-                                "(99 or 1360 = COMPAT → .compat.rmod;  190852 = public → .rmod)."))
+            if btn: btn.configure(text=t("mgr.convert"))
+            self._cv_mode.set(t("mgr.select_mod_root_mirrors_game"))
         self._cv_update_preview()
 
     def _cv_major(self) -> str:
@@ -3160,13 +3486,12 @@ class ModManagerApp(tk.Tk):
         return _major_of(self._cv_ver.get())
 
     def _cv_refresh_suffix(self):
-        """Keep the gold _V# (file-name) and -v# (id) hints next to the Name/ID boxes in sync with
-        the major version, and re-render the file-name preview.  The suffixes are appended to the
-        rmod FILE NAME and the ID only — the rmod's own `name` field stays exactly as typed."""
+        """Keep the gold _V# (file-name) hint next to the Name box in sync with the major version, and
+        re-render the file-name preview.  The suffix is appended to the rmod FILE NAME (and the id gets a
+        matching -v# inside _start_rmod_convert) — the rmod's own `name` field stays exactly as typed."""
         mj = self._cv_major()
         if hasattr(self, "_cv_name_suffix"):
             self._cv_name_suffix.set(f"_V{mj}")
-            self._cv_id_suffix.set(f"-v{mj}")
         self._cv_update_preview()
 
     def _cv_update_preview(self):
@@ -3180,24 +3505,40 @@ class ModManagerApp(tk.Tk):
         else:
             self._cv_preview.set("")
 
-    def _cv_auto_id(self, _=None):
-        name = self._cv_name.get().strip()
-        if name and not self._cv_id.get():
-            self._cv_id.set(_name_to_id(name))
-
     def _cv_scan(self):
         mod_folder = self._cv_mod.get().strip()
         if not mod_folder:
-            ui_util.error(self, t("Missing"), t("Set the Mod Folder first.")); return
+            ui_util.error(self, t("mgr.missing"), t("mgr.set_mod_folder_first")); return
         self._cv_lb.delete(0, tk.END)
-        pairs = scan_mod_folder(mod_folder, str(self._cv_game_data(mod_folder)))
-        if not pairs:
-            self._cv_scan_status.set(t("No matching .dat files found."))
+        self._cv_scan_status.set(t("mgr.scanning"))
+        game_data = str(self._cv_game_data(mod_folder))
+        # Run the folder walk + stat() off the UI thread — a large or slow (network) mod folder would
+        # otherwise freeze the whole window — and never crash if a file vanishes mid-scan.
+        def _work():
+            rows, err = [], None
+            try:
+                for mod_dat, _, rmod_rel in scan_mod_folder(mod_folder, game_data):
+                    try:
+                        kb = mod_dat.stat().st_size // 1024
+                    except OSError:
+                        kb = 0
+                    rows.append((rmod_rel, kb))
+            except Exception as e:               # noqa: BLE001 — report any scan failure, don't crash
+                err = e
+            self._ui(lambda: self._cv_scan_done(rows, err))
+        threading.Thread(target=_work, daemon=True).start()
+
+    def _cv_scan_done(self, rows, err):
+        if err is not None:
+            self._cv_scan_status.set(t("mgr.scan_failed_see_error"))
+            ui_util.error(self, t("mgr.scan_failed"), str(err))
             return
-        for mod_dat, _, rmod_rel in pairs:
-            self._cv_lb.insert(
-                tk.END, t("{rmod_rel}  ({kb} KB)", rmod_rel=rmod_rel, kb=mod_dat.stat().st_size // 1024))
-        self._cv_scan_status.set(t("{n} .dat file(s) found", n=len(pairs)))
+        if not rows:
+            self._cv_scan_status.set(t("mgr.no_matching_dat_files_found"))
+            return
+        for rmod_rel, kb in rows:
+            self._cv_lb.insert(tk.END, t("mgr.rmod_rel_kb_kb", rmod_rel=rmod_rel, kb=kb))
+        self._cv_scan_status.set(t("mgr.n_dat_file_s_found", n=len(rows)))
 
     def _start_rmod_convert(self, *, mod_folder, name, mod_id, version, author, description,
                             log, on_done, target_build=""):
@@ -3210,7 +3551,7 @@ class ModManagerApp(tk.Tk):
         thread.  Returns the output path once started, or None (after an error dialog) if it can't start
         (missing name, or no reference originals to diff against)."""
         if not name:
-            ui_util.error(self, t("Missing"), t("Enter a mod Name."))
+            ui_util.error(self, t("mgr.missing"), t("mgr.enter_mod_name"))
             return None
         if not mod_id:
             mod_id = _name_to_id(name)
@@ -3229,10 +3570,8 @@ class ModManagerApp(tk.Tk):
                 'R.U.S.E. COMPAT' if mod_ver == 'compat' else 'R.U.S.E.')
             ui_util.error(
                 self,
-                t("Missing backup / reference files"),
-                t("Couldn't find clean {game} game files to diff this mod against "
-                  "(looked in {game_data}).\n\nCreate a backup for that version on the Mod Manager "
-                  "tab first (from a clean, unmodded game), or set the matching Game Root.",
+                t("mgr.missing_backup_reference_files"),
+                t("mgr.couldn_t_find_clean_game",
                   game=where, game_data=game_data))
             return None
         dest_dir = self._cv_dest_dir(mod_folder, build=target_build)
@@ -3249,8 +3588,8 @@ class ModManagerApp(tk.Tk):
 
         def _work():
             err, ok = None, False
-            def lf(m): self.after(0, lambda m=m: _log(log, m, "info"))
-            def wf(m): self.after(0, lambda m=m: _log(log, t("WARN  ") + m, "warn"))
+            def lf(m): self._ui(lambda m=m: _log(log, m, "info"))
+            def wf(m): self._ui(lambda m=m: _log(log, t("mgr.warn") + m, "warn"))
             try:
                 ok = run_conversion(
                     mod_folder=str(mod_folder), game_data_dir=game_data, output_rmod=out_rmod,
@@ -3259,14 +3598,20 @@ class ModManagerApp(tk.Tk):
                     game_version=stamp_build)
             except Exception as e:
                 err = str(e)
-            self.after(0, lambda: on_done(ok, out_rmod, err))
+            self._ui(lambda: on_done(ok, out_rmod, err))
 
-        self.after(0, lambda: _log(log, t("Converting: {name}", name=name), "head"))
+        self._ui(lambda: _log(log, t("mgr.converting_name", name=name), "head"))
         threading.Thread(target=_work, daemon=True).start()
         return out_rmod
 
     def _cv_convert(self):
         if self._conv_running:
+            return
+        # Don't start a conversion while a deploy/backup/restore is mid-write: converting diffs against the
+        # build's clean backup, which a backup job may be rewriting.  Mirrors the Mod Manager tab's
+        # update-rmod / share guards (and the deploy→conversion guard the other way).
+        if getattr(self, "_mgr_running", False):
+            ui_util.info(self, t("mgr.please_wait"), t("mgr.mgr_op_running_let_finish"))
             return
         mod_folder  = self._cv_mod.get().strip()
         name        = self._cv_name.get().strip()
@@ -3275,53 +3620,78 @@ class ModManagerApp(tk.Tk):
         author      = self._cv_author.get().strip()
         description = self._cv_desc.get("1.0", tk.END).strip()
         if not mod_folder:
-            ui_util.error(self, t("Missing"), t("Set the Mod Folder.")); return
+            ui_util.error(self, t("mgr.missing"), t("mgr.set_mod_folder")); return
         if not name:
-            ui_util.error(self, t("Missing"), t("Enter a mod Name.")); return
-        mod_id = self._cv_id.get().strip() or _name_to_id(name)
-        self._cv_id.set(mod_id)     # keep the clean (un-suffixed) id in the box; the hint shows -v#
+            ui_util.error(self, t("mgr.missing"), t("mgr.enter_mod_name")); return
+        # Id is derived from the name (no ID field) — identical to converting an open Mod Editor project.
+        mod_id = _name_to_id(name)
 
         def _done(ok, out_rmod, err):
             self._conv_running = False
             self._cv_btn.configure(state="normal")
             if err:
-                _log(self._cv_log, t("\nError: {err}", err=err), "err")
-                self._cv_foot.set(t("Error — see log."))
+                _log(self._cv_log, t("mgr.error_err", err=err), "err")
+                self._cv_foot.set(t("mgr.error_see_log"))
             elif ok:
-                _log(self._cv_log, t("\nDone — {out_rmod}", out_rmod=out_rmod), "ok")
-                self._cv_foot.set(t("Written: {name}", name=Path(out_rmod).name))
+                _log(self._cv_log, t("mgr.done_out_rmod", out_rmod=out_rmod), "ok")
+                self._cv_foot.set(t("mgr.written_name", name=Path(out_rmod).name))
             else:
-                _log(self._cv_log, t("\nConversion failed — see warnings."), "err")
-                self._cv_foot.set(t("Conversion failed."))
+                _log(self._cv_log, t("mgr.conversion_failed_see_warnings"), "err")
+                self._cv_foot.set(t("mgr.conversion_failed"))
 
         self._conv_running = True
         self._cv_btn.configure(state="disabled")
-        self._cv_foot.set(t("Converting…"))
-        if self._start_rmod_convert(mod_folder=mod_folder, name=name, mod_id=mod_id, version=version,
-                                    author=author, description=description,
-                                    log=self._cv_log, on_done=_done,
-                                    target_build=self._cv_target_build()) is None:
+        self._cv_foot.set(t("mgr.converting"))
+        try:
+            started = self._start_rmod_convert(mod_folder=mod_folder, name=name, mod_id=mod_id,
+                                               version=version, author=author, description=description,
+                                               log=self._cv_log, on_done=_done,
+                                               target_build=self._cv_target_build())
+        except Exception:
+            # A SYNCHRONOUS failure before the worker starts (e.g. the output dir can't be created) must
+            # not leave the tool stuck — restore the button/flag, then re-raise for the global error dialog.
             self._conv_running = False
             self._cv_btn.configure(state="normal")
-            self._cv_foot.set(t("Ready."))
+            self._cv_foot.set(t("mgr.error_see_log"))
+            raise
+        if started is None:
+            self._conv_running = False
+            self._cv_btn.configure(state="normal")
+            self._cv_foot.set(t("mgr.ready"))
 
     # ── build/version pickers + migrate-to-all-versions (Convert tab) ───────────
-    def _cv_build_choices(self) -> list:
-        """Branch-labeled display strings for every mapped build (incl OG), newest last."""
-        return [_gv_mod.display_name(e["buildid"])
-                for e in _migrate_mod.registry_timeline(include_og=True)]
+    def _cv_refresh_target_versions(self):
+        """Populate the 'Make mod for version' picker with EXACTLY the backed-up versions (the clean
+        dats a convert diffs the mod against), defaulting to the installed build.  Same box behaviour
+        as the Mod Editor's Game Version picker — both go through ui_util.populate_version_combo."""
+        if not hasattr(self, "_cv_build_cb"):
+            return
+        self._cv_build_map_backup = ui_util.populate_version_combo(
+            self._cv_build_cb, self._cv_build,
+            self._backed_up_versions(), default_key=self._version_key())
 
-    def _cv_build_map(self) -> dict:
-        """display string -> build id, for the version pickers."""
-        return {_gv_mod.display_name(e["buildid"]): e["buildid"]
-                for e in _migrate_mod.registry_timeline(include_og=True)}
+    def _mig_refresh_versions(self):
+        """Populate the Section ② 'Source version' picker with every build that has a mod library — the
+        same set as the Mod Manager tab's build selector (_available_mod_builds) — but branch-labeled via
+        display_name ('branch (vBUILD)', or 'vBUILD' when a build has no branch), since there's room here.
+        Defaults to the installed build, then lists that version's rmods."""
+        if not hasattr(self, "_mig_ver_cb"):
+            return
+        vers = [(b, _gv_mod.display_name(b), None) for b in self._available_mod_builds()]
+        self._mig_ver_map = ui_util.populate_version_combo(
+            self._mig_ver_cb, self._mig_ver, vers, default_key=self._game_build_id())
+        self._mig_refresh_rmods()
 
     def _cv_target_build(self) -> str:
-        """Build id chosen in 'Make mod for version' (else the detected install)."""
-        return self._cv_build_map().get(self._cv_build.get(), self._game_build_id())
+        """Build id chosen in 'Make mod for version' (else the detected install).  Resolved against
+        the backed-up-versions map the picker was populated from."""
+        m = getattr(self, "_cv_build_map_backup", None) or {}
+        return m.get(self._cv_build.get(), self._game_build_id())
 
     def _mig_src_build(self) -> str:
-        return self._cv_build_map().get(self._mig_ver.get(), "")
+        """Build id chosen in the Section ② 'Source version' picker (else '')."""
+        m = getattr(self, "_mig_ver_map", None) or {}
+        return m.get(self._mig_ver.get(), "")
 
     def _mig_refresh_rmods(self):
         """List the rmods in the selected source version's folder (mods/v<build>/)."""
@@ -3340,8 +3710,9 @@ class ModManagerApp(tk.Tk):
     def _mig_browse(self):
         base = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
         p = filedialog.askopenfilename(
-            title=t("Select an rmod to convert to all versions"), initialdir=str(base),
-            filetypes=[(t("Mod files"), "*.rmod"), (t("All files"), "*.*")])
+            parent=self,
+            title=t("mgr.select_rmod_convert_all_versions"), initialdir=str(base),
+            filetypes=[(t("mgr.mod_files"), "*.rmod"), (t("common.all_files"), "*.*")])
         if p:
             self._mig_src.set(p)
 
@@ -3364,10 +3735,13 @@ class ModManagerApp(tk.Tk):
         writing each into its mods/v<build>/ folder. Uses only shipped maps (no snapshots)."""
         if self._conv_running:
             return
+        if getattr(self, "_mgr_running", False):   # see _cv_convert — don't write mods while a deploy/backup/restore runs
+            ui_util.info(self, t("mgr.please_wait"), t("mgr.mgr_op_running_let_finish"))
+            return
         src_path  = self._mig_resolve_rmod_path()
         src_build = self._mig_src_build()
         if not src_path or not src_build:
-            ui_util.error(self, t("Missing"), t("Pick a source version and rmod first."))
+            ui_util.error(self, t("mgr.missing"), t("mgr.pick_source_version_rmod_first"))
             return
         targets = [e for e in _migrate_mod.registry_timeline(include_og=True)
                    if e["buildid"] != src_build]
@@ -3378,47 +3752,65 @@ class ModManagerApp(tk.Tk):
             targets = [e for e in targets
                        if (_gv_mod.dataver_for_build(e["buildid"]) or "190852") != "99"]
         if not targets:
-            ui_util.info(self, t("Nothing to do"), t("No other mapped versions to convert to."))
+            ui_util.info(self, t("mgr.nothing_do"), t("mgr.no_other_mapped_versions_convert"))
             return
         base = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
         self._conv_running = True
         self._tr_btn.configure(state="disabled")
-        self._tr_status.set(t("Converting…"))
-        _log(self._cv_log, t("Migrating {name} to {n} version(s)…",
+        self._tr_status.set(t("mgr.converting"))
+        _log(self._cv_log, t("mgr.migrating_name_n_version_s",
                              name=src_path.name, n=len(targets)), "head")
 
         def _work():
             ok = skipped = 0
+            # Validate the source rmod ONCE up front: if it can't be read (corrupt/truncated/foreign file),
+            # fail fast with a single clear message instead of the same parse error repeated per target.
+            try:
+                _mod_format.load(str(src_path))
+            except Exception as ex:
+                def _fail(ex=ex):
+                    self._conv_running = False
+                    self._tr_btn.configure(state="normal")
+                    self._tr_status.set(t("mgr.error_see_log"))
+                    _log(self._cv_log, t("mgr.error_err", err=str(ex)), "err")
+                self._ui(_fail)
+                return
             for e in targets:
                 label = _gv_mod.display_name(e["buildid"])
                 try:
-                    mod = _mod_format.load(str(src_path))
+                    mod = _mod_format.load(str(src_path))   # fresh mutable copy per target (convert_rmod mutates)
                     rep = _migrate_mod.convert_rmod(mod, src_build, e["buildid"], None)  # shipped maps
                     if rep.get("error"):
-                        self.after(0, lambda l=label, r=rep: _log(
-                            self._cv_log, t("  {l}: skipped — {err}", l=l, err=r["error"]), "warn"))
+                        self._ui(lambda l=label, r=rep: _log(
+                            self._cv_log, t("mgr.l_skipped_err", l=l, err=r["error"]), "warn"))
                         skipped += 1
                         continue
                     out_dir = base / f"v{e['buildid']}"
                     out_dir.mkdir(parents=True, exist_ok=True)
                     _mod_format.save(mod, str(out_dir / src_path.name))
-                    self.after(0, lambda l=label, r=rep: _log(
-                        self._cv_log, t("  {l}: ok (reindexed {ri}, dropped {d})",
+                    self._ui(lambda l=label, r=rep: _log(
+                        self._cv_log, t("mgr.l_ok_reindexed_ri_dropped",
                                         l=l, ri=r["reindexed"], d=r["dropped"]),
                         "ok" if not r["dropped"] else "warn"))
                     ok += 1
                 except Exception as ex:
-                    self.after(0, lambda l=label, ex=ex: _log(
-                        self._cv_log, t("  {l}: error — {err}", l=l, err=str(ex)), "err"))
+                    self._ui(lambda l=label, ex=ex: _log(
+                        self._cv_log, t("mgr.l_error_err", l=l, err=str(ex)), "err"))
                     skipped += 1
 
             def _fin():
                 self._conv_running = False
                 self._tr_btn.configure(state="normal")
-                self._tr_status.set(t("Done — {ok} converted, {sk} skipped.", ok=ok, sk=skipped))
-                _log(self._cv_log, t("Migration complete: {ok} converted, {sk} skipped.",
+                self._tr_status.set(t("mgr.done_ok_converted_sk_skipped", ok=ok, sk=skipped))
+                _log(self._cv_log, t("mgr.migration_complete_ok_converted_sk",
                                      ok=ok, sk=skipped), "head")
-            self.after(0, _fin)
+                # Nothing converted → almost always no version maps exist FROM this source build (e.g. a
+                # build the app has no mappings for).  Surface it in a popup, not just the log.
+                if ok == 0:
+                    ui_util.warning(self, t("mgr.no_version_maps_title"),
+                                    t("mgr.no_version_maps_body",
+                                      src=_gv_mod.display_name(src_build)))
+            self._ui(_fin)
         threading.Thread(target=_work, daemon=True).start()
 
     # =========================================================================
@@ -3433,7 +3825,7 @@ class ModManagerApp(tk.Tk):
         self._ed_outer.pack(fill="both", expand=True)
         # Top nav bar — shown ONLY while inside a nested editor view: Back + the view's title.
         self._ed_navbar = ttk.Frame(self._ed_outer)
-        ttk.Button(self._ed_navbar, text=t("←  Back"), command=self._ed_back).pack(side="left", padx=6, pady=4)
+        ttk.Button(self._ed_navbar, text=t("mgr.back"), command=self._ed_back).pack(side="left", padx=6, pady=4)
         self._ed_nav_title = ttk.Label(self._ed_navbar, text="", font=_F_HEAD, foreground=_R_GOLD_BRT)
         self._ed_nav_title.pack(side="left", padx=8)
         # Content area — shows the selection screen, the hub, or the current nested editor view.
@@ -3517,12 +3909,10 @@ class ModManagerApp(tk.Tk):
     def _build_ed_select(self, parent):
         self._ed_select = ttk.Frame(parent)
 
-        ttk.Label(self._ed_select, text=t("MOD EDITOR"), font=_F_HEAD,
+        ttk.Label(self._ed_select, text=t("mgr.mod_editor"), font=_F_HEAD,
                   foreground=_R_GOLD_BRT).pack(anchor="w", padx=10, pady=(10, 0))
         ttk.Label(self._ed_select,
-                  text=t("Create a new mod project or load an existing one. A project keeps every "
-                         "edit (units, buildings, maps…) together; files are grabbed from your clean "
-                         "backup into the mod folder when you first save changes to them."),
+                  text=t("mgr.create_new_mod_project_load"),
                   foreground=_R_TEXT_DIM, wraplength=820, justify="left"
                   ).pack(anchor="w", padx=10, pady=(0, 8))
 
@@ -3532,18 +3922,18 @@ class ModManagerApp(tk.Tk):
         left = ttk.Frame(body)
         body.add(left, weight=1)
 
-        nf = ttk.LabelFrame(left, text=t("Create New Mod"))
+        nf = ttk.LabelFrame(left, text=t("mgr.create_new_mod"))
         nf.pack(fill="x", padx=4, pady=(0, 6))
-        ttk.Label(nf, text=t("Mod name:")).grid(row=0, column=0, sticky="e", padx=6, pady=6)
+        ttk.Label(nf, text=t("mgr.mod_name_2")).grid(row=0, column=0, sticky="e", padx=6, pady=6)
         self._ed_new_name = tk.StringVar()
         ent = ttk.Entry(nf, textvariable=self._ed_new_name, width=40)
         ent.grid(row=0, column=1, sticky="ew", padx=6, pady=6)
         ent.bind("<Return>", lambda *_: self._ed_create_project())
-        ttk.Button(nf, text=t("Create Project"), command=self._ed_create_project
+        ttk.Button(nf, text=t("mgr.create_project"), command=self._ed_create_project
                    ).grid(row=0, column=2, padx=6, pady=6)
         # Target game version: defaults to the auto-detected installed build, but you can pick any
         # version you have a clean backup for (so you can mod compat-2 while your game is on public).
-        ttk.Label(nf, text=t("Game version:")).grid(row=1, column=0, sticky="e", padx=6, pady=(0, 6))
+        ttk.Label(nf, text=t("mgr.game_version")).grid(row=1, column=0, sticky="e", padx=6, pady=(0, 6))
         self._ed_target_ver = tk.StringVar()
         self._ed_target_map = {}
         self._ed_target_cb = ttk.Combobox(nf, textvariable=self._ed_target_ver, state="readonly", width=38)
@@ -3551,16 +3941,16 @@ class ModManagerApp(tk.Tk):
         self._ed_refresh_target_versions()
         nf.columnconfigure(1, weight=1)
 
-        lf = ttk.LabelFrame(left, text=t("Load Existing Mod"))
+        lf = ttk.LabelFrame(left, text=t("mgr.load_existing_mod"))
         lf.pack(fill="both", expand=True, padx=4, pady=6)
         # Action buttons sit at the top-left, beside the "Load Existing Mod" title.
         tb = ttk.Frame(lf)
         tb.pack(fill="x", padx=6, pady=(2, 0))
         btns = ttk.Frame(tb)
         btns.pack(side="left")
-        ttk.Button(btns, text=t("Load Selected"), command=self._ed_load_selected).pack(side="left", padx=2)
-        ttk.Button(btns, text=t("Refresh"), command=self._ed_refresh_project_list).pack(side="left", padx=2)
-        ttk.Button(btns, text=t("Browse Folder…"), command=self._ed_browse_project).pack(side="left", padx=2)
+        ttk.Button(btns, text=t("mgr.load_selected"), command=self._ed_load_selected).pack(side="left", padx=2)
+        ttk.Button(btns, text=t("mgr.refresh"), command=self._ed_refresh_project_list).pack(side="left", padx=2)
+        ttk.Button(btns, text=t("mgr.browse_folder"), command=self._ed_browse_project).pack(side="left", padx=2)
 
         lwrap = tk.Frame(lf, background=_R_BG_PANEL)
         lwrap.pack(fill="both", expand=True, padx=6, pady=6)
@@ -3579,7 +3969,7 @@ class ModManagerApp(tk.Tk):
 
         # Right half: the Mod Editor "all logs" mirror — every tab's activity plus all Python-logging
         # output (incl. Pillow's DEBUG).  Never cleared for the life of the program.
-        logf = ttk.LabelFrame(body, text=t("Log  ·  all activity (never cleared)"))
+        logf = ttk.LabelFrame(body, text=t("mgr.log_all_activity_never_cleared"))
         body.add(logf, weight=1)
         self._ed_master_log = _make_log(logf, height=20)
         self._ed_master_log.pack(fill="both", expand=True, padx=4, pady=4)
@@ -3597,10 +3987,10 @@ class ModManagerApp(tk.Tk):
             subs = []
         for d in subs:
             is_proj = mp_project_mod.ModProject.is_project_folder(d)
-            self._ed_proj_lb.insert(tk.END, d.name + ("" if is_proj else t("   (no project.json)")))
+            self._ed_proj_lb.insert(tk.END, d.name + ("" if is_proj else t("mgr.no_project_json")))
             self._ed_proj_paths.append(d)
         if not self._ed_proj_paths:
-            self._ed_proj_lb.insert(tk.END, t("(no mods yet — create one above)"))
+            self._ed_proj_lb.insert(tk.END, t("mgr.no_mods_yet_create_one"))
             self._ed_proj_paths.append(None)
         self._ed_refresh_target_versions()
 
@@ -3609,18 +3999,16 @@ class ModManagerApp(tk.Tk):
         auto-detected installed build (the long-standing automatic behaviour)."""
         if not hasattr(self, "_ed_target_cb"):
             return
-        vers = self._backed_up_versions()
-        self._ed_target_map = {lbl: key for key, lbl, _ in vers}
-        labels = list(self._ed_target_map)
-        self._ed_target_cb.configure(values=labels)
-        cur = self._version_key()
-        default = next((lbl for key, lbl, _ in vers if key == cur), labels[0] if labels else "")
-        self._ed_target_ver.set(default)
+        # Shared behaviour lives in ui_util so this box and the Convert tab's 'Make mod for version'
+        # box list the backed-up versions the exact same way.
+        self._ed_target_map = ui_util.populate_version_combo(
+            self._ed_target_cb, self._ed_target_ver,
+            self._backed_up_versions(), default_key=self._version_key())
 
     def _ed_create_project(self):
         name = self._ed_new_name.get().strip()
         if not name:
-            ui_util.info(self, t("Mod name"), t("Enter a name for the new mod."))
+            ui_util.info(self, t("mgr.mod_name"), t("mgr.enter_name_new_mod"))
             return
         # The chosen version comes from the picker (a backed-up version); fall back to the detected
         # build.  If nothing is backed up at all, guide the user to create a backup first.
@@ -3634,13 +4022,12 @@ class ModManagerApp(tk.Tk):
                 self._editor_mods_dir(), name, key,
                 self._settings.get("game_root", ""), str(bdir))
         except FileExistsError:
-            ui_util.error(self, t("Already exists"),
-                                 t("A mod folder with that name already exists. Pick another name, "
-                                   "or load it from the list below."))
+            ui_util.error(self, t("mgr.already_exists"),
+                                 t("mgr.mod_folder_name_already_exists"))
             self._ed_refresh_project_list()
             return
         except Exception as e:
-            ui_util.error(self, t("Create failed"), str(e))
+            ui_util.error(self, t("common.create_failed"), str(e))
             return
         self._project = proj
         self._ed_new_name.set("")
@@ -3649,7 +4036,7 @@ class ModManagerApp(tk.Tk):
     def _ed_load_selected(self):
         sel = self._ed_proj_lb.curselection()
         if not sel:
-            ui_util.info(self, t("Load"), t("Select a mod folder to load."))
+            ui_util.info(self, t("mgr.load"), t("mgr.select_mod_folder_load"))
             return
         folder = self._ed_proj_paths[sel[0]]
         if folder is not None:
@@ -3664,57 +4051,78 @@ class ModManagerApp(tk.Tk):
             if hasattr(os, "startfile"):
                 os.startfile(str(base))               # Windows: open in Explorer
             else:
-                ui_util.info(self, t("Folder"), str(base))
+                ui_util.info(self, t("mgr.folder"), str(base))
         except Exception as e:
-            ui_util.error(self, t("Open Failed"), t("Could not open:\n{path}\n\n{e}", path=base, e=e))
+            ui_util.error(self, t("mgr.open_failed"), t("mgr.could_not_open_path_e", path=base, e=e))
 
     def _prompt_branch_build_id(self, current=""):
-        """Ask which branch (game version) a project targets; return its build id.
-        Used to migrate legacy projects whose 'version' is still a branch NAME, or whose
-        stored build id has since been retired (no longer in the registry)."""
-        builds = _gv_mod.known_builds()                      # build_id -> {branch, dataver}
-        if not builds:
+        """Ask which game version a project should target; return its build id (or None if cancelled /
+        nothing to offer).  Shown when a project's saved version isn't one the editor recognises (a
+        legacy branch NAME, or a retired build id) so it must be reassigned to a live build.
+
+        The picker lists EXACTLY the versions the user has a clean backup for — the same set and
+        behaviour as the Mod Editor / Convert version pickers (shared ui_util.populate_version_combo) —
+        because a project can only be worked on against a backup it actually has.  Restricted to
+        backups whose key IS a build id: the return value relabels the project via set_build_id, so a
+        legacy format-name backup folder ('compat'/'public') is not a valid target here."""
+        vers = [(k, l, p) for (k, l, p) in self._backed_up_versions() if str(k).isdigit()]
+        if not vers:
             return None
-        # order by branch label; show "branch (vBUILD)"
-        items = sorted(builds.items(), key=lambda kv: kv[1].get("branch", kv[0]))
-        labels = [_gv_mod.display_name(b) for b, _ in items]
-        ids = [b for b, _ in items]
-        win = ui_util.themed_toplevel(self, t("Which game version?"))
-        tk.Label(win, text=t("This mod project was saved for '{v}', which isn't a current "
-                             "game build.\nWhich game version (branch) is it built for?", v=current),
+        win = ui_util.themed_toplevel(self, t("mgr.which_game_version"))
+        tk.Label(win, text=t("mgr.mod_project_was_saved_v", v=current),
                  justify="left").pack(padx=14, pady=(12, 6))
-        var = tk.StringVar(value=labels[0])
-        # default to the currently-detected build if present
-        det = self._game_build_id()
-        if det in ids:
-            var.set(labels[ids.index(det)])
-        ttk.Combobox(win, textvariable=var, values=labels, state="readonly",
-                     width=28).pack(padx=14, pady=4)
+        var = tk.StringVar()
+        cb = ttk.Combobox(win, textvariable=var, state="readonly", width=28)
+        cb.pack(padx=14, pady=4)
+        # default to the currently-detected build when it's among the backed-up versions
+        mapping = ui_util.populate_version_combo(cb, var, vers, default_key=self._version_key())
         chosen = {"id": None}
 
         def ok():
-            chosen["id"] = ids[labels.index(var.get())] if var.get() in labels else None
+            chosen["id"] = mapping.get(var.get())
             win.destroy()
-        ttk.Button(win, text=t("OK"), command=ok).pack(pady=(6, 12))
+        ttk.Button(win, text=t("common.ok"), command=ok).pack(pady=(6, 12))
         win.wait_window()
         return chosen["id"]
 
     def _ed_open_folder(self, folder):
         # Read pristine files from the backup matching the PROJECT's target version (so a project made
-        # for another version still loads correctly).  Fall back to the current-build backup gate for
-        # legacy/unknown versions.
+        # for another version still loads correctly).  A project can ONLY be opened against a backup of
+        # the exact build it targets — that backup holds the original dats every edit is made against.
         ver = self._read_project_version(folder)
-        key = ver if str(ver).isdigit() else self._version_key()
-        bdir = self._backup_dir_for(key)
-        if not (bdir.exists() and any(bdir.rglob("*.dat"))):
-            if not self._require_backup():
+        if str(ver).isdigit():
+            # The project targets a specific build id.  It can ONLY be opened against a backup of THAT
+            # exact build.  If there's no such backup, refuse — and tailor the guidance to whether the
+            # user can still get that version: a build a Steam branch currently serves is installable
+            # (install it + Create Backup); a superseded/retired build isn't (they need someone else's
+            # backup of that exact build id).
+            bdir = self._backup_dir_for(ver)
+            if not (bdir.exists() and any(bdir.rglob("*.dat"))):
+                if self._build_installable(ver):
+                    # Name the BRANCH too — that's the label the user picks in Steam's betas dropdown;
+                    # they won't recognise a build id there.
+                    msg = t("mgr.project_needs_version_backup",
+                            ver=_gv_mod.display_name(ver),
+                            branch=_gv_mod.branch_for_build(ver) or str(ver))
+                else:
+                    msg = t("mgr.project_needs_manual_backup",
+                            ver=_gv_mod.display_name(ver), build=str(ver))
+                ui_util.warning(self, t("mgr.backup_required"), msg)
                 return
-            bdir = self._backup_dir()
+        else:
+            # Legacy branch-NAME project (pre-build-id, no specific build id): fall back to the
+            # current-build backup gate; the migration prompt below assigns it a live build id.
+            key = self._version_key()
+            bdir = self._backup_dir_for(key)
+            if not (bdir.exists() and any(bdir.rglob("*.dat"))):
+                if not self._require_backup():
+                    return
+                bdir = self._backup_dir()
         try:
             proj = mp_project_mod.ModProject.load(
                 folder, self._settings.get("game_root", ""), str(bdir))
         except Exception as e:
-            ui_util.error(self, t("Load failed"), str(e))
+            ui_util.error(self, t("common.load_failed"), str(e))
             return
         # Migrate legacy / stale projects to a live build id -> ask which build, store it.
         # Two cases need this: (a) 'version' is a branch NAME (pre-build-id projects), and
@@ -3734,9 +4142,8 @@ class ModManagerApp(tk.Tk):
                 else:
                     ui_util.warning(
                         self,
-                        t("Different game format"),
-                        t("This project's files are data version {a}, but {b} is {c}. "
-                          "Left unchanged — convert the mod instead of relabeling it.",
+                        t("mgr.different_game_format"),
+                        t("mgr.project_s_files_are_data",
                           a=old_sub, b=_gv_mod.display_name(bid), c=new_sub))
         self._project = proj
         self._ed_show_hub()
@@ -3755,7 +4162,7 @@ class ModManagerApp(tk.Tk):
         self._ed_path_lbl = ttk.Label(self._ed_hub, text="", foreground=_R_TEXT_DIM)
         self._ed_path_lbl.pack(anchor="w", padx=8)
 
-        act = ttk.LabelFrame(self._ed_hub, text=t("Mod Windows"))
+        act = ttk.LabelFrame(self._ed_hub, text=t("mgr.mod_windows"))
         act.pack(fill="x", padx=8, pady=6)
         # Wrap the editor-open buttons (in a plain inner frame) so none (e.g. Raw / Asset Editor) is
         # clipped when the window is narrow (issue #5.3).  The help text is on its OWN line below, so
@@ -3765,58 +4172,72 @@ class ModManagerApp(tk.Tk):
         # "Add .dat files…" sits at the RIGHT of the editor-window button row — it imports existing
         # .dat files into the project (see _ed_add_dats).  Packed FIRST so it reserves its right-edge
         # spot; the flow of window buttons then fills the remaining width and wraps within it.
-        ttk.Button(act_row, text=t("  Add .dat files…  "), command=self._ed_add_dats
+        ttk.Button(act_row, text=t("mgr.add_dat_files"), command=self._ed_add_dats
                    ).pack(side="right", padx=4, pady=6)
         act_bar = ttk.Frame(act_row)
         act_bar.pack(side="left", fill="x", expand=True)
         act_btns = [
-            ttk.Button(act_bar, text=t("  Units & Buildings  "), command=self._ed_open_units),
-            ttk.Button(act_bar, text=t("  Map Editor  "), command=self._open_map_editor),
-            ttk.Button(act_bar, text=t("  AI  "), command=self._ed_open_ai),
-            ttk.Button(act_bar, text=t("  Economy  "), command=self._ed_open_economy),
-            ttk.Button(act_bar, text=t("  Raw / Asset Editor  "), command=self._ed_open_tools),
+            ttk.Button(act_bar, text=t("common.units_buildings"), command=self._ed_open_units),
+            ttk.Button(act_bar, text=t("mgr.map_editor"), command=self._open_map_editor),
+            ttk.Button(act_bar, text=t("mgr.ai"), command=self._ed_open_ai),
+            ttk.Button(act_bar, text=t("mgr.economy"), command=self._ed_open_economy),
+            ttk.Button(act_bar, text=t("mgr.raw_asset_editor"), command=self._ed_open_tools),
         ]
         ui_util.flow(act_bar, act_btns, pady=6)
-        ttk.Label(act, text=t("Each window has its own Save button — it saves every accumulated "
-                              "change to the mod's .dat."),
+        ttk.Label(act, text=t("mgr.each_window_has_its_own"),
                   foreground=_R_TEXT_DIM).pack(anchor="w", padx=8, pady=(2, 4))
 
-        proj = ttk.LabelFrame(self._ed_hub, text=t("Project"))
+        proj = ttk.LabelFrame(self._ed_hub, text=t("mgr.project"))
         proj.pack(fill="x", padx=8, pady=(0, 6))
-        ttk.Button(proj, text=t("  Deploy to Game  "), command=self._ed_deploy
-                   ).pack(side="left", padx=4, pady=6)
-        ttk.Button(proj, text=t("  Convert to rmod  "), command=self._ed_convert_to_rmod
+        self._ed_deploy_btn = ttk.Button(proj, text=t("mgr.deploy_game"), command=self._ed_deploy)
+        self._ed_deploy_btn.pack(side="left", padx=4, pady=6)
+        # Restore Clean here is the SAME operation as the Mod Manager / Settings buttons (shared
+        # _mgr_restore_clean): revert the whole install from the clean backup.  This is why deploy no
+        # longer writes per-file .bak copies — the full backup + this button already cover reverting.
+        self._ed_restore_btn = ttk.Button(proj, text=t("mgr.restore_clean"),
+                                          command=self._mgr_restore_clean)
+        self._ed_restore_btn.pack(side="left", padx=4, pady=6)
+        ttk.Button(proj, text=t("mgr.convert_rmod"), command=self._ed_convert_to_rmod
                    ).pack(side="left", padx=4, pady=6)
         # Pack Close Project (right) BEFORE the help text so it keeps its spot in a narrow window —
         # the long explanatory label clips instead of pushing Close Project off-screen (issue #5.3).
-        ttk.Button(proj, text=t("  Close Project  "), command=self._ed_close_project
+        ttk.Button(proj, text=t("mgr.close_project"), command=self._ed_close_project
                    ).pack(side="right", padx=4, pady=6)
-        ttk.Label(proj, text=t("Deploy = write the dats into the game. Convert to rmod = export an "
-                               "update mod (only your changes) to share."),
+        ttk.Label(proj, text=t("mgr.deploy_write_dats_into_game"),
                   foreground=_R_TEXT_DIM).pack(side="left", padx=10)
 
         # ── Bottom: Mod Details (left) + Log (right) — fill the remaining hub space ───
         bottom = ttk.Frame(self._ed_hub)
         bottom.pack(fill="both", expand=True, padx=8, pady=(0, 8))
 
-        det = ttk.LabelFrame(bottom, text=t("Mod Details (description.txt)"))
+        det = ttk.LabelFrame(bottom, text=t("mgr.mod_details_description_txt"))
         det.pack(side="left", fill="both", expand=True, padx=(0, 4))
         det.columnconfigure(1, weight=1)
         det.rowconfigure(2, weight=1)          # description row stretches (matches the Mod Manager box)
 
-        ttk.Label(det, text=t("Author:")).grid(row=0, column=0, sticky="e", padx=6, pady=(6, 3))
+        ttk.Label(det, text=t("mgr.author")).grid(row=0, column=0, sticky="e", padx=6, pady=(6, 3))
         self._ed_meta_author = tk.StringVar()
         ttk.Entry(det, textvariable=self._ed_meta_author).grid(
             row=0, column=1, sticky="ew", padx=6, pady=(6, 3))
 
-        ttk.Label(det, text=t("Version:")).grid(row=1, column=0, sticky="e", padx=6, pady=3)
+        ttk.Label(det, text=t("mgr.version")).grid(row=1, column=0, sticky="e", padx=6, pady=3)
+        verrow = ttk.Frame(det)
+        verrow.grid(row=1, column=1, sticky="ew", padx=6, pady=3)
         self._ed_meta_ver = tk.StringVar()
-        ed_ver_ent = ttk.Entry(det, textvariable=self._ed_meta_ver, width=14)
-        ed_ver_ent.grid(row=1, column=1, sticky="w", padx=6, pady=3)
+        ed_ver_ent = ttk.Entry(verrow, textvariable=self._ed_meta_ver, width=14)
+        ed_ver_ent.pack(side="left")
         # Empty or non-x.x.x input snaps to the 1.0.0 default when the field loses focus.
         ed_ver_ent.bind("<FocusOut>", lambda *_: self._ed_normalize_version())
+        # Game version the project was BUILT AGAINST (read-only) — reuses the create-picker's
+        # "Game version:" label so, right beside the mod's own version, the user can always see which
+        # game build this project targets instead of guessing.
+        ttk.Label(verrow, text=t("mgr.game_version"),
+                  foreground=_R_TEXT_DIM).pack(side="left", padx=(18, 4))
+        self._ed_meta_gamever = tk.StringVar()
+        ttk.Label(verrow, textvariable=self._ed_meta_gamever,
+                  foreground=_R_GOLD, font=_F_BOLD).pack(side="left")
 
-        ttk.Label(det, text=t("Description:")).grid(row=2, column=0, sticky="ne", padx=6, pady=3)
+        ttk.Label(det, text=t("mgr.description_2")).grid(row=2, column=0, sticky="ne", padx=6, pady=3)
         self._ed_meta_desc = _ThemedScrolledText(
             det, font=_F_MAIN, wrap="word", relief="flat",
             background=_R_BG_WIDGET, foreground=_R_TEXT, insertbackground=_R_GOLD,
@@ -3825,17 +4246,16 @@ class ModManagerApp(tk.Tk):
 
         br = ttk.Frame(det)
         br.grid(row=3, column=1, sticky="ew", padx=6, pady=(0, 4))
-        self._ed_meta_save_btn = ttk.Button(br, text=t("Save Details"),
+        self._ed_meta_save_btn = ttk.Button(br, text=t("mgr.save_details"),
                                             command=self._ed_save_description, state="disabled")
         self._ed_meta_save_btn.pack(side="left")
         self._ed_meta_status = ttk.Label(br, text="", foreground=_R_TEXT_DIM)
         self._ed_meta_status.pack(side="left", padx=8)
-        ttk.Label(det, text=t("First line = author, last line = version, the rest = description. Used "
-                              "when you convert to an rmod."),
+        ttk.Label(det, text=t("mgr.first_line_author_last_line"),
                   foreground=_R_TEXT_DIM, wraplength=380, justify="left").grid(
             row=4, column=1, sticky="w", padx=6, pady=(0, 6))
 
-        logf = ttk.LabelFrame(bottom, text=t("Log  ·  all activity (never cleared)"))
+        logf = ttk.LabelFrame(bottom, text=t("mgr.log_all_activity_never_cleared"))
         logf.pack(side="left", fill="both", expand=True, padx=(4, 0))
         self._ed_log = _make_log(logf, height=14)
         self._ed_log.pack(fill="both", expand=True, padx=4, pady=4)
@@ -3858,10 +4278,11 @@ class ModManagerApp(tk.Tk):
         self._ed_clear_views()
         self._ed_sync_project_paths()
         self._ed_select.pack_forget()
-        self._ed_proj_lbl.configure(text=t("Mod: {name}", name=self._project.name))
+        self._ed_proj_lbl.configure(text=t("mgr.mod_name_3", name=self._project.name))
         self._ed_path_lbl.configure(text=str(self._project.folder))
         self._ed_load_description()
         self._ed_update_status()
+        self._mgr_set_busy(self._mgr_running)   # set Deploy / Restore Clean button states (backup gate)
         self._ed_hub.pack(fill="both", expand=True)
 
     # ── Mod Details (description.txt) ─────────────────────────────────────────────
@@ -3881,7 +4302,7 @@ class ModManagerApp(tk.Tk):
             return
         dirty = self._ed_meta_dirty()
         self._ed_meta_save_btn.configure(state=("normal" if dirty else "disabled"))
-        self._ed_meta_status.configure(text=(t("● unsaved") if dirty else ""), foreground=_R_GOLD)
+        self._ed_meta_status.configure(text=(t("mgr.unsaved") if dirty else ""), foreground=_R_GOLD)
 
     def _ed_meta_on_text_modified(self, _event=None):
         # The Text <<Modified>> flag latches; clear it so later edits fire again, then re-check.
@@ -3901,6 +4322,11 @@ class ModManagerApp(tk.Tk):
         self._ed_meta_author.set(meta["author"])
         # Blank / malformed stored versions show as the 1.0.0 default.
         self._ed_meta_ver.set(_normalize_version(meta["version"]))
+        # Game version the project targets (read-only): friendly "branch (vBUILD)" when known, else the
+        # raw build id / legacy branch name.  Set on every hub load so a relabel/migration is reflected.
+        pv = str(self._project.version)
+        if hasattr(self, "_ed_meta_gamever"):
+            self._ed_meta_gamever.set(_gv_mod.display_name(pv) if pv.isdigit() else pv)
         self._ed_meta_desc.delete("1.0", tk.END)
         self._ed_meta_desc.insert("1.0", meta["description"])
         self._ed_meta_desc.edit_modified(False)
@@ -3915,11 +4341,11 @@ class ModManagerApp(tk.Tk):
         try:
             self._project.write_description(author, description, version)
         except Exception as e:
-            ui_util.error(self, t("Save Details"), t("Could not write description.txt:\n{e}", e=e))
+            ui_util.error(self, t("mgr.save_details"), t("mgr.could_not_write_description_txt", e=e))
             return
         self._ed_meta_saved = (author, description, version)
         self._ed_meta_check_dirty()
-        self._ed_meta_status.configure(text=t("✓ saved"), foreground=_R_GREEN)
+        self._ed_meta_status.configure(text=t("mgr.saved"), foreground=_R_GREEN)
         self.after(2000, self._ed_meta_check_dirty)
 
     def _backup_dir_for_project(self, proj) -> Path:
@@ -3946,7 +4372,7 @@ class ModManagerApp(tk.Tk):
             return
         n = self._project.dirty_count()
         self._ed_status_lbl.configure(
-            text=(t("● {n} unsaved change-set(s)", n=n) if n else t("✓ all changes saved")),
+            text=(t("common.n_unsaved_change_set_s", n=n) if n else t("common.all_changes_saved")),
             foreground=(_R_GOLD if n else _R_GREEN))
 
     def _ed_open_units(self):
@@ -3959,9 +4385,9 @@ class ModManagerApp(tk.Tk):
                 self._ed_content, self._project, on_change=self._ed_update_status,
                 default_lang=self._settings.get("default_language", "us"))
         except Exception as e:
-            ui_util.error(self, t("Units Editor"), t("Failed to open the units editor:\n{e}", e=e))
+            ui_util.error(self, t("common.units_editor"), t("mgr.failed_open_units_editor_e", e=e))
             return
-        self._ed_open_view(view, t("Units & Buildings"))
+        self._ed_open_view(view, t("mgr.units_buildings"))
 
     def _ed_open_ai(self):
         if not self._project:
@@ -3972,9 +4398,9 @@ class ModManagerApp(tk.Tk):
             view = ai_editor.AIEditorWindow(self._ed_content, self._project,
                                             on_change=self._ed_update_status)
         except Exception as e:
-            ui_util.error(self, t("AI Editor"), t("Failed to open the AI editor:\n{e}", e=e))
+            ui_util.error(self, t("common.ai_editor"), t("mgr.failed_open_ai_editor_e", e=e))
             return
-        self._ed_open_view(view, t("AI"))
+        self._ed_open_view(view, t("common.ai"))
 
     def _ed_open_economy(self):
         if not self._project:
@@ -3985,9 +4411,9 @@ class ModManagerApp(tk.Tk):
             view = economy_editor.EconomyEditorWindow(self._ed_content, self._project,
                                                       on_change=self._ed_update_status)
         except Exception as e:
-            ui_util.error(self, t("Economy Editor"), t("Failed to open the economy editor:\n{e}", e=e))
+            ui_util.error(self, t("common.economy_editor"), t("mgr.failed_open_economy_editor_e", e=e))
             return
-        self._ed_open_view(view, t("Economy"))
+        self._ed_open_view(view, t("common.economy"))
 
     def _ed_open_tools(self):
         if not self._project:
@@ -3996,15 +4422,15 @@ class ModManagerApp(tk.Tk):
         try:
             import tools_editor
         except Exception as e:
-            ui_util.error(self, t("Raw / Asset Editor"), t("Could not load the tools module:\n{e}", e=e))
+            ui_util.error(self, t("mgr.raw_asset_editor_2"), t("mgr.could_not_load_tools_module", e=e))
             return
         try:
             view = tools_editor.ToolsEditorWindow(
                 self._ed_content, self._project, on_change=self._ed_update_status,
                 open_nested=self._ed_open_nested_tools)
-            self._ed_open_view(view, t("Raw / Asset Editor"), cleanup=view.cleanup)
+            self._ed_open_view(view, t("mgr.raw_asset_editor_2"), cleanup=view.cleanup)
         except Exception as e:
-            ui_util.error(self, t("Raw / Asset Editor"), t("Failed to open the Raw / Asset Editor:\n{e}", e=e))
+            ui_util.error(self, t("mgr.raw_asset_editor_2"), t("mgr.failed_open_raw_asset_editor", e=e))
 
     def _ed_open_nested_tools(self, store, on_applied):
         """Open an embedded .dat (from the Raw editor's 'Open as nested .dat') as ANOTHER nested view on
@@ -4015,9 +4441,9 @@ class ModManagerApp(tk.Tk):
                 self._ed_content, on_change=on_applied, store=store,
                 open_nested=self._ed_open_nested_tools)
         except Exception as e:
-            ui_util.error(self, t("Raw / Asset Editor"), t("Failed to open the nested archive:\n{e}", e=e))
+            ui_util.error(self, t("mgr.raw_asset_editor_2"), t("mgr.failed_open_nested_archive_e", e=e))
             return
-        self._ed_open_view(view, t("Raw / Asset Editor — {name}", name=store.name), cleanup=view.cleanup)
+        self._ed_open_view(view, t("mgr.raw_asset_editor_name", name=store.name), cleanup=view.cleanup)
 
     def _ed_add_dats(self):
         """Import existing .dat files into the current project.  The user already has built .dat files
@@ -4029,9 +4455,10 @@ class ModManagerApp(tk.Tk):
         if not self._project:
             return
         paths = filedialog.askopenfilenames(
-            title=t("Add .dat files to the project"),
+            parent=self,
+            title=t("mgr.add_dat_files_project"),
             initialdir=self._settings.get("game_root", "") or str(self._editor_mods_dir()),
-            filetypes=[(t("Game data files"), "*.dat"), (t("All files"), "*.*")])
+            filetypes=[(t("mgr.game_data_files"), "*.dat"), (t("common.all_files"), "*.*")])
         if not paths:
             return
         core_by_name = {fn.lower(): dk for dk, fn in mp_project_mod.DAT_FILES.items()}
@@ -4043,14 +4470,13 @@ class ModManagerApp(tk.Tk):
             dest = self._project.project_dat_path(key)
             rel = str(dest.relative_to(self._project.folder)).replace(os.sep, "/")
             plan.append((sp, dest, rel))
-        listing = "\n".join(t("  • {name}  →  {rel}", name=sp.name, rel=rel) for sp, _, rel in plan)
-        msg = t("Copy these .dat file(s) into the project (for {ver})?\n\n{listing}\n\n"
-                "Each goes where the game expects it; the project reloads so the editors use them.",
+        listing = "\n".join(t("mgr.name_rel", name=sp.name, rel=rel) for sp, _, rel in plan)
+        msg = t("mgr.copy_these_dat_file_s",
                 ver=self._project.branch_label, listing=listing)
         overwrite = [rel for _, d, rel in plan if d.is_file()]
         if overwrite:
-            msg += t("\n\nThis REPLACES file(s) already in the project:\n") + "\n".join("  • " + r for r in overwrite)
-        if not ui_util.confirm(self, t("Add .dat files"), msg):
+            msg += t("mgr.replaces_file_s_already_project") + "\n".join("  • " + r for r in overwrite)
+        if not ui_util.confirm(self, t("mgr.add_dat_files_2"), msg):
             return
         copied = 0
         for sp, dest, rel in plan:
@@ -4058,9 +4484,9 @@ class ModManagerApp(tk.Tk):
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(str(sp), str(dest))
                 copied += 1
-                _log(self._ed_log, t("  added .dat: {rel}", rel=rel), "ok")
+                _log(self._ed_log, t("mgr.added_dat_rel", rel=rel), "ok")
             except Exception as e:
-                ui_util.error(self, t("Add .dat files"), t("Could not copy {name}:\n{e}", name=sp.name, e=e))
+                ui_util.error(self, t("mgr.add_dat_files_2"), t("mgr.could_not_copy_name_e", name=sp.name, e=e))
                 return
         # Reload the project from disk so the newly-copied dats are what the editor has loaded.
         folder = self._project.folder
@@ -4068,31 +4494,40 @@ class ModManagerApp(tk.Tk):
             self._project = mp_project_mod.ModProject.load(
                 folder, self._settings.get("game_root", ""), str(self._project.backup_dir))
         except Exception as e:
-            ui_util.error(self, t("Load failed"), str(e))
+            ui_util.error(self, t("common.load_failed"), str(e))
             return
         self._ed_show_hub()
-        ui_util.info(self, t("Add .dat files"),
-                            t("Added {n} .dat file(s) to the project.", n=copied))
+        ui_util.info(self, t("mgr.add_dat_files_2"),
+                            t("mgr.added_n_dat_file_s", n=copied))
 
     def _ed_deploy(self):
         if not self._project:
             return
+        if self._mgr_running:   # a deploy/backup/restore (any tab) is already touching the game files
+            ui_util.info(self, t("mgr.please_wait"), t("mgr.op_running_try_again"))
+            return
         self._ed_sync_project_paths()
         if not self._settings.get("game_root", ""):
-            ui_util.info(self, t("No Game Root"), t("Set the Game Root Directory in Settings first."))
+            ui_util.info(self, t("mgr.no_game_root"), t("mgr.set_game_root_directory_settings"))
+            return
+        # Require a clean backup of the INSTALLED game before deploying: deploy no longer writes per-file
+        # .bak copies, so 'Restore Clean' (which reverts from this backup) is the only way back.  Without
+        # it, a deploy would leave the install modified with no in-app revert.  Matches the Mod Manager
+        # deploy's backup gate.
+        bd_install = self._backup_dir()
+        if not (bd_install.exists() and any(bd_install.rglob("*.dat"))):
+            ui_util.error(self, t("mgr.no_backup"), t("mgr.no_game_file_backup_found"))
             return
         if self._project.is_dirty():
             ui_util.info(
                 self,
-                t("Unsaved changes"),
-                t("You have changes that aren't saved to the mod yet. Save them in their editor "
-                  "window (each window has a Save button), then deploy."))
+                t("mgr.unsaved_changes"),
+                t("mgr.have_changes_aren_t_saved"))
             return
         dats = self._project.saved_dats()
         if not dats:
-            ui_util.info(self, t("Deploy"),
-                                t("Nothing to deploy yet — make and save a change in an editor "
-                                  "window first to build the mod's .dat."))
+            ui_util.info(self, t("mgr.deploy"),
+                                t("mgr.nothing_deploy_yet_make_save"))
             return
         # Warn if the installed game is a DIFFERENT version than this project targets: deploying writes
         # the project's version files into a game set to another version, which may not load correctly.
@@ -4105,26 +4540,25 @@ class ModManagerApp(tk.Tk):
                 target_lbl = target
             if not ui_util.confirm(
                     self,
-                    t("Wrong game version?"),
-                    t("This mod project targets {target}, but your game is currently set to {installed}.\n\n"
-                      "Deploying writes {target} files into a {installed} game, which may not load "
-                      "correctly. Switch your game to {target} in Steam to test it.\n\nDeploy anyway?",
+                    t("mgr.wrong_game_version_2"),
+                    t("mgr.mod_project_targets_target_but",
                       target=target_lbl, installed=self._branch_label())):
                 return
         if not ui_util.confirm(
                 self,
-                t("Deploy to game?"),
-                t("This will OVERWRITE the live game file(s):\n\n")
+                t("mgr.deploy_game_2"),
+                t("mgr.deploy_confirm_intro")
+                + t("mgr.will_overwrite_live_game_file")
                 + "\n".join("  • " + d.name for d in dats)
-                + t("\n\nA timestamped backup of each original is saved under output/backups, and any "
-                    "files left modified by a previous deploy that this mod doesn't touch are reverted to "
-                    "clean.\n\nProceed?")):
+                + t("mgr.deploy_overwrite_proceed")):
             return
-        # Use the backup matching THIS project's version (set at load/create), so leftover-revert and
-        # clean reads come from the right version's originals — not necessarily the installed build's.
-        bd = Path(self._project.backup_dir) if getattr(self._project, "backup_dir", "") else self._backup_dir()
+        # Leftovers are reset to the INSTALLED game's OWN clean copy, so their clean source is the
+        # INSTALLED build's backup — NOT this project's backup (a project may target a different version
+        # than the installed game; reverting from the project's backup would write a DIFFERENT version's
+        # clean dat over the install).  This mirrors the Mod Manager's Deploy leftover-restore exactly.
+        install_bd = self._backup_dir()
         game_root = Path(self._settings["game_root"])
-        _log(self._ed_log, t("\nDeploying mod '{name}' to the game…", name=self._project.name), "head")
+        _log(self._ed_log, t("mgr.deploying_mod_name_game", name=self._project.name), "head")
         try:
             # Shared deploy tracker: first revert LEFTOVERS — dats a PREVIOUS deploy (this project, the
             # Mod Manager, or another project) modified that this mod won't overwrite — so they don't
@@ -4133,50 +4567,56 @@ class ModManagerApp(tk.Tk):
             prev = {r.replace("/", os.sep) for r in self._mgr_saved_deployed_dats()}
             reverted = 0
             for rel in sorted(prev - proj_rels):
-                src = bd / rel
+                src = install_bd / rel
                 if src.is_file():
                     dest = game_root / rel
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dest)
                     reverted += 1
-                    _log(self._ed_log, t("  reverted leftover: {rel}", rel=rel), "info")
-            copied, backups = self._project.deploy(bd)
+                    _log(self._ed_log, t("mgr.reverted_leftover_rel", rel=rel), "info")
+                else:
+                    # No clean backup of the installed game for this leftover — can't revert it; log it
+                    # (don't silently skip), matching the Mod Manager's leftover-restore warning.
+                    _log(self._ed_log, t("mgr.warn_no_clean_backup_restore", dat_rel=rel), "warn")
+            copied = self._project.deploy()
             for c in copied:
-                _log(self._ed_log, t("  deployed: {c}", c=c), "ok")
+                _log(self._ed_log, t("mgr.deployed_c", c=c), "ok")
             # Record what's now overlaid so the next deploy (here or in the Mod Manager) can clean it.
             self._mgr_set_deployed_dats(r.replace(os.sep, "/") for r in proj_rels)
         except Exception as e:
-            _log(self._ed_log, t("  ERROR: {e}", e=e), "err")
-            ui_util.error(self, t("Deploy"), str(e))
+            _log(self._ed_log, t("mgr.error_e_2", e=e), "err")
+            ui_util.error(self, t("mgr.deploy"), str(e))
             return
-        _log(self._ed_log, t("Done — deployed {n} file(s), reverted {reverted} leftover(s).",
+        _log(self._ed_log, t("mgr.done_deployed_n_file_s",
                              n=len(copied), reverted=reverted), "head")
-        msg = t("Deployed to:\n\n") + "\n".join(copied)
+        msg = t("mgr.deployed_2") + "\n".join(copied)
         if reverted:
-            msg += t("\n\nReverted {reverted} leftover file(s) from a previous deploy to clean.", reverted=reverted)
-        if backups:
-            msg += t("\n\nBackups saved:\n") + "\n".join(backups)
-        ui_util.info(self, t("Deployed"), msg)
+            msg += t("mgr.reverted_reverted_leftover_file_s", reverted=reverted)
+        ui_util.info(self, t("mgr.deployed"), msg)
 
     def _ed_convert_to_rmod(self):
         if not self._project or getattr(self, "_ed_converting", False):
             return
+        # Don't diff against the build's clean backup while a deploy/backup/restore is mid-write — same
+        # guard the Convert tab's Convert / Convert-all-versions buttons enforce.
+        if getattr(self, "_mgr_running", False):
+            ui_util.info(self, t("mgr.please_wait"), t("mgr.mgr_op_running_let_finish"))
+            return
         self._ed_sync_project_paths()
         if self._project.is_dirty():
-            ui_util.info(self, t("Unsaved changes"),
-                                t("Save your changes in the editor windows first, then convert."))
+            ui_util.info(self, t("mgr.unsaved_changes"),
+                                t("mgr.save_changes_editor_windows_first"))
             return
         dats = self._project.saved_dats()
         if not dats:
-            ui_util.info(self, t("Convert to rmod"),
-                                t("Nothing to convert yet — make and save a change first."))
+            ui_util.info(self, t("mgr.convert_rmod_2"),
+                                t("mgr.nothing_convert_yet_make_save"))
             return
         # Offer to flush unsaved Mod Details so the rmod carries the author/version/description shown.
         if self._ed_meta_dirty() and ui_util.confirm(
                 self,
-                t("Unsaved details"),
-                t("You have unsaved Mod Details (author / version / description). Save them to "
-                  "description.txt before converting, so they go into the rmod?")):
+                t("mgr.unsaved_details"),
+                t("mgr.have_unsaved_mod_details_author")):
             self._ed_save_description()
         meta = self._project.read_description()
 
@@ -4184,21 +4624,21 @@ class ModManagerApp(tk.Tk):
             self._ed_converting = False
             self._ed_update_status()
             if err:
-                _log(self._ed_log, t("Error: {err}", err=err), "err")
-                ui_util.error(self, t("Convert to rmod"), err)
+                _log(self._ed_log, t("mgr.error_err_2", err=err), "err")
+                ui_util.error(self, t("mgr.convert_rmod_2"), err)
             elif ok:
-                _log(self._ed_log, t("Done — wrote {out_rmod}", out_rmod=out_rmod), "ok")
-                ui_util.info(self, t("Convert to rmod"),
-                                    t("Exported update mod (only your changes) to the mods folder:\n\n{out_rmod}",
+                _log(self._ed_log, t("mgr.done_wrote_out_rmod", out_rmod=out_rmod), "ok")
+                ui_util.info(self, t("mgr.convert_rmod_2"),
+                                    t("mgr.exported_update_mod_only_changes",
                                       out_rmod=out_rmod))
             else:
-                _log(self._ed_log, t("No changes found to convert."), "warn")
-                ui_util.warning(self, t("Convert to rmod"), t("No changes were found to convert."))
+                _log(self._ed_log, t("mgr.no_changes_found_convert"), "warn")
+                ui_util.warning(self, t("mgr.convert_rmod_2"), t("mgr.no_changes_were_found_convert"))
 
         # Use the SAME conversion path as the Convert tab: versioned _V#/-v# naming, branch detection,
         # shipped to the mods folder, diffed against the clean originals.
         self._ed_converting = True
-        self._ed_status_lbl.configure(text=t("Converting to rmod… (diffing, please wait)"),
+        self._ed_status_lbl.configure(text=t("mgr.converting_rmod_diffing_please_wait"),
                                       foreground=_R_GOLD)
         # Target the build the PROJECT was created for so the diff baseline, destination
         # folder and stamped game_version all agree (a project targeting compat-2 while the
@@ -4220,9 +4660,8 @@ class ModManagerApp(tk.Tk):
         if self._project and self._project.is_dirty():
             if not ui_util.confirm(
                     self,
-                    t("Unsaved changes"),
-                    t("There are changes not yet saved to the mod (save them in an editor window "
-                      "to keep them). Close the project and discard those unsaved changes?")):
+                    t("mgr.unsaved_changes"),
+                    t("mgr.there_are_changes_not_yet")):
                 return
         self._project = None
         self._ed_show_select()
@@ -4238,9 +4677,9 @@ class ModManagerApp(tk.Tk):
             view = map_editor.MapEditorWindow(self._ed_content, self._project,
                                               on_change=self._ed_update_status)
         except Exception as e:
-            ui_util.error(self, t("Map Editor"), t("Failed to open the map editor:\n{e}", e=e))
+            ui_util.error(self, t("common.map_editor"), t("mgr.failed_open_map_editor_e", e=e))
             return
-        self._ed_open_view(view, t("Map Editor"))
+        self._ed_open_view(view, t("common.map_editor"))
 
     # =========================================================================
     # SETTINGS TAB
@@ -4260,10 +4699,10 @@ class ModManagerApp(tk.Tk):
         p = self._scrollable_body(p)
         pad = {"padx": 8, "pady": 6}
 
-        ttk.Label(p, text=t("Configure paths for the R.U.S.E. COMPAT Mod Manager."),
+        ttk.Label(p, text=t("mgr.configure_paths_r_u_s"),
                   foreground=_R_TEXT_DIM).pack(anchor="w", padx=10, pady=(10, 4))
 
-        pf = ttk.LabelFrame(p, text=t("Paths"))
+        pf = ttk.LabelFrame(p, text=t("mgr.paths"))
         pf.pack(fill="x", **pad)
         pf.columnconfigure(1, weight=1)
 
@@ -4271,13 +4710,12 @@ class ModManagerApp(tk.Tk):
         # mods folder are AUTO-derived from the app's location, so they're shown read-only and their
         # button just opens the folder in the file explorer (it doesn't change the path).
         defs = [
-            (t("Game Root Directory:"), "game_root", True,
-             t("Root folder of your R.U.S.E. COMPAT installation (contains Ruse.exe and Data/).")),
-            (t("Working Directory:"),   "working_dir", False,
-             t("Where the app lives — output and state files are stored here. Auto-set to the exe's folder; "
-               "click Open to view it in your file explorer.")),
-            (t("Mods Folder:"),         "mods_folder", False,
-             t("Where your .rmod files live. Auto-set to <working dir>\\mods; click Open to view it.")),
+            (t("mgr.game_root_directory"), "game_root", True,
+             t("mgr.root_folder_r_u_s")),
+            (t("mgr.working_directory"),   "working_dir", False,
+             t("mgr.where_app_lives_output_state")),
+            (t("mgr.mods_folder"),         "mods_folder", False,
+             t("mgr.where_rmod_files_live_auto")),
         ]
         # Row layout: status at 0, game_root at 1-2, working_dir at 4-5, mods_folder at 6-7
         _entry_rows = [1, 4, 6]
@@ -4292,13 +4730,13 @@ class ModManagerApp(tk.Tk):
             if editable:
                 var.trace_add("write", lambda *_: self._set_schedule_save())
                 ttk.Entry(pf, textvariable=var).grid(row=er, column=1, sticky="ew", **pad)
-                ttk.Button(pf, text=t("Browse…"), command=self._set_browse_game_root).grid(
+                ttk.Button(pf, text=t("mgr.browse"), command=self._set_browse_game_root).grid(
                     row=er, column=2, padx=4, pady=6)
             else:
                 # read-only: visible & copyable but not editable; the button opens it in Explorer.
                 ttk.Entry(pf, textvariable=var, state="readonly").grid(
                     row=er, column=1, sticky="ew", **pad)
-                ttk.Button(pf, text=t("Open…"), command=lambda k=key: self._set_open_folder(k)).grid(
+                ttk.Button(pf, text=t("mgr.open"), command=lambda k=key: self._set_open_folder(k)).grid(
                     row=er, column=2, padx=4, pady=6)
             ttk.Label(pf, text=hint, foreground=_R_TEXT_DIM, wraplength=580,
                       justify="left").grid(
@@ -4315,7 +4753,7 @@ class ModManagerApp(tk.Tk):
         ttk.Label(sf, textvariable=self._set_status,
                   foreground=_COL_OK, font=_F_LOG).pack(side="left", padx=2)
 
-        bf = ttk.LabelFrame(p, text=t("Game File Backup"))
+        bf = ttk.LabelFrame(p, text=t("mgr.game_file_backup"))
         bf.pack(fill="x", **pad)
 
         bfh = ttk.Frame(bf)
@@ -4325,21 +4763,20 @@ class ModManagerApp(tk.Tk):
         bfl = ttk.Frame(bfh)
         bfl.pack(side="left", fill="both", expand=True)
         ttk.Label(bfl,
-                  text=t("Back up your original game files before deploying any mods.\n"
-                         "Set Game Root Directory above first, then click the button below."),
+                  text=t("mgr.back_up_original_game_files"),
                   foreground=_R_TEXT_DIM, font=_F_LOG, justify="left",
                   ).pack(anchor="w", padx=8, pady=(6, 2))
         btn_row = ttk.Frame(bfl)
         btn_row.pack(anchor="w", padx=8, pady=(2, 4))
-        self._set_backup_btn = ttk.Button(btn_row, text=t("Create Backup"),
+        self._set_backup_btn = ttk.Button(btn_row, text=t("mgr.create_backup"),
                                           command=self._mgr_create_backup,
                                           state="disabled")
         self._set_backup_btn.pack(side="left", padx=(0, 4))
-        self._set_restore_btn = ttk.Button(btn_row, text=t("Restore Clean"),
+        self._set_restore_btn = ttk.Button(btn_row, text=t("mgr.restore_clean"),
                                            command=self._mgr_restore_clean,
                                            state="disabled")
         self._set_restore_btn.pack(side="left", padx=(0, 4))
-        ttk.Button(btn_row, text=t("Detect Game Version"),
+        ttk.Button(btn_row, text=t("mgr.detect_game_version"),
                    command=self._set_detect_game).pack(side="left")
         self._set_s2_lbl = tk.Label(bfl, text="", font=_F_LOG,
                                     background=_R_BG_PANEL, anchor="w")
@@ -4350,19 +4787,19 @@ class ModManagerApp(tk.Tk):
         # Right — profile management
         bfr = ttk.Frame(bfh)
         bfr.pack(side="left", fill="y", padx=4, pady=4)
-        ttk.Label(bfr, text=t("Profile"), foreground=_R_TEXT_DIM,
+        ttk.Label(bfr, text=t("mgr.profile"), foreground=_R_TEXT_DIM,
                   font=_F_BOLD).pack(anchor="w", pady=(2, 4))
         self._prof_lvl1_btn = ttk.Button(
-            bfr, text=t("Set lvl 1 Profile"), command=self._profile_set_lvl1)
+            bfr, text=t("mgr.set_lvl_1_profile"), command=self._profile_set_lvl1)
         self._prof_lvl1_btn.pack(fill="x", pady=2)
         self._prof_lvl100_btn = ttk.Button(
-            bfr, text=t("Set lvl 100 Profile"), command=self._profile_set_lvl100)
+            bfr, text=t("mgr.set_lvl_100_profile"), command=self._profile_set_lvl100)
         self._prof_lvl100_btn.pack(fill="x", pady=2)
-        self._prof_backup_btn = ttk.Button(bfr, text=t("Back Up Current Profile"),
+        self._prof_backup_btn = ttk.Button(bfr, text=t("mgr.back_up_current_profile"),
                                             command=self._profile_backup_current,
                                             state="disabled")
         self._prof_backup_btn.pack(fill="x", pady=(6, 2))
-        self._prof_set_backup_btn = ttk.Button(bfr, text=t("Set Backed-Up Profile"),
+        self._prof_set_backup_btn = ttk.Button(bfr, text=t("mgr.set_backed_up_profile"),
                                                command=self._profile_set_backed_up,
                                                state="disabled")
         self._prof_set_backup_btn.pack(fill="x", pady=(2, 2))
@@ -4373,24 +4810,19 @@ class ModManagerApp(tk.Tk):
                                            state="readonly", values=[_PROFILE_AUTO])
         self._prof_apply_cb.pack(fill="x", pady=(0, 2))
 
-        info = ttk.LabelFrame(p, text=t("Output Folder Structure"))
+        info = ttk.LabelFrame(p, text=t("mgr.output_folder_structure"))
         info.pack(fill="x", **pad)
         ttk.Label(info,
-                  text=t("output/backups/          ← original game files "
-                         "(created by 'Create Backup')\n"
-                         "output/mod_output_files/ ← patched .dat files "
-                         "(generated on Deploy)\n"
-                         "mods/                    ← converted .rmod files "
-                         "(output of the Convert tab)"),
+                  text=t("mgr.output_backups_original_game_files"),
                   justify="left",
                   font=_F_LOG).pack(padx=8, pady=6, anchor="w")
 
         # ── Accessibility (at the very bottom) ──────────────────────────────────
-        acc = ttk.LabelFrame(p, text=t("Accessibility"))
+        acc = ttk.LabelFrame(p, text=t("mgr.accessibility"))
         acc.pack(fill="x", **pad)
         arow = ttk.Frame(acc)
         arow.pack(fill="x", padx=8, pady=6)
-        ttk.Label(arow, text=t("Default language:")).pack(side="left")
+        ttk.Label(arow, text=t("mgr.default_language")).pack(side="left")
         cur_code = self._settings.get("default_language", "us")
         self._lang_var = tk.StringVar(value=_dic_mod.lang_label(cur_code))
         self._lang_cb = ttk.Combobox(arow, textvariable=self._lang_var, state="readonly", width=22,
@@ -4398,35 +4830,104 @@ class ModManagerApp(tk.Tk):
         self._lang_cb.pack(side="left", padx=8)
         ui_util.fit_combobox(self._lang_cb)   # fit names like "Chinese (Simplified)" (issue #5.1)
         self._lang_cb.bind("<<ComboboxSelected>>", self._on_default_language)
+        # A mouse-wheel over a readonly Combobox cycles its value (Tk default) — here that would fire
+        # a language-change confirm on every scroll of the Settings tab.  Swallow the wheel so scrolling
+        # never silently changes the language.
+        for _seq in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
+            self._lang_cb.bind(_seq, lambda _e: "break")
         # Right side: create Windows shortcuts to this app's .exe.
         sc = ttk.Frame(arow)
         sc.pack(side="right")
-        ttk.Button(sc, text=t("Add Start Menu Shortcut"),
+        ttk.Button(sc, text=t("mgr.add_start_menu_shortcut"),
                    command=self._add_start_menu_shortcut).pack(side="left", padx=2)
-        ttk.Button(sc, text=t("Add Desktop Shortcut"),
+        ttk.Button(sc, text=t("mgr.add_desktop_shortcut"),
                    command=self._add_desktop_shortcut).pack(side="left", padx=2)
-        ttk.Label(acc, text=t("The localization language used by default when editing in-game text "
-                              "(e.g. unit names). You can still pick another language per-edit in the "
-                              "editors. English is the game's primary language."),
+        ttk.Label(acc, text=t("mgr.localization_language_used_default_when"),
                   foreground=_R_TEXT_DIM, font=_F_LOG, justify="left", wraplength=580
                   ).pack(anchor="w", padx=8, pady=(0, 6))
 
+        # ── About & Legal (non-affiliation, no-warranty, privacy) ───────────────
+        about = ttk.LabelFrame(p, text=t("mgr.about_legal"))
+        about.pack(fill="x", **pad)
+        ver = self._app_version()
+        ttk.Label(about, text=(t("mgr.ruse_mod_manager") + (f"  v{ver}" if ver else "")),
+                  font=_F_BOLD).pack(anchor="w", padx=8, pady=(6, 2))
+        ttk.Label(
+            about,
+            text=t("mgr.unofficial_fan_tool_ruse_mod"),
+            foreground=_R_TEXT_DIM, font=_F_LOG, justify="left", wraplength=580,
+        ).pack(anchor="w", padx=8, pady=(0, 4))
+        abtn = ttk.Frame(about)
+        abtn.pack(anchor="w", padx=8, pady=(0, 8))
+        ttk.Button(abtn, text=t("mgr.project_page_source"),
+                   command=lambda: self._open_url(
+                       "https://github.com/LittleGroove/RUSE-Mod-Manager")).pack(side="left", padx=(0, 4))
+        ttk.Button(abtn, text=t("mgr.license_gpl_3_0"),
+                   command=lambda: self._open_url(
+                       "https://github.com/LittleGroove/RUSE-Mod-Manager/blob/main/LICENSE")
+                   ).pack(side="left")
+
         self._profile_refresh_ui()
+
+    def _app_version(self) -> str:
+        """The app's version string for display: the embedded build version when packaged, else the
+        source-tree build_config.json. '' if neither is available (never fatal)."""
+        try:
+            import auto_update
+            ver = auto_update.current_version()
+            if ver:
+                return str(ver)
+        except Exception:
+            pass
+        try:
+            cfg = os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_config.json")
+            with open(cfg, encoding="utf-8") as f:
+                v = json.load(f)
+            return f"{v.get('major', 1)}.{v.get('minor', 0)}.{v.get('patch', 0)}"
+        except Exception:
+            return ""
+
+    def _open_url(self, url: str):
+        """Open a link in the user's browser; show a themed error (with the URL) if it can't."""
+        try:
+            if webbrowser.open(url):
+                return
+        except Exception:
+            pass
+        ui_util.error(self, t("mgr.couldn_t_open_browser"),
+                      t("mgr.please_open_link_yourself_url", url=url))
 
     def _on_default_language(self, _=None):
         code = _dic_mod.LANG_CODE.get(self._lang_var.get(), "us")
         prev = self._settings.get("default_language", "us")
+        if code == prev:
+            return
+        # Re-entrancy guard: the confirm below runs a nested event loop (wait_window).  Without this,
+        # another <<ComboboxSelected>> firing while it's open would stack a second modal dialog — and a
+        # later "Yes" calling quit() from an inner loop while an outer dialog is still open hangs the app
+        # (mainloop can't return until every nested loop does).
+        if getattr(self, "_lang_switch_pending", False):
+            return
+        # The picked language is a real, persisted choice: it's what the app opens in from now on,
+        # whether or not the user restarts.  The popup only asks WHETHER TO RESTART NOW to apply it to
+        # the already-built UI immediately (the interface can't re-language itself in place).
         self._settings["default_language"] = code
         self._save_settings()
-        i18n.set_language(code)
-        if code != prev:
-            # The whole UI is built once in the chosen language, so a restart applies it everywhere.
-            if ui_util.confirm(
-                    self,
-                    t("Restart to change language"),
-                    t("The interface language changes when the Mod Manager restarts.\n\n"
-                      "Restart now?")):
-                self._restart_app()
+        self._lang_switch_pending = True
+        i18n.set_language(code)                 # preview the confirm in the newly-selected language
+        try:
+            restart_now = ui_util.confirm(
+                self,
+                t("mgr.restart_change_language"),
+                t("mgr.interface_language_changes_when_mod"))
+        finally:
+            self._lang_switch_pending = False
+        if restart_now:
+            self._restart_app()
+        else:
+            # Keep the selection (dropdown + settings stay on it, applies next launch).  Only return the
+            # RUNNING session to its built language so it stays visually consistent until a restart.
+            i18n.set_language(prev)
 
     def _restart_app(self):
         """Relaunch the app and close this one.
@@ -4460,7 +4961,7 @@ class ModManagerApp(tk.Tk):
                         else [sys.executable, str(Path(__file__).resolve())])
                 subprocess.Popen(args, cwd=str(_LAUNCH_DIR), close_fds=True, env=env)
         except Exception as e:
-            ui_util.error(self, t("Restart failed"), str(e))
+            ui_util.error(self, t("mgr.restart_failed"), str(e))
             return
         self.quit()
 
@@ -4515,15 +5016,15 @@ class ModManagerApp(tk.Tk):
             if res.returncode == 0:
                 made = (res.stdout or "").strip().splitlines()
                 path = made[-1] if made else ""
-                _log(self._mgr_log, t("Created shortcut: {path}", path=path), "ok")
-                ui_util.info(self, t("Shortcut created"),
-                                    t("Created shortcut:\n{path}", path=path) if path else t("Shortcut created."))
+                _log(self._mgr_log, t("mgr.created_shortcut_path_2", path=path), "ok")
+                ui_util.info(self, t("mgr.shortcut_created"),
+                                    t("mgr.created_shortcut_path", path=path) if path else t("mgr.shortcut_created_2"))
             else:
                 err = (res.stderr or res.stdout or "Unknown error").strip()
-                _log(self._mgr_log, t("Shortcut failed: {err}", err=err), "err")
-                ui_util.error(self, t("Shortcut failed"), err)
+                _log(self._mgr_log, t("mgr.shortcut_failed_err", err=err), "err")
+                ui_util.error(self, t("mgr.shortcut_failed"), err)
         except Exception as e:
-            ui_util.error(self, t("Shortcut failed"), str(e))
+            ui_util.error(self, t("mgr.shortcut_failed"), str(e))
         finally:
             if ps1 and os.path.exists(ps1):
                 try:
@@ -4533,7 +5034,8 @@ class ModManagerApp(tk.Tk):
 
     def _set_browse_game_root(self):
         d = filedialog.askdirectory(
-            title=t("Select R.U.S.E. COMPAT game root (contains Ruse.exe)"))
+            parent=self,
+            title=t("mgr.select_r_u_s_e"))
         if d: self._set_vars["game_root"].set(d)
 
     def _set_open_folder(self, key: str):
@@ -4548,15 +5050,15 @@ class ModManagerApp(tk.Tk):
         except Exception:
             pass
         if not path.is_dir():
-            ui_util.error(self, t("Not Found"), t("Folder does not exist:\n{path}", path=path))
+            ui_util.error(self, t("mgr.not_found"), t("mgr.folder_does_not_exist_path", path=path))
             return
         try:
             if hasattr(os, "startfile"):
                 os.startfile(str(path))               # Windows: open in Explorer
             else:
-                ui_util.info(self, t("Folder"), str(path))
+                ui_util.info(self, t("mgr.folder"), str(path))
         except Exception as e:
-            ui_util.error(self, t("Open Failed"), t("Could not open:\n{path}\n\n{e}", path=path, e=e))
+            ui_util.error(self, t("mgr.open_failed"), t("mgr.could_not_open_path_e", path=path, e=e))
 
     def _set_detect_game(self, silent: bool = False):
         """Detect R.U.S.E. installation via Steam and set game_root.
@@ -4569,7 +5071,7 @@ class ModManagerApp(tk.Tk):
             dirs = _steam_mod.find_ruse_game_dirs()
         except Exception as e:
             if not silent:
-                ui_util.error(self, t("Detection Failed"), t("Could not query Steam:\n{e}", e=e))
+                ui_util.error(self, t("mgr.detection_failed"), t("mgr.could_not_query_steam_e", e=e))
             return
 
         compat = dirs.get("compat")
@@ -4579,9 +5081,8 @@ class ModManagerApp(tk.Tk):
             if not silent:
                 ui_util.info(
                     self,
-                    t("Not Found"),
-                    t("Could not find R.U.S.E. or R.U.S.E. COMPAT in any Steam library.\n\n"
-                      "Make sure the game is installed and Steam has been run at least once."))
+                    t("mgr.not_found"),
+                    t("mgr.could_not_find_r_u"))
             return
 
         # In silent mode, only update when game_root is absent or gone
@@ -4593,11 +5094,8 @@ class ModManagerApp(tk.Tk):
         elif compat and public:
             use_compat = ui_util.confirm(
                 self,
-                t("Two Versions Found"),
-                t("Both versions of R.U.S.E. were found:\n\n"
-                  "  R.U.S.E. COMPAT:  {compat}\n"
-                  "  R.U.S.E.:         {public}\n\n"
-                  "Use R.U.S.E. COMPAT?\n(No = use R.U.S.E.)", compat=compat, public=public))
+                t("mgr.two_versions_found"),
+                t("mgr.both_versions_r_u_s", compat=compat, public=public))
             chosen = str(compat) if use_compat else str(public)
         else:
             chosen = str(public or compat)
@@ -4623,11 +5121,25 @@ class ModManagerApp(tk.Tk):
                 gr = self._settings.get("game_root", "").strip()
                 if gr and _is_dir_safe(Path(gr)):
                     new_ver = self._version_subname()
-                    if self._mgr_current_ver and new_ver != self._mgr_current_ver:
-                        _log(self._mgr_log,
-                             t("Game version changed to {label} — refreshing the mod list.",
-                               label=self._branch_label()), "head")
-                        self._apply_version_change(new_ver)
+                    # Compare against the INSTALLED-build baseline, not _mgr_current_ver — the latter tracks
+                    # the VIEWED build, which may be a user-selected non-installed one (viewing that must NOT
+                    # trip a "game changed" refresh).
+                    if self._last_installed_ver and new_ver != self._last_installed_ver:
+                        # Guard a TRANSIENT build-id detection failure: when the Steam manifest is briefly
+                        # unreadable, _version_subname() falls back to the format name (compat/public).
+                        # Re-keying state to that non-build key would blank the list — and risk deploying
+                        # only bundled mods — until detection recovers. If we already hold a real numeric
+                        # build id, ignore a drop to a non-numeric key and wait for the next good tick.
+                        cur_numeric = bool(re.match(r"^v\d+$", self._last_installed_ver))
+                        new_numeric = bool(re.match(r"^v\d+$", new_ver))
+                        if cur_numeric and not new_numeric:
+                            pass                       # transient detection glitch — keep current build
+                        else:
+                            self._last_installed_ver = new_ver   # only advance on a real change we act on
+                            _log(self._mgr_log,
+                                 t("mgr.game_version_changed_label_refreshing",
+                                   label=self._branch_label()), "head")
+                            self._apply_version_change(new_ver)
         except Exception:
             pass
         self._auto_detect_job = self.after(15000, self._auto_detect_poll)
@@ -4644,7 +5156,7 @@ class ModManagerApp(tk.Tk):
         for key, var in self._set_vars.items():
             self._settings[key] = var.get().strip()
         self._save_settings()
-        self._set_status.set(t("Settings saved."))
+        self._set_status.set(t("mgr.settings_saved"))
         self.after(2000, lambda: self._set_status.set(""))
         self._mgr_refresh_status()
         self._profile_refresh_ui()
@@ -4661,14 +5173,27 @@ class ModManagerApp(tk.Tk):
         re-scan and restore the NEW build's list, and refresh the version-dependent UI.  Shared by the
         Settings save path (_set_do_save) and the auto-detect poll (a Steam branch switch).  `new_ver`
         is the build-id key (e.g. 'v23762668')."""
-        # Build (or format) changed — save old list, then re-scan + restore the new build's list.
+        # Build (or format) changed.  Save the OUTGOING build's list FIRST, while the old bundled context
+        # is still loaded (so bundled mods serialize by their old identity correctly)…
         self._save_mgr_state()
+        # …then RE-SCAN the bundled + predeploy rmods for the NEW build id.  They are baked per build id;
+        # without this a Steam branch switch would keep the OLD build's shipped mods (wrong-build data →
+        # MP-integrity break / CTD, and they bypass the game_version gate) and silently miss the new
+        # build's predeploy patches.
+        # Clear any viewed-build override FIRST so the per-build scans below key off the NEW installed
+        # build (they read _effective_mod_build), not a stale selection.
+        self._selected_mod_build = None          # installed build changed → follow it
+        self._last_installed_ver = new_ver       # keep the poll baseline in sync (also for the Settings path)
+        self._scan_bundled()
+        self._scan_predeploy()
         self._show_compat_var.set(False)
-        self._mgr_update_compat_btn()
+        if hasattr(self, "_mod_build_cb"):
+            self._refresh_mod_build_cb()
         self._mgr_scan_both()
         self._mgr_load_mode(new_ver)
         self._cv_refresh_labels()
         self._mgr_refresh_status()
+        self._maybe_suggest_mod_build()          # new installed build has no mods yet → hint at one that does
         self._profile_refresh_ui()
         self._update_mod_editor_tab()
 
@@ -4691,13 +5216,17 @@ class ModManagerApp(tk.Tk):
             return  # existing backup for this version — don't overwrite silently
         ver_label = "R.U.S.E." if self._game_version() == "public" else "R.U.S.E. COMPAT"
         _log(self._mgr_log,
-             t("Game root configured [{ver_label}] — automatically backing up game files...",
+             t("mgr.game_root_configured_ver_label",
                ver_label=ver_label),
              "head")
         self._mgr_set_busy(True)
-        self._mgr_show_backup_warn()
-        threading.Thread(target=self._do_backup,
-                         args=(game_root, bd), daemon=True).start()
+        try:
+            self._mgr_show_backup_warn()
+            threading.Thread(target=self._do_backup,
+                             args=(game_root, bd), daemon=True).start()
+        except Exception:
+            self._mgr_set_busy(False)   # worker never started — don't leave the UI stuck-busy
+            raise
 
     # ── Profile management ────────────────────────────────────────────────────
 
@@ -4749,15 +5278,13 @@ class ModManagerApp(tk.Tk):
         # profiles upgrade forward (the game rebuilds them on launch), so they apply to ANY build.
         src = _PROFILES_DIR / f"{_OG_PROFILE_PREFIX}-lvl{level}" / "PROFILE.ruse"
         if not src.is_file():
-            ui_util.error(self, t("Profile Not Found"),
-                                 t("Preset profile not found:\n{src}", src=src))
+            ui_util.error(self, t("mgr.profile_not_found"),
+                                 t("mgr.preset_profile_not_found_src", src=src))
             return
         dirs = _find_steam_profile_dirs()
         if not dirs:
-            ui_util.error(self, t("Steam Not Found"),
-                                 t("No Steam R.U.S.E. profile directories found.\n\n"
-                                   "Expected: C:\\Program Files (x86)\\Steam\\"
-                                   "userdata\\<id>\\21970\\{local,remote}"))
+            ui_util.error(self, t("mgr.steam_not_found"),
+                                 t("mgr.no_steam_r_u_s_2"))
             return
         copied, failed = [], []
         for d in dirs:
@@ -4766,14 +5293,14 @@ class ModManagerApp(tk.Tk):
                 copied.append(str(d))
             except Exception as e:
                 failed.append(f"{d}: {e}")
-        msg = t("lvl {level} profile deployed.\n\nCopied to:\n", level=level) + \
+        msg = t("mgr.lvl_level_profile_deployed_copied", level=level) + \
               "\n".join(f"  {c}" for c in copied)
         if self._game_version() != "compat":
-            msg += t("\n\n(An OG-compat preset — the game rebuilds it for {cur} on next launch.)",
+            msg += t("mgr.og_compat_preset_game_rebuilds",
                      cur=self._branch_label())
         if failed:
-            msg += t("\n\nFailed:\n") + "\n".join(f"  {f}" for f in failed)
-        ui_util.info(self, t("Profile Set"), msg)
+            msg += t("mgr.failed") + "\n".join(f"  {f}" for f in failed)
+        ui_util.info(self, t("mgr.profile_set"), msg)
 
     def _profile_set_lvl1(self):
         self._profile_set_lvl(1)
@@ -4784,8 +5311,8 @@ class ModManagerApp(tk.Tk):
     def _profile_backup_current(self):
         dirs = _find_steam_profile_dirs()
         if not dirs:
-            ui_util.error(self, t("Steam Not Found"),
-                                 t("No Steam R.U.S.E. profile directories found."))
+            ui_util.error(self, t("mgr.steam_not_found"),
+                                 t("mgr.no_steam_r_u_s"))
             return
         # Pick the most recently modified PROFILE.ruse across all Steam dirs
         src = None
@@ -4795,8 +5322,8 @@ class ModManagerApp(tk.Tk):
                 if src is None or p.stat().st_mtime > src.stat().st_mtime:
                     src = p
         if src is None:
-            ui_util.error(self, t("No Profile"),
-                                 t("PROFILE.ruse not found in any Steam directory."))
+            ui_util.error(self, t("mgr.no_profile"),
+                                 t("mgr.profile_ruse_not_found_any"))
             return
         ver = self._version_subname()          # per BUILD: profile/v<buildid>/ — archivable per version
         label = self._branch_label()
@@ -4804,10 +5331,8 @@ class ModManagerApp(tk.Tk):
         backup_dir.mkdir(parents=True, exist_ok=True)
         dest = backup_dir / "PROFILE.ruse"
         shutil.copy2(src, dest)
-        ui_util.info(self, t("Backup Complete"),
-                            t("Profile backed up for {label}.\n\n"
-                              "From: {src}\n"
-                              "To:   {dest}", label=label, src=src, dest=dest))
+        ui_util.info(self, t("mgr.backup_complete"),
+                            t("mgr.profile_backed_up_label_from", label=label, src=src, dest=dest))
         self._profile_refresh_ui()
 
     def _profile_set_backed_up(self):
@@ -4819,8 +5344,8 @@ class ModManagerApp(tk.Tk):
         if not options:
             ui_util.error(
                 self,
-                t("No Backup"),
-                t("No applicable backed-up profile found for {label} or any older version.",
+                t("mgr.no_backup"),
+                t("mgr.no_applicable_backed_up_profile",
                   label=self._branch_label()))
             return
         choice = self._prof_apply_choice.get() if hasattr(self, "_prof_apply_choice") else _PROFILE_AUTO
@@ -4830,22 +5355,21 @@ class ModManagerApp(tk.Tk):
                 # AUTO fell back to an OLDER profile — confirm the forward-upgrade
                 if not ui_util.confirm(
                     self,
-                    t("Apply older profile?"),
-                    t("No profile is backed up for {cur}.\n\nApply the most recent older one, {label}? "
-                      "The game rebuilds it for {cur} on next launch.",
+                    t("mgr.apply_older_profile"),
+                    t("mgr.no_profile_backed_up_cur",
                       cur=self._branch_label(), label=label)):
                     return
         else:
             picked = next((o for o in options if o[1] == choice), None)
             if picked is None:
-                ui_util.error(self, t("No Backup"),
-                                     t("That profile version is no longer available."))
+                ui_util.error(self, t("mgr.no_backup"),
+                                     t("mgr.profile_version_no_longer_available"))
                 return
             build, label, src = picked                    # explicit user pick — no confirm
         dirs = _find_steam_profile_dirs()
         if not dirs:
-            ui_util.error(self, t("Steam Not Found"),
-                                 t("No Steam R.U.S.E. profile directories found."))
+            ui_util.error(self, t("mgr.steam_not_found"),
+                                 t("mgr.no_steam_r_u_s"))
             return
         copied, failed = [], []
         for d in dirs:
@@ -4855,13 +5379,13 @@ class ModManagerApp(tk.Tk):
             except Exception as e:
                 failed.append(f"{d}: {e}")
         note = "" if build == self._game_build_id() else t(
-            "\n\n(An older profile — the game rebuilds it for {cur} on next launch.)",
+            "mgr.older_profile_game_rebuilds_cur",
             cur=self._branch_label())
-        msg = (t("{label} profile deployed.\n\nCopied to:\n", label=label)
+        msg = (t("mgr.label_profile_deployed_copied", label=label)
                + "\n".join(f"  {c}" for c in copied) + note)
         if failed:
-            msg += t("\n\nFailed:\n") + "\n".join(f"  {f}" for f in failed)
-        ui_util.info(self, t("Profile Set"), msg)
+            msg += t("mgr.failed") + "\n".join(f"  {f}" for f in failed)
+        ui_util.info(self, t("mgr.profile_set"), msg)
 
     # =========================================================================
     # Errors
@@ -4880,8 +5404,8 @@ class ModManagerApp(tk.Tk):
         except Exception:
             pass
         try:
-            ui_util.error(self, t("Something went wrong"),
-                          t("An unexpected error occurred:\n\n{err}", err=str(val)))
+            ui_util.error(self, t("mgr.something_went_wrong"),
+                          t("mgr.unexpected_error_occurred_err", err=str(val)))
         except Exception:
             pass
 
@@ -4889,14 +5413,44 @@ class ModManagerApp(tk.Tk):
     # Close
     # =========================================================================
 
+    def _ui(self, func):
+        """Marshal `func` onto the UI thread from a worker, swallowing the RuntimeError/TclError that
+        after() raises if the window is already tearing down (e.g. force-closed mid-operation).  Mirrors
+        the guard the module-level _log() already uses for its cross-thread widget writes."""
+        try:
+            self.after(0, func)
+        except (RuntimeError, tk.TclError):
+            pass
+
     def _on_close(self):
+        # If a modal popup is open (e.g. the language-change confirm), tear it down FIRST.  Its
+        # ui_util.confirm runs a nested wait_window loop; self.quit() below can't return through that
+        # loop while the popup still exists, so the X button would appear to "hang".  Destroying the
+        # grabbed popup lets its loop unwind (it resolves to its cancel/No value) and the close proceed.
+        g = self.grab_current()
+        if g is not None and g is not self:
+            try:
+                g.grab_release()
+            except Exception:
+                pass
+            try:
+                g.destroy()
+            except Exception:
+                pass
+        # A deploy/backup/restore/convert worker may be mid-write to the game files or a .rmod.  Closing
+        # now kills the daemon thread mid-operation (a partial write / stale tracker) — make it deliberate.
+        if getattr(self, "_mgr_running", False) or getattr(self, "_conv_running", False):
+            if not ui_util.confirm(
+                    self,
+                    t("mgr.still_working"),
+                    t("mgr.backup_deploy_restore_conversion_still")):
+                return
         # Warn about mod-editor changes that were never saved into the mod
         if getattr(self, "_project", None) and self._project.is_dirty():
             if not ui_util.confirm(
                     self,
-                    t("Unsaved mod changes"),
-                    t("Your mod project has changes that weren't saved to the mod's .dat "
-                      "(use an editor window's Save button to keep them).\n\nExit anyway?")):
+                    t("mgr.unsaved_mod_changes"),
+                    t("mgr.mod_project_has_changes_weren")):
                 return
         # Flush any pending debounced settings save before exit
         if getattr(self, "_set_save_job", None):
@@ -4973,9 +5527,8 @@ if __name__ == "__main__":
         _tb = traceback.format_exc()
         try:
             _r = tk.Tk(); _r.withdraw()
-            ui_util.error(_r, t("Startup failed"),
-                          t("The Mod Manager couldn't finish starting up:\n\n{err}\n\n"
-                            "Please report this.", err=str(_startup_err)))
+            ui_util.error(_r, t("mgr.startup_failed"),
+                          t("mgr.mod_manager_couldn_t_finish", err=str(_startup_err)))
             _r.destroy()
         except Exception:
             pass

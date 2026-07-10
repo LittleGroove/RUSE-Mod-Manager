@@ -133,9 +133,10 @@ Steps:
    Maps), removing any deployed mods. Proceed?"*
 3. Wait for *"Restored N files — game is clean."*
 
-Only `Data/` and `Maps/` are put back. Stray files at the top of the backup
-folder (like timestamped `.bak` copies from an earlier deploy) are left alone on
-purpose.
+Only `Data/` and `Maps/` are put back. Any other stray files sitting at the top of
+the backup folder are left alone on purpose. (Older versions of the Mod Editor's
+Deploy used to leave timestamped `.bak` copies there; it no longer makes them, but
+if you have some from before, they're kept — the app never deletes your files.)
 
 ### Detect Game Version
 
@@ -203,9 +204,10 @@ At the bottom of the tab are the app's own ease-of-use options.
 
 ### Default language
 
-Sets the language used by default when you edit in-game text (like unit names).
-You can still pick a different language for each edit inside the editors — this
-just sets the default one. English is the game's main language.
+Sets the app's **display language** — the whole Mod Manager and every editor show
+in the language you pick. It's also the language used *by default* when you edit
+in-game text (like unit names); you can still choose a different language for each
+edit inside the editors. English is the game's main language.
 
 The dropdown lists every fully-translated language:
 
@@ -222,14 +224,17 @@ The dropdown lists every fully-translated language:
 
 (plus a *Dev / default* entry used while making the app).
 
-Picking a new language saves right away, then asks if you want to **restart now**.
-The app's screens are built once in the chosen language when it starts, so a
-restart is needed to change them everywhere:
+Your pick is saved right away — it's the language the app opens in from now on.
+Because each screen is built once, in that language, when the app starts, changing
+it asks whether to **restart now** so it shows everywhere immediately:
 
 1. Pick a language from the dropdown.
-2. Confirm *"The interface language changes when the Mod Manager restarts.
-   Restart now?"*
-3. The app restarts in the new language. Your other settings are saved first.
+2. You're asked *"The interface language changes when the Mod Manager restarts.
+   Restart now?"* — shown in the language you just picked.
+3. **Restart now** reopens the app in the new language. **Not now** keeps your
+   choice without restarting, so it takes effect the next time you open the app.
+   (Closing the pop-up, or closing the window, does the same — your pick is kept,
+   nothing is lost.)
 
 ### Add Start Menu Shortcut / Add Desktop Shortcut
 

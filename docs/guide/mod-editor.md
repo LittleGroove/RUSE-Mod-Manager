@@ -115,8 +115,11 @@ open.
    special characters, so those are removed — but spaces are kept).
 2. Pick the game version from the **"Game version:"** dropdown.
    - It lists **every version you have a clean backup for** — one for each backup
-     folder that has files in it.
-   - It **starts on your installed version** by default.
+     folder that has files in it, shown as `branch (vBUILD)`, newest first. (A backup
+     of a build that has no branch name still shows up, as its build id.)
+   - It **starts on your installed version** by default. If that version isn't backed
+     up, it starts on your newest backed-up version instead. Your pick is kept if you
+     leave the tab and come back.
    - Because you pick the version here, **you can make a mod for a different
      version than the one your game is running.** The editor reads that version's
      clean backup for all the original files.
@@ -146,15 +149,26 @@ When you open a project, the editor reads clean files from the backup that
 matches **that project's game version** (saved in its `project.json`), which may
 not be the version your game is running.
 
+> **You need that exact version's backup to open the project.** A project can only
+> be opened against a clean backup of the version it was built for. If you open (or
+> import from someone else) a project for a version you *haven't* backed up, the
+> editor **stops** and names the version it needs — instead of quietly opening it
+> against the wrong version's files. What it tells you depends on that version:
+> - **Still installable** (a version you can switch to in Steam): install that
+>   branch, then make a backup of it on the Mod Manager tab.
+> - **A retired build** you can no longer install: you'll need a copy of that exact
+>   build's backup from someone who still has it.
+
 #### Opening very old projects
 
 Very old projects saved a branch *name* (like `compat` or `public`) instead of a
 game version number. When you open one, the editor asks you to pick the game
-version it was built for, then saves that version number. If the version you pick
-uses the same data format, the project is simply relabeled. But if it would mean
-jumping between the old (OG) and newer (remaster) format, the project is left
-alone and you're told to *convert* the mod instead of relabeling it (otherwise
-the project's files wouldn't be found).
+version it was built for — the **"Which game version?"** prompt lists **the
+versions you have a backup for** (build ids) — then saves that version number. If
+the version you pick uses the same data format, the project is simply relabeled. But
+if it would mean jumping between the old (OG) and newer (remaster) format, the
+project is left alone and you're told to *convert* the mod instead of relabeling it
+(otherwise the project's files wouldn't be found).
 
 ---
 
@@ -235,6 +249,11 @@ blank or type it wrong, it snaps to the `x.x.x` shape (and defaults to `1.0.0`).
 **Save Details** turns on whenever a field is different from what's saved on disk.
 These are the details that go into an exported rmod.
 
+Next to the mod's own **Version** box is a read-only **"Game version:"** — the game
+build this project was made for (for example `public (v24087620)`). You can't edit
+it; it's there so you can always see which version the project targets at a glance,
+without guessing.
+
 ---
 
 ## Deploy to Game
@@ -245,21 +264,33 @@ you can play with the mod turned on.
 Here's what happens, step by step:
 
 1. The project must have a Game Root set (in Settings) and **no unsaved changes**.
-2. You must have saved at least one change (so there's a project file to copy).
+2. You must have a **clean backup of your installed game.** Deploy no longer makes
+   its own per-file backups, so "Restore Clean" (below) is the way back — and it
+   needs that backup. If you don't have one, Deploy stops and sends you to make it.
+3. You must have saved at least one change (so there's a project file to copy).
    If not, you're told to make a change first.
-3. A **version check** runs (see the warning below).
-4. You confirm a box listing the live game files that will be overwritten.
-5. For each file:
-   - The **original is backed up first**, with the date and time in the name
-     (`<name>.<stamp>.bak`) under `output/backups`.
+4. A **version check** runs (see the warning below).
+5. You confirm a box listing the live game files that will be overwritten.
+6. Then:
    - If an earlier deploy left some files changed that this mod *doesn't* use,
-     those are put **back to clean** (read from this version's backup), so old
-     leftover changes from another mod don't stick around.
-   - The project's file is copied over the live game file.
+     those are put **back to clean** — read from your **installed game's** backup,
+     so old leftover changes from another mod (or the Mod Manager's Deploy) don't
+     stick around. (If a leftover has no clean backup to restore from, the log says
+     so instead of skipping it silently.)
+   - Each of the project's files is copied over the live game file.
 
-Deploy reads from the backup that matches **this project's game version**, so the
-clean reads and the leftover cleanup come from the right version's originals —
-not necessarily your installed version's.
+Deploy no longer writes a timestamped `.bak` copy of each file it overwrites — the
+app already keeps a full clean backup, and **Restore Clean** reverts from it, so the
+per-file copies were just clutter. This works exactly like the Mod Manager's "Deploy
+Mods": it tracks what it put into the game and cleans up leftovers on the next deploy.
+
+### Restore Clean
+
+Next to **Deploy to Game** is a **Restore Clean** button — the *same* button as on
+the Mod Manager and Settings tabs. It copies your whole game back to its clean,
+unmodded state from your backup. Use it to undo a deploy (or any mods) and get a
+fresh game. Because this is now the way to undo a deploy, Deploy asks you to make a
+backup first (step 2) so there's always something to restore from.
 
 > [!WARNING]
 > **Version mismatch warning.** If your installed game version is different from

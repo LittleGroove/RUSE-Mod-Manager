@@ -10,7 +10,7 @@ The TMapLoadInfo reaches the scenario FILE through ClusterLoads -> a reachable s
 'leveldesign_<suffix>.scenario' <-> script 'scripting_<suffix>'. (All RE-confirmed; see
 docs/map_editor/registry_kinds.md + scripting.md.)
 
-This module is the productionised form of ai_unit_tests/claude/build_scenario_catalog.py. It is pure
+This module is the productionised form of archive/ai_unit_tests/claude/build_scenario_catalog.py. It is pure
 read: it never mutates the dats. The write side (registering a NEW scenario of any kind) lives in
 scenario_gen.py and consumes the same REGISTRY_KINDS table.
 """

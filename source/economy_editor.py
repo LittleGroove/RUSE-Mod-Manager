@@ -12,7 +12,7 @@ import copy
 import os
 import sys
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 if REPO not in sys.path:
@@ -22,95 +22,96 @@ from ruse_mod_engine import ndfbin as ndfbin_mod  # noqa: E402
 from i18n import t  # noqa: E402
 import ui_util  # noqa: E402  — zebra-striping + language-aware sizing
 
-_R_BG, _R_BG_PANEL, _R_BG_WIDGET = "#08101c", "#0e1a2a", "#060d18"
-_R_GOLD, _R_GOLD_BRT, _R_TEXT, _R_TEXT_DIM, _R_SEL_BG = "#c8a020", "#e0c030", "#ccd8e8", "#3e5878", "#1a3060"
-_F_MAIN = ("Courier New", 9)
-_F_BOLD = ("Courier New", 9, "bold")
-_F_HEAD = ("Courier New", 10, "bold")
+import theme                # single source of truth for the palette; local _R_* names kept unchanged
+_R_BG, _R_BG_PANEL, _R_BG_WIDGET = theme.BG, theme.PANEL, theme.WIDGET
+_R_GOLD, _R_GOLD_BRT, _R_TEXT, _R_TEXT_DIM, _R_SEL_BG = theme.GOLD, theme.GOLD_BRT, theme.TEXT, theme.DIM, theme.SEL_BG
+_F_MAIN = theme.F
+_F_BOLD = theme.FB
+_F_HEAD = theme.FHEAD
 
 # (label, prop, kind) — kind: scalar | list. gdconstante (TTunableConstante) economy constants.
 _GLOBAL_GROUPS = [
-    (t("Money & income"), [
-        (t("Starting money (QteDeviseInitiale)"), "QteDeviseInitiale", "scalar"),
-        (t("Auto-income interval, s (TempsGenAutoDevises)"), "TempsGenAutoDevises", "scalar"),
-        (t("Auto-income amount (QuantiteGenAutoDevises)"), "QuantiteGenAutoDevises", "scalar"),
-        (t("Extra money on Easy (StockDeviseSupplementaireFacile)"), "StockDeviseSupplementaireFacile", "scalar"),
+    (t("econ.money_income"), [
+        (t("econ.starting_money_qtedeviseinitiale"), "QteDeviseInitiale", "scalar"),
+        (t("econ.auto_income_interval_s_tempsgenautodevis"), "TempsGenAutoDevises", "scalar"),
+        (t("econ.auto_income_amount_quantitegenautodevise"), "QuantiteGenAutoDevises", "scalar"),
+        (t("econ.extra_money_easy_stockdevisesupplementai"), "StockDeviseSupplementaireFacile", "scalar"),
     ]),
     # A depot has NO per-building wallet in the data; both its per-convoy payout AND its TOTAL supply pool
     # come from these convoy constants (confirmed in-game). money/convoy = NbCamionParConvoi x
     # QteDeviseParCamion; depot TOTAL = that x ~25 (a fixed convoy count, exe-side, not moddable here).
     # Observed: the mod raising the product took depot total ~250 -> ~1500, so BOTH vars scale the total.
-    (t("Depot money output (supply convoys)"), [
-        (t("Money each truck delivers (QteDeviseParCamion)"), "QteDeviseParCamion", "scalar"),
-        (t("Trucks per convoy (NbCamionParConvoi) — also scales depot total"), "NbCamionParConvoi", "scalar"),
-        (t("=> money per convoy = trucks x money/truck (read-only)"), "_derived_per_convoy", "derived"),
-        (t("=> depot TOTAL supply ~ per-convoy x 25 convoys (read-only)"), "_derived_depot_total", "derived"),
-        (t("Seconds between convoys (TempsENtreDeuxConvois)"), "TempsENtreDeuxConvois", "scalar"),
-        (t("Min truck spacing (TempsENtreDeuxCamionsEnConvoiMin)"), "TempsENtreDeuxCamionsEnConvoiMin", "scalar"),
-        (t("Max truck spacing (TempsENtreDeuxCamionsEnConvoiMax)"), "TempsENtreDeuxCamionsEnConvoiMax", "scalar"),
-        (t("Depot nearly-depleted ratio (RatioForDepotNearlyDepleted)"), "RatioForDepotNearlyDepleted", "scalar"),
+    (t("econ.depot_money_output_supply_convoys"), [
+        (t("econ.money_each_truck_delivers_qtedeviseparca"), "QteDeviseParCamion", "scalar"),
+        (t("econ.trucks_per_convoy_nbcamionparconvoi_also"), "NbCamionParConvoi", "scalar"),
+        (t("econ.money_per_convoy_trucks_x"), "_derived_per_convoy", "derived"),
+        (t("econ.depot_total_supply_per_convoy"), "_derived_depot_total", "derived"),
+        (t("econ.seconds_between_convoys_tempsentredeuxco"), "TempsENtreDeuxConvois", "scalar"),
+        (t("econ.min_truck_spacing_tempsentredeuxcamionse"), "TempsENtreDeuxCamionsEnConvoiMin", "scalar"),
+        (t("econ.max_truck_spacing_tempsentredeuxcamionse"), "TempsENtreDeuxCamionsEnConvoiMax", "scalar"),
+        (t("econ.depot_nearly_depleted_ratio_ratiofordepo"), "RatioForDepotNearlyDepleted", "scalar"),
     ]),
-    (t("Building value (AI/score)"), [
-        (t("Depot added value (BP_DepotAddedValue)"), "BP_DepotAddedValue", "scalar"),
-        (t("HQ value (BP_HqValue)"), "BP_HqValue", "scalar"),
+    (t("econ.building_value_ai_score"), [
+        (t("econ.depot_added_value_bp_depotaddedvalue"), "BP_DepotAddedValue", "scalar"),
+        (t("econ.hq_value_bp_hqvalue"), "BP_HqValue", "scalar"),
     ]),
-    (t("Production limits"), [
-        (t("Min production time (MinProductionTime)"), "MinProductionTime", "scalar"),
-        (t("Max buildings producing (MaximumBatimentProduction)"), "MaximumBatimentProduction", "scalar"),
-        (t("Max production queue (MaxProductionQueueSize)"), "MaxProductionQueueSize", "scalar"),
-        (t("Max bldg+techno at once (MaxBatimentAndTechnoProductionSimultaneous)"),
+    (t("econ.production_limits"), [
+        (t("econ.min_production_time_minproductiontime"), "MinProductionTime", "scalar"),
+        (t("econ.max_buildings_producing_maximumbatimentp"), "MaximumBatimentProduction", "scalar"),
+        (t("econ.max_production_queue_maxproductionqueues"), "MaxProductionQueueSize", "scalar"),
+        (t("econ.max_bldg_techno_once_maxbatimentandtechn"),
          "MaxBatimentAndTechnoProductionSimultaneous", "scalar"),
-        (t("Virtual factory queue slots (VirtualFactoryQueueMaximumSlot)"), "VirtualFactoryQueueMaximumSlot", "scalar"),
-        (t("Planes per airfield (NbAvionsParAeroport)"), "NbAvionsParAeroport", "scalar"),
+        (t("econ.virtual_factory_queue_slots_virtualfacto"), "VirtualFactoryQueueMaximumSlot", "scalar"),
+        (t("econ.planes_per_airfield_nbavionsparaeroport"), "NbAvionsParAeroport", "scalar"),
     ]),
-    (t("AI production queue & attack trigger"), [
-        (t("Army value to force an attack (ArmyValueForceLaunchAttack)"), "ArmyValueForceLaunchAttack", "scalar"),
-        (t("Max waiting production requests (MaxWaitingRequest)"), "MaxWaitingRequest", "scalar"),
-        (t("Waiting reqs before new factory (NbMaxWaitingRequestBeforeRequestingNewFactory)"),
+    (t("econ.ai_production_queue_attack_trigger"), [
+        (t("econ.army_value_force_attack_armyvalueforcela"), "ArmyValueForceLaunchAttack", "scalar"),
+        (t("econ.max_waiting_production_requests_maxwaiti"), "MaxWaitingRequest", "scalar"),
+        (t("econ.waiting_reqs_before_new_factory"),
          "NbMaxWaitingRequestBeforeRequestingNewFactory", "scalar"),
-        (t("Max time waiting request, s (MaxTimeWaitingRequest)"), "MaxTimeWaitingRequest", "scalar"),
-        (t("Cancel stale waiting requests (CheckAndCancelWaitingRequest, 0/1)"), "CheckAndCancelWaitingRequest", "scalar"),
+        (t("econ.max_time_waiting_request_s"), "MaxTimeWaitingRequest", "scalar"),
+        (t("econ.cancel_stale_waiting_requests_checkandca"), "CheckAndCancelWaitingRequest", "scalar"),
     ]),
-    (t("Decoy / fake-building (bluff)"), [
-        (t("Decoy units min, general offensive (NbMin_UniteLeurre_OffensiveGenerale)"), "NbMin_UniteLeurre_OffensiveGenerale", "scalar"),
-        (t("Decoy units max, general offensive (NbMax_UniteLeurre_OffensiveGenerale)"), "NbMax_UniteLeurre_OffensiveGenerale", "scalar"),
-        (t("Decoy units min, air offensive"), "NbMin_UniteLeurre_OffensiveAerienne", "scalar"),
-        (t("Decoy units max, air offensive"), "NbMax_UniteLeurre_OffensiveAerienne", "scalar"),
-        (t("Decoy units min, armor offensive"), "NbMin_UniteLeurre_OffensiveBlinde", "scalar"),
-        (t("Decoy units max, armor offensive"), "NbMax_UniteLeurre_OffensiveBlinde", "scalar"),
-        (t("Fake-building construction delay min, s (ConstructionDelayForFakeBuildingsMin)"), "ConstructionDelayForFakeBuildingsMin", "scalar"),
-        (t("Fake-building construction delay max, s (ConstructionDelayForFakeBuildingsMax)"), "ConstructionDelayForFakeBuildingsMax", "scalar"),
+    (t("econ.decoy_fake_building_bluff"), [
+        (t("econ.decoy_units_min_general_offensive"), "NbMin_UniteLeurre_OffensiveGenerale", "scalar"),
+        (t("econ.decoy_units_max_general_offensive"), "NbMax_UniteLeurre_OffensiveGenerale", "scalar"),
+        (t("econ.decoy_units_min_air_offensive"), "NbMin_UniteLeurre_OffensiveAerienne", "scalar"),
+        (t("econ.decoy_units_max_air_offensive"), "NbMax_UniteLeurre_OffensiveAerienne", "scalar"),
+        (t("econ.decoy_units_min_armor_offensive"), "NbMin_UniteLeurre_OffensiveBlinde", "scalar"),
+        (t("econ.decoy_units_max_armor_offensive"), "NbMax_UniteLeurre_OffensiveBlinde", "scalar"),
+        (t("econ.fake_building_construction_delay_min"), "ConstructionDelayForFakeBuildingsMin", "scalar"),
+        (t("econ.fake_building_construction_delay_max"), "ConstructionDelayForFakeBuildingsMax", "scalar"),
     ]),
-    (t("Population cap"), [
-        (t("Total pop cap (PopCapTotal)"), "PopCapTotal", "scalar"),
-        (t("Pop cap per alliance (PopCapPerAlliance)"), "PopCapPerAlliance", "scalar"),
-        (t("Pop cap per player (PopCapPerPlayer)"), "PopCapPerPlayer", "scalar"),
-        (t("Ghost cap (GhostCap)"), "GhostCap", "scalar"),
+    (t("econ.population_cap"), [
+        (t("econ.total_pop_cap_popcaptotal"), "PopCapTotal", "scalar"),
+        (t("econ.pop_cap_per_alliance_popcapperalliance"), "PopCapPerAlliance", "scalar"),
+        (t("econ.pop_cap_per_player_popcapperplayer"), "PopCapPerPlayer", "scalar"),
+        (t("econ.ghost_cap_ghostcap"), "GhostCap", "scalar"),
     ]),
-    (t("Deception-card pool"), [
-        (t("Max cards in pool (NbMaxCardsInPool)"), "NbMaxCardsInPool", "scalar"),
-        (t("Max cards per zone (MaxNbCardsPerZoneByAlliance)"), "MaxNbCardsPerZoneByAlliance", "scalar"),
-        (t("Initial cards, alliance size 1"), "NbInitialCardsInPoolForAllianceTaille_1", "scalar"),
-        (t("Initial cards, alliance size 2"), "NbInitialCardsInPoolForAllianceTaille_2", "scalar"),
-        (t("Initial cards, alliance size 3"), "NbInitialCardsInPoolForAllianceTaille_3", "scalar"),
-        (t("Initial cards, alliance size 4"), "NbInitialCardsInPoolForAllianceTaille_4", "scalar"),
-        (t("Min army value to use manip card (MinArmyValueToUseManipulationCard)"),
+    (t("econ.deception_card_pool"), [
+        (t("econ.max_cards_pool_nbmaxcardsinpool"), "NbMaxCardsInPool", "scalar"),
+        (t("econ.max_cards_per_zone_maxnbcardsperzonebyal"), "MaxNbCardsPerZoneByAlliance", "scalar"),
+        (t("econ.initial_cards_alliance_size_1"), "NbInitialCardsInPoolForAllianceTaille_1", "scalar"),
+        (t("econ.initial_cards_alliance_size_2"), "NbInitialCardsInPoolForAllianceTaille_2", "scalar"),
+        (t("econ.initial_cards_alliance_size_3"), "NbInitialCardsInPoolForAllianceTaille_3", "scalar"),
+        (t("econ.initial_cards_alliance_size_4"), "NbInitialCardsInPoolForAllianceTaille_4", "scalar"),
+        (t("econ.min_army_value_use_manip"),
          "MinArmyValueToUseManipulationCard", "scalar"),
-        (t("New-card time thresholds, size 1 (list)"), "PaliersTempsToChooseNewCardForAllianceTaille_1", "list"),
-        (t("New-card time thresholds, size 2 (list)"), "PaliersTempsToChooseNewCardForAllianceTaille_2", "list"),
-        (t("New-card time thresholds, size 3 (list)"), "PaliersTempsToChooseNewCardForAllianceTaille_3", "list"),
-        (t("New-card time thresholds, size 4 (list)"), "PaliersTempsToChooseNewCardForAllianceTaille_4", "list"),
+        (t("econ.new_card_time_thresholds_size"), "PaliersTempsToChooseNewCardForAllianceTaille_1", "list"),
+        (t("econ.new_card_time_thresholds_size_2"), "PaliersTempsToChooseNewCardForAllianceTaille_2", "list"),
+        (t("econ.new_card_time_thresholds_size_3"), "PaliersTempsToChooseNewCardForAllianceTaille_3", "list"),
+        (t("econ.new_card_time_thresholds_size_4"), "PaliersTempsToChooseNewCardForAllianceTaille_4", "list"),
     ]),
 ]
 
 _BLDG_FIELDS = [
-    (t("Cost (all phases, ProductionPrice)"), "ProductionPrice", "list"),
-    (t("Build time (ProductionTime)"), "ProductionTime", "scalar"),
-    (t("HP (SeuilMort)"), "SeuilMort", "scalar"),
-    (t("Show in menu (per phase)"), "ShowInMenu", "boollist"),
-    (t("Is depot for AI (IsDepotForIA, 0/1)"), "IsDepotForIA", "scalar"),
-    (t("Distance to road (DistanceToRoad)"), "DistanceToRoad", "scalar"),
-    (t("Vision (DetectionBase)"), "DetectionBase", "scalar"),
+    (t("econ.cost_all_phases_productionprice"), "ProductionPrice", "list"),
+    (t("common.build_time_productiontime"), "ProductionTime", "scalar"),
+    (t("common.hp_seuilmort"), "SeuilMort", "scalar"),
+    (t("econ.show_menu_per_phase"), "ShowInMenu", "boollist"),
+    (t("econ.depot_ai_isdepotforia_0_1"), "IsDepotForIA", "scalar"),
+    (t("econ.distance_road_distancetoroad"), "DistanceToRoad", "scalar"),
+    (t("econ.vision_detectionbase"), "DetectionBase", "scalar"),
 ]
 
 # Fixed number of convoys a depot dispenses before depleting (exe-side, not in gdconstante). Observed
@@ -146,7 +147,7 @@ class EconomyEditorWindow(tk.Frame):
             self._gd = project.get_ndf("gameplay", mp_mod.GDCONSTANTE_PATH)
             self._gd_obj = self._gd.instances[0]
         except Exception as e:
-            ui_util.error(self, t("Economy Editor"), t("Could not load gameplay data:\n{e}", e=e))
+            ui_util.error(self, t("common.economy_editor"), t("common.could_not_load_gameplay_data", e=e))
             self.after(10, self.destroy)
             return
         self._index_buildings()
@@ -224,28 +225,26 @@ class EconomyEditorWindow(tk.Frame):
         self._nb = nb = ttk.Notebook(self)
         nb.pack(fill="both", expand=True, padx=4, pady=(6, 2))
         t1, t2 = ttk.Frame(nb), ttk.Frame(nb)
-        nb.add(t1, text=t("  Global Economy  "))
-        nb.add(t2, text=t("  Economy Buildings  "))
+        nb.add(t1, text=t("econ.global_economy"))
+        nb.add(t2, text=t("econ.economy_buildings"))
         self._build_global_tab(t1)
         self._build_bldg_tab(t2)
 
         bottom = tk.Frame(self, background=_R_BG)
         bottom.pack(fill="x", padx=8, pady=(0, 2))
-        ttk.Button(bottom, text=t("Save mod (.dat)"), command=self._save).pack(side="left")
+        ttk.Button(bottom, text=t("common.save_mod_dat"), command=self._save).pack(side="left")
         self._save_status = tk.Label(bottom, text="", background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._save_status.pack(side="right")
-        tk.Label(self, text=t("Global Economy edits gdconstante; Economy Buildings edits the depot/admin/truck "
-                              "descriptors. Apply commits into the project; “Save mod (.dat)” writes everything "
-                              "to the mod's .dat. Income = starting money + auto-income tick + supply convoys."),
+        tk.Label(self, text=t("econ.global_economy_edits_gdconstante_economy"),
                  background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN, justify="left",
                  wraplength=980).pack(fill="x", padx=8, pady=(0, 6))
 
     def _build_global_tab(self, parent):
         top = tk.Frame(parent, background=_R_BG_PANEL)
         top.pack(side="bottom", fill="x", padx=6, pady=(0, 6))
-        self._g_apply = ttk.Button(top, text=t("Apply global economy changes"), command=self._apply_global)
+        self._g_apply = ttk.Button(top, text=t("econ.apply_global_economy_changes"), command=self._apply_global)
         self._g_apply.pack(side="left")
-        self._g_reset = ttk.Button(top, text=t("Reset to defaults"), command=self._reset_global)
+        self._g_reset = ttk.Button(top, text=t("common.reset_defaults"), command=self._reset_global)
         self._g_reset.pack(side="left", padx=8)
         self._g_status = tk.Label(top, text="", background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._g_status.pack(side="right")
@@ -291,14 +290,14 @@ class EconomyEditorWindow(tk.Frame):
             self._b_lb.insert(tk.END, lbl)
         right = tk.Frame(body, background=_R_BG_PANEL)
         right.pack(side="left", fill="both", expand=True, padx=(8, 0))
-        self._b_hdr = tk.Label(right, text=t("Select an economy building"), background=_R_BG_PANEL,
+        self._b_hdr = tk.Label(right, text=t("econ.select_economy_building"), background=_R_BG_PANEL,
                                foreground=_R_GOLD_BRT, font=_F_HEAD, anchor="w")
         self._b_hdr.pack(fill="x", padx=6, pady=(4, 0))
         bb = tk.Frame(right, background=_R_BG_PANEL)
         bb.pack(side="bottom", fill="x", padx=6, pady=(0, 6))
-        self._b_apply = ttk.Button(bb, text=t("Apply changes"), state="disabled", command=self._apply_bldg)
+        self._b_apply = ttk.Button(bb, text=t("common.apply_changes"), state="disabled", command=self._apply_bldg)
         self._b_apply.pack(side="left")
-        self._b_reset = ttk.Button(bb, text=t("Reset to defaults"), state="disabled",
+        self._b_reset = ttk.Button(bb, text=t("common.reset_defaults"), state="disabled",
                                    command=self._reset_bldg)
         self._b_reset.pack(side="left", padx=8)
         self._b_status = tk.Label(bb, text="", background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN)
@@ -426,7 +425,7 @@ class EconomyEditorWindow(tk.Frame):
         if not extras:
             return
         extras.sort(key=lambda t: t[0].lower())
-        self._section(frame, t("All other global constants ({n} — advanced, not just economy)", n=len(extras)))
+        self._section(frame, t("econ.all_other_global_constants_n", n=len(extras)))
         for nm, kind, val in extras:
             self._row(frame, self._g_rows, nm, nm, kind, val, self._gd_default(nm))
 
@@ -493,57 +492,55 @@ class EconomyEditorWindow(tk.Frame):
         if not self._row_defaults:
             ui_util.info(
                 self,
-                t("Reset to defaults"),
-                t("No default values are available — this needs a clean backup of the game for this "
-                  "version. Create one in the Mod Manager tab."))
+                t("common.reset_defaults"),
+                t("common.no_default_values_are_available"))
             return False
         return ui_util.confirm(
             self,
-            t("Reset to defaults"),
-            t("Reset every {scope} field back to its default (clean-backup) value? Unsaved edits are "
-              "discarded. Nothing is written to disk until you Save.", scope=scope))
+            t("common.reset_defaults"),
+            t("econ.reset_every_scope_field_back", scope=scope))
 
     def _reset_global(self):
         """Revert the global economy constants to their default (clean-backup) values."""
-        if not self._confirm_reset(t("global economy")):
+        if not self._confirm_reset(t("econ.global_economy_2")):
             return
         changed = self._revert(self._g_rows)
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.GDCONSTANTE_PATH)
             self._keep_scroll(self._g_frame, self._populate_global)
             self._notify()
-        self._g_status.configure(text=t("Reset {n} field(s) to default", n=changed))
+        self._g_status.configure(text=t("common.reset_n_field_s_default", n=changed))
 
     def _reset_bldg(self):
         """Revert the selected economy building's fields to their default (clean-backup) values."""
-        if self._b_sel is None or not self._b_rows or not self._confirm_reset(t("building")):
+        if self._b_sel is None or not self._b_rows or not self._confirm_reset(t("econ.building")):
             return
         changed = self._revert(self._b_rows)
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
             self._keep_scroll(self._b_fields, lambda: self._on_bldg_select())
             self._notify()
-        self._b_status.configure(text=t("Reset {n} field(s) to default", n=changed))
+        self._b_status.configure(text=t("common.reset_n_field_s_default", n=changed))
 
     # ── apply / save ─────────────────────────────────────────────────────────────
 
     def _apply_global(self):
         changed, errors = self._commit(self._g_rows)
         if errors:
-            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
+            ui_util.error(self, t("common.invalid_value_s"), "\n".join(errors))
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.GDCONSTANTE_PATH)
             self._keep_scroll(self._g_frame, self._populate_global)  # show the set values
             self._notify()
         else:
             self._refresh_derived()
-        self._g_status.configure(text=(t("Applied {changed} change(s)", changed=changed) if changed else t("No changes")))
+        self._g_status.configure(text=(t("econ.applied_changed_change_s", changed=changed) if changed else t("common.no_changes")))
 
     def _peek_bldg(self):
         """Instant 'Loading <building>…' feedback before the building field render."""
         sel = self._b_lb.curselection()
         if sel and 0 <= sel[0] < len(self._bldgs):
-            self._b_hdr.configure(text=t("Loading {name}…", name=self._bldgs[sel[0]][0]))
+            self._b_hdr.configure(text=t("common.loading_name", name=self._bldgs[sel[0]][0]))
 
     def _on_bldg_select(self, _=None):
         sel = self._b_lb.curselection()
@@ -555,7 +552,7 @@ class EconomyEditorWindow(tk.Frame):
         self._b_rows = []
         self._zeb = 0   # zebra-stripe counter for this render (issue #5.2)
         self._b_hdr.configure(text=self._bldgs[sel[0]][0])
-        self._section(self._b_fields, t("Building economy / stats"))
+        self._section(self._b_fields, t("econ.building_economy_stats"))
         covered = set()
         for lbl, prop, kind in _BLDG_FIELDS:
             val = self._pv(self._ndf, self._b_sel, prop)
@@ -574,7 +571,7 @@ class EconomyEditorWindow(tk.Frame):
                 extras.append((nm, kind, pv.value))
         if extras:
             extras.sort(key=lambda t: t[0].lower())
-            self._section(self._b_fields, t("Other numeric fields ({n} — raw, advanced)", n=len(extras)))
+            self._section(self._b_fields, t("econ.other_numeric_fields_n_raw", n=len(extras)))
             for nm, kind, val in extras:
                 self._row(self._b_fields, self._b_rows, nm, nm, kind, val, self._bldg_default(nm))
         self._b_apply.configure(state="normal")
@@ -586,12 +583,12 @@ class EconomyEditorWindow(tk.Frame):
             return
         changed, errors = self._commit(self._b_rows)
         if errors:
-            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
+            ui_util.error(self, t("common.invalid_value_s"), "\n".join(errors))
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
             self._keep_scroll(self._b_fields, self._on_bldg_select)  # show set values, keep position
             self._notify()
-        self._b_status.configure(text=(t("Applied {changed} change(s)", changed=changed) if changed else t("No changes")))
+        self._b_status.configure(text=(t("econ.applied_changed_change_s", changed=changed) if changed else t("common.no_changes")))
 
     def _notify(self):
         if self._on_change:
@@ -607,16 +604,16 @@ class EconomyEditorWindow(tk.Frame):
         if self._b_sel is not None and self._b_rows:
             self._apply_bldg()
         if not self.project.is_dirty():
-            ui_util.info(self, t("Save mod"), t("No pending changes to save."))
+            ui_util.info(self, t("common.save_mod"), t("common.no_pending_changes_save"))
             return
         try:
             written = self.project.save_all()
         except Exception as e:
-            ui_util.error(self, t("Save failed"), t("{e}\n\nTip: set the Game Root in Settings.", e=e))
+            ui_util.error(self, t("common.save_failed"), t("common.e_tip_set_game_root", e=e))
             return
         self._notify()
-        self._save_status.configure(text=t("Saved all changes to the mod"))
-        ui_util.info(self, t("Saved"), t("Saved mod changes to:\n\n{paths}", paths="\n".join(written)))
+        self._save_status.configure(text=t("common.saved_all_changes_mod"))
+        ui_util.info(self, t("common.saved"), t("common.saved_mod_changes_paths", paths="\n".join(written)))
 
 
 if __name__ == "__main__":

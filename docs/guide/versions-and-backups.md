@@ -162,6 +162,13 @@ The **Create Backup** action (Step 2 in the setup checklist) copies your whole
 folder has big map files in it, the backup can take a while and use a fair bit of
 disk space.
 
+> **Re-making a backup is safe.** If you make a backup when one already exists, the
+> Mod Manager keeps your **old** backup until the new copy is completely finished —
+> so a backup that gets interrupted (a crash, or closing the app) can never leave
+> you with no backup at all. Backups, caches, and the tool's config are all written
+> **atomically**: the finished file only appears once it's fully written, so a
+> crash can't leave a half-written file behind.
+
 A clean backup is **REQUIRED** before you can edit or deploy:
 
 - The **editors** (units, menus, upgrades, AI, maps) read the clean original game
@@ -211,6 +218,28 @@ that build to test it.
 
 ---
 
+## Choosing which version's mods (the build selector)
+
+Mods are kept separate **per game version**, so the Mod Manager has a **build
+selector** — a dropdown that lets you pick which R.U.S.E. version's mod library you
+want to see and use. It lists the versions **newest first**, and it starts on the
+version you have installed; your pick is kept as you move around the app. (This
+dropdown replaced the old **COMPAT** on/off toggle.)
+
+The **newest game build now ships a full mod library** of its own. Older versions
+of the tool showed no mods for it at all, so there was nothing ready to deploy
+until you made some yourself.
+
+**Using older mods on the newest game.** You don't have to remake a mod for the
+newest version to play it there. When you deploy a mod that was made for an
+**older** version, the Mod Manager **translates its edits across versions for
+you**, using the same built-in version maps the Convert tab uses. The log tells you
+when a mod was carried across like this, and it **flags** any edit that points at a
+value the game changed in between — those edits still deploy, the note is just so
+you can double-check them.
+
+---
+
 ## Old `compat` / `public` folders
 
 Older versions of the tool kept backups and mods in branch-named folders
@@ -247,8 +276,10 @@ What this means for you:
   onward uses the plain **`.rmod`** name. The two are *not* swappable — they're
   built for game files with different insides.
 - In OG (compat) mode, the file pickers and mod list show only `.compat.rmod`
-  files. In remaster (public) mode they show `.rmod` files, with an optional
-  switch to also show `.compat.rmod` files.
+  files. In remaster (public) mode they show `.rmod` files. Which set you see
+  follows the **build selector** (see
+  [Choosing which version's mods](#choosing-which-versions-mods-the-build-selector)
+  above) — it replaced the old COMPAT on/off toggle.
 
 ---
 

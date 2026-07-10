@@ -12,8 +12,8 @@ These are the full, detailed guides that go with the **[main README](../../READM
 
 ## The four tabs
 
-- **[Mod Manager tab](mod-manager.md)** — turn `.rmod` mods on/off, put them in order, and send them to your game; the cache, dry runs, built-in SAFE mods, and sharing your load order.
-- **[Convert tab](convert.md)** — turn an old whole-`.dat` mod into a clean `.rmod`, and make a mod work on every game version.
+- **[Mod Manager tab](mod-manager.md)** — pick which game version's mod library to use, turn `.rmod` mods on/off, put them in order, and send them to your game; deploying older mods onto a newer game, the "needs repair" and conflict warnings, the cache, dry runs, built-in SAFE mods, and sharing your load order.
+- **[Convert tab](convert.md)** — turn an old whole-`.dat` mod into a clean, update-durable `.rmod`, and make a mod work on every game version.
 - **[Mod Editor tab](mod-editor.md)** — projects, picking a version, the hub, adding `.dat` files, and deploy vs. export.
   - [Units & Buildings editor](units-editor.md)
   - [AI editor](ai-editor.md)

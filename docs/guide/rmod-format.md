@@ -169,10 +169,18 @@ A change entry lives inside a group's `changes` list. Here's one:
 - `ClassNameForDebug` (or `DescriptorId` if that's missing) is the **best key to
   match on**. It's a stable name that survives when the game reshuffles things, so use
   it whenever you can.
+- An **`anchor`** is a durable key for a *keyless* sub-object — like a weapon's ammo, a
+  turret, or a camera key — that has no stable name of its own. Instead of a position
+  number it records the nearest **keyed ancestor plus the path to reach it**, e.g.
+  `{ "anchor": { "root": ["ClassNameForDebug", "Unit_Soldat_US_Para"], "steps":
+  [["WeaponDescriptor"], ["TurretDescriptorList", "[0]"], ["Ammunition"]] } }`. The
+  applier walks that path on the *live* game data, so the target is found by **identity**
+  and survives a game update that shifts positions — the same durability a name gives a
+  top-level instance. The converter emits anchors automatically wherever it can.
 - `_index` is a **special positional key**: it matches by raw position number.
   Position numbers are fragile — they can break between game versions (fixing that is
-  exactly what migration does, §7). The converter only uses `_index` for instances
-  with no stable name.
+  exactly what migration does, §7). The converter only falls back to `_index` for
+  instances that have no stable name **and** can't be anchored (the small leftover tail).
 - A name-based `patch` (without `_index`) is automatically stopped from hitting an
   instance that this same mod **created earlier in the same run**. So if a mod creates
   a new unit that reuses an original unit's `ClassNameForDebug`, and also patches the
@@ -293,7 +301,8 @@ data:
 | `{ "local_id": "inst_<N>", "class": <ci> }` | The target is a **new instance created** in this same mod. | Looked up by that label — no position numbers involved. |
 | `{ "$ref": "<local_id>" }` | A short form of the above, for pointing at a create in the same rmod (also written as `{ "type": "$ref", "value": "<local_id>" }`). | Same as `local_id`. |
 | `{ "stable_ref": "<keyprop>", "key_val": "<value>", "class": <ci> }` | The target is an original instance whose stable name is **unchanged** between the original game and the mod. | Found by name in the *live* game data (including this run's creates). Uses the **live** class number, not the stored one. |
-| `{ "inst": <N>, "class": <ci> }` | The fallback: a plain position number. Used when the instance was renamed by this same rmod, or has no stable name. | Used as a raw position; this is the form migration fixes up (§7). |
+| `{ "anchor": { "root": [...], "steps": [...] }, "class": <ci> }` | The target is a **keyless** instance (ammo, turret, camera key, …) reachable from a keyed ancestor. Same durable form as an `anchor` *match* (§3.2). | The applier walks the ancestor + path on the live data, so the target is found by identity and survives position shifts across game updates. |
+| `{ "inst": <N>, "class": <ci> }` | The last-resort fallback: a plain position number. Used when the instance was renamed by this same rmod, or has no stable name **and** can't be anchored. | Used as a raw position; this is the form migration fixes up (§7). |
 
 The `class` number stored in an `ObjRef` is only a hint. When resolving, the applier
 prefers the class number from the **live** game data instead. That matters when a mod
@@ -437,19 +446,23 @@ is skipped with a warning.)
 
 ## 7. Cross-version migration
 
-References written **by position** (`_index` matches and `{inst,class}` ObjRefs) are
-only correct for the exact game build the mod was made for. When RUSE updates,
-instances inside the data get added, removed, or reordered, so those position numbers go
-out of date. Two engine paths fix this. Both use **translation maps** made by matching
-up instances between two clean game snapshots (using the same stable-name matching the
-converter uses).
+Most references in a modern `.rmod` are **durable**: name-keyed matches, `anchor`
+matches and values, and `stable_ref` ObjRefs all find their target by **identity**, so
+they keep working when RUSE updates and instances inside the data get added, removed, or
+reordered — **no translation needed**. Only the positional fallback (`_index` matches and
+`{inst,class}` ObjRefs) is tied to the exact game build the mod was made for. Migration
+fixes up that fallback using **translation maps** made by matching instances between two
+clean game snapshots (using the same stable-name/anchor matching the converter uses).
 
 For each file, a translation map records: `inst_remap` (old-number → new-number),
 `_instance_segments` (runs of numbers that all shift by the same amount),
 `_class_map` (old class number → new class number), and `removed` / `removed_keys`
-(instances that no longer exist in the new build). When you jump across several
-versions, the steps are chained together. (Release order goes by the branch *number*,
-not the build id — a later revert can actually be an older build.)
+(instances that no longer exist in the new build). The app ships **direct maps between
+build pairs** — each pair of clean snapshots is matched up on its own — so a jump between
+two modern builds is a **single step, not a chain** (chaining accumulated error). It also
+flags any edit whose *value* the game changed between the two builds, so you know which
+edits are worth revisiting. (Release order goes by the branch *number*, not the build id —
+a later revert can actually be an older build.)
 
 ### 7.1 Non-destructive translation — `migrate_rmod`
 
@@ -490,8 +503,8 @@ path fixes. It produces a fully pre-translated `.rmod` that the applier runs as-
 moment it's applied.
 
 > See [convert.md](convert.md) for how to do this in the UI, and
-> [versions-and-backups.md](versions-and-backups.md) for how versions and `.bak` files
-> are handled.
+> [versions-and-backups.md](versions-and-backups.md) for how game versions and
+> clean backups are handled.
 
 ---
 

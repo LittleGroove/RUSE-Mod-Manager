@@ -1,0 +1,9 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "the-fix-for-your-fencing-problem-v1",
+  "name": "The Fix for Your Fencing Problem",
+  "version": "1.0.0",
+  "patches": [],
+  "author": "ProLution",
+  "description": "Fixed!\n\nShould work with pretty much every other mod"
+}

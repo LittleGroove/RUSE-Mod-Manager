@@ -1,0 +1,1094 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "only-air-v1",
+  "name": "Only Air",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactory"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Caserne"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Canon"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactory"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                0,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryGR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                0,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_GER"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                0,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                0,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                0,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                0,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteur"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurGER"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurUK"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurURSS"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                0,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryLeurreGR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryLeurreFR"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryLeurreITA"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryJAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactory_JAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactory_JAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteur_JAP"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                9000,
+                9000,
+                9000,
+                9000,
+                9000
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TLoadableQuadTextureAnimatedBladeAndResizeViewPort",
+          "match": {
+            "_index": "46680"
+          },
+          "props": [
+            "AlignementX",
+            "AnimatedInX",
+            "TimeOpening",
+            "TimeClosing",
+            "FadeInAlpha",
+            "ChangeViewPort2DScenes"
+          ]
+        }
+      ]
+    }
+  ],
+  "game_version": "24087620",
+  "author": "ct_center",
+  "description": "ever wanted to play battles with no air? no artillery? no tanks or no infantry? than this is the mod for you! simple limitations to allow more gameplay and to not have the ai spam those damn fighter bombers!"
+}

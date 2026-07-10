@@ -22,11 +22,14 @@ Two entry points:
   rmod content (set values, file/loc/scenario groups) is left exactly as-is — so a
   hand-tuned mod keeps its edits and only the broken indices are fixed.
 """
+import logging
 import os
 from typing import Dict, List, Optional, Tuple
 
 from . import edata, ndfbin
 from .converter import _stable_key
+
+_log = logging.getLogger(__name__)
 
 # OBJ_REF marker in ndfbin (a serialized ObjRef in an rmod value carries an "inst")
 # rmod value_defs represent an ObjRef as a dict with an "inst" key (see migrate._remap_objref_value).
@@ -370,4 +373,9 @@ def _is_cross_format(from_build: str, to_build: str) -> bool:
         b = gv.get("builds", {})
         return b.get(str(from_build), {}).get("dataver") != b.get(str(to_build), {}).get("dataver")
     except Exception:
+        # Can't read the version table → we default to "same format" (no cross-format path rewrite).
+        # That's the historical behaviour but it's the RISKY default (a real OG<->remaster jump would
+        # then skip the rewrite); at least don't hide it. TODO(bug-hunting): verify with game data.
+        _log.warning("Couldn't compare data versions for %s->%s; assuming same-format",
+                     from_build, to_build, exc_info=True)
         return False

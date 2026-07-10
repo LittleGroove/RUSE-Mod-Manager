@@ -170,46 +170,63 @@ class NdfBinary:
     is_compressed: bool           = False
 
     # ── Lookup helpers ───────────────────────────────────────────────────────
+    # These name lookups sit in HOT loops (stable-key matching, ObjRef resolution).  Done as linear scans
+    # of the class/property tables they were O(instances × properties) on big NDFs — e.g. everything.cpp
+    # (63,686 instances × 3,338 properties) spent ~106s JUST computing stable keys, which is the bulk of a
+    # convert.  They're memoized below into name→object dicts.  The class/property tables are append-only
+    # during a diff/apply (a new class/prop is only ever ADDED, never removed or reordered), so a cheap
+    # length check tells us when to rebuild.  Same results (exact match preferred, case-insensitive
+    # fallback for Eugen's cross-build re-casing e.g. 'GUID'->'Guid'), ~1000x faster.
+
+    def _ensure_name_indices(self):
+        if getattr(self, "_idx_nprops", -1) != len(self.properties):
+            by_pc: dict = {}   # (class_index, name) and (class_index, name.lower()) -> NdfProperty
+            by_p: dict = {}    # name and name.lower() -> NdfProperty (first wins)
+            by_i: dict = {}    # prop_index -> NdfProperty (props are keyed by .index, not list position)
+            for p in self.properties:
+                by_pc.setdefault((p.class_index, p.name), p)
+                by_pc.setdefault((p.class_index, p.name.lower()), p)
+                by_p.setdefault(p.name, p)
+                by_p.setdefault(p.name.lower(), p)
+                by_i.setdefault(p.index, p)
+            self._idx_prop_by_class, self._idx_prop_by_name = by_pc, by_p
+            self._idx_prop_by_index, self._idx_nprops = by_i, len(self.properties)
+        if getattr(self, "_idx_nclasses", -1) != len(self.classes):
+            by_c: dict = {}
+            for c in self.classes:
+                by_c.setdefault(c.name, c)
+                by_c.setdefault(c.name.lower(), c)
+            self._idx_class_by_name, self._idx_nclasses = by_c, len(self.classes)
 
     def class_by_name(self, name: str) -> Optional[NdfClass]:
-        for c in self.classes:
-            if c.name == name:
-                return c
-        # Case-insensitive fallback — Eugen re-cases symbols between builds (the same
-        # 'GUID' -> 'Guid' re-casing that prop_by_name guards against also hits class
-        # names). Every editor filters instances by exact class name via class_by_name /
-        # class_instances / find_instances, so without this a re-cased class silently
-        # returns [] and the window shows nothing (no error) on a future build.
-        lower = name.lower()
-        for c in self.classes:
-            if c.name.lower() == lower:
-                return c
-        return None
+        self._ensure_name_indices()
+        c = self._idx_class_by_name.get(name)
+        return c if c is not None else self._idx_class_by_name.get(name.lower())
 
     def prop_by_name(self, name: str) -> Optional[NdfProperty]:
-        for p in self.properties:
-            if p.name == name:
-                return p
-        # Case-insensitive fallback — Eugen re-cases property symbols between builds
-        # (e.g. 'GUID' -> 'Guid' in v23660935 / v24003166). Mirrors set_property's write-path
-        # fallback so READS stay build-agnostic too; without it a hardcoded 'GUID' silently
-        # misses on those builds and every registry/scenario linkage collapses to 'unbound'.
-        lower = name.lower()
-        for p in self.properties:
-            if p.name.lower() == lower:
-                return p
-        return None
+        self._ensure_name_indices()
+        p = self._idx_prop_by_name.get(name)
+        return p if p is not None else self._idx_prop_by_name.get(name.lower())
 
     def prop_by_name_and_class(self, prop_name: str, class_index: int) -> Optional[NdfProperty]:
-        for p in self.properties:
-            if p.name == prop_name and p.class_index == class_index:
-                return p
-        # Case-insensitive fallback (see prop_by_name) — build-agnostic property lookup.
-        lower = prop_name.lower()
-        for p in self.properties:
-            if p.name.lower() == lower and p.class_index == class_index:
-                return p
-        return None
+        self._ensure_name_indices()
+        p = self._idx_prop_by_class.get((class_index, prop_name))
+        return p if p is not None else self._idx_prop_by_class.get((class_index, prop_name.lower()))
+
+    def class_index_by_name(self, name: str) -> Optional[int]:
+        """Index of the class named `name` in THIS NDF's class table, or None. Memoized (length-staleness).
+        Used to resolve an ObjRef's declared class BY NAME so a build-specific raw class index migrates
+        correctly (class tables reorder across game updates)."""
+        if getattr(self, "_clsidx_ninst", -1) != len(self.classes):
+            self._clsidx = {c.name: i for i, c in enumerate(self.classes)}
+            self._clsidx_ninst = len(self.classes)
+        return self._clsidx.get(name)
+
+    def prop_by_index(self, prop_index: int) -> Optional[NdfProperty]:
+        """NdfProperty whose .index == prop_index (props aren't stored in index order).
+        Memoized — replaces a linear scan that ran once per prop-value in the diff."""
+        self._ensure_name_indices()
+        return self._idx_prop_by_index.get(prop_index)
 
     def class_instances(self, class_name_or_index) -> List[NdfInstance]:
         if isinstance(class_name_or_index, str):
@@ -313,6 +330,16 @@ class NdfBinary:
                     return [(idx, inst)]
             return []
 
+        # Fast-path: durable ANCHOR match — {"anchor": {"root":[keyprop,keyval], "steps":[[label,...],...]}}
+        # (H3: addresses a keyless sub-object via a keyed ancestor + path; survives index shifts).
+        if match and "anchor" in match:
+            idx = self.resolve_anchor(match["anchor"])
+            if idx is not None and 0 <= idx < len(self.instances):
+                inst = self.instances[idx]
+                if inst.class_index == cls.index:
+                    return [(idx, inst)]
+            return []
+
         results = []
         for idx, inst in enumerate(self.instances):
             if inst.class_index != cls.index:
@@ -339,6 +366,175 @@ class NdfBinary:
             results.append((idx, inst))
 
         return results
+
+    # ── Anchor addressing (H3): durable addresses for KEYLESS sub-objects ─────────────────────────────
+    # A keyless instance (ammo, turret, camera key, ...) has no stable key of its own, so a positional
+    # _index breaks across game updates.  Instead address it as its nearest KEYED ancestor + the property/
+    # list PATH to reach it ("the Ammunition of weapon X").  build_anchor_index() walks the ObjRef graph
+    # (BFS from keyed roots) to derive that path for every reachable keyless instance; resolve_anchor()
+    # walks it back on the target NDF.  Proven 99.46% durable across the widest build jump.
+
+    def stable_key(self, inst: NdfInstance):
+        """(key_prop, key_val) for this instance, or None — the canonical durable identity.  Matches the
+        tree (build_dat_data_tree/build_reference_graph): only STRING values (StringRef/PathRef) count as a
+        key — a binary DescriptorId/Name (Hash/Guid/Blob) is NOT a durable string key and must not be used
+        (it made resolve_anchor / find_instances miss, forcing a whole-NDF raw fallback)."""
+        ci = inst.class_index
+        for kp in ("ClassNameForDebug", "DescriptorId"):
+            p = self.prop_by_name_and_class(kp, ci)
+            if p is not None:
+                v = inst.get(p.index)
+                if v is not None and v.type_id in (T.StringRef, T.PathRef):
+                    return (kp, self.get_string(v.raw))
+        for kp in ("_ShortDatabaseName", "Name"):
+            p = self.prop_by_name_and_class(kp, ci)
+            if p is not None:
+                v = inst.get(p.index)
+                if v is not None and v.type_id in (T.StringRef, T.PathRef):
+                    rv = self.get_string(v.raw)
+                    if rv and rv != "None":
+                        return (kp, rv)
+        return None
+
+    def _walk_objrefs_labeled(self, value: NdfValue, steps: list, out: list):
+        """Collect (path_labels, target_idx) for every ObjRef in a value, recursing list/map/pair with a
+        label per descent ('[i]' list, '<ki>'/'<vi>' map, 'k'/'v' pair)."""
+        t = value.type_id
+        if t == T.Reference:
+            if value.raw[0] == OBJ_REF_MARKER:
+                out.append((tuple(steps), value.raw[1][0]))
+        elif t == T.List:
+            for i, item in enumerate(value.raw):
+                self._walk_objrefs_labeled(item, steps + [f"[{i}]"], out)
+        elif t == T.Map:
+            for i, (k, v) in enumerate(value.raw):
+                self._walk_objrefs_labeled(k, steps + [f"<k{i}>"], out)
+                self._walk_objrefs_labeled(v, steps + [f"<v{i}>"], out)
+        elif t == T.Pair:
+            self._walk_objrefs_labeled(value.raw[0], steps + ["k"], out)
+            self._walk_objrefs_labeled(value.raw[1], steps + ["v"], out)
+
+    def _ensure_anchor_index(self):
+        """Build {keyless_idx -> {'root':[kp,kv], 'steps':[[label,...],...]}} once (length-staleness)."""
+        if getattr(self, "_anchor_ninst", -1) == len(self.instances):
+            return
+        from collections import deque, Counter
+        n = len(self.instances)
+        keyval = [self.stable_key(inst) for inst in self.instances]
+        # Roots must be GLOBALLY unique by (keyprop, keyval): resolve_anchor looks the root up across ALL
+        # instances, so a key shared by several (e.g. _ShortDatabaseName 'FX_Feedback') can't be a durable
+        # anchor root — exclude it (its children just stay positional).
+        key_count: Counter = Counter(keyval[i] for i in range(n) if keyval[i] is not None)
+        keyed = [keyval[i] is not None and key_count[keyval[i]] == 1 for i in range(n)]
+        fwd: dict = {}
+        for i, inst in enumerate(self.instances):
+            for pv in inst.props:
+                p = self.prop_by_index(pv.prop_index)
+                pname = p.name if p is not None else f"#{pv.prop_index}"
+                refs: list = []
+                self._walk_objrefs_labeled(pv.value, [pname], refs)
+                for label, tgt in refs:
+                    if 0 <= tgt < n:
+                        fwd.setdefault(i, []).append((tgt, label))
+        depth = [-1] * n
+        pred = [None] * n
+        q = deque(i for i in range(n) if keyed[i])
+        for i in q:
+            depth[i] = 0
+        while q:
+            u = q.popleft()
+            for v, label in fwd.get(u, ()):
+                if depth[v] == -1:
+                    depth[v] = depth[u] + 1
+                    pred[v] = (u, list(label))
+                    q.append(v)
+        anchors: dict = {}
+        for i in range(n):
+            if keyed[i] or depth[i] < 0:
+                continue
+            steps = []
+            cur = i
+            while pred[cur] is not None:
+                parent, label = pred[cur]
+                steps.append(label)
+                cur = parent
+            steps.reverse()
+            rk = keyval[cur]
+            if rk is not None:
+                anchors[i] = {"root": [rk[0], rk[1]], "steps": steps}
+        self._anchor_map = anchors
+        self._anchor_ninst = n
+
+    def anchor_of(self, idx: int):
+        """The durable anchor for a keyless instance (or None if keyed / unreachable from a keyed root)."""
+        self._ensure_anchor_index()
+        return self._anchor_map.get(idx)
+
+    def _find_root_idx(self, key_prop: str, key_val: str):
+        """Index of the instance whose stable_key == (key_prop, key_val); memoized (unique roots)."""
+        if getattr(self, "_keyidx_ninst", -1) != len(self.instances):
+            from collections import Counter
+            first: dict = {}
+            cnt: Counter = Counter()
+            for i, inst in enumerate(self.instances):
+                k = self.stable_key(inst)
+                if k is not None:
+                    first.setdefault(k, i)
+                    cnt[k] += 1
+            # only GLOBALLY-UNIQUE keys are resolvable roots (matches _ensure_anchor_index)
+            self._keyidx = {k: i for k, i in first.items() if cnt[k] == 1}
+            self._keyidx_ninst = len(self.instances)
+        return self._keyidx.get((key_prop, key_val))
+
+    def _nav_to_objref(self, value: NdfValue, descents: list):
+        """From a property value, follow list/map/pair descents to an ObjRef; return its target idx or None."""
+        for d in descents:
+            t = value.type_id
+            try:
+                if d[:1] == "[" and t == T.List:
+                    value = value.raw[int(d[1:-1])]
+                elif d[:2] == "<k" and t == T.Map:
+                    value = value.raw[int(d[2:-1])][0]
+                elif d[:2] == "<v" and t == T.Map:
+                    value = value.raw[int(d[2:-1])][1]
+                elif d == "k" and t == T.Pair:
+                    value = value.raw[0]
+                elif d == "v" and t == T.Pair:
+                    value = value.raw[1]
+                else:
+                    return None
+            except (IndexError, ValueError, TypeError):
+                return None
+        if value.type_id == T.Reference and value.raw[0] == OBJ_REF_MARKER:
+            return value.raw[1][0]
+        return None
+
+    def resolve_anchor(self, anchor: dict):
+        """Resolve an anchor {'root':[kp,kv], 'steps':[[propname, descents...], ...]} to an instance index,
+        or None if it doesn't resolve on this NDF (root key gone, or a path step broke — a drift signal)."""
+        if not anchor:
+            return None
+        root = anchor.get("root")
+        if not root or len(root) < 2:
+            return None
+        idx = self._find_root_idx(root[0], root[1])
+        if idx is None:
+            return None
+        for step in (anchor.get("steps") or []):
+            if not step:
+                return None
+            inst = self.instances[idx]
+            p = self.prop_by_name_and_class(step[0], inst.class_index)
+            if p is None:
+                return None
+            v = inst.get(p.index)
+            if v is None:
+                return None
+            nxt = self._nav_to_objref(v, step[1:])
+            if nxt is None or not (0 <= nxt < len(self.instances)):
+                return None
+            idx = nxt
+        return idx
 
     def set_property(
         self,
@@ -394,18 +590,53 @@ class NdfBinary:
             return len(self.trans) - 1
 
     # ── import / export tree access (see parse_ref_tree) ─────────────────────
+    def _cached_ref_paths(self, which: str, ref_list) -> Dict[int, str]:
+        """Memoized ref_ordinal_paths(parse_ref_tree(ref_list), self.trans).
+
+        resolve_value() calls this once PER import-ref value during a diff — on
+        everything.cpp that's ~82k calls, each re-parsing the ENTIRE import ref tree
+        (the dominant cost after the name-lookup fix: ~872s cumtime).  The import /
+        export lists and the trans table are read-only during a diff, so cache on
+        their identity+length.  The only mutators (add_import_path / add_export_path /
+        reindex_imports) reassign self.import_list to a NEW object, so id() changes and
+        the cache self-invalidates.  Callers that mutate the result copy it first.
+        Returns a SHARED dict — do not mutate."""
+        cache = self.__dict__.get("_ref_path_cache")
+        if cache is None:
+            cache = self._ref_path_cache = {}
+        key = (id(ref_list), len(ref_list), len(self.trans))
+        ent = cache.get(which)
+        if ent is None or ent[0] != key:
+            result = ref_ordinal_paths(parse_ref_tree(ref_list), self.trans)
+            cache[which] = (key, result)
+            return result
+        return ent[1]
+
     def import_ordinal_paths(self) -> Dict[int, str]:
         """import ordinal -> full path (e.g. 15 -> '$/IA/Cluster/PackProxy_All').
-        Instances reference imports BY ORDINAL; this maps them to portable paths."""
-        return ref_ordinal_paths(parse_ref_tree(self.import_list), self.trans)
+        Instances reference imports BY ORDINAL; this maps them to portable paths.
+        SHARED cached dict — copy before mutating (see _cached_ref_paths)."""
+        return self._cached_ref_paths("import", self.import_list)
 
     def export_ordinal_paths(self) -> Dict[int, str]:
-        """export ordinal -> full path."""
-        return ref_ordinal_paths(parse_ref_tree(self.export_list), self.trans)
+        """export ordinal -> full path.  SHARED cached dict — copy before mutating."""
+        return self._cached_ref_paths("export", self.export_list)
 
     def import_path_ordinals(self) -> Dict[str, int]:
         """full path -> import ordinal (inverse of import_ordinal_paths)."""
         return {p: o for o, p in self.import_ordinal_paths().items()}
+
+    def transref_is_legacy_bare(self, ref) -> bool:
+        """True if `ref` is a legacy BARE-NAME TransRef value (a TRAN component name, no '$'/'/').
+
+        Such a value resolves via `ensure_trans` to a TRAN index — but the GAME (and our converter) reads a
+        TransRef ordinal as an IMPR IMPORT ordinal (deserializer case 9 -> Mgr import table).  A bare name
+        therefore only works when its TRAN index COINCIDENTALLY equals the intended import's ordinal on the
+        origin build; migrating/reconverting on another build breaks that coincidence and mis-points the
+        reference (proven: Balanced Realism's MultiRenderTypeMaterialPack SFX_Impact... -> a wrong import on
+        public).  Fix: re-convert the rmod on its ORIGIN build so the value becomes a portable '$/...' path.
+        See RE_DATA/EVIDENCE_DOSSIER.md (Evidence #1)."""
+        return isinstance(ref, str) and "/" not in ref and not ref.startswith("$")
 
     def add_import_path(self, path: str) -> int:
         """Ensure `path` is an import; return its ordinal (existing or newly appended).
@@ -413,7 +644,7 @@ class NdfBinary:
         New imports get the next free ordinal (max+1), so existing instances'
         TransRef ordinals stay valid.  Rebuilds import_list + adds any missing TRAN
         components.  Same mechanism works for export via add_export_path."""
-        cur = self.import_ordinal_paths()
+        cur = dict(self.import_ordinal_paths())  # copy: we mutate, cache dict is shared
         for o, p in cur.items():
             if p == path:
                 return o
@@ -423,7 +654,7 @@ class NdfBinary:
         return new_ord
 
     def add_export_path(self, path: str) -> int:
-        cur = self.export_ordinal_paths()
+        cur = dict(self.export_ordinal_paths())  # copy: we mutate, cache dict is shared
         for o, p in cur.items():
             if p == path:
                 return o
@@ -501,6 +732,11 @@ class _Reader:
     def remaining(self): return len(self._data) - self._pos
 
     def read(self, n: int) -> bytes:
+        # Reject a negative length outright: a corrupt size field (e.g. a ZipBlob whose `size` is < the
+        # fixed header it subtracts) would otherwise slice to b"" AND move the cursor BACKWARD, silently
+        # misparsing the rest of the buffer instead of failing.
+        if n < 0:
+            raise ValueError(f"negative read length {n} at offset {self._pos}")
         b = self._data[self._pos:self._pos + n]
         if len(b) < n:
             raise ValueError(f"Unexpected end of data at offset {self._pos} (need {n}, have {len(b)})")
@@ -522,7 +758,10 @@ class _Reader:
         return self.read(length).decode(encoding, errors="replace")
 
     def peek_u32(self) -> int:
-        return struct.unpack_from("<I", self._data[self._pos:self._pos + 4])[0]
+        b = self._data[self._pos:self._pos + 4]
+        if len(b) < 4:
+            raise ValueError(f"Unexpected end of data at offset {self._pos} (peek u32)")
+        return struct.unpack_from("<I", b)[0]
 
 
 def _decompress_body(data: bytes) -> bytes:
@@ -549,14 +788,17 @@ def _decompress_body(data: bytes) -> bytes:
         fi = io.BytesIO(body_compressed)
         dobj = zlib.decompressobj(0)
         chunks = []
-        while True:
-            buf = dobj.unconsumed_tail or fi.read(65536)
-            if not buf:
-                break
-            chunk = dobj.decompress(buf)
-            if not chunk:
-                break
-            chunks.append(chunk)
+        try:
+            while True:
+                buf = dobj.unconsumed_tail or fi.read(65536)
+                if not buf:
+                    break
+                chunk = dobj.decompress(buf)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+        except zlib.error as e:                      # corrupt/hostile compressed body — clean caught error
+            raise ValueError(f"corrupt compressed NDF body: {e}")
         return header_bytes + b"".join(chunks)
     return data
 
@@ -570,7 +812,7 @@ def _read_toc0(r: _Reader, toc0_offset: int) -> Dict[str, Tuple[int, int]]:
     table_count = r.u32()
     tables = {}
     for _ in range(table_count):
-        name = r.read(4).decode("ascii")
+        name = r.read(4).decode("ascii", errors="replace")   # a non-ASCII byte must not crash the parse
         r.read(4)   # pad
         offset = r.u32()
         r.read(4)   # pad
@@ -593,8 +835,13 @@ def _read_pascal_str_list(r: _Reader, offset: int, size: int, encoding: str = "u
     return result
 
 
-def _read_value(r: _Reader) -> NdfValue:
+def _read_value(r: _Reader, _depth: int = 0) -> NdfValue:
     """Read one NDFType from the stream (typeId + payload)."""
+    # Depth guard: List/Map/Pair recurse into _read_value, so a hostile value nested ~1000 deep would
+    # overflow the Python stack (RecursionError).  Real NDF values are only a few levels deep; refuse
+    # anything past a generous bound so the caller sees a clean ValueError, not a stack crash.
+    if _depth > 200:
+        raise ValueError(f"NDF value nested too deep (>200) at offset {r.pos()} — refusing")
     type_id = r.u32()
 
     if type_id == T.Bool:
@@ -672,19 +919,19 @@ def _read_value(r: _Reader) -> NdfValue:
             return NdfValue(type_id, {"flag": flag, "data": body})
     if type_id == T.List:
         count = r.u32()
-        items = [_read_value(r) for _ in range(count)]
+        items = [_read_value(r, _depth + 1) for _ in range(count)]
         return NdfValue(type_id, items)
     if type_id == T.Map:
         count = r.u32()
         pairs = []
         for _ in range(count):
-            k = _read_value(r)
-            v = _read_value(r)
+            k = _read_value(r, _depth + 1)
+            v = _read_value(r, _depth + 1)
             pairs.append((k, v))
         return NdfValue(type_id, pairs)
     if type_id == T.Pair:
-        k = _read_value(r)
-        v = _read_value(r)
+        k = _read_value(r, _depth + 1)
+        v = _read_value(r, _depth + 1)
         return NdfValue(type_id, (k, v))
 
     # Unknown type — we cannot safely parse further; store what we have
@@ -824,9 +1071,17 @@ def parse_ref_tree(uints: List[int]) -> List["NdfRefNode"]:
     recs = []                     # (byte, name, ordinal_raw, [child_byte...])
     byte_to_idx = {}
     i = 0
-    while i < len(uints):
+    n = len(uints)
+    while i < n:
+        # Bounds-check every field read from the (untrusted) flat list: a truncated record header or a
+        # bogus child_count would otherwise IndexError off the end.  Raise a clean ValueError instead so
+        # the convert/apply callers fall back to a raw file patch.
+        if i + 3 > n:
+            raise ValueError("truncated IMPR/EXPR record header")
         byte = i * 4
         name = uints[i]; ordinal_raw = uints[i + 1]; cc = uints[i + 2]
+        if i + 3 + cc > n:
+            raise ValueError(f"IMPR/EXPR child count {cc} exceeds list length")
         child_slots_byte = (i + 3) * 4
         child_bytes = [child_slots_byte + uints[i + 3 + k] for k in range(cc)]
         byte_to_idx[byte] = len(recs)
@@ -834,10 +1089,15 @@ def parse_ref_tree(uints: List[int]) -> List["NdfRefNode"]:
         i += 3 + cc
     nodes = []
     for _byte, name, ordinal_raw, child_bytes in recs:
+        kids = []
+        for cb in child_bytes:
+            if cb not in byte_to_idx:                # child offset must land on a record boundary
+                raise ValueError(f"IMPR/EXPR child offset {cb} is not a record boundary")
+            kids.append(byte_to_idx[cb])
         nodes.append(NdfRefNode(
             name_index=name,
             ordinal=(-1 if ordinal_raw == 0xFFFFFFFF else ordinal_raw),
-            children=[byte_to_idx[cb] for cb in child_bytes],
+            children=kids,
         ))
     return nodes
 
@@ -1197,7 +1457,7 @@ def _bytes_from_value(raw_value, expected_len: int, type_name: str) -> bytes:
     return b
 
 
-def make_value(type_name: str, raw_value) -> NdfValue:
+def make_value(type_name: str, raw_value, _depth: int = 0) -> NdfValue:
     """
     Create an NdfValue from a human-readable type name and a Python value.
     Used when applying .rmod patch files.
@@ -1214,6 +1474,11 @@ def make_value(type_name: str, raw_value) -> NdfValue:
       List<T>  — homogeneous list; raw_value = JSON array of T values
       Map<K,V> — key-value map; raw_value = JSON array of [key, val] 2-element arrays
     """
+    # Depth guard: List<...>/Map<...>/Pair recurse, so a hostile rmod with a deeply nested type string or
+    # value array would overflow the stack (RecursionError).  Real values are shallow — refuse past a
+    # generous bound with a clean ValueError instead.
+    if _depth > 200:
+        raise ValueError(f"rmod value nested too deep (>200) for type {type_name!r}")
     TYPE_MAP = {
         "bool":     T.Bool,
         "int8":     T.Int8,
@@ -1248,7 +1513,7 @@ def make_value(type_name: str, raw_value) -> NdfValue:
             raise ValueError(
                 f"Value for '{type_name}' must be a JSON array, got {type(raw_value).__name__}"
             )
-        items = [make_value(elem_type_name, v) for v in raw_value]
+        items = [make_value(elem_type_name, v, _depth + 1) for v in raw_value]
         return NdfValue(T.List, items)
 
     # Handle "Map<KeyType,ValType>" — e.g. "Map<ObjRef,ObjRef>"
@@ -1274,7 +1539,8 @@ def make_value(type_name: str, raw_value) -> NdfValue:
         for pair in raw_value:
             if not isinstance(pair, (list, tuple)) or len(pair) != 2:
                 raise ValueError("Each Map entry must be a 2-element array [key, val]")
-            pairs.append((make_value(key_type, pair[0]), make_value(val_type, pair[1])))
+            pairs.append((make_value(key_type, pair[0], _depth + 1),
+                          make_value(val_type, pair[1], _depth + 1)))
         return NdfValue(T.Map, pairs)
 
     # Object reference: {"inst": N, "class": C}
@@ -1347,8 +1613,8 @@ def make_value(type_name: str, raw_value) -> NdfValue:
         if not isinstance(raw_value, (list, tuple)) or len(raw_value) != 2:
             raise ValueError("Pair requires a 2-element list [key_def, val_def]")
         k_def, v_def = raw_value[0], raw_value[1]
-        k_val = make_value(k_def["type"], k_def["value"])
-        v_val = make_value(v_def["type"], v_def["value"])
+        k_val = make_value(k_def["type"], k_def["value"], _depth + 1)
+        v_val = make_value(v_def["type"], v_def["value"], _depth + 1)
         return NdfValue(T.Pair, (k_val, v_val))
 
     type_id = TYPE_MAP.get(key)

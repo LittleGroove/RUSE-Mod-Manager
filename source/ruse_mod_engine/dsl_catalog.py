@@ -1,7 +1,7 @@
 """DSL catalog for the Mission Logic editor (operations authoring).
 
 Loads ruse_mod_engine/data/dsl_catalog.json (auto-extracted from the RE artifacts by
-ai_unit_tests/claude/build_dsl_catalog.py: 1,133 DSL classes with param names/types/defaults, enum
+archive/ai_unit_tests/claude/build_dsl_catalog.py: 1,133 DSL classes with param names/types/defaults, enum
 domains, usage counts, inferred kind/category) and DEEP-MERGES the hand-written
 ruse_mod_engine/data/dsl_catalog_overlay.json on top. The overlay supplies friendly labels/help, refined
 param types (block_ref/tag/camp_ref...), COMPLETE enum domains (usage-mining is incomplete), and a

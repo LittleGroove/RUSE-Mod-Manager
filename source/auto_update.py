@@ -28,7 +28,7 @@ import tkinter as tk
 import urllib.error
 import urllib.request
 from pathlib import Path
-from tkinter import messagebox, ttk
+from tkinter import ttk
 
 import ui_util
 
@@ -97,9 +97,8 @@ def _find_exe_asset(release, version):
 def prompt_update(parent, current, latest):
     return ui_util.confirm(
         parent,
-        t("Update available"),
-        t("A new version is available: {current} → {latest}\n\n"
-          "Update now? Selecting No will close the application.",
+        t("update.update_available"),
+        t("update.new_version_available_current_latest",
           current=current, latest=latest),
     )
 
@@ -107,10 +106,10 @@ def prompt_update(parent, current, latest):
 def _download_with_progress(parent, url, dest_path):
     """Stream URL -> dest_path while pumping a small Tk progress Toplevel. Raises on failure."""
     # Non-modal (it pumps parent.update() while downloading); themed_toplevel centres it over the app.
-    win = ui_util.themed_toplevel(parent, t("Downloading update..."),
+    win = ui_util.themed_toplevel(parent, t("update.downloading_update"),
                                   resizable=False, modal=False)
     win.protocol("WM_DELETE_WINDOW", lambda: None)   # close-box does nothing during the swap
-    ttk.Label(win, text=t("Downloading update...")).pack(padx=20, pady=(15, 5))
+    ttk.Label(win, text=t("update.downloading_update")).pack(padx=20, pady=(15, 5))
     pb = ttk.Progressbar(win, length=320, mode="indeterminate")
     pb.pack(padx=20, pady=(0, 15))
     pb.start(50)
@@ -416,8 +415,8 @@ def download_and_relaunch(parent, asset_url, latest_version):
             pass
         ui_util.error(
             parent,
-            t("Update failed"),
-            t("Update failed: {error}", error=str(e)),
+            t("update.update_failed"),
+            t("update.update_failed_error", error=str(e)),
         )
         try:
             parent.destroy()
@@ -442,9 +441,8 @@ def download_and_relaunch(parent, asset_url, latest_version):
         # manually; the downloaded new exe stays in place for next time.
         ui_util.error(
             parent,
-            t("Update failed"),
-            t("Downloaded the update but couldn't start it: {error}\n\n"
-              "Please restart the app manually.", error=str(e)),
+            t("update.update_failed"),
+            t("update.downloaded_update_but_couldn_t", error=str(e)),
         )
         return
     try:

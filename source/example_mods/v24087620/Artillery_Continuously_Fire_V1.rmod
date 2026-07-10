@@ -1,0 +1,169 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "artillery-continuously-fire-v1",
+  "name": "Artillery Continuously Fire",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_75mm_le_FK_38_L_34"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "Ammunition"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "TempsEntreDeuxSalves": {
+              "type": "Float32",
+              "value": 5.0
+            },
+            "NbTirParSalves": {
+              "type": "Int32",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_M7_Priest"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "Ammunition"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "TempsEntreDeuxSalves": {
+              "type": "Float32",
+              "value": 5.0
+            },
+            "NbTirParSalves": {
+              "type": "Int32",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_M40_GMC"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "Ammunition"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "TempsEntreDeuxSalves": {
+              "type": "Float32",
+              "value": 5.0
+            },
+            "NbTirParSalves": {
+              "type": "Int32",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAmmunition",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_203mm_howitzer"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "Ammunition"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "TempsEntreDeuxSalves": {
+              "type": "Float32",
+              "value": 5.0
+            },
+            "NbTirParSalves": {
+              "type": "Int32",
+              "value": 1
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "game_version": "24087620",
+  "author": "RossGosling",
+  "description": "Every artillery piece that fires in bursts of 4 now fires continuously, maintaining the same rate of fire"
+}

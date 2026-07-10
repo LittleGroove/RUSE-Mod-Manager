@@ -12,5 +12,15 @@ pillow>=10
 # Runtime — high-def terrain decode (ruse_mod_engine/terrain_codec.py, map editor; issue #8).
 numpy>=1.24
 
+# Runtime — decompile/recompile the game's Python 2.5 mission scripts (.xyz):
+#   ruse_mod_engine/xyz_compile.py drives uncompyle6, which pulls in xdis + spark_parser (+ six).
+#   Pinned exactly: the decompiler stack is tightly coupled to the exact Python-2.5 bytecode
+#   support in these releases, and these are the versions bundled into the exe (see build.py /
+#   THIRD_PARTY_NOTICES.md). They are GPL-licensed, which is why this project ships under GPL-3.0.
+uncompyle6==3.9.3
+xdis==6.1.8
+spark_parser==1.9.0
+six==1.17.0
+
 # Build only (build.py packages the exe; Pillow is bundled into it via the spec):
 #   pip install pyinstaller

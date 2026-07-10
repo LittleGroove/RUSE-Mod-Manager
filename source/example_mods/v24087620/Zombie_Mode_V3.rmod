@@ -1,0 +1,5623 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "zombie-mode-v3",
+  "name": "Zombie Mode",
+  "version": "3.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TAIConfiguration",
+          "match": {
+            "_index": "44808"
+          },
+          "set": {
+            "Name": {
+              "type": "LocHash",
+              "value": "41f9581394711a00"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAITunableConstante",
+          "match": {
+            "_index": "44798"
+          },
+          "set": {
+            "ValeurRetour": {
+              "type": "Float32",
+              "value": 0.4000000059604645
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63686",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1044
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "07515edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "4a79714be9010000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 20.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 0.25
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 18200.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 30000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.0010000000474974513
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "PourcentageTirDirect": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "PourcentageTirDirectEnMouvement": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 4
+            },
+            "AllowAmbushShot": {
+              "type": "Bool",
+              "value": 1
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_US_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 3
+            },
+            "FX_tir_sans_physic": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63687",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1056
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "47515edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "83505edc527a0000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 3
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 75.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 4.5
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 18200.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 150.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.009999999776482582
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 2
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_US_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 2
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "FX_tir_sans_physic": {
+              "type": "Bool",
+              "value": 1
+            },
+            "TempsAnimation": {
+              "type": "Float32",
+              "value": 1.600000023841858
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63688",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1084
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "c8515edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "89505edc527a0000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 6
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 150.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 3.0
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 18200.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 75000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.009999999776482582
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 3
+            },
+            "AllowAmbushShot": {
+              "type": "Bool",
+              "value": 1
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_US_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 1
+            },
+            "NeedModelChange": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63689",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1078
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "c6515edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "87505edc527a0000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 3
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 600.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 8.0
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 65000.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 300.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.009999999776482582
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 3
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_US_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 2
+            },
+            "FX_tir_sans_physic": {
+              "type": "Bool",
+              "value": 1
+            },
+            "TempsAnimation": {
+              "type": "Float32",
+              "value": 1.600000023841858
+            },
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 5200.0
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63690",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1014
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "a8199b25b7941800"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "4179714be9010000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 8
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 130.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 6.0
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 130000.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 260000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.0010000000474974513
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 5
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_US_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "NeedModelChange": {
+              "type": "Bool",
+              "value": 1
+            },
+            "PourcentageTirDirect": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "PourcentageTirDirectEnMouvement": {
+              "type": "Float32",
+              "value": 0.800000011920929
+            },
+            "AngleDispersion": {
+              "type": "Float32",
+              "value": 0.07999999821186066
+            },
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 130.0
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "AllowAmbushShot": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63691",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1059
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "49515edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "84505edc527a0000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 3
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 150.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 0.5
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 130000.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 22000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.009999999776482582
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 2
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Hotchkiss_H_39"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "AngleDispersion": {
+              "type": "Float32",
+              "value": 0.05000000074505806
+            },
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 5200.0
+            },
+            "TirIndirect": {
+              "type": "Bool",
+              "value": 1
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 1
+            },
+            "PorteeMinimale": {
+              "type": "Float32",
+              "value": 13000.0
+            },
+            "NeedModelChange": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63692",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1087
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "04525edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "c2505edc527a0000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 1
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 12.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 0.25
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 143000.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 10000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.0010000000474974513
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 3
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_88mm_Flak"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 3
+            },
+            "PourcentageTirDirect": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "PourcentageTirDirectEnMouvement": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "FX_tir_sans_physic": {
+              "type": "Bool",
+              "value": 1
+            },
+            "TirIndirect": {
+              "type": "Bool",
+              "value": 1
+            },
+            "TempsEntreDeuxSalves": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "NbTirParSalves": {
+              "type": "Int32",
+              "value": 10
+            },
+            "NeedModelChange": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63700",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1045
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "08515edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "4a79714be9010000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 20.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 0.20000000298023224
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 78000.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 35000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.0010000000474974513
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "PourcentageTirDirect": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "PourcentageTirDirectEnMouvement": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 5
+            },
+            "AllowAmbushShot": {
+              "type": "Bool",
+              "value": 1
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_US_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 3
+            },
+            "FX_tir_sans_physic": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63708",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1083
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "01525edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "c1505edc527a0000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 7
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 200.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 2.0
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 78000.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 75000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.009999999776482582
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 4
+            },
+            "AllowAmbushShot": {
+              "type": "Bool",
+              "value": 1
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_US_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 1
+            },
+            "NeedModelChange": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63709",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1018
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "a81997dc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "4179714be9010000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 7
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 120.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 6.0
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 156000.0
+            },
+            "AngleDispersion": {
+              "type": "Float32",
+              "value": 0.07999999821186066
+            },
+            "RayonPinned": {
+              "type": "Float32",
+              "value": 130.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 440000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.0010000000474974513
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "PourcentageTirDirect": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "PourcentageTirDirectEnMouvement": {
+              "type": "Float32",
+              "value": 0.800000011920929
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 4
+            },
+            "AllowAmbushShot": {
+              "type": "Bool",
+              "value": 1
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_US_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "NeedModelChange": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TAmmunition",
+          "local_id": "inst_63710",
+          "set": {
+            "AmmunitionId": {
+              "type": "UInt32",
+              "value": 1101
+            },
+            "Name": {
+              "type": "LocHash",
+              "value": "44525edc52620000"
+            },
+            "TypeName": {
+              "type": "LocHash",
+              "value": "c2505edc527a0000"
+            },
+            "StressManager": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Avion_C47_Para"
+                  ],
+                  "steps": [
+                    [
+                      "AmmoDeath"
+                    ],
+                    [
+                      "StressManager"
+                    ]
+                  ]
+                },
+                "class": 148,
+                "class_name": "TFloatArmeArmureContainer"
+              }
+            },
+            "Arme": {
+              "type": "Int32",
+              "value": 1
+            },
+            "Puissance": {
+              "type": "Float32",
+              "value": 200.0
+            },
+            "TempsEntreDeuxTirs": {
+              "type": "Float32",
+              "value": 8.0
+            },
+            "PorteeMaximale": {
+              "type": "Float32",
+              "value": 156000.0
+            },
+            "FX_vitesse_de_depart": {
+              "type": "Float32",
+              "value": 8000.0
+            },
+            "FX_frottement": {
+              "type": "Float32",
+              "value": 0.0010000000474974513
+            },
+            "FX_tir_tendu": {
+              "type": "Bool",
+              "value": 1
+            },
+            "PourcentageTirDirect": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "PourcentageTirDirectEnMouvement": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "Level": {
+              "type": "Int32",
+              "value": 3
+            },
+            "Icon": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_88mm_Flak"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ],
+                    [
+                      "TurretDescriptorList",
+                      "[0]"
+                    ],
+                    [
+                      "MountedWeaponDescriptorList",
+                      "[1]"
+                    ],
+                    [
+                      "Ammunition"
+                    ],
+                    [
+                      "Icon"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "ProjectileType": {
+              "type": "Int32",
+              "value": 3
+            },
+            "TirIndirect": {
+              "type": "Bool",
+              "value": 1
+            },
+            "FX_tir_sans_physic": {
+              "type": "Bool",
+              "value": 1
+            },
+            "NeedModelChange": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Ju_52_Para"
+          },
+          "set": {
+            "UniteTransportee": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 51159,
+                "class": 301,
+                "class_name": "TAvionDescriptor"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Junkers_87"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Storch_GR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_ME109_GR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_ME262"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_HE_111"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TAvionDescriptor",
+          "match": {
+            "ClassNameForDebug": "Avion_Ar234"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_HeadquarterGR"
+          },
+          "set": {
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "a74c7b6aeb010000"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_TruckFactoryGR"
+          },
+          "set": {
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "f8ade6b7a9dba9a9"
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifGR"
+          },
+          "set": {
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "f96cc61a3bbb38ae"
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                80,
+                80,
+                80,
+                80,
+                80
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_VehiculeFactoryGR"
+          },
+          "set": {
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "fe4de7a809a5a69a"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_CaserneGR"
+          },
+          "set": {
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "e96dfaea6ede1100"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_CanonGR"
+          },
+          "set": {
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "f8695a2a3aabb19b"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_AeroportGR"
+          },
+          "set": {
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "6d6eaace4ad7ee9d"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_ExperimentalFactoryGR"
+          },
+          "set": {
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "7eeec62e6a42b97a"
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_Usine_Atomique_GER"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_UsineAutomoteurGER"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseMGNestGER"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_DefenseSiegfriedGER"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorBiped",
+          "match": {
+            "_ShortDatabaseName": "Gfx_Soldat_Allemand_Para_Bazooka"
+          },
+          "set": {
+            "Scale": {
+              "type": "Vector3",
+              "value": [
+                9.0,
+                9.0,
+                9.0
+              ]
+            },
+            "ScaleWithVisibilityRange_Coef": {
+              "type": "Float32",
+              "value": 9.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorBiped",
+          "match": {
+            "anchor": {
+              "root": [
+                "_ShortDatabaseName",
+                "GfxIconeSectionInfanterie_Para_GER"
+              ],
+              "steps": [
+                [
+                  "PawnDescriptor"
+                ],
+                [
+                  "DescriptorFigurine"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Scale": {
+              "type": "Vector3",
+              "value": [
+                81.0,
+                81.0,
+                81.0
+              ]
+            },
+            "ScaleWithVisibilityRange_Coef": {
+              "type": "Float32",
+              "value": 1.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorBiped",
+          "match": {
+            "_ShortDatabaseName": "Gfx_Soldat_Allemand_Lourd_Fusilier"
+          },
+          "set": {
+            "ScaleWithVisibilityRange_Coef": {
+              "type": "Float32",
+              "value": 1.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorBiped",
+          "match": {
+            "_ShortDatabaseName": "Gfx_Soldat_Allemand_Lourd_Bazooka"
+          },
+          "set": {
+            "Scale": {
+              "type": "Vector3",
+              "value": [
+                280.0,
+                280.0,
+                280.0
+              ]
+            },
+            "ScaleWithVisibilityRange_Coef": {
+              "type": "Float32",
+              "value": 1.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorBiped",
+          "match": {
+            "anchor": {
+              "root": [
+                "_ShortDatabaseName",
+                "GfxIconeSectionInfanterie_Heavy_GER"
+              ],
+              "steps": [
+                [
+                  "PawnDescriptor"
+                ],
+                [
+                  "DescriptorFigurine"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Scale": {
+              "type": "Vector3",
+              "value": [
+                280.0,
+                280.0,
+                280.0
+              ]
+            },
+            "ScaleWithVisibilityRange_Coef": {
+              "type": "Float32",
+              "value": 1.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorModele",
+          "match": {
+            "_ShortDatabaseName": "Gfx_Soldat_Allemand_Para"
+          },
+          "set": {
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "weapon_effet_tag1",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_Allemand_Leger_SOLO"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 245,
+                    "class_name": "TGfxDescriptorBoneOperatorDispatcher"
+                  }
+                ],
+                [
+                  "weapon_effet_tag2",
+                  {
+                    "local_id": "inst_63704",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ],
+                [
+                  "weapon_effet_tag3",
+                  {
+                    "local_id": "inst_63705",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorModele",
+          "match": {
+            "_ShortDatabaseName": "Gfx_Soldat_Allemand_Leger_SOLO"
+          },
+          "set": {
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "weapon_effet_tag1",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_Allemand_Leger_SOLO"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 245,
+                    "class_name": "TGfxDescriptorBoneOperatorDispatcher"
+                  }
+                ],
+                [
+                  "weapon_effet_tag2",
+                  {
+                    "local_id": "inst_63704",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ],
+                [
+                  "weapon_effet_tag3",
+                  {
+                    "local_id": "inst_63705",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorModele",
+          "match": {
+            "_ShortDatabaseName": "Gfx_Soldat_Allemand_Lourd"
+          },
+          "set": {
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "weapon_effet_tag1",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_Allemand_Lourd"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 245,
+                    "class_name": "TGfxDescriptorBoneOperatorDispatcher"
+                  }
+                ],
+                [
+                  "weapon_effet_tag2",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_Allemand_Lourd"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v1>"
+                        ]
+                      ]
+                    },
+                    "class": 245,
+                    "class_name": "TGfxDescriptorBoneOperatorDispatcher"
+                  }
+                ],
+                [
+                  "weapon_effet_tag3",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Pionnier_Genie"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 245,
+                    "class_name": "TGfxDescriptorBoneOperatorDispatcher"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorModele",
+          "match": {
+            "_ShortDatabaseName": "Gfx_Soldat_Allemand_Antichar"
+          },
+          "set": {
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "weapon_effet_tag1",
+                  {
+                    "local_id": "inst_63693",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ],
+                [
+                  "weapon_effet_tag2",
+                  {
+                    "local_id": "inst_63694",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ],
+                [
+                  "weapon_effet_tag3",
+                  {
+                    "local_id": "inst_63695",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "match": {
+            "anchor": {
+              "root": [
+                "_ShortDatabaseName",
+                "Gfx_Soldat_Allemand_Leger_SOLO"
+              ],
+              "steps": [
+                [
+                  "SousElements",
+                  "<v0>"
+                ],
+                [
+                  "SousElements",
+                  "<v0>"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "BinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_ITA_Para"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "BinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63693",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Tourelle_01"
+            },
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "1",
+                  {
+                    "local_id": "inst_63696",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63694",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Tourelle_02"
+            },
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "1",
+                  {
+                    "local_id": "inst_63697",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63695",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Tourelle_02"
+            },
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "1",
+                  {
+                    "local_id": "inst_63698",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63696",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Fx_tourelle1_tir_01"
+            },
+            "BinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_FR_Para"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "BinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "FigurineBinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Amiot_143"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v11>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "FigurineBinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "MobileGeneratedAtStartForFx": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63697",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Fx_tourelle2_tir_01"
+            },
+            "BinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_US_Para"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v1>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "BinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "FigurineBinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Amiot_143"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v11>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "FigurineBinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "MobileGeneratedAtStartForFx": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63698",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Fx_tourelle2_tir_01"
+            },
+            "BinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_US_Leger"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v2>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "BinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "FigurineBinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Amiot_143"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v11>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "FigurineBinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "MobileGeneratedAtStartForFx": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63704",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Tourelle_02"
+            },
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "1",
+                  {
+                    "local_id": "inst_63706",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63705",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Tourelle_02"
+            },
+            "SousElements": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "1",
+                  {
+                    "local_id": "inst_63707",
+                    "class": 243,
+                    "class_name": "TGfxDescriptorModeleSousMobile"
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63706",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Fx_tourelle2_tir_01"
+            },
+            "BinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_US_Para"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v1>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "BinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "FigurineBinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Amiot_143"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v11>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "FigurineBinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "MobileGeneratedAtStartForFx": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TGfxDescriptorModeleSousMobile",
+          "local_id": "inst_63707",
+          "set": {
+            "SousMobileName": {
+              "type": "StringRef",
+              "value": "Fx_tourelle2_tir_01"
+            },
+            "BinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Soldat_US_Para"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v2>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "BinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "FigurineBinderEffets": {
+              "type": "Map<StringRef,ObjRef>",
+              "value": [
+                [
+                  "tir",
+                  {
+                    "anchor": {
+                      "root": [
+                        "_ShortDatabaseName",
+                        "Gfx_Amiot_143"
+                      ],
+                      "steps": [
+                        [
+                          "SousElements",
+                          "<v11>"
+                        ],
+                        [
+                          "SousElements",
+                          "<v0>"
+                        ],
+                        [
+                          "FigurineBinderEffets",
+                          "<v0>"
+                        ]
+                      ]
+                    },
+                    "class": 50,
+                    "class_name": "TActionCall"
+                  }
+                ]
+              ]
+            },
+            "MobileGeneratedAtStartForFx": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TGfxDescriptorVisibilityBoneOperator",
+          "match": {
+            "anchor": {
+              "root": [
+                "_ShortDatabaseName",
+                "GfxIconeSectionInfanterie_Light_GER"
+              ],
+              "steps": [
+                [
+                  "PawnDescriptor"
+                ],
+                [
+                  "DescriptorFigurine"
+                ],
+                [
+                  "SousElements",
+                  "<v1>"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "VisibleByDefault": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44819"
+          },
+          "set": {
+            "CashReserveTempsActivation": {
+              "type": "Float32",
+              "value": 180.0
+            },
+            "AttaqueTempsActivation": {
+              "type": "Float32",
+              "value": 12.0
+            },
+            "DefenseDistanceMenace": {
+              "type": "Float32",
+              "value": 26000000.0
+            },
+            "DefenseDistanceUrgent": {
+              "type": "Float32",
+              "value": 78000.0
+            },
+            "DefenseMaxUnitOnPosition": {
+              "type": "Float32",
+              "value": 800.0
+            },
+            "DefenseNbMissionMax": {
+              "type": "Int32",
+              "value": 0
+            },
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbBatimentAdministratifEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 10.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "MissionFacteurLancementAttaque": {
+              "type": "Float32",
+              "value": 1.2000000476837158
+            },
+            "MissionFacteurEnoughToDestroy": {
+              "type": "Float32",
+              "value": 4.0
+            },
+            "RepresailleFacteurUniteCombattante": {
+              "type": "Float32",
+              "value": 2.0
+            },
+            "RepresailleFacteurUniteNonCombattante": {
+              "type": "Float32",
+              "value": 4.0
+            },
+            "TimeOutRepresailles": {
+              "type": "Float32",
+              "value": 390.0
+            },
+            "NbProdIdleInfanterie": {
+              "type": "Int32",
+              "value": 50
+            },
+            "PourcentChanceUtiliserCarteManipAuDebut": {
+              "type": "Int32",
+              "value": 100
+            },
+            "PercentMoneyToReserveForBatimentAdmin": {
+              "type": "Int32",
+              "value": 2
+            },
+            "TempsActivationBatimentCamoufle": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "PercentMoneyToUseForIdle": {
+              "type": "Int32",
+              "value": 5
+            },
+            "NbCarteDansLaReservePourLaDifficulte": {
+              "type": "Int32",
+              "value": 2
+            },
+            "DeviseBonusIA": {
+              "type": "Int32",
+              "value": 200
+            },
+            "IncomeBonusIA": {
+              "type": "Int32",
+              "value": 1
+            },
+            "BonusUnitesAvions": {
+              "type": "Float32",
+              "value": 5.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44819"
+          },
+          "props": [
+            "NbUnitsDangerousDepot",
+            "NbProdIdleTank"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Para_Soldat_Allemand_Para"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Para"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "WeaponDescriptor": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_Allemand_Leger_SOLO"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ]
+                  ]
+                },
+                "class": 155,
+                "class_name": "TWeaponDescriptor"
+              }
+            },
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "ClassNameForDebug": {
+              "type": "StringRef",
+              "value": "Zombie Ghost"
+            },
+            "GfxDescriptor": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 50423,
+                "class": 262,
+                "class_name": "TGfxDescriptorLockOn"
+              }
+            },
+            "GfxDescriptorIcone": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 52665,
+                "class": 277,
+                "class_name": "TGfxDescriptorCircle"
+              }
+            },
+            "GfxDescriptorCadavre": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_Allemand_Lourd"
+                  ],
+                  "steps": [
+                    [
+                      "GfxDescriptorCadavre"
+                    ]
+                  ]
+                },
+                "class": 240,
+                "class_name": "TGfxDescriptorAvionPack"
+              }
+            },
+            "EfficaceHintToken": {
+              "type": "LocHash",
+              "value": "ebec960f08000000"
+            },
+            "LongDescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "6a6ec6349de3b91b"
+            },
+            "DescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "ececee6eacb6793e"
+            },
+            "TypeUnitHintToken": {
+              "type": "LocHash",
+              "value": "cfc45c1909000000"
+            },
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "394eb71100000000"
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                5,
+                5,
+                5,
+                5,
+                5
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 2
+            },
+            "UpgradePrice": {
+              "type": "Int32",
+              "value": 30
+            },
+            "UpgradeTime": {
+              "type": "Int32",
+              "value": 30
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2860.0
+            },
+            "GfxDescriptorIconeCadavre": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 52668,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            },
+            "GfxDescriptorFusilier": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 52728,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            },
+            "GfxDescriptorBazooka": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 52670,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Recon_SOLO"
+          },
+          "set": {
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 104000.0
+            },
+            "PorteeVisionVolant": {
+              "type": "Float32",
+              "value": 208000.0
+            },
+            "ArmorDescriptor": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_TransportSoldier"
+                  ],
+                  "steps": [
+                    [
+                      "ArmorDescriptor"
+                    ]
+                  ]
+                },
+                "class": 150,
+                "class_name": "TArmorDescriptor"
+              }
+            },
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 500.0
+            },
+            "ClassNameForDebug": {
+              "type": "StringRef",
+              "value": "Zombie Spitter"
+            },
+            "GfxDescriptor": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 50447,
+                "class": 262,
+                "class_name": "TGfxDescriptorLockOn"
+              }
+            },
+            "GfxDescriptorIcone": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 52665,
+                "class": 277,
+                "class_name": "TGfxDescriptorCircle"
+              }
+            },
+            "EfficaceHintToken": {
+              "type": "LocHash",
+              "value": "e65e3e60d9bb1700"
+            },
+            "LongDescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "fe6de2b7baa726ae"
+            },
+            "DescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "5dd7755dd7751d36"
+            },
+            "TypeUnitHintToken": {
+              "type": "LocHash",
+              "value": "cfc45c1909000000"
+            },
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "b79ae76edd010000"
+            },
+            "Category": {
+              "type": "Int32",
+              "value": 2
+            },
+            "CategorieIA": {
+              "type": "Int32",
+              "value": 1
+            },
+            "Nationalite": {
+              "type": "Int32",
+              "value": 1
+            },
+            "Factory": {
+              "type": "Int32",
+              "value": 13
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 12
+            },
+            "TextureForInterface": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_M1_57mm_L_50"
+                  ],
+                  "steps": [
+                    [
+                      "TextureForInterface"
+                    ]
+                  ]
+                },
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 3640.0
+            },
+            "GfxDescriptorIconeCadavre": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 52668,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            },
+            "GfxDescriptorFusilier": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 58345,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            },
+            "UpgradePrice": {
+              "type": "Int32",
+              "value": 30
+            },
+            "UpgradeTime": {
+              "type": "Int32",
+              "value": 30
+            },
+            "GfxDescriptorBazooka": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 58346,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_ITA_Recon_SOLO"
+          },
+          "props": [
+            "TransportPourMorphe"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Leger"
+          },
+          "set": {
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 400.0
+            },
+            "ClassNameForDebug": {
+              "type": "StringRef",
+              "value": "Zombie Undead"
+            },
+            "PositionInMenu": {
+              "type": "Int32",
+              "value": 10
+            },
+            "LongDescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "be7c9baa7bcaf47f"
+            },
+            "DescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "5dd7755dd7751d36"
+            },
+            "TypeUnitHintToken": {
+              "type": "LocHash",
+              "value": "cfc45c1909000000"
+            },
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "cef238d807000000"
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 0
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2600.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Leger"
+          },
+          "props": [
+            "TransportPourMorphe"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Leger_SOLO"
+          },
+          "set": {
+            "Radius": {
+              "type": "Float32",
+              "value": 520.0
+            },
+            "Scale": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "SpeedBonusOnRoad": {
+              "type": "Float32",
+              "value": 0.800000011920929
+            },
+            "MaxAcceleration": {
+              "type": "Float32",
+              "value": 3900.0
+            },
+            "MaxDeceleration": {
+              "type": "Float32",
+              "value": 7800.0
+            },
+            "TempsDemiTour": {
+              "type": "Float32",
+              "value": 6.0
+            },
+            "WeaponDescriptor": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Soldat_Allemand_Para"
+                  ],
+                  "steps": [
+                    [
+                      "WeaponDescriptor"
+                    ]
+                  ]
+                },
+                "class": 155,
+                "class_name": "TWeaponDescriptor"
+              }
+            },
+            "ArmorDescriptor": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_Jagdpanther"
+                  ],
+                  "steps": [
+                    [
+                      "ArmorDescriptor"
+                    ]
+                  ]
+                },
+                "class": 150,
+                "class_name": "TArmorDescriptor"
+              }
+            },
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 600.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 600.0
+            },
+            "ClassNameForDebug": {
+              "type": "StringRef",
+              "value": "Zombie Tank"
+            },
+            "GfxDescriptor": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 50323,
+                "class": 262,
+                "class_name": "TGfxDescriptorLockOn"
+              }
+            },
+            "GfxDescriptorIcone": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 51176,
+                "class": 277,
+                "class_name": "TGfxDescriptorCircle"
+              }
+            },
+            "GfxDescriptorCadavre": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 51191,
+                "class": 240,
+                "class_name": "TGfxDescriptorAvionPack"
+              }
+            },
+            "PositionInMenu": {
+              "type": "Int32",
+              "value": 30
+            },
+            "EfficaceHintToken": {
+              "type": "LocHash",
+              "value": "e9acd3375b3a0000"
+            },
+            "LongDescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "2a6eaa6deef2f06c"
+            },
+            "DescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "5dd7755dd7751d36"
+            },
+            "TypeUnitHintToken": {
+              "type": "LocHash",
+              "value": "cfc45c1909000000"
+            },
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "15b6780000000000"
+            },
+            "Category": {
+              "type": "Int32",
+              "value": 2
+            },
+            "AcknowUnitType": {
+              "type": "Int32",
+              "value": 13
+            },
+            "Factory": {
+              "type": "Int32",
+              "value": 10
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 18
+            },
+            "TextureForInterface": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 45123,
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 2340.0
+            },
+            "GfxDescriptorIconeCadavre": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 51179,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            },
+            "GfxDescriptorFusilier": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 51155,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            },
+            "GfxDescriptorBazooka": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 51156,
+                "class": 261,
+                "class_name": "TGfxDescriptorTexte3D"
+              }
+            },
+            "UpgradePrice": {
+              "type": "Int32",
+              "value": 50
+            },
+            "UpgradeTime": {
+              "type": "Int32",
+              "value": 50
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Leger_SOLO"
+          },
+          "props": [
+            "TransportPourMorphe"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Lourd"
+          },
+          "set": {
+            "Radius": {
+              "type": "Float32",
+              "value": 520.0
+            },
+            "Scale": {
+              "type": "Float32",
+              "value": 1.0
+            },
+            "SpeedBonusOnRoad": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "MaxAcceleration": {
+              "type": "Float32",
+              "value": 3900.0
+            },
+            "MaxDeceleration": {
+              "type": "Float32",
+              "value": 7800.0
+            },
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 3120.0
+            },
+            "TempsDemiTour": {
+              "type": "Float32",
+              "value": 12.0
+            },
+            "ArmorDescriptor": {
+              "type": "ObjRef",
+              "value": {
+                "anchor": {
+                  "root": [
+                    "ClassNameForDebug",
+                    "Unit_SturmTiger"
+                  ],
+                  "steps": [
+                    [
+                      "ArmorDescriptor"
+                    ]
+                  ]
+                },
+                "class": 150,
+                "class_name": "TArmorDescriptor"
+              }
+            },
+            "SeuilMort": {
+              "type": "Float32",
+              "value": 4500.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 4500.0
+            },
+            "ClassNameForDebug": {
+              "type": "StringRef",
+              "value": "Zombie Colossal"
+            },
+            "PositionInMenu": {
+              "type": "Int32",
+              "value": 40
+            },
+            "EfficaceHintToken": {
+              "type": "LocHash",
+              "value": "78aeb2b799c7b199"
+            },
+            "LongDescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "eaeee6e67cab796c"
+            },
+            "DescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "b8daa2267dd7b539"
+            },
+            "TypeUnitHintToken": {
+              "type": "LocHash",
+              "value": "cfc45c1909000000"
+            },
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "d6d275999535cfc4"
+            },
+            "Category": {
+              "type": "Int32",
+              "value": 2
+            },
+            "AcknowUnitType": {
+              "type": "Int32",
+              "value": 25
+            },
+            "TypeForAcknow": {
+              "type": "Int32",
+              "value": 107
+            },
+            "Factory": {
+              "type": "Int32",
+              "value": 12
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                120,
+                120,
+                120,
+                120,
+                120
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 60
+            },
+            "UpgradePrice": {
+              "type": "Int32",
+              "value": 75
+            },
+            "UpgradeTime": {
+              "type": "Int32",
+              "value": 120
+            },
+            "TextureForInterface": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 45131,
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 1690.0
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Lourd"
+          },
+          "props": [
+            "UpgradeRequire",
+            "IsUpgrade",
+            "TransportPourMorphe"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Antichar"
+          },
+          "set": {
+            "SpeedBonusOnRoad": {
+              "type": "Float32",
+              "value": 0.8333333134651184
+            },
+            "MaxAcceleration": {
+              "type": "Float32",
+              "value": 4030.0
+            },
+            "VitesseLineaire": {
+              "type": "Float32",
+              "value": 4030.0
+            },
+            "TempsDemiTour": {
+              "type": "Float32",
+              "value": 0.5
+            },
+            "DetectionBase": {
+              "type": "Float32",
+              "value": 234000.0
+            },
+            "SeuilPinned": {
+              "type": "Float32",
+              "value": 400.0
+            },
+            "ClassNameForDebug": {
+              "type": "StringRef",
+              "value": "Zombie Runner"
+            },
+            "PositionInMenu": {
+              "type": "Int32",
+              "value": 20
+            },
+            "EfficaceHintToken": {
+              "type": "LocHash",
+              "value": "ebec960f08000000"
+            },
+            "LongDescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "b5aabee66cb6f9ad"
+            },
+            "DescriptionUnitHintToken": {
+              "type": "LocHash",
+              "value": "5dd7755dd7751d36"
+            },
+            "TypeUnitHintToken": {
+              "type": "LocHash",
+              "value": "cfc45c1909000000"
+            },
+            "NameInMenuToken": {
+              "type": "LocHash",
+              "value": "dc83611f07000000"
+            },
+            "Category": {
+              "type": "Int32",
+              "value": 1
+            },
+            "CategorieIA": {
+              "type": "Int32",
+              "value": 3
+            },
+            "AcknowUnitType": {
+              "type": "Int32",
+              "value": 4
+            },
+            "TypeForAcknow": {
+              "type": "Int32",
+              "value": 125
+            },
+            "Factory": {
+              "type": "Int32",
+              "value": 8
+            },
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                10,
+                10,
+                10,
+                10,
+                10
+              ]
+            },
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                1,
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "ProductionTime": {
+              "type": "Int32",
+              "value": 5
+            },
+            "UpgradePrice": {
+              "type": "Int32",
+              "value": 25
+            },
+            "VitesseCombat": {
+              "type": "Float32",
+              "value": 5200.0
+            },
+            "TextureForInterface": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 45115,
+                "class": 13,
+                "class_name": "TUIResourceTexture"
+              }
+            }
+          }
+        },
+        {
+          "action": "delete_props",
+          "table": "TInfanterieDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Soldat_Allemand_Antichar"
+          },
+          "props": [
+            "TransportPourMorphe"
+          ]
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Para"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63700",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Para"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63708",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Para"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[1]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63689",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_ITA_Recon_SOLO"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63686",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Leger"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63686",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Leger"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63688",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Leger"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[1]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63687",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Leger_SOLO"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63686",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Lourd"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63692",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Lourd"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63691",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            },
+            "EffectTag": {
+              "type": "StringRef",
+              "value": "weapon_effet_tag3"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Lourd"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[1]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63690",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            },
+            "EffectTag": {
+              "type": "StringRef",
+              "value": "weapon_effet_tag2"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Antichar"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63686",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TMountedWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Antichar"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ],
+                [
+                  "MountedWeaponDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63688",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TMountedWeaponDescriptor",
+          "local_id": "inst_63699",
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63687",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            },
+            "EffectTag": {
+              "type": "StringRef",
+              "value": "weapon_effet_tag3"
+            },
+            "SalveNumber": {
+              "type": "Int32",
+              "value": -1
+            },
+            "TirEnMouvement": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TMountedWeaponDescriptor",
+          "local_id": "inst_63701",
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63688",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            },
+            "EffectTag": {
+              "type": "StringRef",
+              "value": "weapon_effet_tag2"
+            },
+            "SalveNumber": {
+              "type": "Int32",
+              "value": -1
+            },
+            "TirEnMouvement": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TMountedWeaponDescriptor",
+          "local_id": "inst_63702",
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63687",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            },
+            "EffectTag": {
+              "type": "StringRef",
+              "value": "weapon_effet_tag3"
+            },
+            "SalveNumber": {
+              "type": "Int32",
+              "value": -1
+            },
+            "TirEnMouvement": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TMountedWeaponDescriptor",
+          "local_id": "inst_63712",
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63709",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            },
+            "EffectTag": {
+              "type": "StringRef",
+              "value": "weapon_effet_tag2"
+            },
+            "SalveNumber": {
+              "type": "Int32",
+              "value": -1
+            },
+            "TirEnMouvement": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TMountedWeaponDescriptor",
+          "local_id": "inst_63713",
+          "set": {
+            "Ammunition": {
+              "type": "ObjRef",
+              "value": {
+                "local_id": "inst_63710",
+                "class": 149,
+                "class_name": "TAmmunition"
+              }
+            },
+            "EffectTag": {
+              "type": "StringRef",
+              "value": "weapon_effet_tag3"
+            },
+            "SalveNumber": {
+              "type": "Int32",
+              "value": -1
+            },
+            "TirEnMouvement": {
+              "type": "Bool",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TPawnDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "_ShortDatabaseName",
+                "GfxIconeSectionInfanterie_Para_GER"
+              ],
+              "steps": [
+                [
+                  "PawnDescriptor"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Radius": {
+              "type": "Float32",
+              "value": 600.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TPawnDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "_ShortDatabaseName",
+                "GfxIconeSectionInfanterie_Heavy_GER"
+              ],
+              "steps": [
+                [
+                  "PawnDescriptor"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "Radius": {
+              "type": "Float32",
+              "value": 900.0
+            },
+            "VisibilityRangeSocle": {
+              "type": "TransRef",
+              "value": {
+                "trans": "$/GFX/Visibility/AllRanges/Zoom12"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TResourceTexture",
+          "match": {
+            "_index": "44818"
+          },
+          "set": {
+            "FileName": {
+              "type": "PathRef",
+              "value": "DataDir:\\WW2\\Res2D\\TexAnimationUnitIcone\\CommonMainMenu\\Bluff\\Propagande_Icon.png"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TTurretInfanterieDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Lourd"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[0]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "MountedWeaponDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Lourd"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[1]"
+                      ],
+                      [
+                        "MountedWeaponDescriptorList",
+                        "[1]"
+                      ]
+                    ]
+                  },
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                },
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Lourd"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[1]"
+                      ],
+                      [
+                        "MountedWeaponDescriptorList",
+                        "[0]"
+                      ]
+                    ]
+                  },
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TTurretInfanterieDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Lourd"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "MountedWeaponDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Lourd"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[0]"
+                      ],
+                      [
+                        "MountedWeaponDescriptorList",
+                        "[0]"
+                      ]
+                    ]
+                  },
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TTurretInfanterieDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Antichar"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ],
+                [
+                  "TurretDescriptorList",
+                  "[1]"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "MountedWeaponDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Antichar"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[1]"
+                      ],
+                      [
+                        "MountedWeaponDescriptorList",
+                        "[0]"
+                      ]
+                    ]
+                  },
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                },
+                {
+                  "local_id": "inst_63699",
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TTurretInfanterieDescriptor",
+          "local_id": "inst_63703",
+          "set": {
+            "NbFX": {
+              "type": "Int32",
+              "value": 1
+            },
+            "MountedWeaponDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "local_id": "inst_63701",
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                },
+                {
+                  "local_id": "inst_63702",
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "create",
+          "table": "TTurretInfanterieDescriptor",
+          "local_id": "inst_63711",
+          "set": {
+            "NbFX": {
+              "type": "Int32",
+              "value": 1
+            },
+            "MountedWeaponDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "local_id": "inst_63712",
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                },
+                {
+                  "local_id": "inst_63713",
+                  "class": 157,
+                  "class_name": "TMountedWeaponDescriptor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUIResourceTexture",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_M1_57mm_L_50"
+              ],
+              "steps": [
+                [
+                  "TextureForInterface"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "FileName": {
+              "type": "PathRef",
+              "value": "DataDir:\\WW2\\Res2D\\Interface\\InterfaceInGame\\skull.png"
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Kubelwagen"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SdkFz_222"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_GER_37mm_Pak36"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_PaK_40_75mm_L_48"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Marder_II"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Jagdpanther"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Stug_III_B"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SturmTiger"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_75mm_le_FK_38_L_34"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_150mm_sFH_18_L_30"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_20mm_FlaK_30_L_112"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_88mm_FlaK_36L_56"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Maus"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Maus_atomique"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SdKfz_234_2_Puma"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Canon_atomique_GER"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Puma_atomique"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_210mm_Morser"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Morser_atomique"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_PZIV_Wirbelwind"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Wirbelwind_atomique"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sdkfz251"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sdkfz251_atomique"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_III_J"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_IV_G"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_V_G_Panther"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_VI_Tigre"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_VI_B_Tigre_II"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteDescriptorConstantes",
+          "match": {
+            "_index": "63551"
+          },
+          "set": {
+            "UnitSoldatAllemandLeger": {
+              "type": "ObjRef",
+              "value": {
+                "inst": 52664,
+                "class": 299,
+                "class_name": "TInfanterieDescriptor"
+              }
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Para"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "TurretDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Para"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[1]"
+                      ]
+                    ]
+                  },
+                  "class": 156,
+                  "class_name": "TTurretInfanterieDescriptor"
+                },
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Para"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[0]"
+                      ]
+                    ]
+                  },
+                  "class": 156,
+                  "class_name": "TTurretInfanterieDescriptor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_ITA_Recon_SOLO"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "TurretDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_ITA_Recon_SOLO"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[0]"
+                      ]
+                    ]
+                  },
+                  "class": 156,
+                  "class_name": "TTurretInfanterieDescriptor"
+                },
+                {
+                  "local_id": "inst_63711",
+                  "class": 156,
+                  "class_name": "TTurretInfanterieDescriptor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Leger_SOLO"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "TurretDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Leger_SOLO"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[0]"
+                      ]
+                    ]
+                  },
+                  "class": 156,
+                  "class_name": "TTurretInfanterieDescriptor"
+                },
+                {
+                  "local_id": "inst_63703",
+                  "class": 156,
+                  "class_name": "TTurretInfanterieDescriptor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TWeaponDescriptor",
+          "match": {
+            "anchor": {
+              "root": [
+                "ClassNameForDebug",
+                "Unit_Soldat_Allemand_Lourd"
+              ],
+              "steps": [
+                [
+                  "WeaponDescriptor"
+                ]
+              ]
+            }
+          },
+          "set": {
+            "TurretDescriptorList": {
+              "type": "List<ObjRef>",
+              "value": [
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Lourd"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[1]"
+                      ]
+                    ]
+                  },
+                  "class": 156,
+                  "class_name": "TTurretInfanterieDescriptor"
+                },
+                {
+                  "anchor": {
+                    "root": [
+                      "ClassNameForDebug",
+                      "Unit_Soldat_Allemand_Lourd"
+                    ],
+                    "steps": [
+                      [
+                        "WeaponDescriptor"
+                      ],
+                      [
+                        "TurretDescriptorList",
+                        "[0]"
+                      ]
+                    ]
+                  },
+                  "class": 156,
+                  "class_name": "TTurretInfanterieDescriptor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/scenery/commonset/decors.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TSceneryDescriptorModel3DFromFile",
+          "match": {
+            "_index": "57"
+          },
+          "set": {
+            "ModelASE": {
+              "type": "PathRef",
+              "value": "DataDir:\\WW2\\Res3D\\Decors\\Vegetation_EU\\Herbe_01lod0.ASE2NdfBin"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "game_version": "24087620",
+  "author": "Prolution",
+  "description": "Zombie mode has been rebuilt from scratch. This includes major balance and game play improvements. 2 new zombies, bringing the total to 6. Zombies are also now stronger. See the Change log and readme for more information on changes and how to play (its even easier)!\n\nIn order to play RUSE ZOMBIE MODE by Prolution:\n---\nMany options to play!\na). Play as or against Germany. Germany AI profile should be set to \"Zombie\". *V.2 Update: Germany now uses zombies in every time period.\nb). Multiplayer friendly, just make sure everyone has THIS mod installed.",
+  "loc_patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_Win.dat",
+      "dic": "genlocalisation/ww2/localisation/translations/us/baseunite.dic",
+      "entries": [
+        {
+          "key": "6aee320000000000",
+          "value": "Bite",
+          "add": true
+        },
+        {
+          "key": "15b6780000000000",
+          "value": "TANK",
+          "add": true
+        },
+        {
+          "key": "394eb71100000000",
+          "value": "Ghost",
+          "add": true
+        },
+        {
+          "key": "f26df21d00000000",
+          "value": "Swarm",
+          "add": true
+        },
+        {
+          "key": "3c7db71e00000000",
+          "value": "Throw",
+          "add": true
+        },
+        {
+          "key": "2d3aeba605000000",
+          "value": "Launch",
+          "add": true
+        },
+        {
+          "key": "dc83611f07000000",
+          "value": "Runner",
+          "add": true
+        },
+        {
+          "key": "cef238d807000000",
+          "value": "Undead",
+          "add": true
+        },
+        {
+          "key": "cfc45c1909000000",
+          "value": "ZOMBIE",
+          "add": true
+        },
+        {
+          "key": "aa7bca3409000000",
+          "value": "Zombie",
+          "add": true
+        },
+        {
+          "key": "b79ae76edd010000",
+          "value": "Spitter",
+          "add": true
+        },
+        {
+          "key": "a74c7b6aeb010000",
+          "value": "The Tomb",
+          "add": true
+        },
+        {
+          "key": "f96dd64bed720000",
+          "value": "Rip Apart",
+          "add": true
+        },
+        {
+          "key": "e96dfaea6ede1100",
+          "value": "Graveyard",
+          "add": true
+        },
+        {
+          "key": "5dd7755dd7751d36",
+          "value": "Its only drive is to consume brainssssssssss",
+          "add": true
+        },
+        {
+          "key": "b8daa2267dd7b539",
+          "value": "This undead nightmare annihilates everything in its path",
+          "add": true
+        },
+        {
+          "key": "ececee6eacb6793e",
+          "value": "It will haunt the living",
+          "add": true
+        },
+        {
+          "key": "335d9b6aa8baa74c",
+          "value": "Zombie Weapon",
+          "add": true
+        },
+        {
+          "key": "7eeec62e6a42b97a",
+          "value": "Secret Facility",
+          "add": true
+        },
+        {
+          "key": "0000000000000080",
+          "value": " enaitrsodglAuycEmh.RfIMTwSCOvpNLPbHkU-DGB,FK1YV'50724Z38Wjq9xJ6zQ&;()$_ X:!ÄÜ/ŪŌ"
+        },
+        {
+          "key": "1d362d1cf35c5f87",
+          "value": "MUST CONSUME BRAINS",
+          "add": true
+        },
+        {
+          "key": "78aeb2b799c7b199",
+          "value": "Deadly against all targets",
+          "add": true
+        },
+        {
+          "key": "fe4de7a809a5a69a",
+          "value": "Undead Factory",
+          "add": true
+        },
+        {
+          "key": "33ede6e6eccab79a",
+          "value": "Extermination",
+          "add": true
+        },
+        {
+          "key": "f8695a2a3aabb19b",
+          "value": "Pestilence Labs",
+          "add": true
+        },
+        {
+          "key": "6d6eaace4ad7ee9d",
+          "value": "Airstrip of Death",
+          "add": true
+        },
+        {
+          "key": "f8ade6b7a9dba9a9",
+          "value": "Second Life Headquarters",
+          "add": true
+        },
+        {
+          "key": "f96cc61a3bbb38ae",
+          "value": "Brain Processing Plant",
+          "add": true
+        },
+        {
+          "key": "d6d275999535cfc4",
+          "value": "ZOMBIE COLOSSAL",
+          "add": true
+        }
+      ]
+    },
+    {
+      "dat": "Data/PC/190852/ZZ_Win.dat",
+      "dic": "genlocalisation/ww2/localisation/translations/us/long_description_unite.dic",
+      "entries": [
+        {
+          "key": "6a6ec6349de3b91b",
+          "value": "Unlike the lumbering hordes of reanimated corpses that walk the Earth, the Ghost is a spectral entity, bound to the mortal realm by some malevolent force. It drifts silently through the shadows and strikes from the ethereal plane, making it almost impossible to detect until it's too late. ",
+          "add": true
+        },
+        {
+          "key": "eaeee6e67cab796c",
+          "value": "~TOP SECRET REPORT~ Scattered sightings throughout occupied Europe warn of a new threat. Hordes of the undead engorged into giant lumbering undead colossals. Neither planes nor the strongest prototype vehicles are safe from them, not even at extreme ranges. General, consider a nuclear alternative. ",
+          "add": true
+        },
+        {
+          "key": "2a6eaa6deef2f06c",
+          "value": "This zombie brute has enhanced power and dexterity. It can destroy a medium tank with ease, but is vulnerable to air-attack.",
+          "add": true
+        },
+        {
+          "key": "be7c9baa7bcaf47f",
+          "value": "Late in the war, Nazi scientists discovered the power to raise the dead. Hoping to use this super weapon to win the ultimate victory; instead, they created something far more terrible. Now, the undead walk the Earth and must either be put down or else all will join the ranks of their zombie army.",
+          "add": true
+        },
+        {
+          "key": "0000000000000080",
+          "value": " etainroshldmcugfpywb,v.k'-TAIS10M25q743xzB()FPGLWC98H E6RUD\"Vj«»K/:JON;…!ZQYöä~%°ü&\néôū"
+        },
+        {
+          "key": "b5aabee66cb6f9ad",
+          "value": "A specially designed zombie with attuned reconaissance senses and speed abilities. They can smell you before you see them and run faster than a jeep. Destroying them is a priority, else they will surround and zombify your base.",
+          "add": true
+        },
+        {
+          "key": "fe6de2b7baa726ae",
+          "value": "The Spitter hurls toxic bile at its prey with eerie accuracy, corroding everything in its path. This vile projectile can melt through metal, making the Spitter a dangerous adversary.",
+          "add": true
+        }
+      ]
+    }
+  ]
+}

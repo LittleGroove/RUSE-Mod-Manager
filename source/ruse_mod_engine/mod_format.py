@@ -138,6 +138,7 @@ Notes
 
 import base64
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -347,7 +348,10 @@ def _parse_change(raw: dict, idx: int) -> ModChange:
         raise ModFormatError(f"{ctx}: 'delete_props' action requires a non-empty 'props' list")
     local_id = raw.get("local_id") or None
     is_top_object = bool(raw.get("top_object", False))
-    match_str = {k: str(v) for k, v in match.items()}
+    # Property matches are string values ({prop: "val"}, {"_index": "N"}); but a durable ANCHOR match
+    # ({"anchor": {root, steps}}) is a nested STRUCTURE — preserve dict/list values verbatim, only
+    # stringify scalars, so resolve_anchor gets a dict, not its repr().
+    match_str = {k: (v if isinstance(v, (dict, list)) else str(v)) for k, v in match.items()}
     return ModChange(action=action, table=table, match=match_str,
                      set_props=set_props, del_props=del_props, local_id=local_id,
                      is_top_object=is_top_object)
@@ -364,17 +368,23 @@ def _parse_patch_group(raw: dict, idx: int) -> ModPatchGroup:
     create_if_missing = bool(raw.get("create_if_missing", False))
     index_map_raw = raw.get("index_map", {})
     index_map: Dict[str, Dict[str, Any]] = {}
-    for ver, mapping in index_map_raw.items():
-        ver_map: Dict[str, Any] = {}
-        for k, v in mapping.items():
-            if isinstance(v, dict):
-                ver_map[str(k)] = {str(ck): int(cv) for ck, cv in v.items()}
-            elif isinstance(v, list):
-                # e.g. _instance_segments: [{"from": 0, "to": 46454, "offset": 0}, ...]
-                ver_map[str(k)] = v
-            else:
-                ver_map[str(k)] = int(v)
-        index_map[ver] = ver_map
+    # A hostile/corrupt rmod may give a non-dict here, or non-integer index values — int() would raise
+    # ValueError/TypeError and .items() AttributeError, neither of which is a ModFormatError.  Normalize to
+    # ModFormatError so the loader reports a clean "bad rmod" instead of an opaque crash.
+    try:
+        for ver, mapping in index_map_raw.items():
+            ver_map: Dict[str, Any] = {}
+            for k, v in mapping.items():
+                if isinstance(v, dict):
+                    ver_map[str(k)] = {str(ck): int(cv) for ck, cv in v.items()}
+                elif isinstance(v, list):
+                    # e.g. _instance_segments: [{"from": 0, "to": 46454, "offset": 0}, ...]
+                    ver_map[str(k)] = v
+                else:
+                    ver_map[str(k)] = int(v)
+            index_map[ver] = ver_map
+    except (AttributeError, TypeError, ValueError) as e:
+        raise ModFormatError(f"malformed index_map in patch group: {e}")
     _strlist = lambda key: [str(s) for s in raw.get(key, [])]
     return ModPatchGroup(dat=dat, ndf=ndf, changes=changes,
                          create_if_missing=create_if_missing, index_map=index_map,
@@ -423,14 +433,22 @@ def _parse_sdb_group(raw: dict, idx: int) -> ModSdbGroup:
     ctx = f"sdb_patches[{idx}]"
     dat = _require(raw, "dat", ctx).replace("\\", "/")
     win = _require(raw, "win", ctx).replace("\\", "/")
-    grid_size = int(_require(raw, "grid_size", ctx))
+    try:
+        grid_size = int(_require(raw, "grid_size", ctx))
+    except (TypeError, ValueError) as e:
+        raise ModFormatError(f"{ctx}: 'grid_size' must be an integer: {e}")
     layers_raw = _require(raw, "layers", ctx)
     if not isinstance(layers_raw, list):
         raise ModFormatError(f"{ctx}: 'layers' must be a list")
     layers = []
     for j, ly in enumerate(layers_raw):
         lctx = f"{ctx}.layers[{j}]"
-        bit = int(_require(ly, "bit", lctx))
+        if not isinstance(ly, dict):
+            raise ModFormatError(f"{lctx}: layer must be an object")
+        try:
+            bit = int(_require(ly, "bit", lctx))
+        except (TypeError, ValueError) as e:
+            raise ModFormatError(f"{lctx}: 'bit' must be an integer: {e}")
         try:
             mask = base64.b64decode(_require(ly, "mask", lctx))
         except Exception as e:
@@ -611,9 +629,21 @@ def dump(mod: RuseMod) -> str:
 
 
 def save(mod: RuseMod, path: str) -> None:
-    """Write a RuseMod to disk as a .rmod file."""
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(dump(mod))
+    """Write a RuseMod to disk as a .rmod file, ATOMICALLY.
+
+    Serialise first, then write a sibling ``.tmp`` (flushed + fsync'd) and os.replace it into place, so an
+    interrupted write — app closed / process killed / disk full mid-write — can never leave a truncated,
+    unparseable .rmod where a good one used to be.  Matters because callers overwrite SHIPPED mods in place
+    (Convert-tab migrate-to-all-versions) and the Mod Editor's scenario save.  Mirrors
+    converter._atomic_write_text.  A serialisation failure raises before any file is touched.
+    """
+    text = dump(mod)                      # may raise — do it before opening any file (original left intact)
+    tmp = f"{path}.tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)                 # atomic on the same filesystem (also replaces an existing file)
 
 
 # ── Template helpers ──────────────────────────────────────────────────────────

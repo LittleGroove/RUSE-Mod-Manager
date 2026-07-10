@@ -24,7 +24,7 @@ import re
 import struct
 import sys
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, filedialog
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, REPO)
@@ -56,17 +56,18 @@ import threading
 import tempfile
 
 # ── Theme (mirrors mod_manager.py "Field Operations" palette) ──────────────────
-_R_BG        = "#08101c"
-_R_BG_PANEL  = "#0e1a2a"
-_R_BG_WIDGET = "#060d18"
-_R_BORDER    = "#243a5c"
-_R_GOLD      = "#c8a020"
-_R_GOLD_BRT  = "#e0c030"
-_R_TEXT      = "#ccd8e8"
-_R_TEXT_DIM  = "#3e5878"
-_R_SEL_BG    = "#1a3060"
-_F_MAIN = ("Courier New", 9)
-_F_BOLD = ("Courier New", 9, "bold")
+import theme                # single source of truth for the palette; local _R_* names kept unchanged
+_R_BG        = theme.BG
+_R_BG_PANEL  = theme.PANEL
+_R_BG_WIDGET = theme.WIDGET
+_R_BORDER    = theme.BORDER
+_R_GOLD      = theme.GOLD
+_R_GOLD_BRT  = theme.GOLD_BRT
+_R_TEXT      = theme.TEXT
+_R_TEXT_DIM  = theme.DIM
+_R_SEL_BG    = theme.SEL_BG
+_F_MAIN = theme.F
+_F_BOLD = theme.FB
 
 
 def _settings_roots():
@@ -647,12 +648,12 @@ def _camp_str(camp):
     distinct sentinel. See docs/map_editor/placements_and_roads.md §2 (Camp field semantics)
     for the candidate interpretations and the in-game test that would settle it."""
     if camp is None:
-        return t("null -> Team 1  (or despawn for MP depots)")
+        return t("map.null_team_1_despawn_mp")
     if camp == -1:
-        return t("-1 -> neutral / visible in MP")
+        return t("map.1_neutral_visible_mp")
     if camp == -2:
-        return t("-2 -> despawn (Operations)")
-    return t("{camp} -> Team {team}", camp=camp, team=camp + 1)
+        return t("map.2_despawn_operations")
+    return t("map.camp_team_team", camp=camp, team=camp + 1)
 
 
 def _pad4(b: bytes) -> bytes:
@@ -1138,8 +1139,8 @@ class MapEditorWindow(tk.Frame):
 
         self._build_ui()
         if not _HAVE_PIL:
-            ui_util.error(self, t("Pillow required"),
-                                 t("The map editor needs Pillow (PIL).\n\npip install Pillow"))
+            ui_util.error(self, t("map.pillow_required"),
+                                 t("map.map_editor_needs_pillow_pil"))
             return
         self._populate_maps()
 
@@ -1149,12 +1150,12 @@ class MapEditorWindow(tk.Frame):
         # unbound to them — loading a map/scenario is how you load everything, so it's always present.
         top = tk.Frame(self, background=_R_BG_PANEL)
         top.pack(side="top", fill="x")
-        tk.Label(top, text=t("Map:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(top, text=t("map.map"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(side="left", padx=(8, 4), pady=6)
         self._map_cb = ttk.Combobox(top, state="readonly", width=18, font=_F_MAIN)
         self._map_cb.pack(side="left", padx=4)
         self._map_cb.bind("<<ComboboxSelected>>", self._on_map_change)
-        tk.Label(top, text=t("Scenario:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(top, text=t("map.scenario"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(side="left", padx=(10, 4))
         self._scn_cb = ttk.Combobox(top, state="readonly", width=24, font=_F_MAIN)
         self._scn_cb.pack(side="left", padx=4)
@@ -1163,12 +1164,12 @@ class MapEditorWindow(tk.Frame):
         self._scn_kind_lbl = tk.Label(top, text="", background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
                                       font=_F_BOLD)
         self._scn_kind_lbl.pack(side="left", padx=(8, 4))
-        tk.Button(top, text=t("New scenario…"), command=self._open_create_scenario_popup,
+        tk.Button(top, text=t("map.new_scenario"), command=self._open_create_scenario_popup,
                   background="#122030", foreground=_R_GOLD_BRT, font=_F_BOLD,
                   relief="flat").pack(side="left", padx=4)
-        tk.Button(top, text=t("Save to mod"), command=self._save, background="#122030",
+        tk.Button(top, text=t("map.save_mod"), command=self._save, background="#122030",
                   foreground=_R_GOLD_BRT, font=_F_BOLD, relief="flat").pack(side="right", padx=(4, 8))
-        tk.Button(top, text=t("Revert"), command=self._revert, background="#122030",
+        tk.Button(top, text=t("map.revert"), command=self._revert, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="right", padx=4)
         self._edit.set(False)   # sector boundary-drag stays inert (capture shape is .kdt-driven)
 
@@ -1185,39 +1186,39 @@ class MapEditorWindow(tk.Frame):
         self._notebook = ttk.Notebook(self, style="Map.TNotebook")
         self._notebook.pack(side="top", fill="both", expand=True)
         map_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(map_tab, text=t("Map Editor"))
+        self._notebook.add(map_tab, text=t("common.map_editor"))
         self._mission_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._mission_tab, text=t("Mission Logic"))
+        self._notebook.add(self._mission_tab, text=t("map.mission_logic"))
         self._names_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._names_tab, text=t("Names & Descriptions"))
+        self._notebook.add(self._names_tab, text=t("map.names_descriptions"))
         self._objlogic_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._objlogic_tab, text=t("Objectives & Logic"))
+        self._notebook.add(self._objlogic_tab, text=t("map.objectives_logic"))
         self._timeline_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._timeline_tab, text=t("Timeline"))
+        self._notebook.add(self._timeline_tab, text=t("map.timeline"))
         self._graph_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._graph_tab, text=t("Node Graph"))
+        self._notebook.add(self._graph_tab, text=t("map.node_graph"))
         self._author_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._author_tab, text=t("Author"))
+        self._notebook.add(self._author_tab, text=t("common.author"))
 
         # map-editor view toolbar (tab-specific view toggles)
         vbar = tk.Frame(map_tab, background=_R_BG_PANEL); vbar.pack(side="top", fill="x")
-        tk.Checkbutton(vbar, text=t("Flip Y"), variable=self._flip_y, command=self._invalidate_redraw,
+        tk.Checkbutton(vbar, text=t("map.flip_y"), variable=self._flip_y, command=self._invalidate_redraw,
                        background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                        font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD).pack(side="left", padx=10, pady=3)
-        tk.Checkbutton(vbar, text=t("Labels"), variable=self._lbl_var, command=self._redraw,
+        tk.Checkbutton(vbar, text=t("map.labels"), variable=self._lbl_var, command=self._redraw,
                        background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                        font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD).pack(side="left")
-        tk.Checkbutton(vbar, text=t("Sectors"), variable=self._show_sectors, command=self._invalidate_redraw,
+        tk.Checkbutton(vbar, text=t("map.sectors"), variable=self._show_sectors, command=self._invalidate_redraw,
                        background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                        font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD).pack(side="left", padx=(6, 0))
-        tk.Checkbutton(vbar, text=t("Roads"), variable=self._show_roads, command=self._redraw,
+        tk.Checkbutton(vbar, text=t("map.roads"), variable=self._show_roads, command=self._redraw,
                        background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                        font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD).pack(side="left", padx=(10, 0))
-        tk.Button(vbar, text=t("Reset view"), command=self._fit_view, background="#122030",
+        tk.Button(vbar, text=t("map.reset_view"), command=self._fit_view, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left", padx=8)
         # terrain preview detail (issue #15): higher detail = sharper but a slower first decode
         # (then cached per setting). Lower detail = a smaller image, which also pans more smoothly.
-        tk.Label(vbar, text=t("Detail:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(vbar, text=t("map.detail"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(side="left", padx=(12, 2))
         self._quality_opts = [(t(lbl), b) for lbl, b in _TERRAIN_DETAIL]
         self._quality_cb = ttk.Combobox(vbar, state="readonly", width=16, font=_F_MAIN,
@@ -1297,51 +1298,50 @@ class MapEditorWindow(tk.Frame):
         # frame is intentionally NEVER packed, so nothing KDT-related is visible. The overlay also
         # defaults off (self._kdt_show=False). Re-pack kdtf to bring it back later.
         kdtf = tk.Frame(left, background=_R_BG_PANEL)   # intentionally NOT packed → hidden
-        tk.Label(kdtf, text=t("KDT — CAPTURE ZONES  (edit these)"), background=_R_BG_PANEL,
+        tk.Label(kdtf, text=t("map.kdt_capture_zones_edit_these"), background=_R_BG_PANEL,
                  foreground=_R_GOLD, font=_F_BOLD).pack(anchor="w", pady=(0, 2))
-        self._kdt_lbl = tk.Label(kdtf, text=t("(no kdt)"), background=_R_BG_PANEL,
+        self._kdt_lbl = tk.Label(kdtf, text=t("map.no_kdt"), background=_R_BG_PANEL,
                                  foreground=_R_TEXT_DIM, font=_F_MAIN, anchor="w", justify="left",
                                  wraplength=264)
         self._kdt_lbl.pack(anchor="w")
-        tk.Checkbutton(kdtf, text=t("Show KDT mesh"), variable=self._kdt_show,
+        tk.Checkbutton(kdtf, text=t("map.show_kdt_mesh"), variable=self._kdt_show,
                        command=self._redraw, background=_R_BG_PANEL, foreground=_R_TEXT,
                        selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w", pady=(2, 0))
-        tk.Checkbutton(kdtf, text=t("Colour by zone"), variable=self._kdt_color,
+        tk.Checkbutton(kdtf, text=t("map.colour_zone"), variable=self._kdt_color,
                        command=self._redraw, background=_R_BG_PANEL, foreground=_R_TEXT,
                        selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w", pady=(0, 2))
-        tk.Checkbutton(kdtf, text=t("Edit KDT nodes (drag)"), variable=self._kdt_edit,
+        tk.Checkbutton(kdtf, text=t("map.edit_kdt_nodes_drag"), variable=self._kdt_edit,
                        command=self._kdt_edit_toggle, background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
                        selectcolor=_R_BG_WIDGET, font=_F_BOLD, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w", pady=(2, 2))
         rr = tk.Frame(kdtf, background=_R_BG_PANEL); rr.pack(fill="x")
-        tk.Checkbutton(rr, text=t("Optimize triangles (keep geometry)"), variable=self._kdt_relax,
+        tk.Checkbutton(rr, text=t("map.optimize_triangles_keep_geometry"), variable=self._kdt_relax,
                        background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                        font=_F_MAIN, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(side="left")
-        tk.Button(rr, text=t("Optimize now"), command=self._kdt_relax_now, background="#122030",
+        tk.Button(rr, text=t("map.optimize_now"), command=self._kdt_relax_now, background="#122030",
                   foreground=_R_TEXT, font=_F_MAIN, relief="flat").pack(side="left", padx=6)
-        tk.Label(kdtf, text=t("Drag a node; interior triangles re-optimize to stay clean & even,\n"
-                          "keeping their shape (no welded twins, no rings — KDT is just nodes+tris)."),
+        tk.Label(kdtf, text=t("map.drag_node_interior_triangles_re"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                  anchor="w", justify="left").pack(anchor="w", pady=(2, 0))
-        tk.Label(kdtf, text=t("Rigid transform (whole mesh — proven safe):"), background=_R_BG_PANEL,
+        tk.Label(kdtf, text=t("map.rigid_transform_whole_mesh_proven"), background=_R_BG_PANEL,
                  foreground=_R_TEXT_DIM, font=_F_MAIN, anchor="w").pack(anchor="w", pady=(6, 0))
         gr = tk.Frame(kdtf, background=_R_BG_PANEL); gr.pack(fill="x")
-        for i, (lab, var) in enumerate(((t("ΔX"), self._kdt_dx), (t("ΔY"), self._kdt_dy),
-                                        (t("scale"), self._kdt_scale))):
+        for i, (lab, var) in enumerate(((t("map.x_2"), self._kdt_dx), (t("map.y_2"), self._kdt_dy),
+                                        (t("map.scale"), self._kdt_scale))):
             tk.Label(gr, text=lab, background=_R_BG_PANEL, foreground=_R_TEXT, font=_F_MAIN,
                      width=5, anchor="e").grid(row=i, column=0, sticky="e", pady=1)
             tk.Entry(gr, textvariable=var, font=_F_MAIN, width=12, background=_R_BG_WIDGET,
                      foreground=_R_TEXT, insertbackground=_R_TEXT, highlightthickness=0,
                      relief="flat").grid(row=i, column=1, sticky="w", padx=4, pady=1)
         br = tk.Frame(kdtf, background=_R_BG_PANEL); br.pack(fill="x", pady=(4, 0))
-        tk.Button(br, text=t("Preview"), command=self._kdt_preview, background="#122030",
+        tk.Button(br, text=t("common.preview"), command=self._kdt_preview, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left")
-        tk.Button(br, text=t("Reset"), command=self._kdt_reset, background="#122030",
+        tk.Button(br, text=t("map.reset"), command=self._kdt_reset, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left", padx=4)
-        tk.Button(br, text=t("Save KDT"), command=self._save_kdt, background="#1a2c44",
+        tk.Button(br, text=t("map.save_kdt"), command=self._save_kdt, background="#1a2c44",
                   foreground=_R_GOLD_BRT, font=_F_BOLD, relief="flat").pack(side="right")
         # (kdtf above is never packed — KDT UI is hidden)
 
@@ -1357,7 +1357,7 @@ class MapEditorWindow(tk.Frame):
         # ex-"SECTORS" listbox was removed — that vertical real-estate now belongs to the
         # selection-detail panel below. The scrollbar lets very long PythonClassName strings or
         # multi-camera HQs spill past the visible height without truncation.
-        tk.Label(left, text=t("DETAILS"), background=_R_BG_PANEL,
+        tk.Label(left, text=t("map.details"), background=_R_BG_PANEL,
                  foreground=_R_GOLD, font=_F_BOLD).pack(anchor="w", padx=8, pady=(8, 2))
         df = tk.Frame(left, background=_R_BG_PANEL)
         df.pack(fill="both", expand=True, padx=8, pady=(2, 6))
@@ -1384,17 +1384,17 @@ class MapEditorWindow(tk.Frame):
         # ── placements (depots / HQ spawns / labels) overlay + edit ──────────────
         plf = tk.Frame(bottom_block, background=_R_BG_PANEL)
         plf.pack(fill="x", padx=8, pady=(0, 4))
-        tk.Label(plf, text=t("PLACEMENTS"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(plf, text=t("map.placements"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", pady=(2, 2))
-        tk.Checkbutton(plf, text=t("Show placements"), variable=self._show_places,
+        tk.Checkbutton(plf, text=t("map.show_placements"), variable=self._show_places,
                        command=self._redraw, background=_R_BG_PANEL, foreground=_R_TEXT,
                        selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w")
-        tk.Checkbutton(plf, text=t("Edit placements (drag)"), variable=self._place_edit,
+        tk.Checkbutton(plf, text=t("map.edit_placements_drag"), variable=self._place_edit,
                        command=self._on_place_edit_toggle, background=_R_BG_PANEL, foreground=_R_TEXT,
                        selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w")
-        tk.Checkbutton(plf, text=t("Auto snap to roads"), variable=self._snap_roads,
+        tk.Checkbutton(plf, text=t("map.auto_snap_roads"), variable=self._snap_roads,
                        background=_R_BG_PANEL, foreground=_R_TEXT,
                        selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w")
@@ -1402,9 +1402,9 @@ class MapEditorWindow(tk.Frame):
                                    font=_F_MAIN, anchor="w", justify="left", wraplength=264)
         self._place_lbl.pack(anchor="w", pady=(2, 0))
         pbr = tk.Frame(plf, background=_R_BG_PANEL); pbr.pack(fill="x", pady=(3, 0))
-        tk.Button(pbr, text=t("+ Placement"), command=self._open_add_placement_popup,
+        tk.Button(pbr, text=t("map.placement"), command=self._open_add_placement_popup,
                   background="#122030", foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left")
-        tk.Button(pbr, text=t("Delete sel"), command=self._delete_selected_place, background="#122030",
+        tk.Button(pbr, text=t("map.delete_sel"), command=self._delete_selected_place, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left", padx=4)
         # (script editing moved to the Mission Logic tab — that's where mission behaviour lives)
 
@@ -1416,12 +1416,10 @@ class MapEditorWindow(tk.Frame):
         gmf = tk.Frame(bottom_block, background=_R_BG_PANEL)
         gmf.pack(fill="x", padx=8, pady=(2, 4))
         self._gm_frame = gmf      # shown only for multiplayer/unbound scenarios (see _update_scenario_panel)
-        tk.Label(gmf, text=t("GAME MODES"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(gmf, text=t("map.game_modes"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", pady=(2, 0))
         tk.Label(gmf,
-                 text=t("tick the modes this map should offer in the lobby. "
-                        "'Recompute ticks' fills these in from the HQ spawns already on the map; "
-                        "'Apply lobby modes' writes TMultiMapInfo so the lobby OFFERS them."),
+                 text=t("map.tick_modes_map_should_offer"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                  justify="left", wraplength=264).pack(anchor="w")
         grid = tk.Frame(gmf, background=_R_BG_PANEL); grid.pack(anchor="w", pady=(2, 2))
@@ -1431,10 +1429,10 @@ class MapEditorWindow(tk.Frame):
                            font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD
                            ).grid(row=n // 2, column=n % 2, sticky="w", padx=(0, 8))
         gmbr = tk.Frame(gmf, background=_R_BG_PANEL); gmbr.pack(fill="x", pady=(2, 0))
-        tk.Button(gmbr, text=t("Recompute ticks"), command=self._load_game_modes_state,
+        tk.Button(gmbr, text=t("map.recompute_ticks"), command=self._load_game_modes_state,
                   background="#122030", foreground=_R_TEXT, font=_F_BOLD,
                   relief="flat").pack(side="left")
-        tk.Button(gmbr, text=t("Apply lobby modes"), command=self._stage_lobby_modes,
+        tk.Button(gmbr, text=t("map.apply_lobby_modes"), command=self._stage_lobby_modes,
                   background="#163048", foreground=_R_GOLD_BRT, font=_F_BOLD,
                   relief="flat").pack(side="left", padx=4)
 
@@ -1447,7 +1445,7 @@ class MapEditorWindow(tk.Frame):
                                       foreground=_R_TEXT, font=_F_MAIN, anchor="w", justify="left",
                                       wraplength=264)
         self._scn_meta_lbl.pack(anchor="w", fill="x")
-        tk.Button(self._scn_meta_frame, text=t("Edit mission logic…"),
+        tk.Button(self._scn_meta_frame, text=t("map.edit_mission_logic"),
                   command=self._open_operation_editor, background="#163048", foreground=_R_GOLD_BRT,
                   font=_F_BOLD, relief="flat").pack(anchor="w", pady=(4, 0))
         self._all_bindings = None     # {map_dir: [ScenarioBinding]} — built lazily, cached per session
@@ -1456,9 +1454,9 @@ class MapEditorWindow(tk.Frame):
         right = tk.Frame(body, background=_R_BG_PANEL, width=258)
         right.pack(side="right", fill="y")
         right.pack_propagate(False)
-        tk.Label(right, text=t("AI-TERRAIN LAYERS (SDB)"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(right, text=t("map.ai_terrain_layers_sdb"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", padx=8, pady=(8, 0))
-        tk.Label(right, text=t("show ✓   paint target ◉   (mapinfo.win — runtime SDB)"),
+        tk.Label(right, text=t("map.show_paint_target_mapinfo_win"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN).pack(anchor="w", padx=8,
                                                                                    pady=(0, 4))
         for label, bit, rgb in self._sdb_layers:
@@ -1473,23 +1471,23 @@ class MapEditorWindow(tk.Frame):
                            selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
                            activeforeground=_R_GOLD).pack(side="left")
         tk.Frame(right, background=_R_BORDER, height=1).pack(fill="x", padx=8, pady=7)
-        tk.Checkbutton(right, text=t("PAINT MODE  (drag on map)"), variable=self._conceal_edit,
+        tk.Checkbutton(right, text=t("map.paint_mode_drag_map"), variable=self._conceal_edit,
                        command=self._invalidate_redraw, background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
                        selectcolor=_R_BG_WIDGET, font=_F_BOLD, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w", padx=8)
-        tk.Checkbutton(right, text=t("Erase (remove from layer)"), variable=self._conceal_erase,
+        tk.Checkbutton(right, text=t("map.erase_remove_from_layer"), variable=self._conceal_erase,
                        background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                        font=_F_MAIN, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w", padx=8)
         brow = tk.Frame(right, background=_R_BG_PANEL); brow.pack(fill="x", padx=8, pady=(2, 0))
-        tk.Label(brow, text=t("Brush radius"), background=_R_BG_PANEL, foreground=_R_TEXT,
+        tk.Label(brow, text=t("map.brush_radius"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).pack(side="left")
         tk.Entry(brow, textvariable=self._conceal_brush, width=8, font=_F_MAIN,
                  background=_R_BG_WIDGET, foreground=_R_TEXT, insertbackground=_R_TEXT).pack(side="left", padx=4)
-        tk.Label(right, text=t("Painted layers are written with the top-right  \"Save to mod\"  button."),
+        tk.Label(right, text=t("map.painted_layers_are_written_top"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                  anchor="w", justify="left", wraplength=238).pack(anchor="w", padx=8, pady=(6, 0))
-        self._sdb_lbl = tk.Label(right, text=t("(no SDB)"), background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
+        self._sdb_lbl = tk.Label(right, text=t("map.no_sdb"), background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
                                  font=_F_MAIN, anchor="w", justify="left", wraplength=238)
         self._sdb_lbl.pack(anchor="w", padx=8, pady=(4, 0))
 
@@ -1519,10 +1517,8 @@ class MapEditorWindow(tk.Frame):
             self._dm = edata.open_dat(src)
             maps = map_dirs(self._dm)
         except Exception as e:
-            ui_util.error(self, t("Load failed"),
-                                 t("Could not open the map dat for this mod:\n{src}\n\n{e}\n\n"
-                                   "Make sure a clean DataMap_Win.dat backup exists (Mod Manager tab) "
-                                   "or set the Game Root in Settings.", src=src, e=e))
+            ui_util.error(self, t("common.load_failed"),
+                                 t("map.could_not_open_map_dat", src=src, e=e))
             self._map_cb["values"] = []
             return
         self._ensure_bindings()      # classify first so the dropdown can show friendly localized names
@@ -1533,9 +1529,8 @@ class MapEditorWindow(tk.Frame):
             self._set_map("supercrossroads4" if "supercrossroads4" in maps else maps[0])
             self._on_map_change(force=True)
         else:
-            ui_util.warning(self, t("No maps"),
-                                   t("That dat has no datasmap\\{map}\\mapinfo.win entries "
-                                     "(is it DataMap_Win.dat?)."))
+            ui_util.warning(self, t("map.no_maps"),
+                                   t("map.dat_has_no_datasmap_map"))
 
     def _load_minimap(self, map_dir):
         """Minimap terrain.png for a map, sourced like every other dat: the mod project's Maps/PC copy
@@ -1629,7 +1624,7 @@ class MapEditorWindow(tk.Frame):
             if src:
                 token = self._terrain_token
                 budget = self._terrain_budget()
-                self._terrain_status = t("  decoding high-def terrain…")
+                self._terrain_status = t("map.decoding_high_def_terrain")
                 self._refresh_status()
                 threading.Thread(target=self._decode_terrain_bg,
                                  args=(src, cache, token, budget), daemon=True).start()
@@ -1640,7 +1635,7 @@ class MapEditorWindow(tk.Frame):
         It's a SUFFIX appended to the live status line, so a mouse-move refreshing the cursor readout no
         longer hides the percentage — both update independently on the one line (issue #15)."""
         if token == self._terrain_token:
-            self._terrain_status = t("  decoding high-def terrain… {pct}%", pct=pct)
+            self._terrain_status = t("map.decoding_high_def_terrain_pct", pct=pct)
             self._refresh_status()
 
     def _decode_terrain_bg(self, src, cache, token, budget):
@@ -1741,7 +1736,7 @@ class MapEditorWindow(tk.Frame):
             win = getattr(self, "_sdb_win", None)
             parts = sdb_mod.split_mapinfo(win) if win else None
             if not parts or len(parts[1]) < 4 or not sdb_mod.is_sdb(parts[1][3]):
-                self._sdb_status(t("(no SDB)")); return
+                self._sdb_status(t("map.no_sdb")); return
             buf = parts[1][3]
             parsed = sdb_mod.parse(buf)
             grid, R = sdb_mod.to_grid(parsed)
@@ -1751,8 +1746,8 @@ class MapEditorWindow(tk.Frame):
                          "bboxY": bboxY, "win": win,
                          "win_vpath": getattr(self, "_sdb_win_vpath", None), "dirty": False}
         except Exception as e:
-            self._sdb_status(t("SDB load failed: {e}", e=e)); return
-        self._sdb_status(t("SDB {r}x{r}  (mapinfo buffer4)", r=self._sdb["R"]))
+            self._sdb_status(t("map.sdb_load_failed_e", e=e)); return
+        self._sdb_status(t("map.sdb_r_x_r_mapinfo", r=self._sdb["R"]))
 
     def _sdb_status(self, msg):
         if self._sdb_lbl is not None:
@@ -1872,11 +1867,11 @@ class MapEditorWindow(tk.Frame):
         self._kdt_border_bind = None
         self._kdt_reset(redraw=False)
         if not scn:
-            self._kdt_lbl.config(text=t("(no kdt)")); return
+            self._kdt_lbl.config(text=t("map.no_kdt")); return
         vpath = f"test\\map\\{map_dir}\\zonebluff\\{scn}.kdt"
         data = self._dm.get(vpath)
         if not data:
-            self._kdt_lbl.config(text=t("(no kdt for this scenario)")); return
+            self._kdt_lbl.config(text=t("map.no_kdt_scenario")); return
         try:
             kf = kdt_mod.read_full(data)
             self._kf, self._kdt_bytes, self._kdt_vpath = kf, data, vpath
@@ -1897,13 +1892,11 @@ class MapEditorWindow(tk.Frame):
             self._kdt_adj = kdt_vertex_adjacency(self._kdt_tris)
             self._kdt_orig = list(self._kdt_world)        # baseline for the geometry-saving interior fit
             known = (map_dir, scn) in KDT_SECTOR_RANGES
-            self._kdt_lbl.config(text=t("verts={nv}  tris={nt}  "
-                                        "mesh={src}  sectors={sec}  "
-                                        "border={nb}", nv=len(self._kdt_world), nt=len(self._kdt_tris),
+            self._kdt_lbl.config(text=t("map.verts_nv_tris_nt_mesh", nv=len(self._kdt_world), nt=len(self._kdt_tris),
                                         src=src, sec=('exact' if known else 'geom'),
                                         nb=len(self._kdt_bverts)))
         except Exception as e:
-            self._kdt_lbl.config(text=t("(kdt load failed: {e})", e=e))
+            self._kdt_lbl.config(text=t("map.kdt_load_failed_e", e=e))
 
     def _compute_kdt_sectors(self, map_dir, scn):
         """Per-KDT-triangle a0_zone_idx. Exact from the cracked ranges if known for this map;
@@ -1975,11 +1968,8 @@ class MapEditorWindow(tk.Frame):
         if self._kdt_follow.get():
             ui_util.info(
                 self,
-                t("KDT follows sectors (modest moves)"),
-                t("When you edit sectors, the KDT mesh follows and 'Save KDT' rewrites it (verts only — the "
-                  "capture zones are preserved).\n\nKeep moves MODEST: the KD-tree partition isn't rebuilt, "
-                  "so large reshapes can break capture. (A full rebuild for big moves is pending one more "
-                  "bit of reverse-engineering.) Test on blitz with a small edit first."))
+                t("map.kdt_follows_sectors_modest_moves"),
+                t("map.when_edit_sectors_kdt_mesh"))
         self._invalidate_redraw()
 
     def _kdt_edit_toggle(self):
@@ -2053,7 +2043,7 @@ class MapEditorWindow(tk.Frame):
     def _kdt_relax_now(self):
         """Manual geometry-saving interior fit to the current border, then mark dirty + redraw."""
         if not (self._kf and self._kdt_world and self._kdt_adj):
-            ui_util.info(self, t("No KDT"), t("Load a scenario with a KDT first."))
+            ui_util.info(self, t("map.no_kdt_2"), t("map.load_scenario_kdt_first"))
             return
         self._kdt_fit_interior()
         self._kdt_dirty = True
@@ -2354,6 +2344,8 @@ class MapEditorWindow(tk.Frame):
     # widget while handling its own FocusOut" hazard tkinter throws otherwise.
     def _refresh_after_edit(self):
         """Re-parse placements and re-select the edited item by item_idx."""
+        if not self.winfo_exists():                    # deferred after_idle fired after the editor closed
+            return
         if self._pndf is None or self._place_sel is None or self._place_sel >= len(self._places):
             return
         item_idx = self._places[self._place_sel]["item_idx"]
@@ -2498,14 +2490,14 @@ class MapEditorWindow(tk.Frame):
             if not editing:
                 if cur is None and not f.required:
                     continue                   # keep the read-only view uncluttered
-                shown = t("(unset)") if cur is None else cur
+                shown = t("map.unset") if cur is None else cur
                 self._det_kv(t(f.label), "%s   %s" % (shown, decoded) if decoded else shown)
                 continue
             if f.widget in ("camp", "priority", "warmup"):
                 self._det_combo(t(f.label), cur, f.choices, f.decode,
                                 lambda v, ff=f: self._commit_field_value(addon, item, ff, v))
             elif f.widget == "vector3":
-                self._det_kv(t(f.label), ("%.0f, %.0f" % (cur[0], cur[1])) if cur else t("(unset)"))
+                self._det_kv(t(f.label), ("%.0f, %.0f" % (cur[0], cur[1])) if cur else t("map.unset"))
             else:
                 w = 40 if f.widget == "pyclass" else (28 if f.widget == "widestr" else 12)
                 self._det_entry(t(f.label), "" if cur is None else cur,
@@ -2558,7 +2550,7 @@ class MapEditorWindow(tk.Frame):
                 self._pndf is not None and pl["item_idx"] is not None) else None
 
             # PLACEMENT header — kind + label, so you can see at a glance what's selected.
-            self._det_head(t("PLACEMENT — {kind}{label}",
+            self._det_head(t("map.placement_kind_label",
                              kind=kind, label=("  ·  " + pl["label"]) if pl["label"] else ""))
 
             # All per-kind fields are now rendered from placement_schema (typed widgets, add/remove of
@@ -2566,51 +2558,51 @@ class MapEditorWindow(tk.Frame):
             self._render_schema_fields(pl, addon, item, editing)
             # HQ keeps a couple of read-only extras the schema doesn't own (live campath link).
             if kind == "hq" and ex.get("campath_keys"):
-                self._det_kv(t("campath keys"), "%d" % len(ex["campath_keys"]))
+                self._det_kv(t("map.campath_keys"), "%d" % len(ex["campath_keys"]))
 
             # GEOMETRY (last because most users care about identity/ownership first). Position
             # stays drag-only; rotation is editable for kinds that AREN'T road-locked
             # (depot/HQ have their facing snapped to the nearest road in-game).
-            self._det_head(t("GEOMETRY"))
-            self._det_kv(t("position"), "%.0f, %.0f" % (x, y))
-            self._det_kv(t("height (z)"), "%.0f" % z_)
+            self._det_head(t("map.geometry"))
+            self._det_kv(t("map.position_2"), "%.0f, %.0f" % (x, y))
+            self._det_kv(t("map.height_z"), "%.0f" % z_)
             road_locked = kind in ("depot", "hq")
             if editing and not road_locked:
                 rv = pl["rot"] if pl["rot"] is not None else 0.0
-                self._det_entry(t("rotation"), "%.4f" % rv,
+                self._det_entry(t("map.rotation"), "%.4f" % rv,
                                 lambda s, it=item: self._commit_rotation(it, s),
-                                width=12, suffix=t("rad  (%.0f°)" % math.degrees(rv)))
+                                width=12, suffix=t("map.rad_deg_suffix", deg=math.degrees(rv)))
             elif pl["rot"] is not None:
-                self._det_kv(t("rotation"),
+                self._det_kv(t("map.rotation"),
                              "%.3f rad  (%.0f°)" % (pl["rot"], math.degrees(pl["rot"])))
 
             # EDIT hints (only when they say something useful — keep the panel quiet otherwise).
-            self._det_head(t("EDIT"))
+            self._det_head(t("map.edit"))
             if road_locked:
-                self._det_hint(t("Facing auto-snaps to the nearest road in-game (Rotation here is ignored)."))
+                self._det_hint(t("map.facing_auto_snaps_nearest_road"))
             if not editing:
-                self._det_hint(t("Toggle 'Edit placements' above to edit fields and drag this."))
+                self._det_hint(t("map.toggle_edit_placements_above_edit"))
             elif kind == "hq":
-                self._det_hint(t("Drag HQ to move (camera follows). Drag the 'cam' marker around the ring to re-aim."))
+                self._det_hint(t("map.drag_hq_move_camera_follows"))
             else:
-                self._det_hint(t("Drag to move, then Save."))
+                self._det_hint(t("map.drag_move_then_save"))
 
         elif self._sel is not None and self._sel < len(self._zones):
             # Defensive sector branch — the listbox that used to drive this was removed, so
             # in practice _sel stays None. Kept so any future canvas-pick can light it up.
             z = self._zones[self._sel]
             xs = [v[0] for v in z["verts"]]; ys = [v[1] for v in z["verts"]]
-            self._det_head(t("SECTOR  #{idx}", idx=z["idx"]))
-            self._det_kv(t("name"), z["name"])
-            self._det_kv(t("marker"), "%.0f, %.0f" % (z["pos"][0], z["pos"][1]))
-            self._det_kv(t("vertices"), len(z["verts"]))
-            self._det_kv(t("triangles"), len(z["faces"]))
-            self._det_kv(t("boundary pts"), len(z["bverts"]))
-            self._det_kv(t("X range"), "%.0f … %.0f" % (min(xs), max(xs)))
-            self._det_kv(t("Y range"), "%.0f … %.0f" % (min(ys), max(ys)))
-            self._det_hint(t("Sectors are visual only — capture is driven by the .kdt."))
+            self._det_head(t("map.sector_idx", idx=z["idx"]))
+            self._det_kv(t("map.name"), z["name"])
+            self._det_kv(t("map.marker"), "%.0f, %.0f" % (z["pos"][0], z["pos"][1]))
+            self._det_kv(t("map.vertices"), len(z["verts"]))
+            self._det_kv(t("map.triangles"), len(z["faces"]))
+            self._det_kv(t("map.boundary_pts"), len(z["bverts"]))
+            self._det_kv(t("map.x_range"), "%.0f … %.0f" % (min(xs), max(xs)))
+            self._det_kv(t("map.y_range"), "%.0f … %.0f" % (min(ys), max(ys)))
+            self._det_hint(t("map.sectors_are_visual_only_capture"))
         else:
-            self._det_hint(t("Click a placement on the map to see its details."))
+            self._det_hint(t("map.click_placement_map_see_its"))
         td.config(state="disabled")
 
     def _on_place_edit_toggle(self):
@@ -2643,6 +2635,8 @@ class MapEditorWindow(tk.Frame):
         return x, y
 
     def _fit_view(self):
+        if not self.winfo_exists():                    # deferred retry fired after the editor closed
+            return
         if not self._pil:
             self._redraw(); return
         cw = self._canvas.winfo_width()
@@ -3360,18 +3354,16 @@ class MapEditorWindow(tk.Frame):
         d = b.detail or {}
         lines = []
         if b.kind == "campaign":
-            lines.append(t("Campaign chapter {tr}.", tr=b.tracking_id or "?"))
+            lines.append(t("map.campaign_chapter_tr", tr=b.tracking_id or "?"))
             if d.get("ChapterId") is not None:
-                lines.append(t("ChapterId {c} · {n} secondary objective(s).",
+                lines.append(t("map.chapterid_c_n_secondary_objective",
                                c=d.get("ChapterId"), n=d.get("NbSecondaryObjectives", 0)))
         elif b.kind == "operation":
-            lines.append(t("Operation {tr}.", tr=b.tracking_id or "?"))
-            lines.append(t("Difficulty {c} · {p} player(s).",
+            lines.append(t("map.operation_tr", tr=b.tracking_id or "?"))
+            lines.append(t("map.difficulty_c_p_player_s",
                            c=d.get("CategoryId", "?"), p=d.get("NbPlayers", "?")))
-        lines.append(t("Lobby game-modes don't apply here. Camps, objectives and victory live in "
-                       "the paired .xyz mission script — use 'Edit script'. (Full authoring lands "
-                       "in a later phase.)"))
-        lines.append(t("Paired script: {s}.", s=t("present") if b.has_script else t("none yet")))
+        lines.append(t("map.lobby_game_modes_don_t"))
+        lines.append(t("map.paired_script_s", s=t("map.present") if b.has_script else t("map.none_yet")))
         return "\n".join(str(x) for x in lines)
 
     def _open_operation_editor(self):
@@ -3449,18 +3441,17 @@ class MapEditorWindow(tk.Frame):
         zone geometry + KDT + (campaign/op) mission script; the user then edits placements and saves."""
         b = self._current_binding()
         if self._pndf is None or not self._scn_cb.get() or b is None:
-            ui_util.info(self, t("Can't clone"),
-                                t("Load a scenario that's registered (mp/campaign/operation) to clone."))
+            ui_util.info(self, t("map.can_t_clone"),
+                                t("map.load_scenario_s_registered_mp"))
             return
         if b.kind not in ("mp", "campaign", "operation"):
-            ui_util.info(self, t("Unbound scenario"),
-                                t("This scenario isn't registered in any menu, so there's no record to "
-                                  "clone. Pick an mp/campaign/operation scenario."))
+            ui_util.info(self, t("map.unbound_scenario"),
+                                t("map.scenario_isn_t_registered_any"))
             return
         map_dir = self._sel_map()
         src_scn = self._scn_cb.get()
-        win = ui_util.themed_toplevel(self, t("New scenario (clone)"), modal=False, resizable=True)
-        kind_lbl = {"mp": t("Multiplayer"), "campaign": t("Campaign"), "operation": t("Operation")}[b.kind]
+        win = ui_util.themed_toplevel(self, t("map.new_scenario_clone"), modal=False, resizable=True)
+        kind_lbl = {"mp": t("map.multiplayer"), "campaign": t("map.campaign"), "operation": t("map.operation")}[b.kind]
 
         def _row(label, default=""):
             fr = tk.Frame(win, background=_R_BG_PANEL); fr.pack(fill="x", padx=10, pady=3)
@@ -3471,20 +3462,19 @@ class MapEditorWindow(tk.Frame):
                      foreground=_R_TEXT, insertbackground=_R_TEXT, relief="flat").pack(side="left", padx=6)
             return v
 
-        tk.Label(win, text=t("Clone {map}/{scn}  ·  {kind}", map=map_dir, scn=src_scn, kind=kind_lbl),
+        tk.Label(win, text=t("map.clone_map_scn_kind", map=map_dir, scn=src_scn, kind=kind_lbl),
                  background=_R_BG_PANEL, foreground=_R_GOLD_BRT, font=_F_BOLD).pack(anchor="w", padx=10, pady=(10, 4))
-        stem_v = _row(t("New scenario name"), src_scn + "_copy")
-        trk_v = _row(t("Tracking id"), (b.tracking_id or "") + "_C")
-        name_v = _row(t("Display name"), (b.name or src_scn) + " (copy)")
-        tk.Label(win, text=t("Reuses the terrain, zones, KDT and (campaign/op) mission script. Staged into "
-                             "the mod project — click 'Save to mod' after."),
+        stem_v = _row(t("map.new_scenario_name"), src_scn + "_copy")
+        trk_v = _row(t("map.tracking_id"), (b.tracking_id or "") + "_C")
+        name_v = _row(t("common.display_name"), (b.name or src_scn) + " (copy)")
+        tk.Label(win, text=t("map.reuses_terrain_zones_kdt_campaign"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN, wraplength=360,
                  justify="left").pack(anchor="w", padx=10, pady=(4, 6))
 
         def _create():
             new_scn = stem_v.get().strip()
             if not new_scn:
-                ui_util.info(win, t("Name needed"), t("Enter a new scenario name.")); return
+                ui_util.info(win, t("map.name_needed"), t("map.enter_new_scenario_name")); return
             try:
                 gd = self._GladProjAdapter(self.project, "gameplay")
                 ia = self._GladProjAdapter(self.project, "scripts")
@@ -3496,18 +3486,18 @@ class MapEditorWindow(tk.Frame):
                     op_name=(name_v.get().strip() if b.kind in ("operation", "campaign") else None))
                 n = self._stage_scenario_plan(plan)
             except Exception as e:
-                ui_util.error(win, t("Create failed"), str(e)); return
+                ui_util.error(win, t("common.create_failed"), str(e)); return
             win.destroy()
             self._all_bindings = None
-            ui_util.info(self, t("Scenario created"),
-                                t("Staged {n} file(s) for {map}/{scn} ({kind}). Click 'Save to mod' to write.",
+            ui_util.info(self, t("map.scenario_created"),
+                                t("map.staged_n_file_s_map",
                                   n=n, map=map_dir, scn=new_scn, kind=b.kind))
             self._on_map_change(force=True)
 
         bar = tk.Frame(win, background=_R_BG_PANEL); bar.pack(fill="x", padx=10, pady=(2, 10))
-        tk.Button(bar, text=t("Create"), command=_create, background="#163048",
+        tk.Button(bar, text=t("map.create"), command=_create, background="#163048",
                   foreground=_R_GOLD_BRT, font=_F_BOLD, relief="flat").pack(side="right")
-        tk.Button(bar, text=t("Cancel"), command=win.destroy, background="#122030",
+        tk.Button(bar, text=t("common.cancel"), command=win.destroy, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="right", padx=6)
 
     def _load_modes_from_binding(self, b):
@@ -3532,13 +3522,12 @@ class MapEditorWindow(tk.Frame):
         is STILL not covered (user declined, no template, or no map bounds) we warn but let them proceed —
         the game starts anyway; uncovered modes just fail to launch when picked."""
         if self._pndf is None:
-            ui_util.info(self, t("No scenario"), t("Load a scenario first."))
+            ui_util.info(self, t("map.no_scenario"), t("map.load_scenario_first"))
             return
         checked = [m for m in _GAME_MODES if self._mode_vars[m[0]].get()]
         if not checked:
-            ui_util.info(self, t("No modes"),
-                                t("Tick at least one mode first (or click Recompute ticks to "
-                                  "fill them in from the HQs already on the map)."))
+            ui_util.info(self, t("map.no_modes"),
+                                t("map.tick_least_one_mode_first"))
             return
         # SET UP the HQs the chosen modes need — the whole point of the mode picker is that the modder
         # shouldn't have to hand-place/fix every base. We EDIT existing HQs (re-slot spares) and ADD only
@@ -3550,18 +3539,15 @@ class MapEditorWindow(tk.Frame):
         if any(not _have(*sl) for sl in needed) and self._bbox:
             if ui_util.confirm(
                     self,
-                    t("Set up the HQs?"),
-                    t("The selected modes need a base for each player slot. Set up the HQs now — re-using "
-                      "and re-slotting the HQs already on the map, and adding any that are still missing? "
-                      "You can drag any HQ afterwards, then Save.")):
+                    t("map.set_up_hqs"),
+                    t("map.selected_modes_need_base_each")):
                 added, updated = self._materialize_hqs(needed)
                 if added or updated:
                     self._place_edit.set(True)
                     self._rebuild_places()
                     self._link_campaths()
                     self._invalidate_redraw()
-                    self._set_status(t("  HQs set up: {u} re-slotted, {a} added — drag to taste, "
-                                       "then Save.", u=updated, a=added))
+                    self._set_status(t("map.hqs_set_up_u_re", u=updated, a=added))
         # Warn only if HQs are STILL unmet (user declined, no template, or no map bounds).
         strict_existing = set(self._existing_hq_spawns().keys())
         soft_existing = self._existing_covers()
@@ -3574,10 +3560,8 @@ class MapEditorWindow(tk.Frame):
         if unmet:
             ok = ui_util.confirm(
                 self,
-                t("Lobby ↔ scenario mismatch"),
-                t("These ticked modes still don't have all the HQs they need: {modes}.\n\n"
-                  "Lobby will offer them but launches will fail until the HQs exist.\n\n"
-                  "Stage TMultiMapInfo anyway?", modes=", ".join(unmet)))
+                t("map.lobby_scenario_mismatch"),
+                t("map.these_ticked_modes_still_don", modes=", ".join(unmet)))
             if not ok:
                 return
         # Lobby metadata. NbPlayers = the biggest enabled mode. For a SINGLE mode, set its specific
@@ -3593,8 +3577,8 @@ class MapEditorWindow(tk.Frame):
         info = self._sync_multimapinfo(nb, gt, gmm, dispos)
         ui_util.info(
             self,
-            t("Lobby modes staged"),
-            t("Lobby will offer: {modes}\n\n{info}",
+            t("map.lobby_modes_staged"),
+            t("map.lobby_will_offer_modes_info",
               modes=", ".join(t(m[1]) for m in checked), info=info))
 
     def _sync_multimapinfo(self, nb_players, gametype, gmm, dispo_set):
@@ -3611,8 +3595,7 @@ class MapEditorWindow(tk.Frame):
             ndfL = self.project.get_ndf("gameplay", self._MAPINFO_PATH)
             ndfG = self.project.get_ndf("gameplay", self._GLOBALS_PATH)
         except Exception as e:
-            return t("Lobby metadata NOT changed — couldn't read the gameplay dat for this mod "
-                     "({e}).\nSet this on the map's TMultiMapInfo yourself:\n  {target}",
+            return t("map.lobby_metadata_not_changed_couldn",
                      e=e, target=target)
 
         def gprop(ndf, inst, n):
@@ -3635,16 +3618,13 @@ class MapEditorWindow(tk.Frame):
         clsM = ndfG.class_by_name("TMultiMapInfo")
         matches = [i for i in ndfG.instances if i.class_index == clsM.index and gguid(ndfG, i) in guids]
         if not matches:
-            return t("No TMultiMapInfo found for '{map_dir}' in the gameplay dat (a brand-new custom map "
-                     "won't have one yet).\nThe HQs/cameras are set; set the lobby entry yourself:\n  {target}",
+            return t("map.no_tmultimapinfo_found_map_dir",
                      map_dir=map_dir, target=target)
         if not ui_util.confirm(
                 self,
-                t("Update lobby modes?"),
-                t("Set the lobby metadata on {n} TMultiMapInfo entry(ies) for '{map_dir}' to:\n\n"
-                  "  {target}\n\nThis is staged into the mod project's gameplay dat and written when you "
-                  "click \"Save to mod\". Proceed?", n=len(matches), map_dir=map_dir, target=target)):
-            return t("Lobby metadata left unchanged. Target was:\n  {target}", target=target)
+                t("map.update_lobby_modes"),
+                t("map.set_lobby_metadata_n_tmultimapinfo", n=len(matches), map_dir=map_dir, target=target)):
+            return t("map.lobby_metadata_left_unchanged_target", target=target)
         for inst in matches:
             def setp(n, val):
                 p = ndfG.prop_by_name_and_class(n, inst.class_index)
@@ -3685,10 +3665,8 @@ class MapEditorWindow(tk.Frame):
         movable = [inst for inst in matches if _cur_cat(inst) != tgt_cat]
         if movable and ui_util.confirm(
                 self,
-                t("Move to its group?"),
-                t("This map is now set up for {nb} players. Move it to the \"{grp}\" group in the selection "
-                  "list (added at the end of that group)?\n\nList grouping is visual only — you can also "
-                  "change it anytime in the Mission Logic tab.",
+                t("map.move_its_group"),
+                t("map.map_now_set_up_nb",
                   nb=nb_players, grp=screg.group_label("mp", tgt_cat))):
             for inst in movable:
                 try:
@@ -3705,8 +3683,7 @@ class MapEditorWindow(tk.Frame):
         self._all_bindings = None      # registry changed → rebuild bindings (ticks/banner) on next use
         if self._on_change:
             self._on_change()
-        return t("Lobby modes staged on {n} TMultiMapInfo entry(ies) (gameplay dat — click "
-                 "\"Save to mod\" to write):\n  {target}", n=len(matches), target=target)
+        return t("map.lobby_modes_staged_n_tmultimapinfo", n=len(matches), target=target)
 
     def _read_multimapinfo(self):
         """Read the current map's TMultiMapInfo fields from the mod's gameplay dat (mod folder → backup →
@@ -3818,7 +3795,7 @@ class MapEditorWindow(tk.Frame):
         For kind='hq' we delegate to `_add_hq` so the warmup-campath clone + FFA-seat encoding
         stay in one place. `fields` for HQ is `{"alliance": int, "slot": int|None}`."""
         if self._pndf is None:
-            ui_util.info(self, t("No scenario"), t("Load a scenario first."))
+            ui_util.info(self, t("map.no_scenario"), t("map.load_scenario_first"))
             return None
 
         fields = fields or {}
@@ -3829,9 +3806,8 @@ class MapEditorWindow(tk.Frame):
             slot = fields.get("slot")
             item_idx = self._add_hq(alliance, slot, wx, wy)
             if item_idx is None:
-                ui_util.info(self, t("Couldn't add HQ"),
-                                    t("Couldn't obtain an HQ template locally or from the corpus, "
-                                      "or this scenario has no TGameDesignItemList."))
+                ui_util.info(self, t("map.couldn_t_add_hq"),
+                                    t("map.couldn_t_obtain_hq_template"))
                 return None
             self._place_edit.set(True)
             self._rebuild_places(select_item_idx=item_idx)
@@ -3840,7 +3816,7 @@ class MapEditorWindow(tk.Frame):
             # _apply_game_modes button did once per add-pass.
             self._link_campaths()
             self._invalidate_redraw()
-            self._set_status(t("  added HQ A{a}.{s} — drag it, then Save.",
+            self._set_status(t("map.added_hq_s_drag_then",
                                a=alliance, s="*" if slot is None else slot))
             return item_idx
 
@@ -3849,14 +3825,13 @@ class MapEditorWindow(tk.Frame):
         # in a bare scenario without "load another map and re-save to seed it" first).
         ilist = self._item_list_value()
         if ilist is None:
-            ui_util.error(self, t("Add failed"), t("Couldn't find the TGameDesignItemList."))
+            ui_util.error(self, t("map.add_failed"), t("map.couldn_t_find_tgamedesignitemlist"))
             return None
         pair = self._obtain_pair(kind)
         if pair is None:
             addon_cls = _KIND_TO_ADDON.get(kind, "?")
-            ui_util.info(self, t("Couldn't add"),
-                                t("No template for {kind} found locally or in the corpus "
-                                  "(needs a {cls} instance).", kind=kind, cls=addon_cls))
+            ui_util.info(self, t("map.couldn_t_add"),
+                                t("map.no_template_kind_found_locally", kind=kind, cls=addon_cls))
             return None
         new_item, new_addon, item_idx, addon_idx = pair
 
@@ -3888,7 +3863,7 @@ class MapEditorWindow(tk.Frame):
         self._dirty = True
         self._place_edit.set(True)
         self._rebuild_places(select_item_idx=item_idx)
-        self._set_status(t("  added a {kind} at view centre — drag it into place, then Save.",
+        self._set_status(t("map.added_kind_view_centre_drag",
                            kind=kind))
         return item_idx
 
@@ -3898,13 +3873,13 @@ class MapEditorWindow(tk.Frame):
         current scenario, plus free-text input), fills kind-specific fields, then Create →
         _create_placement(...). Position defaults to the canvas centre."""
         if self._pndf is None:
-            ui_util.info(self, t("No scenario"), t("Load a scenario first."))
+            ui_util.info(self, t("map.no_scenario"), t("map.load_scenario_first"))
             return
         cw = max(self._canvas.winfo_width(), 50); ch = max(self._canvas.winfo_height(), 50)
         wx, wy = self._screen_to_world(cw / 2, ch / 2)
         wz = self._nearest_z(wx, wy)
 
-        win = ui_util.themed_toplevel(self, t("Add placement"), size=(560, 660), resizable=True)
+        win = ui_util.themed_toplevel(self, t("map.add_placement"), size=(560, 660), resizable=True)
 
         kind_var = tk.StringVar(value="depot")
         py_var = tk.StringVar(value=_SPAWN_DEPOT_PY)
@@ -3921,14 +3896,14 @@ class MapEditorWindow(tk.Frame):
         x_var = tk.StringVar(value=f"{wx:.0f}"); y_var = tk.StringVar(value=f"{wy:.0f}")
 
         # ── kind selector ────────────────────────────────────────────────────────
-        tk.Label(win, text=t("KIND"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(win, text=t("map.kind"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", padx=8, pady=(8, 2))
         kg = tk.Frame(win, background=_R_BG_PANEL); kg.pack(anchor="w", padx=8)
-        KINDS = [("depot", t("Depot")), ("unit", t("Unit")), ("building", t("Building")),
-                 ("spawn", t("Spawn (other)")), ("hq", t("HQ")),
-                 ("ville", t("City label")), ("montagne", t("Mountain label")),
-                 ("name", t("Named point")), ("circle", t("Circular zone")),
-                 ("rect", t("Rect zone"))]
+        KINDS = [("depot", t("map.depot")), ("unit", t("map.unit")), ("building", t("map.building")),
+                 ("spawn", t("map.spawn_other")), ("hq", t("map.hq")),
+                 ("ville", t("map.city_label")), ("montagne", t("map.mountain_label")),
+                 ("name", t("map.named_point")), ("circle", t("map.circular_zone")),
+                 ("rect", t("map.rect_zone"))]
         for i, (k, label) in enumerate(KINDS):
             tk.Radiobutton(kg, text=label, variable=kind_var, value=k,
                            background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
@@ -3942,13 +3917,13 @@ class MapEditorWindow(tk.Frame):
         cat_var = tk.StringVar(value="(all)")
         show_var = tk.StringVar(value="all")
         py_frame = tk.Frame(win, background=_R_BG_PANEL)
-        tk.Label(py_frame, text=t("ENTITY CLASS  (full game roster)"), background=_R_BG_PANEL,
+        tk.Label(py_frame, text=t("map.entity_class_full_game_roster"), background=_R_BG_PANEL,
                  foreground=_R_GOLD, font=_F_BOLD).pack(anchor="w", pady=(8, 2))
         filt_row = tk.Frame(py_frame, background=_R_BG_PANEL); filt_row.pack(fill="x")
         cat_cb = ttk.Combobox(filt_row, textvariable=cat_var, state="readonly", width=10, font=_F_MAIN,
                               values=["(all)"] + sorted(pcat.categories().keys()))
         cat_cb.pack(side="left")
-        for lbl, val in ((t("all"), "all"), (t("placed"), "placed"), (t("unused"), "unused")):
+        for lbl, val in ((t("map.all"), "all"), (t("map.placed"), "placed"), (t("map.unused"), "unused")):
             tk.Radiobutton(filt_row, text=lbl, variable=show_var, value=val, background=_R_BG_PANEL,
                            foreground=_R_TEXT, selectcolor=_R_BG_WIDGET, font=_F_MAIN,
                            activebackground=_R_BG_PANEL, activeforeground=_R_GOLD,
@@ -3971,7 +3946,7 @@ class MapEditorWindow(tk.Frame):
         usage_lbl = tk.Label(py_frame, text="", background=_R_BG_PANEL, foreground="#a0c0e0", font=_F_MAIN,
                              anchor="w", justify="left", wraplength=460)
         usage_lbl.pack(anchor="w")
-        tk.Label(py_frame, text=t("PythonClassName to write:"), background=_R_BG_PANEL,
+        tk.Label(py_frame, text=t("map.pythonclassname_write"), background=_R_BG_PANEL,
                  foreground=_R_TEXT_DIM, font=_F_MAIN).pack(anchor="w", pady=(4, 0))
         tk.Entry(py_frame, textvariable=py_var, background=_R_BG_WIDGET, foreground=_R_TEXT, font=_F_MAIN,
                  insertbackground=_R_TEXT, relief="flat", highlightthickness=0).pack(fill="x")
@@ -3981,16 +3956,16 @@ class MapEditorWindow(tk.Frame):
             py_list.delete(0, "end"); self._pcat_names = []
             if kind_var.get() == "depot":
                 py_list.insert("end", _SPAWN_DEPOT_PY); self._pcat_names.append(_SPAWN_DEPOT_PY)
-                py_var.set(_SPAWN_DEPOT_PY); count_lbl.config(text=t("1 depot class")); usage_lbl.config(text="")
+                py_var.set(_SPAWN_DEPOT_PY); count_lbl.config(text=t("map.1_depot_class")); usage_lbl.config(text="")
                 return
             category = None if cat_var.get() == "(all)" else cat_var.get()
             placed = {"all": None, "placed": True, "unused": False}[show_var.get()]
             rows = pcat.search(category=category, placed=placed, query=py_search.get().strip(), limit=3000)
             for name, info in rows:
                 n = info.get("used_count") or 0
-                tag = (t("used {n}x", n=n) if info.get("ever_placed") else t("* never placed (valid)"))
+                tag = (t("map.used_n_x", n=n) if info.get("ever_placed") else t("map.never_placed_valid"))
                 py_list.insert("end", "%-42s %s" % (name, tag)); self._pcat_names.append(name)
-            count_lbl.config(text=t("{n} classes  (of {tot} in the game)",
+            count_lbl.config(text=t("map.n_classes_tot_game",
                                     n=len(rows), tot=pcat.load().get("catalog_size", "?")))
             if self._pcat_names and not py_var.get():
                 py_var.set(pcat.placement_string(self._pcat_names[0]))
@@ -4004,9 +3979,9 @@ class MapEditorWindow(tk.Frame):
             info = pcat.info_for(name) or {}
             if info.get("ever_placed"):
                 ex = ", ".join((info.get("example_scenarios") or [])[:4])
-                usage_lbl.config(text=t("placed {n}x  ·  e.g. {ex}", n=info.get("used_count", 0), ex=ex))
+                usage_lbl.config(text=t("map.placed_n_x_e_g", n=info.get("used_count", 0), ex=ex))
             else:
-                usage_lbl.config(text=t("never placed in a shipped scenario — but valid to add here"))
+                usage_lbl.config(text=t("map.never_placed_shipped_scenario_but"))
 
         py_search.bind("<KeyRelease>", lambda _: _populate_pylist())
         cat_cb.bind("<<ComboboxSelected>>", lambda _: _populate_pylist())
@@ -4046,40 +4021,39 @@ class MapEditorWindow(tk.Frame):
                 if py_frame.winfo_ismapped():
                     py_frame.pack_forget()
             # Kind-specific scalar fields.
-            tk.Label(kf, text=t("FIELDS"), background=_R_BG_PANEL, foreground=_R_GOLD,
+            tk.Label(kf, text=t("map.fields"), background=_R_BG_PANEL, foreground=_R_GOLD,
                      font=_F_BOLD).pack(anchor="w", pady=(6, 2))
             if kind in ("depot", "unit", "building", "spawn"):
-                _row(kf, t("Camp (int)"), camp_var)
+                _row(kf, t("map.camp_int"), camp_var)
                 tk.Label(kf,
-                         text=t("blank = no Camp prop (Team 1; MP depot = despawn).  "
-                                "-1 = visible-neutral.  N ≥ 0 = Team N+1."),
+                         text=t("map.blank_no_camp_prop_team"),
                          background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
                          font=_F_MAIN, justify="left", wraplength=440).pack(anchor="w", padx=14)
                 if kind == "depot":
-                    _row(kf, t("ChampInteger"), champ_var)
-                    tk.Label(kf, text=t("(supply = 9 × ChampInteger)"),
+                    _row(kf, t("map.champinteger"), champ_var)
+                    tk.Label(kf, text=t("map.supply_9_champinteger"),
                              background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
                              font=_F_MAIN).pack(anchor="w", padx=14)
             elif kind == "hq":
-                _row(kf, t("AllianceNum"), alli_var, width=6)
-                _row(kf, t("AlliancePriority"), pri_var, width=6)
+                _row(kf, t("map.alliancenum"), alli_var, width=6)
+                _row(kf, t("map.alliancepriority"), pri_var, width=6)
                 fr = tk.Frame(kf, background=_R_BG_PANEL); fr.pack(anchor="w", pady=(2, 0))
-                tk.Checkbutton(fr, text=t("FFA seat (no AlliancePriority property)"),
+                tk.Checkbutton(fr, text=t("map.ffa_seat_no_alliancepriority_property"),
                                variable=ffa_var,
                                background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                                font=_F_MAIN, activebackground=_R_BG_PANEL,
                                activeforeground=_R_GOLD).pack(side="left")
             elif kind in ("ville", "montagne"):
-                _row(kf, t("ChampTexte"), text_var, width=30)
+                _row(kf, t("map.champtexte"), text_var, width=30)
             elif kind == "circle":
-                _row(kf, t("Radius"), radius_var)
+                _row(kf, t("map.radius"), radius_var)
             elif kind == "rect":
-                _row(kf, t("Width"), w_var); _row(kf, t("Height"), h_var)
+                _row(kf, t("map.width"), w_var); _row(kf, t("map.height"), h_var)
             # Position fields (always shown).
-            tk.Label(kf, text=t("POSITION"), background=_R_BG_PANEL, foreground=_R_GOLD,
+            tk.Label(kf, text=t("map.position"), background=_R_BG_PANEL, foreground=_R_GOLD,
                      font=_F_BOLD).pack(anchor="w", pady=(6, 2))
-            _row(kf, t("X"), x_var); _row(kf, t("Y"), y_var)
-            tk.Label(kf, text=t("(Z defaults to terrain near (X,Y))"),
+            _row(kf, t("map.x"), x_var); _row(kf, t("map.y"), y_var)
+            tk.Label(kf, text=t("map.z_defaults_terrain_near_x"),
                      background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
                      font=_F_MAIN).pack(anchor="w", padx=14)
 
@@ -4094,7 +4068,7 @@ class MapEditorWindow(tk.Frame):
             try:
                 wx_ = float(x_var.get()); wy_ = float(y_var.get())
             except ValueError:
-                ui_util.error(win, t("Bad position"), t("X and Y must be numbers."))
+                ui_util.error(win, t("map.bad_position"), t("map.x_y_must_numbers"))
                 return
             wz_ = self._nearest_z(wx_, wy_)
             fields = {}
@@ -4102,17 +4076,16 @@ class MapEditorWindow(tk.Frame):
             if kind in ("depot", "unit", "building", "spawn"):
                 py = py_var.get().strip() or None
                 if not py:
-                    ui_util.error(win, t("Need PyClass"),
-                                         t("Pick or type a PythonClassName."))
+                    ui_util.error(win, t("map.need_pyclass"),
+                                         t("map.pick_type_pythonclassname"))
                     return
                 camp_s = camp_var.get().strip()
                 if camp_s:
                     try:
                         fields["camp"] = int(camp_s)
                     except ValueError:
-                        ui_util.error(win, t("Bad Camp"),
-                                             t("Camp must be an integer (or blank for Team 1 / "
-                                               "MP-depot despawn)."))
+                        ui_util.error(win, t("map.bad_camp"),
+                                             t("map.camp_must_integer_blank_team"))
                         return
                 # else: leave fields["camp"] absent → _create_placement skips the Camp property,
                 # matching the null encoding the engine reads as Team 1 / MP-depot despawn.
@@ -4120,35 +4093,35 @@ class MapEditorWindow(tk.Frame):
                     try:
                         fields["champ"] = int(champ_var.get())
                     except ValueError:
-                        ui_util.error(win, t("Bad ChampInteger"),
-                                             t("ChampInteger must be an integer."))
+                        ui_util.error(win, t("map.bad_champinteger"),
+                                             t("map.champinteger_must_integer"))
                         return
             elif kind == "hq":
                 try:
                     fields["alliance"] = int(alli_var.get())
                     fields["slot"] = None if ffa_var.get() else int(pri_var.get())
                 except ValueError:
-                    ui_util.error(win, t("Bad HQ fields"),
-                                         t("AllianceNum and AlliancePriority must be integers."))
+                    ui_util.error(win, t("map.bad_hq_fields"),
+                                         t("map.alliancenum_alliancepriority_must_intege"))
                     return
             elif kind in ("ville", "montagne"):
                 fields["text"] = text_var.get()
             elif kind == "circle":
                 try: fields["radius"] = float(radius_var.get())
                 except ValueError:
-                    ui_util.error(win, t("Bad Radius"), t("Radius must be a number.")); return
+                    ui_util.error(win, t("map.bad_radius"), t("map.radius_must_number")); return
             elif kind == "rect":
                 try:
                     fields["w"] = float(w_var.get()); fields["h"] = float(h_var.get())
                 except ValueError:
-                    ui_util.error(win, t("Bad size"), t("Width and Height must be numbers.")); return
+                    ui_util.error(win, t("map.bad_size"), t("map.width_height_must_numbers")); return
             item_idx = self._create_placement(kind, (wx_, wy_, wz_), py_class=py, fields=fields)
             if item_idx is not None:
                 win.destroy()
 
-        tk.Button(bar, text=t("Create"), command=_do_create, background="#163048",
+        tk.Button(bar, text=t("map.create"), command=_do_create, background="#163048",
                   foreground=_R_GOLD_BRT, font=_F_BOLD, relief="flat").pack(side="left")
-        tk.Button(bar, text=t("Cancel"), command=win.destroy, background="#122030",
+        tk.Button(bar, text=t("common.cancel"), command=win.destroy, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left", padx=4)
 
     # ── Script editor (Step 4) ───────────────────────────────────────────────────
@@ -4193,7 +4166,7 @@ class MapEditorWindow(tk.Frame):
         external Python-2 toolchain on the exported draft and drops the resulting .xyz
         into their mod project manually. The right pane carries explicit instructions."""
         if self._pndf is None or not self._scn_cb.get():
-            ui_util.info(self, t("No scenario"), t("Load a scenario first."))
+            ui_util.info(self, t("map.no_scenario"), t("map.load_scenario_first"))
             return
         map_dir = self._sel_map()
         scn_name = self._scn_cb.get()
@@ -4207,7 +4180,7 @@ class MapEditorWindow(tk.Frame):
             except Exception:
                 raw = None
             if raw is None:
-                return None, t("(new — not yet in the dat; use 'Save draft as .py' below)")
+                return None, t("map.new_not_yet_dat_use")
             # XYZ0 binary → decompiled Python source. Both stages can fail (corrupted .xyz,
             # uncompyle6 stumbling on an unusual instruction sequence) — bubble those up as
             # readable banners in the editor instead of crashing the popup.
@@ -4217,22 +4190,22 @@ class MapEditorWindow(tk.Frame):
                 return ("# Could not unpack the XYZ0 container.\n"
                         "# %s\n"
                         "# Raw payload: %d bytes." % (e, len(raw)),
-                        t("XYZ0 unpack failed — editor showing diagnostic only"))
+                        t("map.xyz0_unpack_failed_editor_showing"))
             try:
-                return _xyz_decompile_to_source(marshal_bytes), t("decompiled from XYZ0  ·  read-only round-trip")
+                return _xyz_decompile_to_source(marshal_bytes), t("map.decompiled_from_xyz0_read_only")
             except Exception as e:
                 return ("# Decompile failed — the .xyz contains valid Python-2.6 bytecode\n"
                         "# but uncompyle6 couldn't render it back to source:\n"
                         "#   %s\n"
                         "# (Marshal payload: %d bytes.)\n" % (e, len(marshal_bytes)),
-                        t("decompile failed — see banner"))
+                        t("map.decompile_failed_see_banner"))
 
         source, init_status = _read_source()
         is_new = source is None
         if is_new:
             source = _SCRIPT_TEMPLATE
 
-        win = ui_util.themed_toplevel(self, t("Script — {map}/{scn}", map=map_dir, scn=scn_name),
+        win = ui_util.themed_toplevel(self, t("map.script_map_scn", map=map_dir, scn=scn_name),
                                       size=(1200, 720), modal=False, resizable=True)
 
         # Top bar — virtual path + dirty/new indicator + status message.
@@ -4249,16 +4222,11 @@ class MapEditorWindow(tk.Frame):
         # into IA_Common.dat; without it, we fall back to draft-export.
         py251 = _xyz_compiler_path()
         if py251 is not None:
-            warn_text = t("Python 2.5.1 detected at {p}. Save to mod project compiles source → "
-                          "2.5.1 marshal → XYZ0 → writes into IA_Common.dat (mod project copy, "
-                          "never the live game). Decompile-edit-recompile round-trip is live.",
+            warn_text = t("map.python_2_5_1_detected",
                           p=py251)
             warn_bg, warn_fg = "#18302a", "#a0e0c0"
         else:
-            warn_text = t(".xyz files are XYZ0-magic Python-2.5.1 bytecode (NOT plain source). The "
-                          "editor decompiles them for viewing, but saving needs the Python 2.5.1 interpreter — "
-                          "set one up via ruse_mod_engine/python251/README.md, or use 'Save draft as .py' "
-                          "to export source for external compilation.")
+            warn_text = t("map.xyz_files_are_xyz0_magic")
             warn_bg, warn_fg = "#3a2a18", "#ffd7a0"
         warn = tk.Label(win, anchor="w", justify="left", wraplength=1180,
                         background=warn_bg, foreground=warn_fg, font=_F_MAIN,
@@ -4324,12 +4292,11 @@ class MapEditorWindow(tk.Frame):
         right = tk.Frame(body, background=_R_BG_PANEL, width=460)
         right.pack(side="right", fill="y", padx=(8, 0))
         right.pack_propagate(False)
-        tk.Label(right, text=t("REFERENCE"),
+        tk.Label(right, text=t("map.reference"),
                  background=_R_BG_PANEL, foreground=_R_GOLD, font=_F_BOLD,
                  wraplength=440, justify="left").pack(anchor="w")
         tk.Label(right,
-                 text=t("Top-down: how scripts work → common edits → paste-able templates → enum value tables. "
-                        "'insert' drops the code block at the editor's cursor."),
+                 text=t("map.top_down_how_scripts_work"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                  wraplength=440, justify="left").pack(anchor="w", pady=(0, 4))
         # Scrollable container.
@@ -4375,7 +4342,7 @@ class MapEditorWindow(tk.Frame):
                 head_row = tk.Frame(rsf, background=_R_BG_PANEL); head_row.pack(fill="x", pady=(6, 1))
                 tk.Label(head_row, text=title, background=_R_BG_PANEL, foreground=_R_GOLD,
                          font=_F_BOLD, anchor="w").pack(side="left", fill="x", expand=True)
-                tk.Button(head_row, text=t("insert"), command=_make_inserter(code),
+                tk.Button(head_row, text=t("map.insert"), command=_make_inserter(code),
                           background="#122030", foreground=_R_TEXT, font=_F_MAIN,
                           relief="flat").pack(side="right")
                 tk.Label(rsf, text=body, background=_R_BG_PANEL, foreground=_R_TEXT,
@@ -4412,15 +4379,14 @@ class MapEditorWindow(tk.Frame):
         def _reload():
             fresh, st = _read_source()
             if fresh is None:
-                if not ui_util.confirm(win, t("Reload"),
-                                           t("No script in the dat yet. Reset editor to the starter "
-                                             "template? (Unsaved edits will be lost.)")):
+                if not ui_util.confirm(win, t("map.reload"),
+                                           t("map.no_script_dat_yet_reset")):
                     return
                 fresh = _SCRIPT_TEMPLATE
             editor.delete("1.0", "end")
             editor.insert("1.0", fresh)
             _retint()
-            status_lbl.config(text=st or t("reloaded"))
+            status_lbl.config(text=st or t("map.reloaded"))
 
         def _save_draft():
             os.makedirs(os.path.dirname(draft_path), exist_ok=True)
@@ -4429,10 +4395,10 @@ class MapEditorWindow(tk.Frame):
                 with open(draft_path, "w", encoding="utf-8") as f:
                     f.write(text)
             except OSError as e:
-                ui_util.error(win, t("Save draft failed"),
-                                     t("Could not write the draft:\n{e}", e=e))
+                ui_util.error(win, t("map.save_draft_failed"),
+                                     t("map.could_not_write_draft_e", e=e))
                 return
-            status_lbl.config(text=t("draft saved → {path}", path=draft_path))
+            status_lbl.config(text=t("map.draft_saved_path", path=draft_path))
 
         def _save_to_mod():
             """Full source → Python 2.5.1 marshal → XYZ0 → mod project's IA_Common.dat."""
@@ -4440,53 +4406,52 @@ class MapEditorWindow(tk.Frame):
             try:
                 marshal_bytes = _xyz_compile_source(text)
             except FileNotFoundError:
-                ui_util.error(win, t("Python 2.5.1 missing"),
-                                     t("ruse_mod_engine/python251/python.exe wasn't found. See "
-                                       "ruse_mod_engine/python251/README.md to install."))
+                ui_util.error(win, t("map.python_2_5_1_missing"),
+                                     t("map.ruse_mod_engine_python251_python"))
                 return
             except RuntimeError as e:
-                ui_util.error(win, t("Compile failed"),
-                                     t("Python 2 reported:\n\n{e}", e=str(e)))
+                ui_util.error(win, t("map.compile_failed"),
+                                     t("map.python_2_reported_e", e=str(e)))
                 return
             try:
                 xyz_bytes = _xyz_pack(marshal_bytes)
                 self.project.set_raw("scripts", script_path, xyz_bytes)
             except Exception as e:
-                ui_util.error(win, t("Save failed"),
-                                     t("Could not stage the XYZ0 into the mod project:\n{e}", e=e))
+                ui_util.error(win, t("common.save_failed"),
+                                     t("map.could_not_stage_xyz0_into", e=e))
                 return
-            status_lbl.config(text=t("saved → mod project's IA_Common.dat  ·  deploy to test in-game"))
+            status_lbl.config(text=t("map.saved_mod_project_s_ia"))
 
         # Primary button switches behaviour based on Python 2.5.1 availability — when present,
         # "Save to mod project" runs the full compile pipeline; otherwise we expose
         # only the draft export so users don't think a missing-interpreter save did anything.
         if _xyz_compiler_path() is not None:
-            tk.Button(bar, text=t("Save to mod project"), command=_save_to_mod,
+            tk.Button(bar, text=t("map.save_mod_project"), command=_save_to_mod,
                       background="#163048", foreground=_R_GOLD_BRT,
                       font=_F_BOLD, relief="flat").pack(side="left")
-            tk.Button(bar, text=t("Save draft as .py"), command=_save_draft,
+            tk.Button(bar, text=t("map.save_draft_as_py"), command=_save_draft,
                       background="#122030", foreground=_R_TEXT,
                       font=_F_BOLD, relief="flat").pack(side="left", padx=4)
         else:
-            tk.Button(bar, text=t("Save draft as .py"), command=_save_draft,
+            tk.Button(bar, text=t("map.save_draft_as_py"), command=_save_draft,
                       background="#163048", foreground=_R_GOLD_BRT,
                       font=_F_BOLD, relief="flat").pack(side="left")
-        tk.Button(bar, text=t("Reload from dat"), command=_reload, background="#122030",
+        tk.Button(bar, text=t("map.reload_from_dat"), command=_reload, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left", padx=4)
-        tk.Button(bar, text=t("Close"), command=win.destroy, background="#122030",
+        tk.Button(bar, text=t("common.close"), command=win.destroy, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="right")
-        tk.Label(win, text=t("draft target: {path}", path=draft_path),
+        tk.Label(win, text=t("map.draft_target_path", path=draft_path),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                  anchor="w").pack(fill="x", padx=8, pady=(0, 6))
 
     def _delete_selected_place(self):
         pi = self._place_sel
         if pi is None or self._pndf is None or pi >= len(self._places):
-            ui_util.info(self, t("Nothing selected"), t("Select a placement to delete first."))
+            ui_util.info(self, t("map.nothing_selected"), t("map.select_placement_delete_first"))
             return
         pl = self._places[pi]
-        if not ui_util.confirm(self, t("Delete placement?"),
-                                   t("Delete this {kind} ({label})?", kind=pl['kind'], label=pl['label'])):
+        if not ui_util.confirm(self, t("map.delete_placement"),
+                                   t("map.delete_kind_label", kind=pl['kind'], label=pl['label'])):
             return
         removed = {pl["item_idx"]}
         if pl["addon_idx"] is not None:
@@ -4671,12 +4636,11 @@ class MapEditorWindow(tk.Frame):
     def _hover(self, e):
         if self._pil and self._bbox:
             wx, wy = self._screen_to_world(e.x, e.y)
-            cur = t("drag handle") if self._handle_at(e.x, e.y) is not None else \
-                  (t("edit") if self._edit.get() else t("view"))
+            cur = t("map.drag_handle") if self._handle_at(e.x, e.y) is not None else \
+                  (t("map.edit_2") if self._edit.get() else t("map.view"))
             self._set_status(
-                f"  {self._map_cb.get()} / {self._scn_cb.get()}{t('  *MODIFIED*') if self._dirty else ''}   "
-                + t("sectors={ns}   cursor=({wx:.0f}, {wy:.0f})   "
-                    "zoom={zoom:.2f}x   [{cur}]", ns=len(self._zones), wx=wx, wy=wy,
+                f"  {self._map_cb.get()} / {self._scn_cb.get()}{t('map.modified') if self._dirty else ''}   "
+                + t("map.sectors_ns_cursor_wx_0f", ns=len(self._zones), wx=wx, wy=wy,
                     zoom=self._scale, cur=cur))
 
     # ── hit-test (point in any sector triangle) ──────────────────────────────────
@@ -4944,7 +4908,7 @@ class MapEditorWindow(tk.Frame):
         c.delete("all")
         if not self._pil:
             c.create_text(20, 20, anchor="nw", fill=_R_TEXT_DIM, font=_F_MAIN,
-                          text=t("(no minimap — terrain dat not found for this map)"))
+                          text=t("map.no_minimap_terrain_dat_not"))
             return
         vis = self._visible_base_rect()
         if self._comp_key != self._comp_state() or not self._rect_covers(self._comp_rect, vis):
@@ -5006,11 +4970,8 @@ class MapEditorWindow(tk.Frame):
         self._draw_placements(c)
 
         self._set_status(
-            f"  {self._map_cb.get()} / {self._scn_cb.get()}{t('  *MODIFIED*') if self._dirty else ''}   "
-            + t("sectors={ns}   "
-                "selected={sel}   "
-                "zoom={zoom:.2f}x   "
-                "drag=pan · wheel=zoom · sectors: select in the left list",
+            f"  {self._map_cb.get()} / {self._scn_cb.get()}{t('map.modified') if self._dirty else ''}   "
+            + t("map.sectors_ns_selected_sel_zoom",
                 ns=len(self._zones),
                 sel=('#' + str(self._zones[self._sel]['idx']) if self._sel is not None else '-'),
                 zoom=self._scale))
@@ -5116,7 +5077,7 @@ class MapEditorWindow(tk.Frame):
         """Show placement count + scenario byte size — spawn count is bounded by the .scenario FILE
         SIZE (~600-entity practical envelope), so the byte budget matters more than a count cap."""
         n = len(self._places or [])
-        self._place_lbl.config(text=t("{n} placements  ·  {kb:.1f} KB on disk\n(spawn cap = file size; ~600 budget)",
+        self._place_lbl.config(text=t("map.n_placements_kb_1f_kb",
                                       n=n, kb=(self._scn_size or 0) / 1024.0))
 
     def _get_icon(self, name, size):
@@ -5178,7 +5139,7 @@ class MapEditorWindow(tk.Frame):
                     cxs, cys = self._world_to_screen(*pl["extra"]["cam"][:2])
                     c.create_line(sx, sy, cxs, cys, fill="#6688aa", width=1, dash=(3, 2))
                     c.create_rectangle(cxs - 3, cys - 3, cxs + 3, cys + 3, outline="#88bbff", fill="#22364a")
-                    c.create_text(cxs, cys - 8, text=t("cam"), fill="#88bbff", font=_F_MAIN)
+                    c.create_text(cxs, cys - 8, text=t("map.cam"), fill="#88bbff", font=_F_MAIN)
                 isz = 30 if kind == "hq" else 26
                 ico = self._get_icon(_PLACE_ICON.get(kind), isz)
                 # road-facing tick poking out past the icon edge
@@ -5220,8 +5181,8 @@ class MapEditorWindow(tk.Frame):
     def _confirm_discard(self):
         if not self._dirty:
             return True
-        return ui_util.confirm(self, t("Discard changes?"),
-                                   t("This scenario has unsaved edits. Discard them?"))
+        return ui_util.confirm(self, t("map.discard_changes"),
+                                   t("map.scenario_has_unsaved_edits_discard"))
 
     def _revert(self):
         if self._scn is not None:
@@ -5247,49 +5208,49 @@ class MapEditorWindow(tk.Frame):
                 data = scenario_mod.write(self._scn)
                 scenario_mod.read(data)        # sanity: must reparse
             except Exception as e:
-                ui_util.error(self, t("Save failed"), t("Could not serialize scenario:\n{e}", e=e))
+                ui_util.error(self, t("common.save_failed"), t("map.could_not_serialize_scenario_e", e=e))
                 return
             self.project.set_raw("maps", vp, data)
-            staged.append(t("{scn}.scenario (placements)", scn=scn))
+            staged.append(t("map.scn_scenario_placements", scn=scn))
         # warmup campath (the real start camera; PositionCamera is inert)
         if self._campath_dirty and self._campath is not None and self._campath_vpath:
             try:
                 self.project.set_raw("maps", self._campath_vpath,
                                      ndfbin.write(self._campath, compress=self._campath.is_compressed))
             except Exception as e:
-                ui_util.error(self, t("Save failed"), t("Could not serialize the start camera:\n{e}", e=e))
+                ui_util.error(self, t("common.save_failed"), t("map.could_not_serialize_start_camera", e=e))
                 return
-            staged.append(t("start camera"))
+            staged.append(t("map.start_camera"))
         # painted AI-terrain SDB layer (unified codec, edit-in-place -> mapinfo.win buffer4)
         if self._sdb and self._sdb.get("dirty"):
             try:
                 new_sdb = sdb_mod.serialize(self._sdb["parsed"])
                 new_win = sdb_mod.replace_buffer4(self._sdb["win"], new_sdb)
             except Exception as e:
-                ui_util.error(self, t("Save failed"), t("Could not rebuild the SDB layer:\n{e}", e=e))
+                ui_util.error(self, t("common.save_failed"), t("map.could_not_rebuild_sdb_layer", e=e))
                 return
             self.project.set_raw("maps", self._sdb["win_vpath"], new_win)
             self._sdb["win"] = new_win
-            staged.append(t("AI-terrain / SDB"))
+            staged.append(t("map.ai_terrain_sdb"))
         # edited capture mesh (KDT verts; Eugen's tree preserved) — shelved, only when dirty
         if self._kdt_dirty and self._kdt_vpath and self._kdt_bytes is not None:
             try:
                 new_kdt = kdt_mod.encode_mesh(self._kdt_bytes, self._kdt_world)
             except Exception as e:
-                ui_util.error(self, t("Save failed"), t("Could not encode the capture mesh:\n{e}", e=e))
+                ui_util.error(self, t("common.save_failed"), t("map.could_not_encode_capture_mesh", e=e))
                 return
             self.project.set_raw("maps", self._kdt_vpath, new_kdt)
             self._kdt_bytes = new_kdt
-            staged.append(t("capture mesh (KDT)"))
+            staged.append(t("map.capture_mesh_kdt"))
         # the lobby/game-modes change (globals.cpp) was already mark_dirty'd by "Apply game modes".
         if not self.project.is_dirty():
-            ui_util.info(self, t("Save to mod"), t("No pending changes to save."))
+            ui_util.info(self, t("map.save_mod"), t("common.no_pending_changes_save"))
             return
         try:
             written = self.project.save_all()
         except Exception as e:
-            ui_util.error(self, t("Save failed"),
-                                 t("Could not write the mod's dat file(s):\n{e}", e=e))
+            ui_util.error(self, t("common.save_failed"),
+                                 t("map.could_not_write_mod_s", e=e))
             return
         # clear local dirty flags; re-open the read source so further edits build on the saved state
         self._dirty = self._campath_dirty = self._kdt_dirty = False
@@ -5302,11 +5263,10 @@ class MapEditorWindow(tk.Frame):
         if self._on_change:
             self._on_change()
         self._redraw()
-        body = (t("Saved into the mod:\n  ") + "\n  ".join(staged)) if staged \
-            else t("Saved staged lobby / game-mode changes into the mod.")
-        ui_util.info(self, t("Saved"),
-                            t("{body}\n\nWritten dat file(s):\n  {written}"
-                              "\n\nUse \"Deploy to Game\" in the Mod Editor hub to apply this mod.",
+        body = (t("map.saved_into_mod") + "\n  ".join(staged)) if staged \
+            else t("map.saved_staged_lobby_game_mode")
+        ui_util.info(self, t("common.saved"),
+                            t("map.body_written_dat_file_s",
                               body=body, written="\n  ".join(written)))
 
 
@@ -5333,7 +5293,7 @@ def main():
         proj = _mp.ModProject.create(mods_dir, "_mapeditor_dev", "public", gr, backup)
     # The editor is now a Frame (embedded in the Mod Manager); host it in a plain window for dev use.
     root = tk.Tk()
-    root.title(t("R.U.S.E. Map Editor (standalone dev) — {name}", name=proj.name))
+    root.title(t("map.r_u_s_e_map", name=proj.name))
     root.geometry("1180x800")
     root.minsize(980, 660)
     root.configure(background=_R_BG)

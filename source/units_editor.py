@@ -18,7 +18,7 @@ import os
 import re
 import sys
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 if REPO not in sys.path:
@@ -31,18 +31,19 @@ from i18n import t  # noqa: E402
 import ui_util  # noqa: E402  — pixel-accurate, language-aware widget sizing
 
 # ── Theme (mirrors mod_manager.py palette) ──────────────────────────────────────
-_R_BG        = "#08101c"
-_R_BG_PANEL  = "#0e1a2a"
-_R_BG_WIDGET = "#060d18"
-_R_BORDER    = "#243a5c"
-_R_GOLD      = "#c8a020"
-_R_GOLD_BRT  = "#e0c030"
-_R_TEXT      = "#ccd8e8"
-_R_TEXT_DIM  = "#3e5878"
-_R_SEL_BG    = "#1a3060"
-_F_MAIN = ("Courier New", 9)
-_F_BOLD = ("Courier New", 9, "bold")
-_F_HEAD = ("Courier New", 10, "bold")
+import theme                # single source of truth for the palette; local _R_* names kept unchanged
+_R_BG        = theme.BG
+_R_BG_PANEL  = theme.PANEL
+_R_BG_WIDGET = theme.WIDGET
+_R_BORDER    = theme.BORDER
+_R_GOLD      = theme.GOLD
+_R_GOLD_BRT  = theme.GOLD_BRT
+_R_TEXT      = theme.TEXT
+_R_TEXT_DIM  = theme.DIM
+_R_SEL_BG    = theme.SEL_BG
+_F_MAIN = theme.F
+_F_BOLD = theme.FB
+_F_HEAD = theme.FHEAD
 
 _DESC_CLASSES = [
     ("TUniteAuSolDescriptor", "Ground", "unit"),
@@ -65,53 +66,53 @@ _MENU_CHOICES = ["Barracks", "Armor", "Anti-Tank", "Artillery & AA", "Airfield",
                  "Prototype", "Turret / Defense"]
 _CATEGORIES = ["All"] + _MENU_CHOICES + ["Buildings", "Other"]
 
-_UPG_NONE = t("(standalone - not an upgrade)")
+_UPG_NONE = t("units.standalone_not_upgrade")
 
 # kind: "scalar" | "list" (per-game-mode ints) | "boollist" (per-game-mode 0/1) | "factory" (menu dropdown)
 # 5-element lists are indexed [0]=1945, [1]=1942, [2]=1939, [3]=Total War, [4]=Nuclear War.
 _FIELDS = [
-    (t("HP (SeuilMort)"),                  "SeuilMort",          "scalar"),
-    (t("Pinned threshold (SeuilPinned)"),  "SeuilPinned",        "scalar"),
-    (t("Speed (VitesseLineaire)"),         "VitesseLineaire",    "scalar"),
-    (t("Combat speed (VitesseCombat)"),    "VitesseCombat",      "scalar"),
-    (t("Acceleration (MaxAcceleration)"),  "MaxAcceleration",    "scalar"),
-    (t("Deceleration (MaxDeceleration)"),  "MaxDeceleration",    "scalar"),
-    (t("U-turn time (TempsDemiTour)"),     "TempsDemiTour",      "scalar"),
-    (t("Road speed bonus (SpeedBonusOnRoad)"), "SpeedBonusOnRoad", "scalar"),
-    (t("Vision range (DetectionBase)"),    "DetectionBase",      "scalar"),
-    (t("Air vision (PorteeVisionVolant)"), "PorteeVisionVolant", "scalar"),
-    (t("Radar signature (SignatureRadar)"), "SignatureRadar",    "scalar"),
-    (t("Air attack range (PorteeAttackReflexAir)"), "PorteeAttackReflexAir", "scalar"),
-    (t("Ground attack range (PorteeAttackReflexSol)"), "PorteeAttackReflexSol", "scalar"),
-    (t("Build time (ProductionTime)"),     "ProductionTime",     "scalar"),
-    (t("Price per game mode (ProductionPrice)"), "ProductionPrice", "list"),
-    (t("Build menu (Factory)"),            "Factory",            "factory"),
-    (t("Menu slot (PositionInMenu)"),      "PositionInMenu",     "scalar"),
-    (t("Show in game mode (ShowInMenu) [1945,1942,1939,TotalWar,NuclearWar]"),
+    (t("common.hp_seuilmort"),                  "SeuilMort",          "scalar"),
+    (t("units.pinned_threshold_seuilpinned"),  "SeuilPinned",        "scalar"),
+    (t("units.speed_vitesselineaire"),         "VitesseLineaire",    "scalar"),
+    (t("units.combat_speed_vitessecombat"),    "VitesseCombat",      "scalar"),
+    (t("units.acceleration_maxacceleration"),  "MaxAcceleration",    "scalar"),
+    (t("units.deceleration_maxdeceleration"),  "MaxDeceleration",    "scalar"),
+    (t("units.u_turn_time_tempsdemitour"),     "TempsDemiTour",      "scalar"),
+    (t("units.road_speed_bonus_speedbonusonroad"), "SpeedBonusOnRoad", "scalar"),
+    (t("units.vision_range_detectionbase"),    "DetectionBase",      "scalar"),
+    (t("units.air_vision_porteevisionvolant"), "PorteeVisionVolant", "scalar"),
+    (t("units.radar_signature_signatureradar"), "SignatureRadar",    "scalar"),
+    (t("units.air_attack_range_porteeattackreflexair"), "PorteeAttackReflexAir", "scalar"),
+    (t("units.ground_attack_range_porteeattackreflexso"), "PorteeAttackReflexSol", "scalar"),
+    (t("common.build_time_productiontime"),     "ProductionTime",     "scalar"),
+    (t("units.price_per_game_mode_productionprice"), "ProductionPrice", "list"),
+    (t("units.build_menu_factory"),            "Factory",            "factory"),
+    (t("units.menu_slot_positioninmenu"),      "PositionInMenu",     "scalar"),
+    (t("units.show_game_mode_showinmenu_1945"),
                                             "ShowInMenu",         "boollist"),
-    (t("Upgrade price (UpgradePrice)"),    "UpgradePrice",       "scalar"),
-    (t("Upgrade time (UpgradeTime)"),      "UpgradeTime",        "scalar"),
-    (t("Building type (TypeBatiment)"),    "TypeBatiment",       "scalar"),
-    (t("Build menu id (Menu)"),            "Menu",               "scalar"),
+    (t("units.upgrade_price_upgradeprice"),    "UpgradePrice",       "scalar"),
+    (t("units.upgrade_time_upgradetime"),      "UpgradeTime",        "scalar"),
+    (t("units.building_type_typebatiment"),    "TypeBatiment",       "scalar"),
+    (t("units.build_menu_id_menu"),            "Menu",               "scalar"),
 ]
 
 # Weapon stats (on the shared TAmmunition).
 _AMMO_FIELDS = [
-    (t("Damage (Puissance)"),            "Puissance",                       "scalar"),
-    (t("Max range (PorteeMaximale)"),    "PorteeMaximale",                  "scalar"),
-    (t("Min range (PorteeMinimale)"),    "PorteeMinimale",                  "scalar"),
-    (t("Time between shots (TempsEntreDeuxTirs)"), "TempsEntreDeuxTirs",    "scalar"),
-    (t("Shots per volley (NbTirParSalves)"), "NbTirParSalves",              "scalar"),
-    (t("Reload between volleys (TempsEntreDeuxSalves)"), "TempsEntreDeuxSalves", "scalar"),
-    (t("Dispersion (AngleDispersion)"),  "AngleDispersion",                 "scalar"),
-    (t("Pin radius (RayonPinned)"),      "RayonPinned",                     "scalar"),
-    (t("% direct fire (PourcentageTirDirect)"), "PourcentageTirDirect",     "scalar"),
-    (t("% direct moving (PourcentageTirDirectEnMouvement)"), "PourcentageTirDirectEnMouvement", "scalar"),
-    (t("Indirect fire 0/1 (TirIndirect)"), "TirIndirect",                   "scalar"),
-    (t("Allow ambush 0/1 (AllowAmbushShot)"), "AllowAmbushShot",            "scalar"),
-    (t("Weapon level (Level)"),          "Level",                           "scalar"),
-    (t("Weapon class (Arme)"),           "Arme",                            "scalar"),
-    (t("Projectile type (ProjectileType)"), "ProjectileType",               "scalar"),
+    (t("units.damage_puissance"),            "Puissance",                       "scalar"),
+    (t("units.max_range_porteemaximale"),    "PorteeMaximale",                  "scalar"),
+    (t("units.min_range_porteeminimale"),    "PorteeMinimale",                  "scalar"),
+    (t("units.time_between_shots_tempsentredeuxtirs"), "TempsEntreDeuxTirs",    "scalar"),
+    (t("units.shots_per_volley_nbtirparsalves"), "NbTirParSalves",              "scalar"),
+    (t("units.reload_between_volleys_tempsentredeuxsal"), "TempsEntreDeuxSalves", "scalar"),
+    (t("units.dispersion_angledispersion"),  "AngleDispersion",                 "scalar"),
+    (t("units.pin_radius_rayonpinned"),      "RayonPinned",                     "scalar"),
+    (t("units.direct_fire_pourcentagetirdirect"), "PourcentageTirDirect",     "scalar"),
+    (t("units.direct_moving_pourcentagetirdirectenmouv"), "PourcentageTirDirectEnMouvement", "scalar"),
+    (t("units.indirect_fire_0_1_tirindirect"), "TirIndirect",                   "scalar"),
+    (t("units.allow_ambush_0_1_allowambushshot"), "AllowAmbushShot",            "scalar"),
+    (t("units.weapon_level_level"),          "Level",                           "scalar"),
+    (t("units.weapon_class_arme"),           "Arme",                            "scalar"),
+    (t("units.projectile_type_projectiletype"), "ProjectileType",               "scalar"),
 ]
 
 # Numeric value types that the generic "other fields" section will expose.
@@ -201,8 +202,8 @@ class UnitsEditorWindow(tk.Frame):
         try:
             self._ndf = project.everything()
         except Exception as e:
-            ui_util.error(self, t("Units Editor"),
-                                 t("Could not load the gameplay data:\n{e}", e=e))
+            ui_util.error(self, t("common.units_editor"),
+                                 t("units.could_not_load_gameplay_data", e=e))
             self.after(10, self.destroy)
             return
 
@@ -362,8 +363,8 @@ class UnitsEditorWindow(tk.Frame):
         try:
             new_idx, new_cn, new_token = clone_mod.clone_descriptor(self._ndf, src_idx)
         except Exception as e:
-            ui_util.error(self, t("Duplicate"),
-                                 t("Could not duplicate {name}:\n{e}", name=src_name, e=e))
+            ui_util.error(self, t("common.duplicate"),
+                                 t("units.could_not_duplicate_name_e", name=src_name, e=e))
             return
 
         dic_written = 0
@@ -389,9 +390,8 @@ class UnitsEditorWindow(tk.Frame):
             self._render_fields()
         ui_util.info(
             self,
-            t("Duplicate"),
-            t("Cloned {src} -> {dst}. Display name added to {n} language(s). Edit Nationalite in "
-              "the raw-properties section to assign it to a different nation.",
+            t("common.duplicate"),
+            t("units.cloned_src_dst_display_name",
               src=src_name, dst=new_cn, n=dic_written))
 
     def _migrate_dialog(self):
@@ -402,7 +402,7 @@ class UnitsEditorWindow(tk.Frame):
         src_name = self._sel["name"] or "(unnamed)"
         cur_nat = self._sel["nation"]   # already resolved string, e.g. "Germany" or "US"
 
-        win = ui_util.themed_toplevel(self, t("Migrate {name}", name=src_name), size=(420, 260), min_size=(380, 220), resizable=True)
+        win = ui_util.themed_toplevel(self, t("units.migrate_name", name=src_name), size=(420, 260), min_size=(380, 220), resizable=True)
 
         # Pack the button row FIRST with side=bottom so it ALWAYS reserves space, even if the
         # description label below wraps onto extra lines. Otherwise top-packed widgets squeeze
@@ -416,22 +416,20 @@ class UnitsEditorWindow(tk.Frame):
             win.destroy()
             self._do_migrate(target)
 
-        ttk.Button(br, text=t("Migrate"), command=do_migrate).pack(side="right", padx=4)
-        ttk.Button(br, text=t("Cancel"), command=win.destroy).pack(side="right")
+        ttk.Button(br, text=t("units.migrate"), command=do_migrate).pack(side="right", padx=4)
+        ttk.Button(br, text=t("common.cancel"), command=win.destroy).pack(side="right")
 
         # Now the rest of the dialog content — it can grow vertically without hiding the buttons.
-        tk.Label(win, text=t("Currently: {nat}", nat=cur_nat), background=_R_BG_PANEL,
+        tk.Label(win, text=t("units.currently_nat", nat=cur_nat), background=_R_BG_PANEL,
                  foreground=_R_TEXT_DIM, font=_F_MAIN).pack(anchor="w", padx=12, pady=(12, 2))
-        tk.Label(win, text=t("Migrate to:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(win, text=t("units.migrate_2"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(anchor="w", padx=12, pady=(8, 2))
         options = [n for n in _FACTIONS if n != "All"]   # actual nations only, no filter sentinel
         mig_cb = ttk.Combobox(win, textvariable=target_var, values=options, width=20,
                               state="readonly")
         mig_cb.pack(anchor="w", padx=12)
         ui_util.fit_combobox(mig_cb)
-        tk.Label(win, text=t("USA = removes the Nationalite property. Other nations set it to the "
-                             "matching int. PositionInMenu is auto-reassigned to a free slot in the "
-                             "target nation's factory; cross-nation UpgradeRequire is cleared."),
+        tk.Label(win, text=t("units.usa_removes_nationalite_property_other"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                  wraplength=380, justify="left").pack(anchor="w", padx=12, pady=(8, 4))
 
@@ -445,12 +443,12 @@ class UnitsEditorWindow(tk.Frame):
         try:
             result = clone_mod.migrate_descriptor(self._ndf, self._sel["inst_index"], target_int)
         except Exception as e:
-            ui_util.error(self, t("Migrate"),
-                                 t("Could not migrate {name}:\n{e}", name=src_name, e=e))
+            ui_util.error(self, t("units.migrate"),
+                                 t("units.could_not_migrate_name_e", name=src_name, e=e))
             return
         if not result["changed"]:
-            ui_util.info(self, t("Migrate"),
-                                t("{name} is already in {nat} — nothing to do.",
+            ui_util.info(self, t("units.migrate"),
+                                t("units.name_already_nat_nothing_do",
                                   name=src_name, nat=target_label))
             return
         self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
@@ -469,12 +467,12 @@ class UnitsEditorWindow(tk.Frame):
             self._lb.see(tgt)
             self._sel = self._shown[tgt]
             self._render_fields()
-        slot_msg = (t(" PositionInMenu moved to {slot}.", slot=result["new_slot"])
+        slot_msg = (t("units.positioninmenu_moved_slot", slot=result["new_slot"])
                     if result["new_slot"] is not None else "")
-        upg_msg = t(" Upgrade chain cleared (parent was in another nation).") \
+        upg_msg = t("units.upgrade_chain_cleared_parent_was") \
             if result["upgrade_cleared"] else ""
-        ui_util.info(self, t("Migrate"),
-                            t("Migrated {name} -> {nat}.{slot}{upg}",
+        ui_util.info(self, t("units.migrate"),
+                            t("units.migrated_name_nat_slot_upg",
                               name=src_name, nat=target_label, slot=slot_msg, upg=upg_msg))
 
     def _duplicate_ammo(self):
@@ -500,9 +498,8 @@ class UnitsEditorWindow(tk.Frame):
             self._render_wpn_fields()
         ui_util.info(
             self,
-            t("Duplicate ammo"),
-            t("Created Ammo #{ammo_id} (a copy). Edit it here, then assign it to "
-              "a unit's weapon on the Units tab (\"Set weapon's ammo to\").",
+            t("units.duplicate_ammo"),
+            t("units.created_ammo_ammo_id_copy",
               ammo_id=(new_id.raw if new_id else '?')))
 
     def _commit_weapon_ammo(self):
@@ -527,9 +524,8 @@ class UnitsEditorWindow(tk.Frame):
         unit = self._sel["inst"]
         p = self._prop_index(unit.class_index, "WeaponDescriptor")
         if p is not None and unit.get(p) is not None:
-            if not ui_util.confirm(self, t("Remove weapon"),
-                                       t("Remove the weapon from {name} "
-                                         "(it will be unable to attack)?",
+            if not ui_util.confirm(self, t("units.remove_weapon"),
+                                       t("units.remove_weapon_from_name_will",
                                          name=self._sel['name'])):
                 return
             unit.remove(p)
@@ -616,8 +612,8 @@ class UnitsEditorWindow(tk.Frame):
     def _type_label(tb) -> str:
         name = _FACTORY_TYPE.get(tb)
         if name:
-            return t("Any {name} — all factions (TB={tb})", name=name, tb=tb)
-        return t("Any building type TB={tb} — all factions", tb=tb)
+            return t("units.any_name_all_factions_tb", name=name, tb=tb)
+        return t("units.any_building_type_tb_tb", tb=tb)
 
     @staticmethod
     def _building_label(b) -> str:
@@ -864,27 +860,25 @@ class UnitsEditorWindow(tk.Frame):
         self._nb.pack(fill="both", expand=True, padx=4, pady=(6, 2))
         t1 = ttk.Frame(self._nb)
         t2 = ttk.Frame(self._nb)
-        self._nb.add(t1, text=t("  Units & Buildings  "))
-        self._nb.add(t2, text=t("  Ammo  "))
+        self._nb.add(t1, text=t("common.units_buildings"))
+        self._nb.add(t2, text=t("units.ammo"))
         self._build_units_tab(t1)
         self._build_weapons_tab(t2)
 
         bottom = tk.Frame(self, background=_R_BG)
         bottom.pack(fill="x", padx=8, pady=(0, 2))
-        ttk.Button(bottom, text=t("Save mod (.dat)"), command=self._save_to_mod).pack(side="left")
+        ttk.Button(bottom, text=t("common.save_mod_dat"), command=self._save_to_mod).pack(side="left")
         self._save_status = tk.Label(bottom, text="", background=_R_BG,
                                      foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._save_status.pack(side="right")
-        tk.Label(self, text=t("Apply commits the current selection's edits into the project. "
-                              "“Save mod (.dat)” writes ALL accumulated changes to the mod's .dat. "
-                              "Weapon stats are shared — editing one affects every unit that uses it."),
+        tk.Label(self, text=t("units.apply_commits_current_selection_s"),
                  background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN, justify="left",
                  wraplength=1100).pack(fill="x", padx=8, pady=(0, 6))
 
     def _build_units_tab(self, parent):
         bar = tk.Frame(parent, background=_R_BG_PANEL)
         bar.pack(fill="x", padx=4, pady=(6, 4))
-        tk.Label(bar, text=t("Faction:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(bar, text=t("units.faction"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(side="left")
         self._faction_var = tk.StringVar(value="All")
         fac = ttk.Combobox(bar, textvariable=self._faction_var, values=_FACTIONS,
@@ -896,7 +890,7 @@ class UnitsEditorWindow(tk.Frame):
         # Hidden back-compat var — older tests/probes set this to a category name (e.g. "Armor") to
         # narrow the unit list. We honor it as a fallback in _apply_filter.
         self._type_var = tk.StringVar(value="All")
-        tk.Label(bar, text=t("Building / Type:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(bar, text=t("units.building_type"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(side="left")
         self._building_var = tk.StringVar(value="All buildings")
         self._building_combo = ttk.Combobox(bar, textvariable=self._building_var,
@@ -911,7 +905,7 @@ class UnitsEditorWindow(tk.Frame):
         if langs:
             start = self._list_lang_code if self._list_lang_code in langs else langs[0]
             self._list_lang_code = start
-            tk.Label(bar, text=t("Name:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+            tk.Label(bar, text=t("common.name"), background=_R_BG_PANEL, foreground=_R_GOLD,
                      font=_F_BOLD).pack(side="left")
             self._list_lang_var = tk.StringVar(value=dic_mod.lang_label(start))
             lang_combo = ttk.Combobox(bar, textvariable=self._list_lang_var, state="readonly",
@@ -919,7 +913,7 @@ class UnitsEditorWindow(tk.Frame):
             lang_combo.pack(side="left", padx=(4, 10))
             ui_util.fit_combobox(lang_combo)
             lang_combo.bind("<<ComboboxSelected>>", lambda *_: self._on_list_lang())
-        tk.Label(bar, text=t("Search:"), background=_R_BG_PANEL, foreground=_R_GOLD,
+        tk.Label(bar, text=t("common.search"), background=_R_BG_PANEL, foreground=_R_GOLD,
                  font=_F_BOLD).pack(side="left")
         self._search_var = tk.StringVar()
         ttk.Entry(bar, textvariable=self._search_var, width=20).pack(side="left", padx=4)
@@ -953,7 +947,7 @@ class UnitsEditorWindow(tk.Frame):
 
         right = tk.Frame(body, background=_R_BG_PANEL)
         right.pack(side="left", fill="both", expand=True, padx=(8, 0))
-        self._hdr = tk.Label(right, text=t("Select a unit or building"), background=_R_BG_PANEL,
+        self._hdr = tk.Label(right, text=t("units.select_unit_building"), background=_R_BG_PANEL,
                              foreground=_R_GOLD_BRT, font=_F_HEAD, anchor="w", justify="left")
         self._hdr.pack(fill="x", padx=6, pady=(4, 0))
         self._sub = tk.Label(right, text="", background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
@@ -961,16 +955,16 @@ class UnitsEditorWindow(tk.Frame):
         self._sub.pack(fill="x", padx=6)
         btnrow = tk.Frame(right, background=_R_BG_PANEL)
         btnrow.pack(side="bottom", fill="x", padx=6, pady=(0, 6))
-        self._apply_btn = ttk.Button(btnrow, text=t("Apply changes to this unit"),
+        self._apply_btn = ttk.Button(btnrow, text=t("units.apply_changes_unit"),
                                      command=self._apply_edits, state="disabled")
         self._apply_btn.pack(side="left")
-        self._reset_btn = ttk.Button(btnrow, text=t("Reset to defaults"),
+        self._reset_btn = ttk.Button(btnrow, text=t("common.reset_defaults"),
                                      command=self._reset_to_defaults, state="disabled")
         self._reset_btn.pack(side="left", padx=8)
-        self._dup_btn = ttk.Button(btnrow, text=t("Duplicate this unit"),
+        self._dup_btn = ttk.Button(btnrow, text=t("units.duplicate_unit"),
                                    command=self._duplicate_unit, state="disabled")
         self._dup_btn.pack(side="left", padx=8)
-        self._mig_btn = ttk.Button(btnrow, text=t("Migrate to nation..."),
+        self._mig_btn = ttk.Button(btnrow, text=t("units.migrate_nation"),
                                    command=self._migrate_dialog, state="disabled")
         self._mig_btn.pack(side="left")
         self._status = tk.Label(btnrow, text="", background=_R_BG_PANEL,
@@ -983,7 +977,7 @@ class UnitsEditorWindow(tk.Frame):
     def _build_weapons_tab(self, parent):
         bar = tk.Frame(parent, background=_R_BG_PANEL)
         bar.pack(fill="x", padx=4, pady=(6, 4))
-        tk.Label(bar, text=t("Search ammo (id or unit):"), background=_R_BG_PANEL,
+        tk.Label(bar, text=t("units.search_ammo_id_unit"), background=_R_BG_PANEL,
                  foreground=_R_GOLD, font=_F_BOLD).pack(side="left")
         self._wpn_search_var = tk.StringVar()
         ttk.Entry(bar, textvariable=self._wpn_search_var, width=24).pack(side="left", padx=4)
@@ -1006,7 +1000,7 @@ class UnitsEditorWindow(tk.Frame):
 
         right = tk.Frame(body, background=_R_BG_PANEL)
         right.pack(side="left", fill="both", expand=True, padx=(8, 0))
-        self._wpn_hdr = tk.Label(right, text=t("Select an ammo"), background=_R_BG_PANEL,
+        self._wpn_hdr = tk.Label(right, text=t("units.select_ammo"), background=_R_BG_PANEL,
                                  foreground=_R_GOLD_BRT, font=_F_HEAD, anchor="w", justify="left")
         self._wpn_hdr.pack(fill="x", padx=6, pady=(4, 0))
         self._wpn_sub = tk.Label(right, text="", background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
@@ -1014,13 +1008,13 @@ class UnitsEditorWindow(tk.Frame):
         self._wpn_sub.pack(fill="x", padx=6)
         wbtn = tk.Frame(right, background=_R_BG_PANEL)
         wbtn.pack(side="bottom", fill="x", padx=6, pady=(0, 6))
-        self._wpn_apply_btn = ttk.Button(wbtn, text=t("Apply changes to this ammo"),
+        self._wpn_apply_btn = ttk.Button(wbtn, text=t("units.apply_changes_ammo"),
                                          command=self._apply_wpn, state="disabled")
         self._wpn_apply_btn.pack(side="left")
-        self._wpn_reset_btn = ttk.Button(wbtn, text=t("Reset to defaults"),
+        self._wpn_reset_btn = ttk.Button(wbtn, text=t("common.reset_defaults"),
                                          command=self._reset_wpn_defaults, state="disabled")
         self._wpn_reset_btn.pack(side="left", padx=8)
-        self._wpn_dup_btn = ttk.Button(wbtn, text=t("Duplicate this ammo"),
+        self._wpn_dup_btn = ttk.Button(wbtn, text=t("units.duplicate_ammo_2"),
                                        command=self._duplicate_ammo, state="disabled")
         self._wpn_dup_btn.pack(side="left", padx=8)
         self._wpn_status = tk.Label(wbtn, text="", background=_R_BG_PANEL,
@@ -1066,13 +1060,13 @@ class UnitsEditorWindow(tk.Frame):
         hdr = tk.Frame(container, background=_R_BG_PANEL)
         hdr.pack(fill="x", pady=(0, 2))
         hdr.grid_columnconfigure(0, weight=1)
-        tk.Label(hdr, text=t("Field"), anchor="w", background=_R_BG_PANEL,
+        tk.Label(hdr, text=t("common.field"), anchor="w", background=_R_BG_PANEL,
                  foreground=_R_GOLD, font=_F_BOLD).grid(row=0, column=0, sticky="w", padx=(2, 14))
-        tk.Label(hdr, text=t("Default"), width=self._DEF_W, anchor="e", background=_R_BG_PANEL,
+        tk.Label(hdr, text=t("common.default"), width=self._DEF_W, anchor="e", background=_R_BG_PANEL,
                  foreground=_R_GOLD, font=_F_BOLD).grid(row=0, column=1, sticky="e", padx=(0, 10))
-        tk.Label(hdr, text=t("Current"), width=self._VAL_W, anchor="e", background=_R_BG_PANEL,
+        tk.Label(hdr, text=t("units.current"), width=self._VAL_W, anchor="e", background=_R_BG_PANEL,
                  foreground=_R_GOLD, font=_F_BOLD).grid(row=0, column=2, sticky="e", padx=(0, 12))
-        tk.Label(hdr, text=t("New value"), width=self._ENT_W, anchor="e", background=_R_BG_PANEL,
+        tk.Label(hdr, text=t("units.new_value"), width=self._ENT_W, anchor="e", background=_R_BG_PANEL,
                  foreground=_R_GOLD, font=_F_BOLD).grid(row=0, column=3, sticky="e", padx=(0, 4))
 
     def _factory_display(self, raw):
@@ -1208,7 +1202,7 @@ class UnitsEditorWindow(tk.Frame):
             container, lambda text, k=key: self.project.set_note(k, text),
             panel_bg=_R_BG_PANEL, widget_bg=_R_BG_WIDGET, text_fg=_R_TEXT, dim_fg=_R_TEXT_DIM,
             gold=_R_GOLD, font=_F_MAIN, font_bold=_F_BOLD,
-            initial=self.project.get_note(key), label=t("Notes"), hint=hint)
+            initial=self.project.get_note(key), label=t("common.notes"), hint=hint)
 
     def _render_group(self, container, rows, inst, specs):
         any_shown = False
@@ -1241,7 +1235,7 @@ class UnitsEditorWindow(tk.Frame):
             else:
                 non_numeric.append((name, pvv.value))
         if non_numeric:
-            tk.Label(container, text=t("Non-editable (ref / list / hash) — present on descriptor:"),
+            tk.Label(container, text=t("units.non_editable_ref_list_hash"),
                      background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                      anchor="w").pack(fill="x", padx=2, pady=(6, 1))
             for name, val in sorted(non_numeric, key=lambda x: x[0].lower()):
@@ -1270,7 +1264,7 @@ class UnitsEditorWindow(tk.Frame):
                          wraplength=600, justify="left").pack(fill="x", padx=2)
             shown = True
         if not shown:
-            tk.Label(container, text=t("(none)"), background=_R_BG_PANEL,
+            tk.Label(container, text=t("common.none"), background=_R_BG_PANEL,
                      foreground=_R_TEXT_DIM, font=_F_MAIN).pack(anchor="w", padx=2)
         return shown
 
@@ -1337,12 +1331,12 @@ class UnitsEditorWindow(tk.Frame):
         self._lb.delete(0, tk.END)
         for d, loc in zip(self._shown, locs):
             tag = d['cls_label'][0]
-            internal = d['name'] or t("(unnamed)")
+            internal = d['name'] or t("units.unnamed")
             if col:
                 self._lb.insert(tk.END, "[%s] %-*s  %s" % (tag, col, loc, internal))
             else:
-                self._lb.insert(tk.END, t("[{tag}] {name}", tag=tag, name=internal))
-        self._count_lbl.configure(text=t("{shown} of {total}",
+                self._lb.insert(tk.END, t("units.tag_name", tag=tag, name=internal))
+        self._count_lbl.configure(text=t("units.shown_total",
                                          shown=len(self._shown), total=len(self._descs)))
         # Restore the previous selection if it survived the refilter (e.g. language switch).
         if prev is not None and prev in self._shown:
@@ -1359,7 +1353,7 @@ class UnitsEditorWindow(tk.Frame):
         sel = self._lb.curselection()
         if sel and 0 <= sel[0] < len(self._shown):
             d = self._shown[sel[0]]
-            self._hdr.configure(text=t("Loading {name}…", name=d["name"] or t("(unnamed)")))
+            self._hdr.configure(text=t("common.loading_name", name=d["name"] or t("units.unnamed")))
 
     def _on_select(self, _=None):
         sel = self._lb.curselection()
@@ -1384,7 +1378,7 @@ class UnitsEditorWindow(tk.Frame):
         self._reset_btn.configure(state="disabled")
         self._dup_btn.configure(state="disabled")
         self._mig_btn.configure(state="disabled")
-        self._hdr.configure(text=t("Select a unit or building"))
+        self._hdr.configure(text=t("units.select_unit_building"))
         self._sub.configure(text="")
         self._status.configure(text="")
 
@@ -1396,20 +1390,19 @@ class UnitsEditorWindow(tk.Frame):
         self._wpn_ammo_pending = []   # (mounted_weapon, dropdown var, orig) — committed on Apply (#7)
         d = self._sel
         inst = d["inst"]
-        self._hdr.configure(text=d["name"] or t("(unnamed)"))
+        self._hdr.configure(text=d["name"] or t("units.unnamed"))
         # Show the raw Nationalite int alongside the friendly name so the user can confirm at a
         # glance what's actually written on the descriptor (the prop is hidden from the raw fields
         # section because it's managed via the Migrate dialog).
         nat_v = self._prop_value(inst, "Nationalite")
         nat_raw = "absent" if nat_v is None else f"{nat_v.raw}"
-        self._sub.configure(text=t("{cls} · {nation} (Nationalite={nat_raw}) · {category} · "
-                                   "instance #{idx}",
+        self._sub.configure(text=t("units.cls_nation_nationalite_nat_raw",
                                    cls=d['cls_label'], nation=d['nation'], nat_raw=nat_raw,
                                    category=d['category'], idx=d['inst_index']))
 
         self._render_name(inst)
 
-        self._section(self._fields_frame, t("Unit / building stats"))
+        self._section(self._fields_frame, t("units.unit_building_stats"))
         self._col_header(self._fields_frame)
         self._render_group(self._fields_frame, self._field_rows, inst, _FIELDS)
 
@@ -1418,19 +1411,19 @@ class UnitsEditorWindow(tk.Frame):
         # Inline weapons: each mounted weapon has its OWN ammo, set per weapon.
         nodes = self._unit_weapon_nodes(inst) if d["kind"] == "unit" else []
         if nodes:
-            self._section(self._fields_frame, t("Weapons — pick each weapon's ammo (applied on Apply)"))
+            self._section(self._fields_frame, t("units.weapons_pick_each_weapon_s"))
             ammo_vals = [f"#{a['id']}" for a in self._ammo]
             for wi, (mw, am, ai) in enumerate(nodes):
                 idv = self._prop_value(am, "AmmunitionId") if am is not None else None
                 tagv = self._prop_value(mw, "EffectTag")
                 wname = (self._ndf.get_string(tagv.raw)
                          if tagv is not None and isinstance(tagv.raw, int)
-                         else t("Weapon {n}", n=wi + 1))
+                         else t("units.weapon_n", n=wi + 1))
                 row = tk.Frame(self._fields_frame, background=_R_BG_PANEL)
                 row.pack(fill="x", pady=2)
                 row.grid_columnconfigure(0, weight=1)
                 self._wrap_label(row, wname, _R_TEXT)
-                tk.Label(row, text=t("ammo #{ammo_id}", ammo_id=(idv.raw if idv else '?')),
+                tk.Label(row, text=t("units.ammo_ammo_id_2", ammo_id=(idv.raw if idv else '?')),
                          width=self._VAL_W, anchor="e",
                          background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN
                          ).grid(row=0, column=2, sticky="e", padx=(0, 12))
@@ -1445,12 +1438,10 @@ class UnitsEditorWindow(tk.Frame):
                 self._wpn_ammo_pending.append((mw, var, var.get()))
             rm = tk.Frame(self._fields_frame, background=_R_BG_PANEL)
             rm.pack(fill="x", pady=1)
-            ttk.Button(rm, text=t("Remove all weapons from this unit"),
+            ttk.Button(rm, text=t("units.remove_all_weapons_from_unit"),
                        command=self._remove_weapon).pack(side="left", padx=2)
             tk.Label(self._fields_frame,
-                     text=t("Each weapon fires its own ammo. To make a unique weapon, duplicate an ammo "
-                            "on the Ammo tab, pick it for the weapon here, then click Apply. Editing a "
-                            "shared ammo below affects every unit using it."),
+                     text=t("units.each_weapon_fires_its_own"),
                      background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                      wraplength=560, justify="left").pack(anchor="w", padx=2)
             # editable stats for each DISTINCT ammo this unit uses
@@ -1461,23 +1452,22 @@ class UnitsEditorWindow(tk.Frame):
                     continue
                 seen.add(ai)
                 users = next((a["users"] for a in self._ammo if a["idx"] == ai), [])
-                shared = (t("  (shared by {n} units)", n=len(users)) if len(users) > 1
-                          else t("  (private to this unit)"))
+                shared = (t("units.shared_n_units", n=len(users)) if len(users) > 1
+                          else t("units.private_unit"))
                 idv = self._prop_value(am, "AmmunitionId")
                 self._section(self._fields_frame,
-                              t("Ammo #{ammo_id}{shared} stats",
+                              t("units.ammo_ammo_id_shared_stats",
                                 ammo_id=(idv.raw if idv else '?'), shared=shared))
                 self._render_group(self._fields_frame, self._field_rows, am, _AMMO_FIELDS)
                 self._render_other(self._fields_frame, self._field_rows, am, ammo_covered)
 
         # Catch-all: any other numeric field on the unit not shown above
-        self._section(self._fields_frame, t("Other unit fields (raw)"))
+        self._section(self._fields_frame, t("units.other_unit_fields_raw"))
         self._render_other(self._fields_frame, self._field_rows, inst, _COVERED)
 
         # Modder's notes for this unit (saved in the mod project, not the game data) — issue #5.6.
         self._notes_section(self._fields_frame, "unit:" + (d["name"] or ""),
-                            hint=t("Private notes for this unit — saved with the mod project, "
-                                   "auto-saved as you click away."))
+                            hint=t("units.private_notes_unit_saved_mod"))
 
         self._apply_btn.configure(state="normal")
         self._reset_btn.configure(state="normal")
@@ -1499,19 +1489,19 @@ class UnitsEditorWindow(tk.Frame):
         self._name_orig_by_lang = {}
         self._name_clean_by_lang = {}
         self._name_key = self._name_token(inst)
-        self._section(self._fields_frame, t("Display name (in-game)"))
+        self._section(self._fields_frame, t("units.display_name_game"))
         row = tk.Frame(self._fields_frame, background=_R_BG_PANEL)
         row.pack(fill="x", pady=2)
         row.grid_columnconfigure(0, weight=1)
         if not self._name_lang_paths:
-            self._wrap_label(row, t("Name editing needs ZZ_Win.dat (not in this mod's sources)"), _R_TEXT_DIM)
+            self._wrap_label(row, t("units.name_editing_needs_zz_win"), _R_TEXT_DIM)
             return
         if self._name_key is None:
-            self._wrap_label(row, t("(this descriptor has no NameInMenuToken)"), _R_TEXT_DIM)
+            self._wrap_label(row, t("units.descriptor_has_no_nameinmenutoken"), _R_TEXT_DIM)
             return
         langs = [c for c in self._name_lang_order if self._name_orig(c) is not None]
         if not langs:
-            self._wrap_label(row, t("(name not found in baseunite.dic for this unit)"), _R_TEXT_DIM)
+            self._wrap_label(row, t("units.name_not_found_baseunite_dic"), _R_TEXT_DIM)
             return
         start = self._name_default_lang if self._name_default_lang in langs else langs[0]
         self._name_cur_lang = start
@@ -1519,7 +1509,7 @@ class UnitsEditorWindow(tk.Frame):
         dflt = self._name_default(start) or ""
 
         # name row: label | default | current value | entry
-        self._wrap_label(row, t("Unit name"), _R_TEXT)
+        self._wrap_label(row, t("units.unit_name"), _R_TEXT)
         self._name_def_lbl = tk.Label(row, text=(ui_util.truncate(dflt, self._DEF_W) if dflt != cur else ""),
                                       width=self._DEF_W, anchor="e", background=_R_BG_PANEL,
                                       foreground=_R_GOLD, font=_F_MAIN)
@@ -1538,7 +1528,7 @@ class UnitsEditorWindow(tk.Frame):
         lrow = tk.Frame(self._fields_frame, background=_R_BG_PANEL)
         lrow.pack(fill="x", pady=(0, 2))
         lrow.grid_columnconfigure(0, weight=1)
-        self._wrap_label(lrow, t("Language"), _R_TEXT_DIM)
+        self._wrap_label(lrow, t("units.language"), _R_TEXT_DIM)
         self._name_lang_var = tk.StringVar(value=dic_mod.lang_label(start))
         cb = ttk.Combobox(lrow, textvariable=self._name_lang_var, state="readonly",
                           values=[dic_mod.lang_label(c) for c in langs], width=self._ENT_W - 2)
@@ -1547,8 +1537,7 @@ class UnitsEditorWindow(tk.Frame):
         cb.bind("<<ComboboxSelected>>", lambda e: self._on_name_lang())
 
         tk.Label(self._fields_frame,
-                 text=t("Pick a language, set the name, then pick another to set more — Apply commits "
-                        "every language you changed into the mod's ZZ_Win.dat."),
+                 text=t("units.pick_language_set_name_then"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN, anchor="w",
                  justify="left", wraplength=520).pack(anchor="w", padx=2, pady=(0, 2))
 
@@ -1599,15 +1588,15 @@ class UnitsEditorWindow(tk.Frame):
         self._upg_candidates = cands
         values = [_UPG_NONE] + sorted(cands.keys())
 
-        self._section(self._fields_frame, t("Upgrade chain"))
+        self._section(self._fields_frame, t("units.upgrade_chain"))
         row0 = tk.Frame(self._fields_frame, background=_R_BG_PANEL)
         row0.pack(fill="x", pady=2)
         row0.grid_columnconfigure(0, weight=1)
-        self._wrap_label(row0, t("Is an upgrade"), _R_TEXT)
+        self._wrap_label(row0, t("units.upgrade"), _R_TEXT)
         self._upg_isup_orig = cur_isup
         self._upg_isup_var = tk.BooleanVar(value=(True if has_parent else cur_isup))
         self._upg_isup_chk = tk.Checkbutton(
-            row0, text=t("upgradable (adds price/time 50; hidden until researched)"),
+            row0, text=t("units.upgradable_adds_price_time_50"),
             variable=self._upg_isup_var, background=_R_BG_PANEL, foreground=_R_TEXT,
             selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
             activeforeground=_R_GOLD_BRT)
@@ -1618,7 +1607,7 @@ class UnitsEditorWindow(tk.Frame):
         row = tk.Frame(self._fields_frame, background=_R_BG_PANEL)
         row.pack(fill="x", pady=2)
         row.grid_columnconfigure(0, weight=1)
-        self._wrap_label(row, t("Upgrades from"), _R_TEXT)
+        self._wrap_label(row, t("units.upgrades_from"), _R_TEXT)
         self._upg_combo_var = tk.StringVar(value=cur if cur in values else _UPG_NONE)
         self._upg_orig = self._upg_combo_var.get()
         combo = ttk.Combobox(row, textvariable=self._upg_combo_var, values=values, width=self._ENT_W,
@@ -1640,7 +1629,7 @@ class UnitsEditorWindow(tk.Frame):
 
     def _wpn_label(self, a):
         # ammo's own name = its id (it has no readable name); users shown on selection
-        return t("Ammo #{ammo_id}", ammo_id=a['id'])
+        return t("units.ammo_ammo_id", ammo_id=a['id'])
 
     def _wpn_apply_filter(self):
         q = self._wpn_search_var.get().strip().lower()
@@ -1653,7 +1642,7 @@ class UnitsEditorWindow(tk.Frame):
         self._wpn_lb.delete(0, tk.END)
         for a in self._wpn_shown:
             self._wpn_lb.insert(tk.END, self._wpn_label(a))
-        self._wpn_count_lbl.configure(text=t("{shown} of {total}",
+        self._wpn_count_lbl.configure(text=t("units.shown_total",
                                              shown=len(self._wpn_shown), total=len(self._ammo)))
         self._clear_wpn_fields()
 
@@ -1661,7 +1650,7 @@ class UnitsEditorWindow(tk.Frame):
         """Instant 'Loading ammo …' feedback before the ammo field render."""
         sel = self._wpn_lb.curselection()
         if sel and 0 <= sel[0] < len(self._wpn_shown):
-            self._wpn_hdr.configure(text=t("Loading ammo #{ammo_id}…",
+            self._wpn_hdr.configure(text=t("units.loading_ammo_ammo_id",
                                            ammo_id=self._wpn_shown[sel[0]]['id']))
 
     def _on_wpn_select(self, _=None):
@@ -1679,7 +1668,7 @@ class UnitsEditorWindow(tk.Frame):
         self._wpn_apply_btn.configure(state="disabled")
         self._wpn_reset_btn.configure(state="disabled")
         self._wpn_dup_btn.configure(state="disabled")
-        self._wpn_hdr.configure(text=t("Select a weapon"))
+        self._wpn_hdr.configure(text=t("units.select_weapon"))
         self._wpn_sub.configure(text="")
         self._wpn_status.configure(text="")
 
@@ -1689,20 +1678,19 @@ class UnitsEditorWindow(tk.Frame):
         self._wpn_rows = []
         a = self._wpn_sel
         inst = a["inst"]
-        self._wpn_hdr.configure(text=t("Ammo #{ammo_id}", ammo_id=a['id']))
+        self._wpn_hdr.configure(text=t("units.ammo_ammo_id", ammo_id=a['id']))
         users = a["users"]
         self._wpn_sub.configure(
-            text=(t("Used by: ") + (", ".join(users) if users else t("(no indexed unit)")))
-            + (t("   — editing affects all of them") if len(users) > 1 else ""))
+            text=(t("units.used") + (", ".join(users) if users else t("units.no_indexed_unit")))
+            + (t("units.editing_affects_all_them") if len(users) > 1 else ""))
         self._col_header(self._wpn_fields_frame)
         self._render_group(self._wpn_fields_frame, self._wpn_rows, inst, _AMMO_FIELDS)
-        self._section(self._wpn_fields_frame, t("Other ammo fields (raw)"))
+        self._section(self._wpn_fields_frame, t("units.other_ammo_fields_raw"))
         self._render_other(self._wpn_fields_frame, self._wpn_rows, inst,
                            {p for _, p, _ in _AMMO_FIELDS} | _OTHER_SKIP)
         # Modder's notes for this ammo (e.g. why a duplicated ammo exists) — issue #5.6.
         self._notes_section(self._wpn_fields_frame, "ammo:" + str(a["id"]),
-                            hint=t("Private notes for this ammo — e.g. what a duplicated ammo is for. "
-                                   "Saved with the mod project, auto-saved as you click away."))
+                            hint=t("units.private_notes_ammo_e_g"))
         self._wpn_apply_btn.configure(state="normal")
         self._wpn_reset_btn.configure(state="normal")
         self._wpn_dup_btn.configure(state="normal")
@@ -1716,15 +1704,13 @@ class UnitsEditorWindow(tk.Frame):
         if not self._row_defaults:
             ui_util.info(
                 self,
-                t("Reset to defaults"),
-                t("No default values are available — this needs a clean backup of the game for this "
-                  "version. Create one in the Mod Manager tab."))
+                t("common.reset_defaults"),
+                t("common.no_default_values_are_available"))
             return
         if not ui_util.confirm(
                 self,
-                t("Reset to defaults"),
-                t("Reset every field on this ammo back to its default (clean-backup) value? This ammo "
-                  "may be shared by several units. Nothing is written to disk until you Save.")):
+                t("common.reset_defaults"),
+                t("units.reset_every_field_ammo_back")):
             return
         changed = self._revert_rows(self._wpn_rows)
         if changed:
@@ -1732,20 +1718,20 @@ class UnitsEditorWindow(tk.Frame):
             self._index_weapons()
             self._notify()
             self._keep_scroll(self._wpn_fields_frame, self._render_wpn_fields)
-        self._wpn_status.configure(text=t("Reset {n} field(s) to default", n=changed))
+        self._wpn_status.configure(text=t("common.reset_n_field_s_default", n=changed))
 
     def _apply_wpn(self):
         if self._wpn_sel is None:
             return
         changed, errors = self._commit_rows(self._wpn_rows)
         if errors:
-            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
+            ui_util.error(self, t("common.invalid_value_s"), "\n".join(errors))
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
             self._keep_scroll(self._wpn_fields_frame, self._render_wpn_fields)  # show set values
             self._notify()
         self._wpn_status.configure(
-            text=(t("Applied {n} change(s)", n=changed) if changed else t("No changes to apply")))
+            text=(t("common.applied_n_change_s", n=changed) if changed else t("units.no_changes_apply")))
 
     # ── apply / commit ────────────────────────────────────────────────────────
 
@@ -1779,7 +1765,7 @@ class UnitsEditorWindow(tk.Frame):
                         val.raw = _TYPE_FACTORY[new_str]
                         changed += 1
                     else:
-                        errors.append(t("{prop}: unknown building / build menu '{value}'",
+                        errors.append(t("units.prop_unknown_building_build_menu",
                                         prop=prop, value=new_str))
                         continue
                 elif kind in ("list", "boollist"):
@@ -1804,7 +1790,7 @@ class UnitsEditorWindow(tk.Frame):
                     val.raw = self._coerce(val.raw, new_str)
                     changed += 1
             except Exception as e:
-                errors.append(t("{prop}: {e}", prop=prop, e=e))
+                errors.append(t("units.prop_e", prop=prop, e=e))
         return changed, errors
 
     def _revert_rows(self, rows):
@@ -1832,22 +1818,20 @@ class UnitsEditorWindow(tk.Frame):
         if not self._row_defaults:
             ui_util.info(
                 self,
-                t("Reset to defaults"),
-                t("No default values are available — this needs a clean backup of the game for this "
-                  "version. Create one in the Mod Manager tab."))
+                t("common.reset_defaults"),
+                t("common.no_default_values_are_available"))
             return
         if not ui_util.confirm(
                 self,
-                t("Reset to defaults"),
-                t("Reset every field on this page back to its default (clean-backup) value? Unsaved "
-                  "edits to these fields are discarded. Nothing is written to disk until you Save.")):
+                t("common.reset_defaults"),
+                t("units.reset_every_field_page_back")):
             return
         changed = self._revert_rows(self._field_rows)
         if changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
             self._notify()
             self._keep_scroll(self._fields_frame, self._render_fields)
-        self._status.configure(text=t("Reset {n} field(s) to default", n=changed))
+        self._status.configure(text=t("common.reset_n_field_s_default", n=changed))
 
     def _apply_edits(self):
         if not self._sel:
@@ -1878,7 +1862,7 @@ class UnitsEditorWindow(tk.Frame):
                         self._remove_prop(inst, "UpgradeTime")
                     changed += 1
                 except Exception as e:
-                    errors.append(t("Upgrade: {e}", e=e))
+                    errors.append(t("units.upgrade_e", e=e))
 
         # Display name(s) — per-language edits in baseunite.dic (ZZ_Win.dat), tracked separately so a
         # name-only edit doesn't needlessly mark the gameplay dat dirty.
@@ -1898,14 +1882,14 @@ class UnitsEditorWindow(tk.Frame):
                     self._loc_names.pop(lang, None)         # drop stale list cache for this language
                     name_changed += 1
                 except Exception:
-                    errors.append(t("Name [{lang}]: could not write into baseunite.dic",
+                    errors.append(t("units.name_lang_could_not_write",
                                     lang=dic_mod.lang_label(lang)))
 
         # Weapon ammo: apply the inline dropdowns here (issue #7 — no separate "Set ammo" button).
         wpn_changed = self._commit_weapon_ammo()
 
         if errors:
-            ui_util.error(self, t("Invalid value(s)"), "\n".join(errors))
+            ui_util.error(self, t("common.invalid_value_s"), "\n".join(errors))
         if changed or wpn_changed:
             self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
         if wpn_changed:
@@ -1918,9 +1902,9 @@ class UnitsEditorWindow(tk.Frame):
             self._notify()
         total = changed + name_changed + wpn_changed
         self._status.configure(
-            text=(t("Applied {total} change(s) · {pending} file(s) pending",
+            text=(t("units.applied_total_change_s_pending",
                     total=total, pending=self.project.dirty_count())
-                  if total else t("No changes to apply")))
+                  if total else t("units.no_changes_apply")))
 
     def _notify(self):
         if self._on_change:
@@ -1936,20 +1920,19 @@ class UnitsEditorWindow(tk.Frame):
         if self._wpn_sel and self._wpn_rows:
             self._apply_wpn()
         if not self.project.is_dirty():
-            ui_util.info(self, t("Save mod"), t("No pending changes to save."))
+            ui_util.info(self, t("common.save_mod"), t("common.no_pending_changes_save"))
             return
         try:
             written = self.project.save_all()
         except Exception as e:
             ui_util.error(
                 self,
-                t("Save failed"),
-                t("{e}\n\nTip: set the Game Root in Settings — it's needed to obtain the base "
-                  "game file the first time a mod touches it.", e=e))
+                t("common.save_failed"),
+                t("units.e_tip_set_game_root", e=e))
             return
         self._notify()
-        self._save_status.configure(text=t("Saved all changes to the mod"))
-        ui_util.info(self, t("Saved"), t("Saved all mod changes to:\n\n") + "\n".join(written))
+        self._save_status.configure(text=t("common.saved_all_changes_mod"))
+        ui_util.info(self, t("common.saved"), t("units.saved_all_mod_changes") + "\n".join(written))
 
 
 # Standalone note (launched from the Mod Editor hub in mod_manager.py)

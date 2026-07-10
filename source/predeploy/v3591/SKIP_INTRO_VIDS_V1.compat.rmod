@@ -1,0 +1,63 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "skip-intro-vids-v1",
+  "name": "SKIP INTRO VIDS",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "PC/99/ZZ_GladNotPatchableWin.dat",
+      "ndf": "genglad/nonpatchable/system3d/logovideos/ubisoft.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TKeyboardKeyEventHandler",
+          "match": {
+            "_index": "4"
+          },
+          "set": {
+            "ActivateAtStart": {
+              "type": "Bool",
+              "value": 1
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TLoadableQuadTexture",
+          "match": {
+            "_index": "2"
+          },
+          "set": {
+            "TextureList": {
+              "type": "List<PathRef>",
+              "value": [
+                "VirtualData:\\WW2\\Videos\\Logo\\eugen.wmv",
+                "VirtualData:\\WW2\\Videos\\Logo\\eugen.wmv1",
+                "VirtualData:\\WW2\\Videos\\Logo\\eugen.wmv2"
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TVideoTexture",
+          "match": {
+            "_index": "3"
+          },
+          "set": {
+            "TextureName": {
+              "type": "PathRef",
+              "value": "VirtualData:\\WW2\\Videos\\Logo\\eugen.wmv"
+            },
+            "VideoFile": {
+              "type": "PathRef",
+              "value": "DataDir:\\WW2\\Videos\\Logo\\eugen.wmv"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "ProLution",
+  "description": "Sick and tired of Ubisoft's annoying long intro video? With this tiny mod you can skip it. \n\nPress ESC twice when the game starts to go right to the main menu."
+}

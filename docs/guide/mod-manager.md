@@ -140,12 +140,17 @@ name, author, version, how many changes it makes, and its description.
 > The header reads **"Mods (☑ = active)"**, and a reminder line says
 > *"TOP loads first — BOTTOM overrides. Use ▲ ▼ to reorder."*
 
-### The COMPAT toggle (Public builds only)
+### Pick which game version's mods to use
 
-When the game is a Public-format build, a small **COMPAT ○ / ●** button shows up
-next to the reorder buttons. Turning it on also shows your `.compat.rmod` files
-in the list (they're normally hidden in Public mode). In Compat mode the list
-only ever shows `.compat.rmod` files, so this toggle is hidden.
+At the top of the mod list is a **build selector** dropdown. It lets you choose
+which R.U.S.E. version's mod library to see and use, newest first. Your mods are
+kept apart by game version, so switching the dropdown just shows that version's
+list.
+
+It starts on the version of the game you have installed. If that version has no
+mods yet, you'll see a short message, and you can pick another version from the
+dropdown. Your pick is kept while you move around the app. The pick covers both the
+built-in mods and your own folder mods.
 
 ---
 
@@ -217,6 +222,32 @@ W warning(s), E error(s)."*
 > are undone before the new ones go on, so you never need to Restore Clean
 > between deploys.
 
+### When a mod needs repair
+
+Sometimes one of a mod's changes can't find the thing it's meant to change —
+usually because a game update moved it or gave it a new name. When that happens
+during a deploy, the Mod Manager now says so clearly. It marks the change
+**NEEDS REPAIR** and names it in the Log, instead of quietly skipping it. So a
+mod that's out of date for your game version no longer fails without telling you.
+
+### When two mods clash
+
+If you turn on several mods that change the **same** unit or building stat (say
+two balance mods that both set a tank's HP), only the last one really takes
+effect. During a deploy the Mod Manager now points out exactly where that
+happens — it tells you *"this edit overwrites an earlier mod."* That way a stack
+of mods can't quietly cancel itself out without you knowing.
+
+### Using mods made for an older game version
+
+If you pick a build whose mods were made for an earlier version and deploy them
+onto your current game, the Mod Manager now carries them across versions for you.
+It uses built-in **version maps** to translate the changes, so the mods keep
+working with no loss of function. The Log tells you when a mod was carried across
+versions, and it flags any of that mod's changes that point at values the game
+changed in between — so you know which mods are worth updating. Either way, they
+still deploy.
+
 ---
 
 ## Sharing and importing a load order
@@ -257,8 +288,8 @@ manager:
   shared order. Everything else (including any SAFE mods the order leaves out) is
   moved below and turned **off**.
 
-If the shared order has compat mods while you're on Public, the COMPAT toggle
-turns on by itself so they show up.
+If the shared order has compat mods while you're on Public, the build selector
+switches to that version by itself so they show up.
 
 ---
 

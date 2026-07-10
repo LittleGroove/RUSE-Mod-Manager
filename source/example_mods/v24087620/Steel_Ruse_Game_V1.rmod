@@ -1,0 +1,563 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "steel-ruse-game-v1",
+  "name": "Steel Ruse Game",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratif"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifGR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifURSS"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifUK"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifFR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifITA"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepot"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotGR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotURSS"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotUK"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotFR"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepotITA"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentDepot_JAP"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TBatimentDescriptor",
+          "match": {
+            "ClassNameForDebug": "Building_BatimentAdministratifJAP"
+          },
+          "set": {
+            "ShowInMenu": {
+              "type": "List<Bool>",
+              "value": [
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44814"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbBatimentAdministratifEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44815"
+          },
+          "set": {
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44816"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44817"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbBatimentAdministratifEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44819"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbBatimentAdministratifEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44821"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbBatimentAdministratifEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44823"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbUnitsDangerousDepot": {
+              "type": "Int32",
+              "value": 0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44825"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbBatimentAdministratifEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44827"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbBatimentAdministratifEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TIAProfil",
+          "match": {
+            "_index": "44829"
+          },
+          "set": {
+            "DepotNbEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "ValueDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbBatimentAdministratifEnPlusAvantDesactivation": {
+              "type": "Float32",
+              "value": 0.0
+            },
+            "NbDepotMinForTruckFactory": {
+              "type": "Float32",
+              "value": 0.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/gdconstanteatomic.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {
+            "_index": "0"
+          },
+          "set": {
+            "QteDeviseParCamion": {
+              "type": "Int32",
+              "value": 0
+            },
+            "QteDeviseInitiale": {
+              "type": "Int32",
+              "value": 1500
+            }
+          }
+        }
+      ]
+    },
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/gdconstanteoriginal.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TTunableConstante",
+          "match": {
+            "_index": "0"
+          },
+          "set": {
+            "QteDeviseInitiale": {
+              "type": "Int32",
+              "value": 800
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "game_version": "24087620",
+  "author": "Prolution",
+  "description": "No admins or depots. $800 to start."
+}

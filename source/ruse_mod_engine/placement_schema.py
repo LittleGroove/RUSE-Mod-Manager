@@ -3,7 +3,7 @@ widgets for every field (including ones currently nil/absent), let users ADD beh
 properties, and CREATE any placement from a corpus template (no "must already exist in this scenario").
 
 Data-derived: the field set / types / value domains here are the union observed across ALL 92 shipped
-scenarios (ai_unit_tests/claude/survey_placements.py -> placement_survey.json). The human overlay
+scenarios (archive/ai_unit_tests/claude/survey_placements.py -> placement_survey.json). The human overlay
 (camp/supply meanings, the WarmupCamPath enum) is curated. See docs/map_editor/placement_schema.md.
 
 This module is engine-only (no tkinter): the editor maps each field's `widget` to a typed entry/combo

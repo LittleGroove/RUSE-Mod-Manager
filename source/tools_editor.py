@@ -31,7 +31,7 @@ import threading
 import zlib
 import tkinter as tk
 from pathlib import Path
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, filedialog
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 if REPO not in sys.path:
@@ -59,25 +59,26 @@ except Exception:
     _HAVE_PIL = False
 
 # ── theme (matches the other editor windows) ─────────────────────────────────────
-_R_BG, _R_BG_PANEL, _R_BG_WIDGET = "#08101c", "#0e1a2a", "#060d18"
-_R_GOLD, _R_GOLD_BRT = "#c8a020", "#e0c030"
-_R_TEXT, _R_TEXT_DIM = "#ccd8e8", "#3e5878"
-_R_SEL_BG, _R_SEL_FG = "#1a3060", "#e0c030"
-_R_GREEN, _R_RED, _R_BORDER = "#3a8030", "#b03020", "#243a5c"
-_F_MAIN = ("Courier New", 9)
-_F_BOLD = ("Courier New", 9, "bold")
-_F_HEAD = ("Courier New", 10, "bold")
+import theme                # single source of truth for the palette; local _R_* names kept unchanged
+_R_BG, _R_BG_PANEL, _R_BG_WIDGET = theme.BG, theme.PANEL, theme.WIDGET
+_R_GOLD, _R_GOLD_BRT = theme.GOLD, theme.GOLD_BRT
+_R_TEXT, _R_TEXT_DIM = theme.TEXT, theme.DIM
+_R_SEL_BG, _R_SEL_FG = theme.SEL_BG, theme.SEL_FG
+_R_GREEN, _R_RED, _R_BORDER = theme.GREEN, theme.RED, theme.BORDER
+_F_MAIN = theme.F
+_F_BOLD = theme.FB
+_F_HEAD = theme.FHEAD
 
 # dat_key -> friendly label for the picker.  ALL six public dats (every one that gets backed up) — edit
 # and Save writes the working copy into the project folder just like the gameplay dat.  Order matches the
 # game's own layout loosely (gameplay first, then maps, localization, common).
 _DAT_CHOICES = [
-    ("gameplay",    t("Gameplay  ·  ZZ_GladPatchableWin.dat")),
-    ("gameplay_np", t("Gameplay (non-patchable)  ·  ZZ_GladNotPatchableWin.dat")),
-    ("scripts",     t("AI Scripts  ·  IA_Common.dat")),
-    ("maps",        t("Maps  ·  DataMap_Win.dat")),
-    ("loc",         t("Localization / Textures  ·  ZZ_Win.dat")),
-    ("common",      t("Common (video / fonts)  ·  Data_Common.dat")),
+    ("gameplay",    t("tools.gameplay_zz_gladpatchablewin_dat")),
+    ("gameplay_np", t("tools.gameplay_non_patchable_zz_gladnotpatchab")),
+    ("scripts",     t("tools.ai_scripts_ia_common_dat")),
+    ("maps",        t("tools.maps_datamap_win_dat")),
+    ("loc",         t("tools.localization_textures_zz_win_dat")),
+    ("common",      t("tools.common_video_fonts_data_common")),
 ]
 
 _T = ndfbin_mod.T
@@ -202,12 +203,12 @@ def _list_elem_info(pv):
         return None, True, ""
     type_ids = {e.type_id for e in elems}
     if len(type_ids) > 1:
-        return None, False, t("This list mixes element types and can't be edited here yet.")
+        return None, False, t("tools.list_mixes_element_types_can")
     tid = next(iter(type_ids))
     if tid in _SCALAR_ELEM_TYPES:
         return _type_label(tid), True, ""
     return (_type_label(tid), False,
-            t("Editing lists of {kind} isn't supported yet — shown read-only.",
+            t("tools.editing_lists_kind_isn_t",
               kind=_type_label(tid)))
 
 
@@ -263,10 +264,10 @@ def _scenario_summary(raw: bytes) -> str:
     lines = []
     try:
         ndf = ndfbin_mod.read(sc["ndf_data"])
-        lines.append(t("Scenario — {z} zone(s); embedded NDF: {i} instances, {c} classes.",
+        lines.append(t("tools.scenario_z_zone_s_embedded",
                        z=len(zones), i=len(ndf.instances), c=len(ndf.classes)))
     except Exception:
-        lines.append(t("Scenario — {z} zone(s).", z=len(zones)))
+        lines.append(t("tools.scenario_z_zone_s", z=len(zones)))
     lines.append("─" * 60)
     for zn in zones[:60]:
         pos = zn.get("pos", (0, 0, 0))
@@ -274,15 +275,13 @@ def _scenario_summary(raw: bytes) -> str:
             n=zn.get("name", "?"), x=pos[0], y=pos[1], z=pos[2],
             v=len(zn.get("vertices", [])), f=zn.get("face_count", 0)))
     if len(zones) > 60:
-        lines.append(t("  … {n} more zones", n=len(zones) - 60))
+        lines.append(t("tools.n_more_zones", n=len(zones) - 60))
     return "\n".join(lines)
 
 
 def _kdt_summary(raw: bytes) -> str:
     k = kdt_mod.read(raw)
-    return t("KD-tree — {tri} triangles, {vtx} vertices, {sub} subtree(s).\n"
-             "bbox min ({x0:.0f}, {y0:.0f}, {z0:.0f})  max ({x1:.0f}, {y1:.0f}, {z1:.0f})\n\n"
-             "(Read-only here — edit map geometry in the Map Editor.)",
+    return t("tools.kd_tree_tri_triangles_vtx",
              tri=k.tri_count, vtx=k.vtx_count, sub=k.subtree_count,
              x0=k.bbox_min[0], y0=k.bbox_min[1], z0=k.bbox_min[2],
              x1=k.bbox_max[0], y1=k.bbox_max[1], z1=k.bbox_max[2])
@@ -292,9 +291,7 @@ def _sdb_summary(raw: bytes) -> str:
     g = sdb_mod.decode_grid(raw)
     grid, R = g["grid"], g["R"]
     nonzero = sum(1 for c in grid if c)
-    return t("SDB terrain grid — {R}×{R} cells ({tot:,}), {nz:,} non-empty (forest/blocked).\n"
-             "bbox ({bx}, {by})  cell size {cell}\n\n"
-             "(Read-only here — paint terrain in the Map Editor.)",
+    return t("tools.sdb_terrain_grid_r_r",
              R=R, tot=R * R, nz=nonzero, bx=g.get("bboxX"), by=g.get("bboxY"), cell=g.get("cell"))
 
 
@@ -465,7 +462,7 @@ def _hexdump(b: bytes, limit: int = 8192) -> str:
         a = "".join(chr(x) if 32 <= x < 127 else "." for x in row)
         out.append(f"{i:08x}  {h:<48}  {a}")
     if len(b) > limit:
-        out.append(t("\n… {n:,} more bytes (export to see the whole file)", n=len(b) - limit))
+        out.append(t("tools.n_more_bytes_export_see", n=len(b) - limit))
     return "\n".join(out)
 
 
@@ -484,10 +481,10 @@ def _xyz_inflate(b: bytes):
 
 def _dic_text(b: bytes, limit: int = 4000) -> str:
     entries = dic_mod.read(b)
-    head = t("TRA localization — {n} entries (key = 8-byte LocHash)\n", n=len(entries)) + "─" * 60 + "\n"
+    head = t("tools.tra_localization_n_entries_key", n=len(entries)) + "─" * 60 + "\n"
     lines = [f"{k.hex()}  {v}" for k, v in entries[:limit]]
     if len(entries) > limit:
-        lines.append(t("\n… {n:,} more entries (export to see all)", n=len(entries) - limit))
+        lines.append(t("tools.n_more_entries_export_see", n=len(entries) - limit))
     return head + "\n".join(lines)
 
 
@@ -588,15 +585,12 @@ def _pil_open(raw: bytes):
 
 class ProjectDatStore:
     """Top-level store: the six game dats of a ModProject, saved to the mod folder on disk."""
-    picker_label = t("Project file:")
-    save_button_label = t("Save mod (.dat)")
-    save_title = t("Save mod")
-    save_error_hint = t("Tip: set the Game Root in Settings.")
+    picker_label = t("tools.project_file")
+    save_button_label = t("common.save_mod_dat")
+    save_title = t("common.save_mod")
+    save_error_hint = t("tools.tip_set_game_root_settings")
     save_help = t(
-        "Reads the mod's own .dat if it exists, else the clean backup. Edits & imports stage into "
-        "the project; “Save mod (.dat)” writes them into the mod, just like the other editor windows. "
-        "Import/Export work for every file. Use “Open as nested .dat” on a .ipk/.apk/.mpk/.ppk (or any "
-        "embedded .dat) to edit the archive inside it.")
+        "tools.reads_mod_s_own_dat")
 
     def __init__(self, project: "mp_mod.ModProject"):
         self._p = project
@@ -611,7 +605,7 @@ class ProjectDatStore:
         out = list(_DAT_CHOICES)
         try:
             for key in self._p.terrain_dat_keys():
-                out.append((key, t("Terrain map  ·  {name}", name=key.split('/', 1)[1])))
+                out.append((key, t("tools.terrain_map_name", name=key.split('/', 1)[1])))
         except Exception:
             pass
         return out
@@ -623,7 +617,7 @@ class ProjectDatStore:
         return Path(src) == self._p.project_dat_path(dat_key)
 
     def source_kind(self, dat_key, src):
-        return t("mod copy") if self.is_mod_path(dat_key, src) else t("clean backup / game")
+        return t("tools.mod_copy") if self.is_mod_path(dat_key, src) else t("tools.clean_backup_game")
 
     def get_raw(self, dat_key, path):
         return self._p.get_raw(dat_key, path)
@@ -645,7 +639,7 @@ class ProjectDatStore:
 
     def save(self):
         written = self._p.save_all()
-        return t("Saved mod changes to:\n\n") + "\n".join(written)
+        return t("tools.saved_mod_changes") + "\n".join(written)
 
     def cleanup(self):
         pass
@@ -660,10 +654,10 @@ class NestedDatStore:
     saves the parent window to write the parent .dat to disk.  Because it mirrors the same
     interface, a NestedDatStore can itself be a parent — nesting works to any depth.
     """
-    picker_label = t("Nested archive:")
-    save_button_label = t("Apply into parent .dat")
-    save_title = t("Apply to parent")
-    save_error_hint = t("The parent archive may be an unsupported edata version (v2 can't add files).")
+    picker_label = t("tools.nested_archive")
+    save_button_label = t("tools.apply_into_parent_dat")
+    save_title = t("tools.apply_parent")
+    save_error_hint = t("tools.parent_archive_may_unsupported_edata")
 
     _KEY = "nested"
 
@@ -687,13 +681,11 @@ class NestedDatStore:
 
     @property
     def save_help(self):
-        return (t("Editing the archive embedded at  ") + self._entry_path + t(".  “Apply into parent .dat” "
-                "stages the modified archive back into the parent window (it does NOT write to disk); "
-                "switch to the parent window and Save there to commit it to the .dat."))
+        return (t("tools.editing_archive_embedded") + self._entry_path + t("tools.apply_into_parent_dat_stages"))
 
     def dat_choices(self):
         label = self._entry_path if len(self._entry_path) < 70 else "…" + self._entry_path[-68:]
-        return [(self._KEY, t("Nested · ") + label)]
+        return [(self._KEY, t("tools.nested") + label)]
 
     def read_source(self, dat_key):
         return self._tmp
@@ -702,7 +694,7 @@ class NestedDatStore:
         return True
 
     def source_kind(self, dat_key, src):
-        return t("nested archive")
+        return t("tools.nested_archive_2")
 
     def get_raw(self, dat_key, path):
         key = (dat_key, self._norm(path))
@@ -773,9 +765,9 @@ class NestedDatStore:
         new_bytes = self._tmp.read_bytes()
         self._parent.set_raw(self._parent_dat_key, self._entry_path, new_bytes)
         self._parent.mark_dirty(self._parent_dat_key, self._entry_path)
-        return (t("Applied the modified archive back into the parent, staged at:\n\n  ")
-                + self._entry_path + t("\n\nSwitch to the parent window and click “")
-                + self._parent.save_button_label + t("” to write it to the .dat on disk."))
+        return (t("tools.applied_modified_archive_back_into")
+                + self._entry_path + t("tools.switch_parent_window_click")
+                + self._parent.save_button_label + t("tools.write_dat_disk"))
 
     def cleanup(self):
         shutil.rmtree(self._tmp_dir, ignore_errors=True)
@@ -827,9 +819,9 @@ class ToolsEditorWindow(tk.Frame):
         self._nb = nb = ttk.Notebook(self)
         nb.pack(fill="both", expand=True, padx=6, pady=4)
         self._t_browse, self._t_vars, self._t_search = ttk.Frame(nb), ttk.Frame(nb), ttk.Frame(nb)
-        nb.add(self._t_browse, text=t("  Browse / Files  "))
-        nb.add(self._t_vars,   text=t("  NDF Vars  "))
-        nb.add(self._t_search, text=t("  Search  "))
+        nb.add(self._t_browse, text=t("tools.browse_files"))
+        nb.add(self._t_vars,   text=t("tools.ndf_vars"))
+        nb.add(self._t_search, text=t("tools.search"))
         self._build_browse(self._t_browse)
         self._build_vars(self._t_vars)
         self._build_search(self._t_search)
@@ -881,7 +873,7 @@ class ToolsEditorWindow(tk.Frame):
         except Exception as e:
             self._arc = None
             self._all_paths = []
-            self._src_lbl.configure(text=t("⚠ {e}", e=e), foreground=_R_RED)
+            self._src_lbl.configure(text=t("tools.e", e=e), foreground=_R_RED)
             self._browse_refresh()
             self._vars_reload()
             return
@@ -891,7 +883,7 @@ class ToolsEditorWindow(tk.Frame):
                                  key=str.lower)
         where = self._store.source_kind(dat_key, src)
         self._src_lbl.configure(
-            text=t("{name}  ·  {n:,} entries  ·  from {where}",
+            text=t("tools.name_n_entries_from_where",
                    name=Path(src).name, n=len(self._all_paths), where=where),
             foreground=(_R_GOLD if is_mod else _R_TEXT_DIM))
         self._browse_refresh()
@@ -911,7 +903,7 @@ class ToolsEditorWindow(tk.Frame):
         pw.add(left, weight=2)
         fr = tk.Frame(left, background=_R_BG)
         fr.pack(fill="x", pady=(2, 2))
-        tk.Label(fr, text=t("Filter:"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).pack(side="left")
+        tk.Label(fr, text=t("tools.filter"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).pack(side="left")
         self._bf_var = tk.StringVar()
         self._bf_var.trace_add("write", lambda *_: self._browse_refresh())
         ttk.Entry(fr, textvariable=self._bf_var).pack(side="left", fill="x", expand=True, padx=4)
@@ -921,7 +913,7 @@ class ToolsEditorWindow(tk.Frame):
         tvh = tk.Frame(left, background=_R_BG)
         tvh.pack(fill="both", expand=True)
         self._b_tv = ttk.Treeview(tvh, columns=cols, show="headings", selectmode="browse")
-        for c, hd, w in [("path", t("Virtual Path"), 360), ("kind", t("Type"), 110), ("size", t("Size"), 90)]:
+        for c, hd, w in [("path", t("tools.virtual_path"), 360), ("kind", t("tools.type"), 110), ("size", t("tools.size"), 90)]:
             self._b_tv.heading(c, text=hd)
             # path doesn't stretch — it's widened to the longest path on refresh so the horizontal
             # scrollbar can reveal full virtual paths (issue #5.4).
@@ -936,9 +928,9 @@ class ToolsEditorWindow(tk.Frame):
         self._b_count = tk.Label(left, text="", background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._b_count.pack(anchor="w", pady=(2, 0))
 
-        right = ttk.LabelFrame(pw, text=t("Preview"))
+        right = ttk.LabelFrame(pw, text=t("common.preview"))
         pw.add(right, weight=3)
-        self._pv_head = tk.Label(right, text=t("Select a file to preview."), anchor="w", justify="left",
+        self._pv_head = tk.Label(right, text=t("tools.select_file_preview"), anchor="w", justify="left",
                                  background=_R_BG_PANEL, foreground=_R_GOLD_BRT, font=_F_BOLD)
         self._pv_head.pack(fill="x", padx=4, pady=(4, 2))
         body = tk.Frame(right, background=_R_BG_PANEL)
@@ -946,26 +938,26 @@ class ToolsEditorWindow(tk.Frame):
         self._pv_body = body
         self._pv_img = tk.Label(body, background=_R_BG_WIDGET, anchor="center")
         self._pv_txt_frame, self._pv_txt = self._mk_text(body)
-        self._pv_goto = ttk.Button(right, text=t("Edit these vars in the NDF Vars tab  →"),
+        self._pv_goto = ttk.Button(right, text=t("tools.edit_these_vars_ndf_vars"),
                                    command=self._browse_goto_vars)
         # Shown only for high-def terrain (.tmst): decodes the tmst index+chunk pair to an image on a
         # background thread (heavy numpy) so selecting the entry stays instant.
-        self._pv_tmst_btn = ttk.Button(right, text=t("Decode terrain image  →"),
+        self._pv_tmst_btn = ttk.Button(right, text=t("tools.decode_terrain_image"),
                                        command=self._decode_terrain_preview)
         # Phase 3: read-only "view as raw" for structured binaries (.scenario/.kdt/.sdb).
-        self._pv_struct_btn = ttk.Button(right, text=t("View full structure  →"),
+        self._pv_struct_btn = ttk.Button(right, text=t("tools.view_full_structure"),
                                          command=self._view_structure)
-        self._pv_render_btn = ttk.Button(right, text=t("Render image  →"),
+        self._pv_render_btn = ttk.Button(right, text=t("tools.render_image"),
                                          command=self._render_raw_image)
 
         ab = tk.Frame(right, background=_R_BG_PANEL)
         ab.pack(fill="x", padx=4, pady=(2, 4))
-        ttk.Button(ab, text=t("Export…"), command=self._export).pack(side="left", padx=2)
-        self._pv_edit_btn = ttk.Button(ab, text=t("Edit…"), command=self._edit_entry, state="disabled")
+        ttk.Button(ab, text=t("common.export_2"), command=self._export).pack(side="left", padx=2)
+        self._pv_edit_btn = ttk.Button(ab, text=t("common.edit_2"), command=self._edit_entry, state="disabled")
         self._pv_edit_btn.pack(side="left", padx=2)
-        ttk.Button(ab, text=t("Import / Replace…"), command=self._import).pack(side="left", padx=2)
-        ttk.Button(ab, text=t("Add File…"), command=self._add_file).pack(side="left", padx=2)
-        self._pv_nest_btn = ttk.Button(ab, text=t("Open as nested .dat  →"), command=self._open_nested,
+        ttk.Button(ab, text=t("tools.import_replace_2"), command=self._import).pack(side="left", padx=2)
+        ttk.Button(ab, text=t("tools.add_file"), command=self._add_file).pack(side="left", padx=2)
+        self._pv_nest_btn = ttk.Button(ab, text=t("tools.open_as_nested_dat"), command=self._open_nested,
                                        state="disabled")
         self._pv_nest_btn.pack(side="left", padx=2)
         self._pv_status = tk.Label(ab, text="", background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN)
@@ -987,11 +979,11 @@ class ToolsEditorWindow(tk.Frame):
             self._b_tv.insert("", tk.END, iid=p, values=(p, _entry_kind(p), f"{size:,}"))
             shown_paths.append(p)
             shown += 1
-        ui_util.fit_tree_column(self._b_tv, "path", shown_paths, header=t("Virtual Path"))  # #5.4
+        ui_util.fit_tree_column(self._b_tv, "path", shown_paths, header=t("tools.virtual_path"))  # #5.4
         ui_util.stripe_treeview(self._b_tv, _R_BG_WIDGET); ui_util.retag_treeview(self._b_tv)  # #5.2
         total = sum(1 for p in self._all_paths if (not flt or flt in p.lower()))
-        cap = t("  (showing first {n:,} — narrow with Filter)", n=self._BROWSE_CAP) if total > self._BROWSE_CAP else ""
-        self._b_count.configure(text=t("{n:,} match(es){cap}", n=total, cap=cap))
+        cap = t("tools.showing_first_n_narrow_filter", n=self._BROWSE_CAP) if total > self._BROWSE_CAP else ""
+        self._b_count.configure(text=t("tools.n_match_es_cap", n=total, cap=cap))
 
     def _selected_browse_path(self):
         sel = self._b_tv.selection()
@@ -1030,7 +1022,7 @@ class ToolsEditorWindow(tk.Frame):
         """Instant 'Loading <entry>…' feedback before the (heavy) preview of the picked entry."""
         path = self._selected_browse_path()
         if path:
-            self._pv_head.configure(text=t("Loading {name}…", name=path.split("/")[-1]))
+            self._pv_head.configure(text=t("common.loading_name", name=path.split("/")[-1]))
 
     def _on_browse_select(self, _=None):
         path = self._selected_browse_path()
@@ -1040,7 +1032,7 @@ class ToolsEditorWindow(tk.Frame):
             return
         raw = self._entry_bytes(path)
         if raw is None:
-            self._pv_head.configure(text=t("{path}\n(could not read entry)", path=path))
+            self._pv_head.configure(text=t("tools.path_could_not_read_entry", path=path))
             return
         # Enable "Open as nested .dat" only for entries that really are edata containers — keyed on
         # the 'edat' magic, not the extension, so a renamed .ipk/.apk/.mpk/.ppk is detected correctly.
@@ -1061,13 +1053,12 @@ class ToolsEditorWindow(tk.Frame):
                 c = Counter(next((cl.name for cl in ndf.classes if cl.index == i.class_index), "?")
                             for i in ndf.instances)
                 top = "\n".join(f"   {n:<40} {k}" for n, k in c.most_common(12))
-                self._set_text(t("NDF binary — {inst} instances, {cls} classes, {props} property names.\n"
-                                 "compressed={compressed}\n\nTop classes:\n{top}",
+                self._set_text(t("tools.ndf_binary_inst_instances_cls",
                                  inst=len(ndf.instances), cls=len(ndf.classes),
                                  props=len(ndf.properties), compressed=ndf.is_compressed, top=top))
             except Exception as e:
-                self._set_text(t("NDF (could not parse for summary: {e})\n\n", e=e) + _hexdump(raw))
-            self._pv_head.configure(text=t("{name}   ·   {kind}   ·   {n:,} bytes",
+                self._set_text(t("tools.ndf_could_not_parse_summary", e=e) + _hexdump(raw))
+            self._pv_head.configure(text=t("tools.name_kind_n_bytes",
                                            name=name, kind=kind, n=len(raw)))
             self._show_preview_widget("text")
             # The Vars tab lists NDF by extension, so only offer the jump for a real NDF extension
@@ -1083,9 +1074,9 @@ class ToolsEditorWindow(tk.Frame):
                 summary = {"Scenario": _scenario_summary, "KDT": _kdt_summary,
                            "SDB": _sdb_summary}[kind](raw)
             except Exception as e:
-                summary = t("({kind} — could not parse: {e})\n\n", kind=kind, e=e) + _hexdump(raw)
+                summary = t("tools.kind_could_not_parse_e", kind=kind, e=e) + _hexdump(raw)
             self._set_text(summary)
-            self._pv_head.configure(text=t("{name}   ·   {kind}   ·   {n:,} bytes",
+            self._pv_head.configure(text=t("tools.name_kind_n_bytes",
                                            name=name, kind=kind, n=len(raw)))
             self._show_preview_widget("text")
             self._pv_struct = (kind, raw, name)                 # for the "view structure/render" buttons
@@ -1106,17 +1097,17 @@ class ToolsEditorWindow(tk.Frame):
             res = _tgv_image(raw)
             if res:
                 img, fmt = res
-                info = t("   ·   {w}×{h} {fmt}", w=img.width, h=img.height, fmt=fmt)
+                info = t("tools.w_h_fmt", w=img.width, h=img.height, fmt=fmt)
         elif kind == "Image":
             img = _pil_open(raw)
             if img:
-                info = t("   ·   {w}×{h}", w=img.width, h=img.height)
+                info = t("tools.w_h", w=img.width, h=img.height)
         if img is not None:
             disp = img.copy()
             disp.thumbnail((720, 600))
             self._img_ref = ImageTk.PhotoImage(disp)
             self._pv_img.configure(image=self._img_ref, text="")
-            self._pv_head.configure(text=t("{name}   ·   {kind}{info}   ·   {n:,} bytes",
+            self._pv_head.configure(text=t("tools.name_kind_info_n_bytes",
                                            name=name, kind=kind, info=info, n=len(raw)))
             self._show_preview_widget("image")
             self._pv_status.configure(text="")
@@ -1128,11 +1119,11 @@ class ToolsEditorWindow(tk.Frame):
             try:
                 text = _dic_text(raw)
             except Exception as e:
-                text = t("(.dic parse failed: {e})\n\n", e=e) + _hexdump(raw)
+                text = t("tools.dic_parse_failed_e", e=e) + _hexdump(raw)
         elif kind == "AI Script":
             text = _xyz_inflate(raw)
             if text is None:
-                text = t("(compiled .xyz — could not inflate; export to inspect)\n\n") + _hexdump(raw)
+                text = t("tools.compiled_xyz_could_not_inflate") + _hexdump(raw)
         elif kind == "Text" or _looks_text(raw):
             text = _decode_text(raw)
 
@@ -1140,11 +1131,10 @@ class ToolsEditorWindow(tk.Frame):
             self._set_text(text)
             self._show_preview_widget("text")
         else:
-            extra = "" if _HAVE_PIL or kind not in ("Texture (TGV)", "Image") else t("  (Pillow not available)")
-            self._set_text(t("No inline preview for this type{extra} — use Export to open it externally, "
-                             "or Import to replace it.\n\nHex preview:\n\n", extra=extra) + _hexdump(raw))
+            extra = "" if _HAVE_PIL or kind not in ("Texture (TGV)", "Image") else t("tools.pillow_not_available")
+            self._set_text(t("tools.no_inline_preview_type_extra", extra=extra) + _hexdump(raw))
             self._show_preview_widget("text")
-        self._pv_head.configure(text=t("{name}   ·   {kind}   ·   {n:,} bytes",
+        self._pv_head.configure(text=t("tools.name_kind_n_bytes",
                                        name=name, kind=kind, n=len(raw)))
         self._pv_status.configure(text="")
 
@@ -1155,18 +1145,18 @@ class ToolsEditorWindow(tk.Frame):
         idx_raw = self._entry_bytes(idx_path) if idx_path else None
         lines = []
         if terrain_mod is None:
-            lines.append(t("(terrain decode needs numpy + Pillow — not available here)"))
+            lines.append(t("tools.terrain_decode_needs_numpy_pillow"))
         try:
             gw, gh, _recs = terrain_mod.parse_tile_index(idx_raw if idx_raw else raw)
-            lines.append(t("High-def terrain — tile grid {gw}×{gh} ({tiles} tiles).", gw=gw, gh=gh, tiles=gw * gh))
+            lines.append(t("tools.high_def_terrain_tile_grid", gw=gw, gh=gh, tiles=gw * gh))
         except Exception:
-            lines.append(t("High-def terrain chunk."))
+            lines.append(t("tools.high_def_terrain_chunk"))
         if idx_raw is None and path.lower().endswith(".tmst_chunk_pc"):
-            lines.append(t("(index {p} not found alongside — cannot decode)", p=idx_path.split("/")[-1] if idx_path else "?"))
+            lines.append(t("tools.index_p_not_found_alongside", p=idx_path.split("/")[-1] if idx_path else "?"))
         lines.append("")
-        lines.append(t("Read-only. Use “Decode terrain image” for a preview, or the Map Editor for full terrain."))
+        lines.append(t("tools.read_only_use_decode_terrain"))
         self._set_text("\n".join(lines))
-        self._pv_head.configure(text=t("{name}   ·   {kind}   ·   {n:,} bytes",
+        self._pv_head.configure(text=t("tools.name_kind_n_bytes",
                                        name=name, kind="Terrain (TMST)", n=len(raw)))
         self._show_preview_widget("text")
         # offer the decode only when we have both halves of the pair and the codec is available
@@ -1185,7 +1175,7 @@ class ToolsEditorWindow(tk.Frame):
         if not pair or terrain_mod is None:
             return
         idx_raw, chunk_raw = pair
-        self._pv_status.configure(text=t("Decoding terrain…"))
+        self._pv_status.configure(text=t("tools.decoding_terrain"))
         self._pv_tmst_btn.configure(state="disabled")
 
         def work():
@@ -1195,8 +1185,12 @@ class ToolsEditorWindow(tk.Frame):
                 img = terrain_mod.decode_terrain(idx_raw, chunk_raw, lod=lod, use_index=True)
                 self.after(0, lambda: self._show_terrain_image(img))
             except Exception as e:
-                self.after(0, lambda: (self._pv_status.configure(text=t("Terrain decode failed: {e}", e=e)),
-                                       self._pv_tmst_btn.configure(state="normal")))
+                msg = t("tools.terrain_decode_failed_e", e=e)
+                def _fail(msg=msg):                    # guard: the editor frame may be gone by now
+                    if self.winfo_exists():
+                        self._pv_status.configure(text=msg)
+                        self._pv_tmst_btn.configure(state="normal")
+                self.after(0, _fail)
 
         threading.Thread(target=work, daemon=True).start()
 
@@ -1211,10 +1205,12 @@ class ToolsEditorWindow(tk.Frame):
             self._pv_status.configure(text=status)
 
     def _show_terrain_image(self, img):
+        if not self.winfo_exists():                    # background decode finished after the frame closed
+            return
         try:
-            self._show_image(img, t("Terrain preview ({w}×{h})", w=img.width, h=img.height))
+            self._show_image(img, t("tools.terrain_preview_w_h", w=img.width, h=img.height))
         except Exception as e:
-            self._pv_status.configure(text=t("Terrain decode failed: {e}", e=e))
+            self._pv_status.configure(text=t("tools.terrain_decode_failed_e", e=e))
         finally:
             self._pv_tmst_btn.configure(state="normal")
 
@@ -1227,12 +1223,12 @@ class ToolsEditorWindow(tk.Frame):
         try:
             img = _sdb_grid_image(raw) if kind == "SDB" else _kdt_vertex_image(raw) if kind == "KDT" else None
         except Exception as e:
-            self._pv_status.configure(text=t("Render failed: {e}", e=e))
+            self._pv_status.configure(text=t("tools.render_failed_e", e=e))
             return
         if img is None:
-            self._pv_status.configure(text=t("Nothing to render."))
+            self._pv_status.configure(text=t("tools.nothing_render"))
             return
-        self._show_image(img, t("{kind} render ({w}×{h})", kind=kind, w=img.width, h=img.height))
+        self._show_image(img, t("tools.kind_render_w_h", kind=kind, w=img.width, h=img.height))
 
     def _view_structure(self):
         """Open a read-only tree of the current structured binary's full parsed content."""
@@ -1243,9 +1239,9 @@ class ToolsEditorWindow(tk.Frame):
         try:
             data = {"Scenario": _struct_scenario, "KDT": _struct_kdt, "SDB": _struct_sdb}[kind](raw)
         except Exception as e:
-            ui_util.error(self, t("View structure"), t("Could not parse {kind}:\n{e}", kind=kind, e=e))
+            ui_util.error(self, t("tools.view_structure"), t("tools.could_not_parse_kind_e", kind=kind, e=e))
             return
-        self._view_structure_dialog(t("{kind} structure — {name}", kind=kind, name=name), data)
+        self._view_structure_dialog(t("tools.kind_structure_name", kind=kind, name=name), data)
 
     def _view_structure_dialog(self, title, data):
         """Render nested dict/list/scalar `data` in a read-only, expandable two-column tree."""
@@ -1253,8 +1249,8 @@ class ToolsEditorWindow(tk.Frame):
         holder = tk.Frame(dlg, background=_R_BG_PANEL)
         holder.pack(fill="both", expand=True, padx=8, pady=8)
         tree = ttk.Treeview(holder, columns=("val",), show="tree headings")
-        tree.heading("#0", text=t("Field"))
-        tree.heading("val", text=t("Value"))
+        tree.heading("#0", text=t("common.field"))
+        tree.heading("val", text=t("common.value"))
         tree.column("#0", width=360, stretch=False)
         tree.column("val", width=460, stretch=True)
         ui_util.with_scrollbars(holder, tree)
@@ -1269,14 +1265,14 @@ class ToolsEditorWindow(tk.Frame):
                 for i, v in enumerate(val[:_STRUCT_LIST_CAP]):
                     add(nid, str(i), v)
                 if len(val) > _STRUCT_LIST_CAP:
-                    tree.insert(nid, "end", text=t("… {n} more", n=len(val) - _STRUCT_LIST_CAP), values=("",))
+                    tree.insert(nid, "end", text=t("tools.n_more", n=len(val) - _STRUCT_LIST_CAP), values=("",))
             else:
                 s = val if isinstance(val, str) else repr(val)
                 tree.insert(parent, "end", text=key, values=(s[:400],))
 
         for k, v in data.items():
             add("", str(k), v)
-        ttk.Button(dlg, text=t("Close"), command=dlg.destroy).pack(pady=(0, 8))
+        ttk.Button(dlg, text=t("common.close"), command=dlg.destroy).pack(pady=(0, 8))
         dlg.bind("<Escape>", lambda *_: dlg.destroy())
 
     def _browse_goto_vars(self):
@@ -1287,39 +1283,38 @@ class ToolsEditorWindow(tk.Frame):
     def _export(self):
         path = self._selected_browse_path()
         if not path or self._arc is None:
-            ui_util.info(self, t("Export"), t("Select a file in the list first."))
+            ui_util.info(self, t("common.export"), t("tools.select_file_list_first"))
             return
         raw = self._entry_bytes(path)
         if raw is None:
-            ui_util.error(self, t("Export"), t("Could not read that entry."))
+            ui_util.error(self, t("common.export"), t("tools.could_not_read_entry"))
             return
-        dest = filedialog.asksaveasfilename(title=t("Export file as"), initialfile=path.split("/")[-1],
-                                            parent=self, filetypes=[(t("All files"), "*.*")])
+        dest = filedialog.asksaveasfilename(title=t("tools.export_file_as"), initialfile=path.split("/")[-1],
+                                            parent=self, filetypes=[(t("common.all_files"), "*.*")])
         if not dest:
             return
         try:
             Path(dest).write_bytes(raw)
-            self._pv_status.configure(text=t("Exported → {name}", name=Path(dest).name))
+            self._pv_status.configure(text=t("tools.exported_name", name=Path(dest).name))
         except Exception as e:
-            ui_util.error(self, t("Export failed"), str(e))
+            ui_util.error(self, t("tools.export_failed"), str(e))
 
     def _import(self):
         path = self._selected_browse_path()
         if not path:
-            ui_util.info(self, t("Import / Replace"), t("Select the entry you want to replace first."))
+            ui_util.info(self, t("tools.import_replace"), t("tools.select_entry_want_replace_first"))
             return
-        src = filedialog.askopenfilename(title=t("Replacement for  {name}", name=path.split('/')[-1]),
-                                         parent=self, filetypes=[(t("All files"), "*.*")])
+        src = filedialog.askopenfilename(title=t("tools.replacement_name", name=path.split('/')[-1]),
+                                         parent=self, filetypes=[(t("common.all_files"), "*.*")])
         if not src:
             return
-        if not ui_util.confirm(self, t("Replace entry?"),
-                                   t("Replace inside the mod:\n  {path}\nwith:\n  {src}\n\n"
-                                     "(Staged now; written when you Save.)", path=path, src=src)):
+        if not ui_util.confirm(self, t("tools.replace_entry"),
+                                   t("tools.replace_inside_mod_path_src", path=path, src=src)):
             return
         try:
             data = Path(src).read_bytes()
         except Exception as e:
-            ui_util.error(self, t("Import failed"), str(e))
+            ui_util.error(self, t("tools.import_failed"), str(e))
             return
         self._stage_replace(path, data)
 
@@ -1332,7 +1327,7 @@ class ToolsEditorWindow(tk.Frame):
         if self._b_tv.exists(path):
             self._b_tv.set(path, "size", f"{len(data):,}")
         self._pv_status.configure(
-            text=status or t("Edited (staged) — {n:,} bytes. Save to write.", n=len(data)))
+            text=status or t("tools.edited_staged_n_bytes_save", n=len(data)))
         self._notify()
         self._update_status()
 
@@ -1370,8 +1365,8 @@ class ToolsEditorWindow(tk.Frame):
         elif kind == "text":
             self._edit_text_dialog(path, raw)
         else:
-            ui_util.info(self, t("Edit"),
-                                t("No in-place editor for this type yet — use Import / Replace."))
+            ui_util.info(self, t("common.edit"),
+                                t("tools.no_place_editor_type_yet"))
 
     def _big_text_edit(self, title, initial, save_cb=None, note="", readonly=False):
         """Editable multiline-text dialog. When editable, `save_cb(text)` returns (ok, err) and the
@@ -1394,15 +1389,15 @@ class ToolsEditorWindow(tk.Frame):
         def do_save():
             ok, msg = save_cb(txt.get("1.0", "end-1c"))
             if not ok:
-                ui_util.error(dlg, title, msg or t("Could not save."))
+                ui_util.error(dlg, title, msg or t("tools.could_not_save"))
                 return
             dlg.destroy()
 
         if ro:
-            ttk.Button(bf, text=t("Close"), command=dlg.destroy).pack(side="left", padx=4)
+            ttk.Button(bf, text=t("common.close"), command=dlg.destroy).pack(side="left", padx=4)
         else:
-            ttk.Button(bf, text=t("Save (stage)"), command=do_save).pack(side="left", padx=4)
-            ttk.Button(bf, text=t("Cancel"), command=dlg.destroy).pack(side="left", padx=4)
+            ttk.Button(bf, text=t("tools.save_stage"), command=do_save).pack(side="left", padx=4)
+            ttk.Button(bf, text=t("common.cancel"), command=dlg.destroy).pack(side="left", padx=4)
         txt.focus_set()
         dlg.bind("<Escape>", lambda *_: dlg.destroy())
         dlg.wait_window()
@@ -1418,65 +1413,64 @@ class ToolsEditorWindow(tk.Frame):
             self._stage_replace(path, data)
             return True, None
 
-        self._big_text_edit(t("Edit text — {name}", name=path.split("/")[-1]), text, save,
-                            note=t("Plain-text entry — saved back in its original encoding."))
+        self._big_text_edit(t("tools.edit_text_name", name=path.split("/")[-1]), text, save,
+                            note=t("tools.plain_text_entry_saved_back"))
 
     def _edit_xyz_dialog(self, path, raw):
         try:
             source = xyz_mod.decompile_xyz(raw)
         except Exception as e:
-            ui_util.error(self, t("Edit script"),
-                                 t("Could not decompile this .xyz:\n{e}", e=e))
+            ui_util.error(self, t("tools.edit_script"),
+                                 t("tools.could_not_decompile_xyz_e", e=e))
             return
         name = path.split("/")[-1]
         if not xyz_mod.have_native_compiler():
-            self._big_text_edit(t("View script — {name}", name=name), source, readonly=True,
-                                note=t("Decompiled Python-2 source. The bundled recompiler isn't available "
-                                       "on this install, so this is read-only (Export to edit externally)."))
+            self._big_text_edit(t("tools.view_script_name", name=name), source, readonly=True,
+                                note=t("tools.decompiled_python_2_source_bundled"))
             return
 
         def save(s):
             try:
                 data = xyz_mod.compile_to_xyz(s)
             except Exception as e:
-                return False, t("Recompile failed:\n{e}", e=e)
+                return False, t("tools.recompile_failed_e", e=e)
             self._stage_replace(path, data)
             return True, None
 
-        self._big_text_edit(t("Edit script — {name}", name=name), source, save,
-                            note=t("Decompiled Python-2 source — Saving recompiles it to .xyz bytecode."))
+        self._big_text_edit(t("tools.edit_script_name", name=name), source, save,
+                            note=t("tools.decompiled_python_2_source_saving"))
 
     def _edit_dic_dialog(self, path, raw):
         try:
             entries = dic_mod.read(raw)                 # [(key_bytes, string)] in file order
         except Exception as e:
-            ui_util.error(self, t("Edit localization"),
-                                 t("Not an editable TRA .dic:\n{e}", e=e))
+            ui_util.error(self, t("tools.edit_localization"),
+                                 t("tools.not_editable_tra_dic_e", e=e))
             return
         name = path.split("/")[-1]
         edits = {}                                       # key_bytes -> new string (only changed ones)
         by_key = {k: v for k, v in entries}
 
-        dlg = ui_util.themed_toplevel(self, t("Edit localization — {name}", name=name),
+        dlg = ui_util.themed_toplevel(self, t("tools.edit_localization_name", name=name),
                                       size=(900, 600), resizable=True)
-        tk.Label(dlg, text=t("{n} entries — pick one, edit its text, Update, then Save.", n=len(entries)),
+        tk.Label(dlg, text=t("tools.n_entries_pick_one_edit", n=len(entries)),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN).pack(fill="x", padx=8, pady=(8, 2))
 
         pw = ttk.PanedWindow(dlg, orient="horizontal")
         pw.pack(fill="both", expand=True, padx=8, pady=4)
         lh = tk.Frame(pw, background=_R_BG); pw.add(lh, weight=3)
         frow = tk.Frame(lh, background=_R_BG); frow.pack(fill="x")
-        tk.Label(frow, text=t("Filter:"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).pack(side="left")
+        tk.Label(frow, text=t("tools.filter"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).pack(side="left")
         filt = tk.StringVar()
         ttk.Entry(frow, textvariable=filt).pack(side="left", fill="x", expand=True, padx=4)
         tvh = tk.Frame(lh, background=_R_BG); tvh.pack(fill="both", expand=True)
         tree = ttk.Treeview(tvh, columns=("key", "val"), show="headings", selectmode="browse")
-        tree.heading("key", text=t("Key")); tree.heading("val", text=t("String"))
+        tree.heading("key", text=t("tools.key")); tree.heading("val", text=t("tools.string"))
         tree.column("key", width=150, stretch=False); tree.column("val", width=420, stretch=True)
         ui_util.with_scrollbars(tvh, tree)
 
         rh = tk.Frame(pw, background=_R_BG_PANEL); pw.add(rh, weight=2)
-        tk.Label(rh, text=t("Selected string (UTF-16):"), background=_R_BG_PANEL, foreground=_R_TEXT,
+        tk.Label(rh, text=t("tools.selected_string_utf_16"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).pack(anchor="w", padx=4, pady=(2, 0))
         eframe, etxt = self._mk_text(rh)
         etxt.configure(state="normal")
@@ -1528,17 +1522,17 @@ class ToolsEditorWindow(tk.Frame):
                 for k, s in edits.items():
                     b = dic_mod.set_entry(b, k, s)
             except Exception as e:
-                ui_util.error(dlg, t("Edit localization"), str(e))
+                ui_util.error(dlg, t("tools.edit_localization"), str(e))
                 return
-            self._stage_replace(path, b, status=t("{n} string(s) edited (staged). Save to write.", n=len(edits)))
+            self._stage_replace(path, b, status=t("tools.n_string_s_edited_staged", n=len(edits)))
             dlg.destroy()
 
         tree.bind("<<TreeviewSelect>>", on_sel)
         filt.trace_add("write", lambda *_: repaint())
         bf = tk.Frame(dlg, background=_R_BG_PANEL); bf.pack(fill="x", padx=8, pady=(0, 8))
-        ttk.Button(bf, text=t("Update this entry"), command=update_entry).pack(side="left", padx=4)
-        ttk.Button(bf, text=t("Save (stage)"), command=save_all).pack(side="left", padx=4)
-        ttk.Button(bf, text=t("Cancel"), command=dlg.destroy).pack(side="left", padx=4)
+        ttk.Button(bf, text=t("tools.update_entry"), command=update_entry).pack(side="left", padx=4)
+        ttk.Button(bf, text=t("tools.save_stage"), command=save_all).pack(side="left", padx=4)
+        ttk.Button(bf, text=t("common.cancel"), command=dlg.destroy).pack(side="left", padx=4)
         repaint()
         dlg.bind("<Escape>", lambda *_: dlg.destroy())
         dlg.wait_window()
@@ -1548,10 +1542,10 @@ class ToolsEditorWindow(tk.Frame):
         path or one that already exists (that's a replace — use Import instead)."""
         vpath = (vpath or "").strip().strip("/\\")
         if not vpath:
-            return False, t("Enter a virtual path for the new file.")
+            return False, t("tools.enter_virtual_path_new_file")
         disp = vpath.replace("\\", "/")
         if disp in self._all_paths or disp.replace("/", "\\") in self._sizes or disp in self._sizes:
-            return False, t("An entry already exists at:\n  {disp}\n\nUse Import / Replace to overwrite it.", disp=disp)
+            return False, t("tools.entry_already_exists_disp_use", disp=disp)
         self._store.set_raw(self._dat_key, vpath, data)
         self._all_paths.append(disp)
         self._all_paths.sort(key=str.lower)
@@ -1561,11 +1555,11 @@ class ToolsEditorWindow(tk.Frame):
 
     def _ask_vpath(self, default: str, title_name: str):
         """Modal prompt for the new entry's virtual path inside the dat.  Returns the path or None."""
-        dlg = ui_util.themed_toplevel(self, t("Add  {name}", name=title_name), resizable=True)
+        dlg = ui_util.themed_toplevel(self, t("tools.add_name", name=title_name), resizable=True)
         pad = {"padx": 8, "pady": 4}
-        tk.Label(dlg, text=t("Virtual path inside the .dat"), background=_R_BG_PANEL,
+        tk.Label(dlg, text=t("tools.virtual_path_inside_dat"), background=_R_BG_PANEL,
                  foreground=_R_GOLD_BRT, font=_F_HEAD).grid(row=0, column=0, columnspan=2, sticky="w", **pad)
-        tk.Label(dlg, text=t("(e.g. pc\\ndf\\patchable\\gfx\\myfile.ndfbin — use the game's folder layout)"),
+        tk.Label(dlg, text=t("tools.e_g_pc_ndf_patchable"),
                  background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN).grid(
             row=1, column=0, columnspan=2, sticky="w", padx=8)
         var = tk.StringVar(value=default)
@@ -1579,8 +1573,8 @@ class ToolsEditorWindow(tk.Frame):
 
         bf = tk.Frame(dlg, background=_R_BG_PANEL)
         bf.grid(row=3, column=0, columnspan=2, pady=8)
-        ttk.Button(bf, text=t("Add"), command=ok).pack(side="left", padx=8)
-        ttk.Button(bf, text=t("Cancel"), command=dlg.destroy).pack(side="left", padx=8)
+        ttk.Button(bf, text=t("tools.add"), command=ok).pack(side="left", padx=8)
+        ttk.Button(bf, text=t("common.cancel"), command=dlg.destroy).pack(side="left", padx=8)
         ent.focus_set()
         ent.icursor("end")
         dlg.bind("<Return>", lambda *_: ok())
@@ -1591,8 +1585,8 @@ class ToolsEditorWindow(tk.Frame):
     def _add_file(self):
         if self._arc is None:
             return
-        src = filedialog.askopenfilename(title=t("Add a file to this .dat"),
-                                         parent=self, filetypes=[(t("All files"), "*.*")])
+        src = filedialog.askopenfilename(title=t("tools.add_file_dat"),
+                                         parent=self, filetypes=[(t("common.all_files"), "*.*")])
         if not src:
             return
         # default the virtual path to the selected entry's folder + the source filename
@@ -1605,11 +1599,11 @@ class ToolsEditorWindow(tk.Frame):
         try:
             data = Path(src).read_bytes()
         except Exception as e:
-            ui_util.error(self, t("Add file"), str(e))
+            ui_util.error(self, t("tools.add_file_2"), str(e))
             return
         ok, err = self._do_add_file(vpath, data)
         if not ok:
-            ui_util.error(self, t("Add file"), err)
+            ui_util.error(self, t("tools.add_file_2"), err)
             return
         disp = vpath.strip().strip("/\\").replace("\\", "/")
         self._browse_refresh()
@@ -1617,7 +1611,7 @@ class ToolsEditorWindow(tk.Frame):
             self._b_tv.selection_set(disp)
             self._b_tv.see(disp)
             self._on_browse_select()
-        self._pv_status.configure(text=t("Added (staged) — {n:,} bytes. Save to write.", n=len(data)))
+        self._pv_status.configure(text=t("tools.added_staged_n_bytes_save", n=len(data)))
         self._notify()
         self._update_status()
 
@@ -1633,14 +1627,14 @@ class ToolsEditorWindow(tk.Frame):
             return
         raw = self._entry_bytes(path)
         if not _is_edata(raw):
-            ui_util.info(self, t("Open nested .dat"),
-                                t("This entry isn't an embedded .dat archive (no 'edat' header)."))
+            ui_util.info(self, t("tools.open_nested_dat"),
+                                t("tools.entry_isn_t_embedded_dat"))
             return
         try:
             store = NestedDatStore(self._store, self._dat_key, path, raw)
         except Exception as e:
-            ui_util.error(self, t("Open nested .dat"),
-                                 t("Could not open the embedded archive:\n{e}", e=e))
+            ui_util.error(self, t("tools.open_nested_dat"),
+                                 t("tools.could_not_open_embedded_archive", e=e))
             return
         on_applied = lambda p=path: self._on_nested_applied(p)
         if self._open_nested_cb is not None:
@@ -1669,7 +1663,7 @@ class ToolsEditorWindow(tk.Frame):
         pw = ttk.PanedWindow(parent, orient="horizontal")
         pw.pack(fill="both", expand=True, padx=4, pady=4)
 
-        lf = ttk.LabelFrame(pw, text=t("NDF Files"))
+        lf = ttk.LabelFrame(pw, text=t("tools.ndf_files"))
         pw.add(lf, weight=1)   # equal weights → the three lists default to 1/3 each (still draggable)
         self._v_files = self._mk_listbox(lf, selectmode="browse")
         ui_util.with_scrollbars(lf, self._v_files)   # horizontal scroll for long NDF paths (issue #5.4)
@@ -1677,11 +1671,11 @@ class ToolsEditorWindow(tk.Frame):
         # selection, not every file passed over (see ui_util.debounce_load).
         ui_util.debounce_load(self._v_files, self._vars_on_file)
 
-        cf = ttk.LabelFrame(pw, text=t("Instances"))
+        cf = ttk.LabelFrame(pw, text=t("tools.instances"))
         pw.add(cf, weight=1)
         row = tk.Frame(cf, background=_R_BG)
         row.pack(fill="x", padx=2, pady=(2, 0))
-        tk.Label(row, text=t("Filter:"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).pack(side="left")
+        tk.Label(row, text=t("tools.filter"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).pack(side="left")
         self._v_filter = tk.StringVar()
         self._v_filter.trace_add("write", lambda *_: self._vars_apply_filter())
         ttk.Entry(row, textvariable=self._v_filter).pack(side="left", fill="x", expand=True, padx=4)
@@ -1691,20 +1685,20 @@ class ToolsEditorWindow(tk.Frame):
         ui_util.with_scrollbars(ih, self._v_inst)   # horizontal scroll for long instance names (#5.4)
         ui_util.debounce_load(self._v_inst, self._vars_on_inst)
 
-        rf = ttk.LabelFrame(pw, text=t("Properties"))
+        rf = ttk.LabelFrame(pw, text=t("tools.properties"))
         pw.add(rf, weight=1)
         ui_util.equalize_panes(pw)   # start the three lists at equal (1/3) widths (issue #5.4)
         eb = tk.Frame(rf, background=_R_BG)
         eb.pack(fill="x", padx=2, pady=(2, 0))
-        ttk.Button(eb, text=t("Edit Value"), command=self._vars_edit).pack(side="left", padx=2)
-        tk.Label(eb, text=t("or double-click a row"), background=_R_BG, foreground=_R_TEXT_DIM,
+        ttk.Button(eb, text=t("tools.edit_value"), command=self._vars_edit).pack(side="left", padx=2)
+        tk.Label(eb, text=t("tools.double_click_row"), background=_R_BG, foreground=_R_TEXT_DIM,
                  font=_F_MAIN).pack(side="left", padx=6)
         cols = ("property", "type", "value", "edited")
         ph = tk.Frame(rf, background=_R_BG)
         ph.pack(fill="both", expand=True, padx=2, pady=2)
         self._v_props = ttk.Treeview(ph, columns=cols, show="headings", selectmode="browse")
-        for c, hd, w in [("property", t("Property"), 160), ("type", t("Type"), 80),
-                         ("value", t("Value"), 240), ("edited", "", 40)]:
+        for c, hd, w in [("property", t("tools.property"), 160), ("type", t("tools.type"), 80),
+                         ("value", t("common.value"), 240), ("edited", "", 40)]:
             self._v_props.heading(c, text=hd)
             # property/value don't stretch — widened to their content on render so the horizontal
             # scrollbar can reveal long property names and value strings (issue #5.4).
@@ -1733,7 +1727,7 @@ class ToolsEditorWindow(tk.Frame):
         for p in ndf_paths:
             self._v_files.insert(tk.END, p)
         if not ndf_paths:
-            self._v_files.insert(tk.END, t("(no NDF files in this dat)"))
+            self._v_files.insert(tk.END, t("tools.no_ndf_files_dat"))
 
     def _vars_on_file(self, _=None):
         sel = self._v_files.curselection()
@@ -1745,7 +1739,7 @@ class ToolsEditorWindow(tk.Frame):
         try:
             ndf = self._store.get_ndf(self._dat_key, path)
         except Exception as e:
-            ui_util.error(self, t("NDF"), t("Could not load {path}:\n{e}", path=path, e=e))
+            ui_util.error(self, t("tools.ndf"), t("tools.could_not_load_path_e", path=path, e=e))
             return
         self._v_ndf = ndf
         self._v_ndf_path = path
@@ -1803,8 +1797,8 @@ class ToolsEditorWindow(tk.Frame):
             names.append(pr.name); vals.append(vstr)
             self._v_props.insert("", tk.END, iid=f"{inst_idx}:{pv.prop_index}",
                                  values=(pr.name, tname, vstr, mark), tags=tag)
-        ui_util.fit_tree_column(self._v_props, "property", names, header=t("Property"))   # #5.4
-        ui_util.fit_tree_column(self._v_props, "value", vals, header=t("Value"))          # #5.4
+        ui_util.fit_tree_column(self._v_props, "property", names, header=t("tools.property"))   # #5.4
+        ui_util.fit_tree_column(self._v_props, "value", vals, header=t("common.value"))          # #5.4
         ui_util.stripe_treeview(self._v_props, _R_BG_WIDGET); ui_util.retag_treeview(self._v_props)  # #5.2
 
     def _commit_var(self, inst_idx, inst, prop_idx, type_name, raw_in):
@@ -1812,13 +1806,13 @@ class ToolsEditorWindow(tk.Frame):
         Returns (ok, error). Separated from the dialog so it's unit-testable."""
         raw_in = (raw_in or "").strip()
         if not raw_in:
-            return False, t("Enter a value.")
+            return False, t("tools.enter_value")
         parsed = _parse_val(raw_in, type_name)
         if parsed is None:
-            return False, t("Could not parse '{raw}' as {type_name}.", raw=raw_in, type_name=type_name)
+            return False, t("tools.could_not_parse_raw_as", raw=raw_in, type_name=type_name)
         pv = next((pv for pv in inst.props if pv.prop_index == prop_idx), None)
         if pv is None:
-            return False, t("Property is not present on this instance.")
+            return False, t("tools.property_not_present_instance")
         try:
             nv = ndfbin_mod.make_value(type_name, parsed)
             if nv.type_id in (_T.StringRef, _T.PathRef):
@@ -1838,9 +1832,9 @@ class ToolsEditorWindow(tk.Frame):
         per-element parsing happens in the collection-editor dialog, not here."""
         pv = next((pv for pv in inst.props if pv.prop_index == prop_idx), None)
         if pv is None:
-            return False, t("Property is not present on this instance.")
+            return False, t("tools.property_not_present_instance")
         if not elem_type_name:
-            return False, t("Choose an element type first.")
+            return False, t("tools.choose_element_type_first")
         try:
             nv = ndfbin_mod.make_value(f"List<{elem_type_name}>", list(elements))
             # StringRef/PathRef elements come back holding the raw string; resolve each to a
@@ -1862,7 +1856,7 @@ class ToolsEditorWindow(tk.Frame):
         psel = self._v_props.selection()
         isel = self._v_inst.curselection()
         if not psel or not isel or self._v_ndf is None:
-            ui_util.info(self, t("Edit"), t("Select an instance and a property first."))
+            ui_util.info(self, t("common.edit"), t("tools.select_instance_property_first"))
             return
         inst_idx, _c, _d, inst, _l = self._v_shown[isel[0]]
         prop_idx = int(psel[0].split(":")[1])
@@ -1883,22 +1877,22 @@ class ToolsEditorWindow(tk.Frame):
             self._vars_show_readonly(prop_obj, pv, tname)
             return
 
-        dlg = ui_util.themed_toplevel(self, t("Edit  {name}", name=prop_obj.name), resizable=True)
+        dlg = ui_util.themed_toplevel(self, t("tools.edit_name", name=prop_obj.name), resizable=True)
         pad = {"padx": 8, "pady": 4}
         tk.Label(dlg, text=prop_obj.name, background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
                  font=_F_HEAD).grid(row=0, column=0, columnspan=2, sticky="w", **pad)
-        tk.Label(dlg, text=t("Type:"), background=_R_BG_PANEL, foreground=_R_TEXT,
+        tk.Label(dlg, text=t("tools.type_2"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).grid(row=1, column=0, sticky="e", **pad)
         type_var = tk.StringVar(value=tname if tname in _EDIT_TYPES else "Int32")
         type_cb = ttk.Combobox(dlg, textvariable=type_var, values=_EDIT_TYPES, width=14,
                                state="readonly")
         type_cb.grid(row=1, column=1, sticky="w", **pad)
         ui_util.fit_combobox(type_cb)
-        tk.Label(dlg, text=t("Current:"), background=_R_BG_PANEL, foreground=_R_TEXT,
+        tk.Label(dlg, text=t("tools.current"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).grid(row=2, column=0, sticky="e", **pad)
         tk.Label(dlg, text=_fmt_val(pv.value, ndf)[:80], background=_R_BG_PANEL,
                  foreground=_R_TEXT_DIM, font=_F_MAIN).grid(row=2, column=1, sticky="w", **pad)
-        tk.Label(dlg, text=t("New value:"), background=_R_BG_PANEL, foreground=_R_TEXT,
+        tk.Label(dlg, text=t("tools.new_value"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).grid(row=3, column=0, sticky="e", **pad)
         new_var = tk.StringVar()
         ent = ttk.Entry(dlg, textvariable=new_var, width=42)
@@ -1907,7 +1901,7 @@ class ToolsEditorWindow(tk.Frame):
         def ok():
             okay, err = self._commit_var(inst_idx, inst, prop_idx, type_var.get(), new_var.get())
             if not okay:
-                ui_util.error(dlg, t("Edit"), err or t("Could not apply value."))
+                ui_util.error(dlg, t("common.edit"), err or t("tools.could_not_apply_value"))
                 return
             self._vars_refresh_props(isel[0])
             iid = f"{inst_idx}:{prop_idx}"
@@ -1917,8 +1911,8 @@ class ToolsEditorWindow(tk.Frame):
 
         bf = tk.Frame(dlg, background=_R_BG_PANEL)
         bf.grid(row=4, column=0, columnspan=2, pady=8)
-        ttk.Button(bf, text=t("Apply"), command=ok).pack(side="left", padx=8)
-        ttk.Button(bf, text=t("Cancel"), command=dlg.destroy).pack(side="left", padx=8)
+        ttk.Button(bf, text=t("tools.apply"), command=ok).pack(side="left", padx=8)
+        ttk.Button(bf, text=t("common.cancel"), command=dlg.destroy).pack(side="left", padx=8)
         ent.focus_set()
         dlg.bind("<Return>", lambda *_: ok())
         dlg.bind("<Escape>", lambda *_: dlg.destroy())
@@ -1928,21 +1922,21 @@ class ToolsEditorWindow(tk.Frame):
         """Info dialog for a property whose type the raw editor can't author yet.  Shows the
         value read-only instead of opening a scalar box that would corrupt it on save."""
         ndf = self._v_ndf
-        dlg = ui_util.themed_toplevel(self, t("Edit  {name}", name=prop_obj.name), resizable=True)
+        dlg = ui_util.themed_toplevel(self, t("tools.edit_name", name=prop_obj.name), resizable=True)
         pad = {"padx": 8, "pady": 4}
         tk.Label(dlg, text=prop_obj.name, background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
                  font=_F_HEAD).grid(row=0, column=0, columnspan=2, sticky="w", **pad)
-        tk.Label(dlg, text=t("Type {type} isn't editable in the raw editor yet.", type=tname),
+        tk.Label(dlg, text=t("tools.type_type_isn_t_editable", type=tname),
                  background=_R_BG_PANEL, foreground=_R_TEXT, font=_F_MAIN,
                  wraplength=360, justify="left").grid(row=1, column=0, columnspan=2, sticky="w", **pad)
-        tk.Label(dlg, text=t("Current:"), background=_R_BG_PANEL, foreground=_R_TEXT,
+        tk.Label(dlg, text=t("tools.current"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).grid(row=2, column=0, sticky="ne", **pad)
         tk.Label(dlg, text=_fmt_val(pv.value, ndf)[:200], background=_R_BG_PANEL,
                  foreground=_R_TEXT_DIM, font=_F_MAIN, wraplength=300, justify="left").grid(
             row=2, column=1, sticky="w", **pad)
         bf = tk.Frame(dlg, background=_R_BG_PANEL)
         bf.grid(row=3, column=0, columnspan=2, pady=8)
-        ttk.Button(bf, text=t("Close"), command=dlg.destroy).pack(side="left", padx=8)
+        ttk.Button(bf, text=t("common.close"), command=dlg.destroy).pack(side="left", padx=8)
         dlg.bind("<Escape>", lambda *_: dlg.destroy())
         dlg.wait_window()
 
@@ -1970,11 +1964,11 @@ class ToolsEditorWindow(tk.Frame):
 
         rows = [_decode(e) for e in (pv.value.raw or [])]
 
-        dlg = ui_util.themed_toplevel(self, t("Edit list  {name}", name=prop_obj.name),
+        dlg = ui_util.themed_toplevel(self, t("tools.edit_list_name", name=prop_obj.name),
                                       min_size=(380, 340), resizable=True)
         pad = {"padx": 8, "pady": 4}
 
-        tk.Label(dlg, text=t("Edit list  {name}", name=prop_obj.name), background=_R_BG_PANEL,
+        tk.Label(dlg, text=t("tools.edit_list_name", name=prop_obj.name), background=_R_BG_PANEL,
                  foreground=_R_GOLD_BRT, font=_F_HEAD).pack(anchor="w", **pad)
         if not editable and reason:
             tk.Label(dlg, text=reason, background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
@@ -1982,7 +1976,7 @@ class ToolsEditorWindow(tk.Frame):
 
         top = tk.Frame(dlg, background=_R_BG_PANEL)
         top.pack(fill="x", **pad)
-        tk.Label(top, text=t("Element type:"), background=_R_BG_PANEL, foreground=_R_TEXT,
+        tk.Label(top, text=t("tools.element_type"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).pack(side="left")
         et_var = tk.StringVar(value=elem_type_name or ("UInt32" if editable else ""))
         # Fixed to what's on disk for a populated list; only an empty editable list lets the user pick.
@@ -1996,9 +1990,9 @@ class ToolsEditorWindow(tk.Frame):
         holder.pack(fill="both", expand=True, **pad)
         tree = ttk.Treeview(holder, columns=("idx", "type", "value"), show="headings",
                             selectmode="browse", height=12)
-        tree.heading("idx", text=t("#"))
-        tree.heading("type", text=t("Type"))
-        tree.heading("value", text=t("Value"))
+        tree.heading("idx", text=t("tools.x"))
+        tree.heading("type", text=t("tools.type"))
+        tree.heading("value", text=t("common.value"))
         tree.column("idx", width=48, anchor="e", stretch=False)
         tree.column("type", width=90, stretch=False)
         tree.column("value", width=240, stretch=True)
@@ -2052,8 +2046,8 @@ class ToolsEditorWindow(tk.Frame):
             def _commit(_=None):
                 parsed = _parse_val(ev.get(), et_var.get())
                 if parsed is None:
-                    ui_util.error(dlg, t("Edit"),
-                        t("Could not parse '{raw}' as {type_name}.", raw=ev.get(),
+                    ui_util.error(dlg, t("common.edit"),
+                        t("tools.could_not_parse_raw_as", raw=ev.get(),
                           type_name=et_var.get()))
                     ev.focus_set()
                     return "break"
@@ -2108,7 +2102,7 @@ class ToolsEditorWindow(tk.Frame):
             _kill_popup()
             okay, err = self._commit_list_var(inst_idx, inst, prop_idx, et_var.get(), rows)
             if not okay:
-                ui_util.error(dlg, t("Edit"), err or t("Could not apply value."))
+                ui_util.error(dlg, t("common.edit"), err or t("tools.could_not_apply_value"))
                 return
             self._vars_refresh_props(shown_idx)
             iid = f"{inst_idx}:{prop_idx}"
@@ -2120,14 +2114,14 @@ class ToolsEditorWindow(tk.Frame):
         bf.pack(fill="x", **pad)
         btns = []
         if editable:
-            b_add = ttk.Button(bf, text=t("Add"), command=_add)
-            b_dup = ttk.Button(bf, text=t("Duplicate"), command=_dup)
-            b_del = ttk.Button(bf, text=t("Delete"), command=_delete)
-            b_ok = ttk.Button(bf, text=t("Apply"), command=_apply)
-            b_cancel = ttk.Button(bf, text=t("Cancel"), command=dlg.destroy)
+            b_add = ttk.Button(bf, text=t("tools.add"), command=_add)
+            b_dup = ttk.Button(bf, text=t("common.duplicate"), command=_dup)
+            b_del = ttk.Button(bf, text=t("tools.delete"), command=_delete)
+            b_ok = ttk.Button(bf, text=t("tools.apply"), command=_apply)
+            b_cancel = ttk.Button(bf, text=t("common.cancel"), command=dlg.destroy)
             btns = [b_add, b_dup, b_del, b_ok, b_cancel]
         else:
-            btns = [ttk.Button(bf, text=t("Close"), command=dlg.destroy)]
+            btns = [ttk.Button(bf, text=t("common.close"), command=dlg.destroy)]
         ui_util.flow(bf, btns)          # positions the buttons (place-based, wraps on narrow windows)
 
         dlg.bind("<Escape>", lambda *_: dlg.destroy())
@@ -2149,44 +2143,44 @@ class ToolsEditorWindow(tk.Frame):
     # ── Search tab ──────────────────────────────────────────────────────────────────
 
     def _build_search(self, parent):
-        ff = ttk.LabelFrame(parent, text=t("Search NDF (this dat)"))
+        ff = ttk.LabelFrame(parent, text=t("tools.search_ndf_dat"))
         ff.pack(fill="x", padx=6, pady=4)
         for i in (1, 3, 5):
             ff.columnconfigure(i, weight=1)
         pad = {"padx": 6, "pady": 4}
-        tk.Label(ff, text=t("Class:"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).grid(
+        tk.Label(ff, text=t("tools.class_2"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).grid(
             row=0, column=0, sticky="e", **pad)
         self._s_class = tk.StringVar()
         ttk.Entry(ff, textvariable=self._s_class).grid(row=0, column=1, sticky="ew", **pad)
-        tk.Label(ff, text=t("Property:"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).grid(
+        tk.Label(ff, text=t("tools.property_2"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).grid(
             row=0, column=2, sticky="e", **pad)
         self._s_prop = tk.StringVar()
         ttk.Entry(ff, textvariable=self._s_prop).grid(row=0, column=3, sticky="ew", **pad)
-        tk.Label(ff, text=t("Value has:"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).grid(
+        tk.Label(ff, text=t("tools.value_has"), background=_R_BG, foreground=_R_TEXT, font=_F_MAIN).grid(
             row=0, column=4, sticky="e", **pad)
         self._s_val = tk.StringVar()
         ttk.Entry(ff, textvariable=self._s_val).grid(row=0, column=5, sticky="ew", **pad)
         br = tk.Frame(ff, background=_R_BG)
         br.grid(row=1, column=0, columnspan=6, pady=(0, 4))
-        self._s_btn = ttk.Button(br, text=t("  Search  "), command=self._ns_search)
+        self._s_btn = ttk.Button(br, text=t("tools.search"), command=self._ns_search)
         self._s_btn.pack(side="left", padx=4)
-        ttk.Button(br, text=t("Clear"), command=self._ns_clear).pack(side="left", padx=4)
-        tk.Label(br, text=t("(empty field = match all · double-click a result to edit it)"),
+        ttk.Button(br, text=t("tools.clear"), command=self._ns_clear).pack(side="left", padx=4)
+        tk.Label(br, text=t("tools.empty_field_match_all_double"),
                  background=_R_BG, foreground=_R_TEXT_DIM, font=_F_MAIN).pack(side="left", padx=12)
 
         cols = ("ndf", "idx", "class", "name", "property", "value")
         sh = tk.Frame(parent, background=_R_BG)
         sh.pack(fill="both", expand=True, padx=6, pady=2)
         self._s_tv = ttk.Treeview(sh, columns=cols, show="headings", selectmode="browse")
-        for c, hd, w in [("ndf", t("NDF File"), 150), ("idx", "#", 50), ("class", t("Class"), 130),
-                         ("name", t("Instance"), 150), ("property", t("Property"), 130), ("value", t("Value"), 220)]:
+        for c, hd, w in [("ndf", t("tools.ndf_file"), 150), ("idx", "#", 50), ("class", t("tools.class"), 130),
+                         ("name", t("tools.instance"), 150), ("property", t("tools.property"), 130), ("value", t("common.value"), 220)]:
             self._s_tv.heading(c, text=hd)
             # only the small '#' column stretches; the rest are sized to content on each search so
             # the horizontal scrollbar reveals wide names/values (issue #5.4).
             self._s_tv.column(c, width=w, minwidth=40, stretch=(c == "idx"))
         ui_util.with_scrollbars(sh, self._s_tv)
         self._s_tv.bind("<Double-Button-1>", self._ns_goto)
-        self._s_status = tk.Label(parent, text=t("Load a dat then search."), background=_R_BG,
+        self._s_status = tk.Label(parent, text=t("tools.load_dat_then_search"), background=_R_BG,
                                   foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._s_status.pack(anchor="w", padx=8, pady=(0, 4))
 
@@ -2199,7 +2193,7 @@ class ToolsEditorWindow(tk.Frame):
             for it in self._s_tv.get_children():
                 self._s_tv.delete(it)
             self._search_meta = {}
-            self._s_status.configure(text=t("Cleared."))
+            self._s_status.configure(text=t("tools.cleared"))
 
     def _ns_search(self):
         if self._arc is None:
@@ -2210,7 +2204,7 @@ class ToolsEditorWindow(tk.Frame):
         for it in self._s_tv.get_children():
             self._s_tv.delete(it)
         self._search_meta = {}
-        self._s_status.configure(text=t("Searching…"))
+        self._s_status.configure(text=t("tools.searching"))
         self._s_btn.configure(state="disabled")
         ndf_paths = [p for p in self._all_paths if p.lower().endswith(_NDF_EXTS)]
 
@@ -2256,6 +2250,8 @@ class ToolsEditorWindow(tk.Frame):
         threading.Thread(target=work, daemon=True).start()
 
     def _ns_done(self, results):
+        if not self.winfo_exists():                    # name-search worker returned after the frame closed
+            return
         cells = {"ndf": [], "class": [], "name": [], "property": [], "value": []}
         for path, ii, cn, nm, pn, vs in results:
             ndf = path.split("/")[-1]
@@ -2263,13 +2259,13 @@ class ToolsEditorWindow(tk.Frame):
             self._search_meta[iid] = (path, ii)
             cells["ndf"].append(ndf); cells["class"].append(cn); cells["name"].append(nm)
             cells["property"].append(pn); cells["value"].append(vs)
-        for col, hd in (("ndf", t("NDF File")), ("class", t("Class")), ("name", t("Instance")),
-                        ("property", t("Property")), ("value", t("Value"))):
+        for col, hd in (("ndf", t("tools.ndf_file")), ("class", t("tools.class")), ("name", t("tools.instance")),
+                        ("property", t("tools.property")), ("value", t("common.value"))):
             ui_util.fit_tree_column(self._s_tv, col, cells[col], header=hd)   # #5.4
         ui_util.stripe_treeview(self._s_tv, _R_BG_WIDGET); ui_util.retag_treeview(self._s_tv)  # #5.2
         self._s_btn.configure(state="normal")
-        cap = t(" (capped at 5000)") if len(results) >= 5000 else ""
-        self._s_status.configure(text=t("{n} result(s){cap}", n=len(results), cap=cap))
+        cap = t("tools.capped_5000") if len(results) >= 5000 else ""
+        self._s_status.configure(text=t("tools.n_result_s_cap", n=len(results), cap=cap))
 
     def _ns_goto(self, _=None):
         sel = self._s_tv.selection()
@@ -2300,17 +2296,17 @@ class ToolsEditorWindow(tk.Frame):
 
     def _update_status(self):
         n = self._store.dirty_count()
-        self._status.configure(text=(t("● {n} unsaved change-set(s)", n=n) if n else t("✓ all changes saved")),
+        self._status.configure(text=(t("common.n_unsaved_change_set_s", n=n) if n else t("common.all_changes_saved")),
                                foreground=(_R_GOLD if n else _R_GREEN))
 
     def _save(self):
         if not self._store.is_dirty():
-            ui_util.info(self, self._store.save_title, t("No pending changes to save."))
+            ui_util.info(self, self._store.save_title, t("common.no_pending_changes_save"))
             return
         try:
             msg = self._store.save()
         except Exception as e:
-            ui_util.error(self, t("Save failed"), t("{e}\n\n{hint}", e=e, hint=self._store.save_error_hint))
+            ui_util.error(self, t("common.save_failed"), t("tools.e_hint", e=e, hint=self._store.save_error_hint))
             return
         # re-open the current dat so listings/sizes reflect what was just written
         self._select_dat(self._dat_key)

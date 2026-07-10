@@ -146,7 +146,7 @@ _EVERYTHING_CPP_OFFSET = -17
 # instance (old-public global idx 46753).  Every other class/instance keeps its
 # identity, but its NUMERIC index shifts -1 if it sat above the removed slot.
 # Verified by deriving the full old->new identity map from both NDFs
-# (ai_unit_tests/claude/migrate_rmods_to_new_public.py).
+# (archive/ai_unit_tests/claude/migrate_rmods_to_new_public.py).
 #
 # The compat translation tables above (_COMPAT_*, _GLOBALS_*, mapinfo) were all
 # derived against OLD-public, so the compat->public result is post-composed with

@@ -109,6 +109,8 @@ This app brings a new mod type: the **`.rmod`**. It's a small file that writes d
 
 Because an `.rmod` only lists *changes* — not whole files — the app can also **move the same mod to a different game version** for you. It updates the mod's inner labels to match whichever version you're on.
 
+**Mods survive game updates.** Every built-in mod — and any mod you make yourself with the Convert tab — finds the game parts it changes by *name* (and by which unit, weapon, or turret they belong to), not by *where they sit* in the file. So when R.U.S.E. gets an update and things move around, your mods are far less likely to break. The newest game build ships with a full library of mods too.
+
 ---
 
 ## Game versions & branches
@@ -176,7 +178,11 @@ The main tab: your list of mods, in load order, with a Deploy button.
 
 *① The setup checklist (both steps must be green). ② Your mod list, in load order. ③ The reorder buttons (⇈ ▲ ▼ ⇊). Then **Deploy Mods** turns the checked mods on in your game.*
 
-**Setup checklist.** The top shows two steps that both need to be green before you can deploy: **Set Game Root** (through Settings or **Detect Game Version**) and **Create Backup** (a safe copy of your original files — you can't deploy until it exists). **Restore Clean** puts those originals back any time you want.
+**Setup checklist.** The top shows two steps that both need to be green before you can deploy: **Set Game Root** (through Settings or **Detect Game Version**) and **Create Backup** (a safe copy of your original files — you can't deploy until it exists). **Restore Clean** puts those originals back any time you want. Re-making a backup is safe: your old backup is never thrown away or lost while a new one is being made.
+
+**It won't crash on a bad mod file.** If a `.rmod` is broken or unusual, the app shows a clear message and keeps going — it doesn't crash or freeze on you.
+
+**Pick which game version's mods to use.** A **build dropdown** (which replaced the old *COMPAT* toggle) lets you choose which R.U.S.E. version's mod library you see and use, newest first. Mods are kept in a separate library for each game version, and the dropdown starts on the version you have installed.
 
 **Adding mods.** **Scan Mods Folder** picks up any `.rmod` files you dropped into your version's `mods/v<buildid>/` folder. **Add .rmod…** copies files in for you. **Remove Selected** / **Clear All** take them back out.
 
@@ -185,6 +191,10 @@ The main tab: your list of mods, in load order, with a Deploy button.
 **Load order.** Mods apply **top to bottom**, and **the bottom one wins** when two mods clash. Move mods around with **⇈ ▲ ▼ ⇊**. Turn many on or off at once with **Enable/Disable Selected** and **All Off**.
 
 **Deploy.** **▶ Deploy Mods** turns on every checked mod, in order. **🎮 Launch R.U.S.E.** starts the game. **Restore Clean** undoes everything.
+
+**Use older mods on the newest game.** You can turn on a mod made for an older game version and deploy it on the newest one. The app translates the mod's edits across versions for you using built-in version maps. The log tells you when a mod was carried across, and points out any edits the game itself changed in between — those still get deployed.
+
+**Clear warnings when you deploy.** If one of a mod's edits can't find what it's meant to change (a game update moved or renamed it), the mod is flagged **NEEDS REPAIR** and named for you, instead of being quietly skipped. And if two turned-on mods change the *same* thing, the log tells you where one edit is overwriting another, so you can fix the load order.
 
 **Share & import load orders.** **Share Order** copies your on-mods list so you can send it to a friend. **Import Order…** pastes a friend's list back in, and warns you about any mods you're missing or that are for the wrong version.
 
@@ -200,7 +210,7 @@ The Convert tab does two jobs:
 
 ![The Convert tab](screenshots/convert-tab.png)
 
-1. **Old mod → `.rmod`.** Point it at the **main folder** of an old whole-`.dat` mod. It compares that mod's files to your clean originals and writes down only what's different, saving a clean `.rmod` into the matching `mods/v<buildid>/` folder. It compares things carefully, one file type at a time (gameplay data, text, map AI info, scenarios), and for anything it can't compare that way, it saves a full copy of the change so nothing is lost. Pick the **target version** from the *"Make mod for version"* dropdown — so you can make a mod for a version other than the one you have installed, as long as you have that version's backup.
+1. **Old mod → `.rmod`.** Point it at the **main folder** of an old whole-`.dat` mod. It compares that mod's files to your clean originals and writes down only what's different, saving a clean `.rmod` into the matching `mods/v<buildid>/` folder. It compares things carefully, one file type at a time (gameplay data, text, map AI info, scenarios), and for anything it can't compare that way, it saves a full copy of the change so **nothing is silently dropped**. Converting is also **safe to interrupt** — if you close the app partway through, nothing is left half-finished. Pick the **target version** from the *"Make mod for version"* dropdown — so you can make a mod for a version other than the one you have installed, as long as you have that version's backup.
 
 2. **Make a mod work on every game version.** The lower panel takes an existing `.rmod`, lets you pick a **Source version**, and then **▶ Converts to all versions**. It re-points the mod's inner labels so they match each version's layout, and saves one `.rmod` per version into its `mods/v<buildid>/` folder. This is how one mod is made to work on public + compat-2/3/4.
 
@@ -216,9 +226,9 @@ The Mod Editor is a full mod-making toolkit. You make a **project**, edit it usi
 
 **Pick the version when you create.** On the start screen, **Create New Mod** lets you type a name **and choose the game version** from a dropdown of every version you have a clean backup for. It defaults to the version you have installed. So you can make a mod for compat-2 even while your game is on public — the editor always reads that version's clean files.
 
-**The project hub** shows the mod's name, a save-status light, a **Mod Windows** row (one button per editor), an **Add .dat files…** button (import existing `.dat` files into the project — the app sends each one to the right place by its name), a **Project** row (**Deploy to Game**, **Convert to rmod**, **Close Project**), and a **Mod Details** box.
+**The project hub** shows the mod's name, a save-status light, a **Mod Windows** row (one button per editor), an **Add .dat files…** button (import existing `.dat` files into the project — the app sends each one to the right place by its name), a **Project** row (**Deploy to Game**, **Restore Clean**, **Convert to rmod**, **Close Project**), and a **Mod Details** box (which now also shows a read-only **Game version:** — the build the project was made for).
 
-**Saving** is done per window — each editor has its own *Save mod (.dat)* button that writes your changes into the project. **Deploy to Game** copies the project's `.dat` files into your real game (making timestamped backups first, and warning you if your game is set to a *different* version than the project is made for). **Convert to rmod** exports a mod file with only your changes in it.
+**Saving** is done per window — each editor has its own *Save mod (.dat)* button that writes your changes into the project. **Deploy to Game** copies the project's `.dat` files into your real game (it needs a clean backup of your installed game first, and warns you if your game is set to a *different* version than the project is made for); it no longer scatters per-file backup copies. **Restore Clean** — the same button as on the Mod Manager and Settings tabs — puts your whole game back to unmodded from that backup, so a deploy can always be undone. **Convert to rmod** exports a mod file with only your changes in it.
 
 The five editor windows:
 
@@ -286,7 +296,7 @@ An `.rmod` is a plain text file (in a format called JSON) that you can open and 
 
 ## Languages
 
-The whole app and every editor is translated into **English, French, German, Italian, Spanish, Polish, Czech, Russian, Japanese, and Simplified Chinese**. Choose your language in **Settings → Accessibility → Default language** (changing it asks you to restart). All the text comes from a `lang.json` file and can be added to.
+The whole app and every editor is translated into **English, French, German, Italian, Spanish, Polish, Czech, Russian, Japanese, and Simplified Chinese**. Choose your language in **Settings → Accessibility → Default language**. When you change it, the app asks whether to restart now to apply it — but your choice is saved either way, so it opens in that language next time even if you don't restart. Each language lives in its own file in the app's `lang` folder (`us.json`, `fr.json`, and so on), so a translation is easy to fix or add to.
 
 ---
 
@@ -318,3 +328,13 @@ RUSE Mod Manager is free software, shared under the **GNU General Public License
 Copyright © 2025 the RUSE Mod Manager authors.
 
 **Bundled third-party software:** the app includes the Python 2.5.1 interpreter (used to rebuild the game's mission scripts) plus other open-source libraries — including the GPL-licensed `uncompyle6`/`xdis` tool (which fits with, and is covered by, this project's GPL-3.0), and freely-licensed NumPy, Pillow, and more. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); the full Python license ships at `ruse_mod_engine/python251/LICENSE.txt`.
+
+---
+
+## Legal & Privacy
+
+**Unofficial fan tool.** RUSE Mod Manager is a fan-made tool for the game R.U.S.E. It is **not** made by, connected to, or approved by Eugen Systems (the studio behind R.U.S.E.). "R.U.S.E." and other game names belong to their owners. This project just helps you change your own copy of the game.
+
+**Use at your own risk.** This tool edits game files on your own computer. It always makes a backup first, and you can put things back, but you use it at your own risk — there is **no warranty** of any kind (see the [LICENSE](LICENSE)). Keep your backups.
+
+**Your privacy.** The app does not track you and does not collect personal information. The only time it goes online is when the packaged app starts up: it asks GitHub once whether a newer version exists. That check sends nothing about you — just a normal web request (your internet address and a fixed app name, the same as visiting a web page). It never sends your files, your game data, or anything you make. If you run the tool from the source code instead of the packaged app, it does not check for updates at all. Nothing else in the app connects to the internet on its own; sharing a mod only happens when *you* choose to, and it opens a GitHub page for you to upload it yourself.
