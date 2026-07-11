@@ -1,6 +1,6 @@
 # RUSE Mod Manager
 
-CRITICAL: 1.0.160 to 1.0.169 fails to load and therefore cant be updated from, grab the new exe and you should not have to worry about updating manually after that. I borked the pop up window to update, and the program therefore wouldnt run, fixed now in v1.1.x.
+CRITICAL: 1.0.160 to 1.0.169 fails to load and therefore cant be updated from, grab the new exe and you should not have to worry about updating manually after that. I borked the pop up window to update, and the program therefore wouldnt run, fixed now in v1.1.7.
 
 A Windows app that makes modding **R.U.S.E.** way easier. A "mod" is a change you make to the game — like giving a tank more health, or building a new map.
 
