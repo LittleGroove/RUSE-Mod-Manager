@@ -1,0 +1,834 @@
+{
+  "$schema": "ruse-mod/v1",
+  "id": "FG.-tank-rebalance-v1",
+  "name": "FG. Tank Rebalance",
+  "version": "1.0.0",
+  "patches": [
+    {
+      "dat": "Data/PC/190852/ZZ_GladPatchableWin.dat",
+      "ndf": "genglad/patchable/gfx/everything.cpp.gladndfbin",
+      "changes": [
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M10_Wolverine"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M36_Jackson"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Marder_II"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Jagdpanther"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                45,
+                45,
+                45,
+                45,
+                45
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Laffly_W15_TCC"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Lorraine_37_L"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Archer"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SU_85"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_SU_100"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Semovente_M_90_53"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_T28"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                90,
+                90,
+                90,
+                90,
+                90
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M26_Pershing"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                70,
+                70,
+                70,
+                70,
+                70
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Super_Pershing"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                70,
+                70,
+                70,
+                70,
+                70
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Maus"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                105,
+                105,
+                105,
+                105,
+                105
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_FCM_F1"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                95,
+                95,
+                95,
+                95,
+                95
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Churchill_A22"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                55,
+                55,
+                55,
+                55,
+                55
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Matilda"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS2"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                55,
+                55,
+                55,
+                55,
+                55
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_KV1"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                60
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_IS3"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                105,
+                105,
+                105,
+                105,
+                105
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Carro_Armato_P_26_40"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sherman_Firefly"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                40,
+                40,
+                40,
+                40,
+                40
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M3_Lee"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_M4_Sherman"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_IV_G"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_V_G_Panther"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                45,
+                45,
+                45,
+                45,
+                45
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Somua_S_35"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Sau_40"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                65,
+                65,
+                65,
+                65,
+                65
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Cruiser_A13"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Cruiser_A27_Cromwell"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_T34"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Carro_Armato_M13_40"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Carro_Armato_M15_42"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                20,
+                20,
+                20,
+                20,
+                20
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_VI_Tigre"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                60
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Panzer_VI_B_Tigre_II"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                75,
+                75,
+                75,
+                75,
+                75
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_B1_Bis"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_ARL_44"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                60
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type5_47mm_HoRu"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                15,
+                15,
+                15,
+                15,
+                15
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type2_HoRi"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                60,
+                60,
+                60,
+                60,
+                60
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type97_ChiHa"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                25,
+                25,
+                25,
+                25,
+                25
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type3_ChiNu"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                30,
+                30,
+                30,
+                30,
+                30
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_Type5_ChiRi"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                45,
+                45,
+                45,
+                45,
+                45
+              ]
+            }
+          }
+        },
+        {
+          "action": "patch",
+          "table": "TUniteAuSolDescriptor",
+          "match": {
+            "ClassNameForDebug": "Unit_OI_Heavy_Tank"
+          },
+          "set": {
+            "ProductionPrice": {
+              "type": "List<Int32>",
+              "value": [
+                150,
+                150,
+                150,
+                150,
+                150
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "author": "Football1995, and RossGosling",
+  "description": "Every Light Tank unit multiplied by 1x\nEvery Medium Tank unit multiplied by 1.25x\nEvery Heavy Tank unit multiplied by 1.5x\nEvery Super-Heavy Tank unit multiplied by 1.75x\nEvery Tank Destroyer unit multiplied by 1.25x\nEvery Advanced Tank Destroyer unit multiplied by 1.5x\n---\nUSA's Super Pershing unit multiplied by 1.5x, it's not a proper Super-Heavy class\nJapanese O-I unit multiplied by 2.5x\nFrench SAU-40 unit multiplied by 2.5x",
+  "game_version": "24087620"
+}
