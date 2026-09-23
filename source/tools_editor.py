@@ -39,6 +39,11 @@ if REPO not in sys.path:
 from ruse_mod_engine import mod_project as mp_mod   # noqa: E402
 from ruse_mod_engine import ndfbin as ndfbin_mod    # noqa: E402
 from ruse_mod_engine import dic as dic_mod          # noqa: E402
+from ruse_mod_engine import localization as loc_mod  # noqa: E402  (LocHash <-> .dic manager)
+from ndf_value_editor import (  # noqa: E402  — shared NDF value-editing (helpers + dialogs)
+    NdfValueEditorMixin, _T, _TYPE_NAMES, _EDIT_TYPES, _BYTE_TYPE_LEN, _AUTHOR_TYPES,
+    _TYPE_HINT, _FMT_VAL_MAX, _SCALAR_ELEM_TYPES, _SCALAR_ELEM_NAMES,
+    _type_label, _fmt_val, _parse_val, _list_elem_info)
 from ruse_mod_engine import edata as edata_mod      # noqa: E402
 from ruse_mod_engine import xyz_compile as xyz_mod  # noqa: E402  (.xyz decompile/recompile)
 from ruse_mod_engine import scenario as scenario_mod  # noqa: E402  (.scenario read for summary)
@@ -50,7 +55,9 @@ except Exception:
     terrain_mod = None
 import pil_log                                       # noqa: E402  (tags PIL DEBUG as "Raw editor")
 from i18n import t                                    # noqa: E402
+import i18n                                           # noqa: E402  (active language for the LocHash manager)
 import ui_util                                        # noqa: E402  — language-aware widget sizing
+import features  # noqa: E402  — release hold-backs (CLONING_ENABLED)
 
 try:
     from PIL import Image, ImageTk
@@ -81,43 +88,6 @@ _DAT_CHOICES = [
     ("common",      t("tools.common_video_fonts_data_common")),
 ]
 
-_T = ndfbin_mod.T
-_TYPE_NAMES = {
-    _T.Bool: "Bool", _T.Int8: "Int8", _T.Int16: "Int16", _T.UInt16: "UInt16",
-    _T.Int32: "Int32", _T.UInt32: "UInt32", _T.Long: "Long",
-    _T.Float32: "Float32", _T.Float64: "Float64",
-    _T.StringRef: "StringRef", _T.PathRef: "PathRef", _T.WideStr: "WideStr",
-    _T.Vector3: "Vector3", _T.Color128: "Color128", _T.Color32: "Color32",
-    # Container / complex types — friendly labels so the Type column & edit dialog
-    # never show a bare "0x11".  These are NOT in _EDIT_TYPES (see below): they get
-    # the List collection editor or a read-only info dialog, never the scalar box.
-    _T.List: "List", _T.Map: "Map", _T.Reference: "ObjRef", _T.LocHash: "LocHash",
-    _T.Blob: "Blob", _T.Guid: "Guid", _T.Time64: "Time64", _T.Matrix: "Matrix",
-    _T.Pair: "Pair", _T.Hash: "Hash", _T.ZipBlob: "ZipBlob",
-    _T.Int2: "Int2", _T.Float2: "Float2", _T.TripleInt: "TripleInt",
-}
-# Scalar types the scalar edit dialog can author.  Containers (List/Map/…) are handled
-# elsewhere and deliberately excluded so they never open the scalar box.
-_EDIT_TYPES = ["Bool", "Int8", "Int16", "UInt16", "Int32", "UInt32", "Long",
-               "Float32", "Float64", "StringRef", "PathRef", "WideStr",
-               "Vector3", "Color128", "Color32", "TripleInt", "Int2", "Float2"]
-# Element types a List collection editor can author per-row (single-cell scalars).
-# List<T> of anything else (ObjRef, nested List/Map, Vector3/Color, …) is shown read-only.
-_SCALAR_ELEM_TYPES = frozenset((
-    _T.Bool, _T.Int8, _T.Int16, _T.UInt16, _T.Int32, _T.UInt32, _T.Long,
-    _T.Float32, _T.Float64, _T.StringRef, _T.PathRef, _T.WideStr,
-))
-
-
-def _type_label(type_id: int) -> str:
-    """Friendly name for an NDF type id (falls back to the engine's attribute name)."""
-    return _TYPE_NAMES.get(type_id, ndfbin_mod.T.name(type_id))
-
-
-# Ordered friendly names the List collection editor offers for its element type.
-_SCALAR_ELEM_NAMES = [_TYPE_NAMES[t] for t in (
-    _T.Bool, _T.Int8, _T.Int16, _T.UInt16, _T.Int32, _T.UInt32, _T.Long,
-    _T.Float32, _T.Float64, _T.StringRef, _T.PathRef, _T.WideStr)]
 
 _NDF_EXTS = (".gladndfbin", ".ndfbin", ".truendfbin")
 _TGV_EXTS = (".tgv", ".tgv_pc")
@@ -146,70 +116,10 @@ def _arc_get(arc, path):
     return d
 
 
-def _fmt_val(val, ndf) -> str:
-    OBJ = ndfbin_mod.OBJ_REF_MARKER
-    TRF = ndfbin_mod.TRANS_REF_MARKER
-    t, r = val.type_id, val.raw
-    if t == _T.Reference:
-        marker, ref = r
-        if marker == OBJ:
-            obj_idx, cls_idx = ref
-            cn = next((c.name for c in ndf.classes if c.index == cls_idx), str(cls_idx))
-            return f"ObjRef(inst={obj_idx}, {cn})"
-        if marker == TRF:
-            return f"TransRef({ref})"
-        return f"Ref(0x{marker:08X})"
-    if t == _T.List:
-        if not r:
-            return "[]"
-        items = [_fmt_val(x, ndf) for x in r[:4]]
-        suf = f" …+{len(r) - 4}" if len(r) > 4 else ""
-        return "[" + ", ".join(items) + suf + "]"
-    if t == _T.Map:
-        return f"Map{{{len(r)} entries}}"
-    if t in (_T.StringRef, _T.PathRef):
-        return repr(ndf.resolve_value(val))
-    return repr(r)[:150]
 
 
-def _parse_val(raw: str, type_name: str):
-    try:
-        if type_name == "Bool":
-            return 1 if raw.strip().lower() in ("1", "true", "yes", "on") else 0
-        if type_name in ("Int8", "Int16", "UInt16", "Int32", "UInt32", "Long"):
-            return int(raw.strip())
-        if type_name in ("Float32", "Float64"):
-            return float(raw.strip())
-        if type_name in ("StringRef", "PathRef", "WideStr"):
-            return raw
-        if type_name in ("Vector3", "Color128", "Color32", "TripleInt", "Int2", "Float2"):
-            return [float(x.strip()) for x in raw.strip("[]()").split(",")]
-    except Exception:
-        pass
-    return None
 
 
-def _list_elem_info(pv):
-    """Inspect a List NdfValue and decide how (or whether) its elements can be edited.
-
-    Returns ``(elem_type_name, editable, reason)``:
-      • empty list      → (None, True, "")                — user picks the element type
-      • uniform scalar  → ("UInt32"/…, True, "")          — full per-row editing
-      • mixed types     → (None, False, <reason>)         — read-only
-      • uniform complex → (label, False, <reason>)         — read-only (ObjRef/nested/…)
-    """
-    elems = pv.value.raw or []
-    if not elems:
-        return None, True, ""
-    type_ids = {e.type_id for e in elems}
-    if len(type_ids) > 1:
-        return None, False, t("tools.list_mixes_element_types_can")
-    tid = next(iter(type_ids))
-    if tid in _SCALAR_ELEM_TYPES:
-        return _type_label(tid), True, ""
-    return (_type_label(tid), False,
-            t("tools.editing_lists_kind_isn_t",
-              kind=_type_label(tid)))
 
 
 def _entry_kind(path: str) -> str:
@@ -628,6 +538,20 @@ class ProjectDatStore:
     def set_raw(self, dat_key, path, data):
         self._p.set_raw(dat_key, path, data)
 
+    def entry_paths(self, dat_key, suffix=""):
+        """Archive entry paths in `dat_key` (optionally suffix-filtered).  Lets the LocHash manager
+        enumerate the .dic tables in the 'loc' dat.  [] on any failure."""
+        try:
+            return self._p.entry_paths(dat_key, suffix)
+        except Exception:
+            return []
+
+    def read_many(self, dat_key, paths):
+        try:
+            return self._p.read_many(dat_key, paths)
+        except Exception:
+            return {}
+
     def mark_dirty(self, dat_key, path):
         self._p.mark_dirty(dat_key, path)
 
@@ -724,6 +648,35 @@ class NestedDatStore:
         self._ndf_cache.pop(key, None)
         self._dirty.add(key)
 
+    def entry_paths(self, dat_key, suffix=""):
+        # A nested archive is a single dat with no cross-dat 'loc'; only its own key enumerates.
+        if dat_key != self._KEY:
+            return []
+        try:
+            paths = edata_mod.open_dat(str(self._tmp)).list()
+        except Exception:
+            return []
+        s = suffix.lower()
+        return [p for p in paths if p.lower().endswith(s)] if s else list(paths)
+
+    def read_many(self, dat_key, paths):
+        if dat_key != self._KEY:
+            return {}
+        out = {}
+        try:
+            arc = edata_mod.open_dat(str(self._tmp))
+        except Exception:
+            return {}
+        for p in paths:
+            key = (dat_key, self._norm(p))
+            if key in self._raw_cache:
+                out[p] = self._raw_cache[key]
+                continue
+            raw = arc.get(p)
+            if raw is not None:
+                out[p] = raw
+        return out
+
     def mark_dirty(self, dat_key, path):
         self._dirty.add((dat_key, self._norm(path)))
 
@@ -773,7 +726,7 @@ class NestedDatStore:
         shutil.rmtree(self._tmp_dir, ignore_errors=True)
 
 
-class ToolsEditorWindow(tk.Frame):
+class ToolsEditorWindow(tk.Frame, NdfValueEditorMixin):
     """Embedded as a nested in-tab view (formerly a Toplevel); the Mod Editor hosts it + the Back bar.
 
     `open_nested(store, on_applied)` is the host callback used to open an embedded .dat as ANOTHER
@@ -1684,25 +1637,39 @@ class ToolsEditorWindow(tk.Frame):
         self._v_inst = self._mk_listbox(ih, selectmode="browse")
         ui_util.with_scrollbars(ih, self._v_inst)   # horizontal scroll for long instance names (#5.4)
         ui_util.debounce_load(self._v_inst, self._vars_on_inst)
+        ib = tk.Frame(cf, background=_R_BG)
+        ib.pack(fill="x", padx=2, pady=(0, 2))
+        inst_btns = [(t("tools.add"), self._vars_add_instance),
+                     (t("common.duplicate"), self._vars_dup_instance),
+                     (t("tools.delete"), self._vars_delete_instance),
+                     (t("tools.find_refs"), self._vars_find_refs)]
+        if not features.CLONING_ENABLED:    # whole-object copy is held back (features.py)
+            inst_btns = [b for b in inst_btns if b[1] != self._vars_dup_instance]
+        for txt, cmd in inst_btns:
+            ttk.Button(ib, text=txt, command=cmd, width=9).pack(side="left", padx=1)
 
         rf = ttk.LabelFrame(pw, text=t("tools.properties"))
         pw.add(rf, weight=1)
         ui_util.equalize_panes(pw)   # start the three lists at equal (1/3) widths (issue #5.4)
         eb = tk.Frame(rf, background=_R_BG)
         eb.pack(fill="x", padx=2, pady=(2, 0))
-        ttk.Button(eb, text=t("tools.edit_value"), command=self._vars_edit).pack(side="left", padx=2)
+        ttk.Button(eb, text=t("tools.edit_value"), command=self._vars_edit).pack(side="left", padx=1)
+        ttk.Button(eb, text=t("tools.follow_ref"), command=self._vars_follow_ref).pack(side="left", padx=1)
+        ttk.Button(eb, text=t("tools.add_prop"), command=self._vars_add_prop).pack(side="left", padx=1)
+        ttk.Button(eb, text=t("tools.del_prop"), command=self._vars_del_prop).pack(side="left", padx=1)
         tk.Label(eb, text=t("tools.double_click_row"), background=_R_BG, foreground=_R_TEXT_DIM,
                  font=_F_MAIN).pack(side="left", padx=6)
         cols = ("property", "type", "value", "edited")
         ph = tk.Frame(rf, background=_R_BG)
         ph.pack(fill="both", expand=True, padx=2, pady=2)
         self._v_props = ttk.Treeview(ph, columns=cols, show="headings", selectmode="browse")
-        for c, hd, w in [("property", t("tools.property"), 160), ("type", t("tools.type"), 80),
+        for c, hd, w in [("property", t("tools.property"), 160), ("type", t("tools.type"), 90),
                          ("value", t("common.value"), 240), ("edited", "", 40)]:
             self._v_props.heading(c, text=hd)
-            # property/value don't stretch — widened to their content on render so the horizontal
-            # scrollbar can reveal long property names and value strings (issue #5.4).
-            self._v_props.column(c, width=w, minwidth=40, stretch=(c in ("type", "edited")))
+            # property + type are auto-fit to their content each render (they never need to be wider
+            # than their text); only VALUE stretches, so widening the window grows the value column and
+            # shows more of the value (issue #5.4).
+            self._v_props.column(c, width=w, minwidth=40, stretch=(c == "value"))
         self._v_props.tag_configure("mod", foreground=_R_GOLD)
         ui_util.with_scrollbars(ph, self._v_props)
         self._v_props.bind("<Double-Button-1>", self._vars_edit)
@@ -1712,6 +1679,7 @@ class ToolsEditorWindow(tk.Frame):
         self._v_all = []         # [(inst_idx, cls, dbg, inst, label)]
         self._v_shown = []
         self._v_modified = set()  # (ndf_path, inst_idx, prop_idx)
+        self._loc_index = None    # cached LocIndex over the 'loc' dat's .dic tables (LocHash manager)
 
     def _vars_reload(self):
         self._v_files.delete(0, tk.END)
@@ -1743,6 +1711,16 @@ class ToolsEditorWindow(tk.Frame):
             return
         self._v_ndf = ndf
         self._v_ndf_path = path
+        self._vars_rebuild_instances(reset_filter=True)
+        for it in self._v_props.get_children():
+            self._v_props.delete(it)
+
+    def _vars_rebuild_instances(self, reset_filter=False, select_inst_idx=None):
+        """(Re)build the instance list from the live NDF.  Called on load and after any structural
+        edit (add / delete / duplicate instance) so the list stays in sync with ndf.instances."""
+        ndf = self._v_ndf
+        if ndf is None:
+            return
         cls_by_idx = {c.index: c.name for c in ndf.classes}
         prop_by_idx = {pr.index: pr for pr in ndf.properties}
         self._v_all = []
@@ -1756,10 +1734,30 @@ class ToolsEditorWindow(tk.Frame):
                     break
             label = f"[{i}] {cls}" + (f"  ({dbg})" if dbg else "")
             self._v_all.append((i, cls, dbg, inst, label))
+        if reset_filter:
+            self._v_filter.set("")
+        self._vars_apply_filter()
+        if select_inst_idx is not None:
+            self._vars_select_instance(select_inst_idx)
+
+    def _vars_select_instance(self, inst_idx):
+        """Select the instance with the given engine index in the listbox and show its properties,
+        clearing the filter first if it's hidden.  Returns True if found."""
+        def _try():
+            for pos, e in enumerate(self._v_shown):
+                if e[0] == inst_idx:
+                    self._v_inst.selection_clear(0, tk.END)
+                    self._v_inst.selection_set(pos)
+                    self._v_inst.see(pos)
+                    self._v_inst.activate(pos)
+                    self._vars_refresh_props(pos)
+                    return True
+            return False
+        if _try():
+            return True
         self._v_filter.set("")
         self._vars_apply_filter()
-        for it in self._v_props.get_children():
-            self._v_props.delete(it)
+        return _try()
 
     def _vars_apply_filter(self, *_):
         flt = self._v_filter.get().lower().strip()
@@ -1784,7 +1782,7 @@ class ToolsEditorWindow(tk.Frame):
         prop_by_idx = {p.index: p for p in ndf.properties}
         for it in self._v_props.get_children():
             self._v_props.delete(it)
-        names, vals = [], []
+        names, types = [], []
         for pv in inst.props:
             pr = prop_by_idx.get(pv.prop_index)
             if pr is None:
@@ -1794,11 +1792,12 @@ class ToolsEditorWindow(tk.Frame):
             tag = ("mod",) if key in self._v_modified else ()
             mark = "✎" if key in self._v_modified else ""
             vstr = _fmt_val(pv.value, ndf)
-            names.append(pr.name); vals.append(vstr)
+            names.append(pr.name); types.append(tname)
             self._v_props.insert("", tk.END, iid=f"{inst_idx}:{pv.prop_index}",
                                  values=(pr.name, tname, vstr, mark), tags=tag)
+        # Auto-fit property + type to their content; value is left to stretch (see _build_vars).
         ui_util.fit_tree_column(self._v_props, "property", names, header=t("tools.property"))   # #5.4
-        ui_util.fit_tree_column(self._v_props, "value", vals, header=t("common.value"))          # #5.4
+        ui_util.fit_tree_column(self._v_props, "type", types, header=t("tools.type"), minimum=40)
         ui_util.stripe_treeview(self._v_props, _R_BG_WIDGET); ui_util.retag_treeview(self._v_props)  # #5.2
 
     def _commit_var(self, inst_idx, inst, prop_idx, type_name, raw_in):
@@ -1867,13 +1866,34 @@ class ToolsEditorWindow(tk.Frame):
             return
         tname = _type_label(pv.value.type_id)
 
-        # List / collection properties get the dedicated grid editor.
-        if pv.value.type_id == _T.List:
-            self._vars_edit_list(isel[0], inst_idx, inst, prop_idx, prop_obj, pv)
+        # Route each type to its dedicated editor.  Everything the raw editor can author now has one;
+        # only genuinely opaque/unknown types fall through to the read-only info dialog.
+        tid = pv.value.type_id
+        if tid == _T.List:
+            # Uniform-scalar lists keep the fast inline-cell editor; empty or complex (ObjRef / nested /
+            # mixed) lists get the generic element editor so every list is now editable.
+            elem_type_name, editable, _reason = _list_elem_info(pv)
+            if editable and elem_type_name is not None:
+                self._vars_edit_list(isel[0], inst_idx, inst, prop_idx, prop_obj, pv)
+            else:
+                self._vars_edit_list_complex(isel[0], inst_idx, inst, prop_idx, prop_obj, pv)
             return
-        # Non-scalar types we can't author (Map/ObjRef/LocHash/Blob/…) open read-only
-        # rather than silently pretending to be an Int32 scalar (would corrupt on save).
-        if tname not in _EDIT_TYPES:
+        if tid == _T.Reference:
+            self._vars_edit_objref(isel[0], inst_idx, inst, prop_idx, prop_obj, pv)
+            return
+        if tid == _T.Map:
+            self._vars_edit_map(isel[0], inst_idx, inst, prop_idx, prop_obj, pv)
+            return
+        if tid == _T.Pair:
+            self._vars_edit_pair(isel[0], inst_idx, inst, prop_idx, prop_obj, pv)
+            return
+        if tid == _T.ZipBlob:
+            self._vars_edit_zipblob(isel[0], inst_idx, inst, prop_idx, prop_obj, pv)
+            return
+        if tid == _T.LocHash:
+            self._vars_edit_lochash(isel[0], inst_idx, inst, prop_idx, prop_obj, pv)
+            return
+        if tname not in _AUTHOR_TYPES:
             self._vars_show_readonly(prop_obj, pv, tname)
             return
 
@@ -1883,8 +1903,8 @@ class ToolsEditorWindow(tk.Frame):
                  font=_F_HEAD).grid(row=0, column=0, columnspan=2, sticky="w", **pad)
         tk.Label(dlg, text=t("tools.type_2"), background=_R_BG_PANEL, foreground=_R_TEXT,
                  font=_F_MAIN).grid(row=1, column=0, sticky="e", **pad)
-        type_var = tk.StringVar(value=tname if tname in _EDIT_TYPES else "Int32")
-        type_cb = ttk.Combobox(dlg, textvariable=type_var, values=_EDIT_TYPES, width=14,
+        type_var = tk.StringVar(value=tname if tname in _AUTHOR_TYPES else "Int32")
+        type_cb = ttk.Combobox(dlg, textvariable=type_var, values=_AUTHOR_TYPES, width=14,
                                state="readonly")
         type_cb.grid(row=1, column=1, sticky="w", **pad)
         ui_util.fit_combobox(type_cb)
@@ -1897,6 +1917,11 @@ class ToolsEditorWindow(tk.Frame):
         new_var = tk.StringVar()
         ent = ttk.Entry(dlg, textvariable=new_var, width=42)
         ent.grid(row=3, column=1, sticky="ew", **pad)
+        hint_lbl = tk.Label(dlg, text=_TYPE_HINT.get(type_var.get(), ""), background=_R_BG_PANEL,
+                            foreground=_R_TEXT_DIM, font=_F_MAIN)
+        hint_lbl.grid(row=4, column=1, sticky="w", **pad)
+        type_cb.bind("<<ComboboxSelected>>",
+                     lambda *_: hint_lbl.config(text=_TYPE_HINT.get(type_var.get(), "")))
 
         def ok():
             okay, err = self._commit_var(inst_idx, inst, prop_idx, type_var.get(), new_var.get())
@@ -1910,7 +1935,7 @@ class ToolsEditorWindow(tk.Frame):
             dlg.destroy()
 
         bf = tk.Frame(dlg, background=_R_BG_PANEL)
-        bf.grid(row=4, column=0, columnspan=2, pady=8)
+        bf.grid(row=5, column=0, columnspan=2, pady=8)
         ttk.Button(bf, text=t("tools.apply"), command=ok).pack(side="left", padx=8)
         ttk.Button(bf, text=t("common.cancel"), command=dlg.destroy).pack(side="left", padx=8)
         ent.focus_set()
@@ -2126,6 +2151,291 @@ class ToolsEditorWindow(tk.Frame):
 
         dlg.bind("<Escape>", lambda *_: dlg.destroy())
         dlg.wait_window()
+
+    # ══ Extended value editing: ObjRef / Map / Pair / ZipBlob / complex lists ════════════════════════
+    # Every edit funnels through _commit_value → the SAME engine make_value/round-trip path proven safe
+    # by tools/test_scripts/test_raweditor_alltypes_roundtrip.py, so the edit itself can never corrupt
+    # the file — only a value the user deliberately picks could be semantically wrong.
+
+    def _vars_mark_dirty(self):
+        self._store.mark_dirty(self._dat_key, self._v_ndf_path)
+        self._notify()
+        self._update_status()
+
+    def _commit_value(self, inst_idx, prop_idx, new_value):
+        """Assign an already-built NdfValue onto a property and stage the edit.  Shared by every
+        non-scalar editor.  Returns (ok, err)."""
+        if self._v_ndf is None or not (0 <= inst_idx < len(self._v_ndf.instances)):
+            return False, t("tools.instance_no_longer_present")
+        inst = self._v_ndf.instances[inst_idx]
+        pv = next((pv for pv in inst.props if pv.prop_index == prop_idx), None)
+        if pv is None:
+            return False, t("tools.property_not_present_instance")
+        pv.value = new_value
+        self._v_modified.add((self._v_ndf_path, inst_idx, prop_idx))
+        self._vars_mark_dirty()
+        return True, None
+
+
+    # ── property-level wrappers (edit selected property, then commit) ────────────────────────────────
+
+    def _vars_edit_objref(self, shown_idx, inst_idx, inst, prop_idx, prop_obj, pv):
+        nv = self._objref_pick_value(pv.value, t("tools.edit_reference_n", n=prop_obj.name))
+        if nv is None:
+            return
+        okay, err = self._commit_value(inst_idx, prop_idx, nv)
+        if not okay:
+            ui_util.error(self, t("common.edit"), err or t("tools.could_not_apply_value"))
+            return
+        self._vars_refresh_props(shown_idx)
+
+    def _vars_edit_lochash(self, shown_idx, inst_idx, inst, prop_idx, prop_obj, pv):
+        # The manager may repoint the key (returns a new value) and/or edit .dic text (side effect).
+        nv = self._lochash_edit_value(pv.value, t("tools.localization_n", n=prop_obj.name),
+                                      prop_name=prop_obj.name)
+        if nv is not None:
+            okay, err = self._commit_value(inst_idx, prop_idx, nv)
+            if not okay:
+                ui_util.error(self, t("common.edit"), err or t("tools.could_not_apply_value"))
+        self._vars_refresh_props(shown_idx)
+
+    def _vars_edit_map(self, shown_idx, inst_idx, inst, prop_idx, prop_obj, pv):
+        nv = self._map_edit_value(pv.value, t("tools.edit_map_n", n=prop_obj.name))
+        if nv is None:
+            return
+        okay, err = self._commit_value(inst_idx, prop_idx, nv)
+        if okay:
+            self._vars_refresh_props(shown_idx)
+        else:
+            ui_util.error(self, t("common.edit"), err or t("tools.could_not_apply_value"))
+
+    def _vars_edit_pair(self, shown_idx, inst_idx, inst, prop_idx, prop_obj, pv):
+        nv = self._pair_edit_value(pv.value, t("tools.edit_pair_n", n=prop_obj.name))
+        if nv is None:
+            return
+        okay, err = self._commit_value(inst_idx, prop_idx, nv)
+        if okay:
+            self._vars_refresh_props(shown_idx)
+        else:
+            ui_util.error(self, t("common.edit"), err or t("tools.could_not_apply_value"))
+
+    def _vars_edit_zipblob(self, shown_idx, inst_idx, inst, prop_idx, prop_obj, pv):
+        nv = self._zipblob_edit_value(pv.value, t("tools.edit_zipblob_n", n=prop_obj.name))
+        if nv is None:
+            return
+        okay, err = self._commit_value(inst_idx, prop_idx, nv)
+        if okay:
+            self._vars_refresh_props(shown_idx)
+        else:
+            ui_util.error(self, t("common.edit"), err or t("tools.could_not_apply_value"))
+
+    def _vars_edit_list_complex(self, shown_idx, inst_idx, inst, prop_idx, prop_obj, pv):
+        nv = self._list_edit_value(pv.value, t("tools.edit_list_name", name=prop_obj.name))
+        if nv is None:
+            return
+        okay, err = self._commit_value(inst_idx, prop_idx, nv)
+        if okay:
+            self._vars_refresh_props(shown_idx)
+        else:
+            ui_util.error(self, t("common.edit"), err or t("tools.could_not_apply_value"))
+
+    # ── navigation: follow reference / find references ──────────────────────────────────────────────
+
+    def _vars_follow_ref(self, _=None):
+        """Jump to the instance a selected ObjRef property points at."""
+        psel = self._v_props.selection()
+        isel = self._v_inst.curselection()
+        if not psel or not isel or self._v_ndf is None:
+            return
+        inst_idx, _c, _d, inst, _l = self._v_shown[isel[0]]
+        prop_idx = int(psel[0].split(":")[1])
+        pv = next((pv for pv in inst.props if pv.prop_index == prop_idx), None)
+        if pv is None or pv.value.type_id != _T.Reference:
+            ui_util.info(self, t("tools.follow_reference"), t("tools.select_object_reference_property_first"))
+            return
+        marker, ref = pv.value.raw
+        if marker != ndfbin_mod.OBJ_REF_MARKER or not isinstance(ref, tuple):
+            ui_util.info(self, t("tools.follow_reference"),
+                         t("tools.import_trans_reference_has_no"))
+            return
+        target = ref[0]
+        if not self._vars_select_instance(target):
+            ui_util.info(self, t("tools.follow_reference"), t("tools.target_instance_i_not_found", i=target))
+
+    def _vars_find_refs(self, _=None):
+        """List every property anywhere in this NDF that references the selected instance."""
+        isel = self._v_inst.curselection()
+        if not isel or self._v_ndf is None:
+            return
+        target_idx = self._v_shown[isel[0]][0]
+        ndf = self._v_ndf
+        prop_by_idx = {p.index: p for p in ndf.properties}
+        cls_by_idx = {c.index: c.name for c in ndf.classes}
+        hits = []
+
+        def walk(val, owner_idx, prop_name):
+            tid = val.type_id
+            if tid == _T.Reference and isinstance(val.raw, tuple) and val.raw[0] == ndfbin_mod.OBJ_REF_MARKER:
+                if isinstance(val.raw[1], tuple) and val.raw[1][0] == target_idx:
+                    hits.append((owner_idx, prop_name))
+            elif tid == _T.List:
+                for e in val.raw:
+                    walk(e, owner_idx, prop_name)
+            elif tid == _T.Map:
+                for k, v in val.raw:
+                    walk(k, owner_idx, prop_name); walk(v, owner_idx, prop_name)
+            elif tid == _T.Pair:
+                walk(val.raw[0], owner_idx, prop_name); walk(val.raw[1], owner_idx, prop_name)
+
+        for oi, ins in enumerate(ndf.instances):
+            for ppv in ins.props:
+                pr = prop_by_idx.get(ppv.prop_index)
+                walk(ppv.value, oi, pr.name if pr else f"#{ppv.prop_index}")
+
+        dlg = ui_util.themed_toplevel(self, t("tools.references_instance_i", i=target_idx),
+                                      min_size=(460, 360), resizable=True)
+        pad = {"padx": 8, "pady": 4}
+        tk.Label(dlg, text=t("tools.n_reference_s_found", n=len(hits)), background=_R_BG_PANEL,
+                 foreground=_R_GOLD_BRT, font=_F_HEAD).pack(anchor="w", **pad)
+        lh = tk.Frame(dlg, background=_R_BG_PANEL)
+        lh.pack(fill="both", expand=True, **pad)
+        lb = self._mk_listbox(lh, selectmode="browse")
+        ui_util.with_scrollbars(lh, lb)
+        for oi, pn in hits:
+            cls = cls_by_idx.get(ndf.instances[oi].class_index, "?")
+            lb.insert(tk.END, f"[{oi}] {cls}.{pn}")
+
+        def goto():
+            sel = lb.curselection()
+            if not sel:
+                return
+            self._vars_select_instance(hits[sel[0]][0])
+            dlg.destroy()
+        lb.bind("<Double-Button-1>", lambda *_: goto())
+        bf = tk.Frame(dlg, background=_R_BG_PANEL)
+        bf.pack(fill="x", **pad)
+        ttk.Button(bf, text=t("tools.go"), command=goto).pack(side="left", padx=8)
+        ttk.Button(bf, text=t("common.close"), command=dlg.destroy).pack(side="left", padx=8)
+        dlg.bind("<Escape>", lambda *_: dlg.destroy())
+        dlg.wait_window()
+
+    # ── structural edits: add / delete / duplicate instance, add / delete property ────────────────────
+
+    def _vars_add_instance(self, _=None):
+        if self._v_ndf is None:
+            ui_util.info(self, t("tools.add_instance"), t("tools.open_ndf_file_first"))
+            return
+        cls_name = self._pick_class(t("tools.new_instance_pick_class"))
+        if not cls_name:
+            return
+        make_top = ui_util.confirm(self, t("tools.add_instance"),
+                                      t("tools.register_as_top_level_object"))
+        try:
+            idx, _inst = self._v_ndf.create_instance(cls_name, top=bool(make_top))
+        except Exception as e:
+            ui_util.error(self, t("tools.add_instance"), str(e))
+            return
+        self._vars_mark_dirty()
+        self._vars_rebuild_instances(select_inst_idx=idx)
+
+    def _vars_delete_instance(self, _=None):
+        isel = self._v_inst.curselection()
+        if not isel or self._v_ndf is None:
+            return
+        idx = self._v_shown[isel[0]][0]
+        if not ui_util.confirm(self, t("tools.delete_instance"),
+                                  t("tools.delete_instance_i_any_references", i=idx)):
+            return
+        removed, dangling = self._v_ndf.delete_instances([idx])
+        self._vars_mark_dirty()
+        self._vars_rebuild_instances(reset_filter=True)
+        for it in self._v_props.get_children():
+            self._v_props.delete(it)
+        if dangling:
+            ui_util.info(self, t("tools.delete_instance"),
+                         t("tools.deleted_d_reference_s_pointed",
+                           d=dangling))
+
+    def _vars_dup_instance(self, _=None):
+        isel = self._v_inst.curselection()
+        if not isel or self._v_ndf is None:
+            return
+        idx = self._v_shown[isel[0]][0]
+        deep = ui_util.confirm(
+            self, t("tools.duplicate_instance"),
+            t("tools.deep_copy_yes_also_clone"))
+        try:
+            new_idx = self._v_ndf.clone_instance(idx, deep_subobjects=bool(deep))
+        except Exception as e:
+            ui_util.error(self, t("tools.duplicate_instance"), str(e))
+            return
+        self._vars_mark_dirty()
+        self._vars_rebuild_instances(select_inst_idx=new_idx)
+
+    def _vars_add_prop(self, _=None):
+        isel = self._v_inst.curselection()
+        if not isel or self._v_ndf is None:
+            return
+        shown_idx = isel[0]
+        inst_idx, _c, _d, inst, _l = self._v_shown[shown_idx]
+        ndf = self._v_ndf
+        present = {pv.prop_index for pv in inst.props}
+        # properties already known for this class but not yet on this instance, else free-typed name
+        known = sorted({p.name for p in ndf.properties
+                        if p.class_index == inst.class_index and p.index not in present})
+        name = self._prompt_prop_name(known)
+        if not name:
+            return
+        nv = self._author_value(t("tools.new_property_value"))
+        if nv is None:
+            return
+        if not ndf.set_property(inst, name, nv, create=True):
+            ui_util.error(self, t("tools.add_property"), t("tools.could_not_add_property_n", n=name))
+            return
+        self._vars_mark_dirty()
+        self._vars_refresh_props(shown_idx)
+
+    def _prompt_prop_name(self, known):
+        """Combobox (existing class properties) + free entry for a property name.  Returns name or None."""
+        result = {"name": None}
+        dlg = ui_util.themed_toplevel(self, t("tools.property_name"), resizable=True)
+        pad = {"padx": 8, "pady": 4}
+        tk.Label(dlg, text=t("tools.property_name"), background=_R_BG_PANEL, foreground=_R_TEXT,
+                 font=_F_MAIN).grid(row=0, column=0, sticky="e", **pad)
+        nv = tk.StringVar()
+        cb = ttk.Combobox(dlg, textvariable=nv, values=known, width=36)
+        cb.grid(row=0, column=1, sticky="ew", **pad)
+
+        def ok():
+            if nv.get().strip():
+                result["name"] = nv.get().strip()
+                dlg.destroy()
+        bf = tk.Frame(dlg, background=_R_BG_PANEL)
+        bf.grid(row=1, column=0, columnspan=2, pady=8)
+        ttk.Button(bf, text=t("common.ok"), command=ok).pack(side="left", padx=8)
+        ttk.Button(bf, text=t("common.cancel"), command=dlg.destroy).pack(side="left", padx=8)
+        cb.focus_set()
+        dlg.bind("<Return>", lambda *_: ok())
+        dlg.bind("<Escape>", lambda *_: dlg.destroy())
+        dlg.wait_window()
+        return result["name"]
+
+    def _vars_del_prop(self, _=None):
+        psel = self._v_props.selection()
+        isel = self._v_inst.curselection()
+        if not psel or not isel or self._v_ndf is None:
+            return
+        shown_idx = isel[0]
+        inst_idx, _c, _d, inst, _l = self._v_shown[shown_idx]
+        prop_idx = int(psel[0].split(":")[1])
+        prop = next((p for p in self._v_ndf.properties if p.index == prop_idx), None)
+        pname = prop.name if prop else str(prop_idx)
+        if not ui_util.confirm(self, t("tools.delete_property"), t("tools.remove_property_n", n=pname)):
+            return
+        if inst.remove(prop_idx):
+            self._v_modified.discard((self._v_ndf_path, inst_idx, prop_idx))
+            self._vars_mark_dirty()
+            self._vars_refresh_props(shown_idx)
 
     def _goto_vars(self, ndf_path):
         if not ndf_path.lower().endswith(_NDF_EXTS):

@@ -10,6 +10,7 @@ Provides:
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -23,23 +24,45 @@ _STEAM_DEFAULT_PATHS = [
 ]
 
 
+def _linux_steam_candidates() -> list:
+    """Common Steam roots on Linux/macOS. On Linux, R.U.S.E. runs under Proton, but the Steam
+    library/userdata layout (steamapps/, userdata/) is the SAME as Windows once we find the root —
+    so only find_steam_path() needs to be OS-aware; the parsers below are already cross-platform."""
+    home = Path.home()
+    if sys.platform == "darwin":
+        return [home / "Library" / "Application Support" / "Steam"]
+    return [
+        home / ".steam" / "steam",
+        home / ".local" / "share" / "Steam",
+        home / ".steam" / "root",
+        home / ".steam" / "debian-installation",
+        # Flatpak Steam
+        home / ".var" / "app" / "com.valvesoftware.Steam" / ".local" / "share" / "Steam",
+    ]
+
+
 def find_steam_path() -> Optional[Path]:
     """Return the Steam installation root directory, or None if not found.
 
-    Checks the Windows registry first, then falls back to common install paths.
+    On Windows: checks the registry first, then common install paths.
+    On Linux/macOS: checks the standard per-user Steam roots (incl. Flatpak).
     """
-    try:
-        import winreg
-        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam")
-        val, _ = winreg.QueryValueEx(key, "SteamPath")
-        winreg.CloseKey(key)
-        p = Path(val)
-        if p.is_dir():
-            return p
-    except Exception:
-        pass
+    if sys.platform == "win32":
+        try:
+            import winreg
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam")
+            val, _ = winreg.QueryValueEx(key, "SteamPath")
+            winreg.CloseKey(key)
+            p = Path(val)
+            if p.is_dir():
+                return p
+        except Exception:
+            pass
+        candidates = _STEAM_DEFAULT_PATHS
+    else:
+        candidates = _linux_steam_candidates()
 
-    for candidate in _STEAM_DEFAULT_PATHS:
+    for candidate in candidates:
         if candidate.is_dir():
             return candidate
 
@@ -113,10 +136,45 @@ def find_ruse_game_dirs() -> dict:
             if not installdir:
                 continue
             candidate = lib / "steamapps" / "common" / installdir
-            if (candidate / "Ruse.exe").exists() or (candidate / "Data").is_dir():
+            if _has_ruse_exe(candidate) or (candidate / "Data").is_dir():
                 result[key] = candidate
 
     return result
+
+
+def _has_ruse_exe(d: Path) -> bool:
+    """True if the folder holds RUSE's executable, matched CASE-INSENSITIVELY. The file ships as
+    'RUSE.exe'; the historical hard-coded 'Ruse.exe' check silently fails on case-sensitive Linux
+    filesystems (Windows didn't care), so match by lowercased name instead."""
+    try:
+        return any(f.name.lower() == "ruse.exe" for f in d.iterdir())
+    except OSError:
+        return False
+
+
+def detect_ruse_install(game_root) -> dict:
+    """Authoritative identity of an installed R.U.S.E, grounded on the ACTUAL game files rather than the
+    appid the folder was found under (compat vs public is a moving branch pointer on ONE app, so the
+    appid can't tell them apart — the data layout can). Returns:
+
+        {path, build_id, dataver, format, branch, display}
+
+    where dataver/format come from the real Data/PC/ layout (game_versions.detect_dataver: '99' OG =
+    'compat', '190852' remaster = 'public') and build_id/branch/display from the Steam buildid +
+    shipped registry (game_versions). Use this over find_ruse_game_dirs()'s appid key when you need
+    to know what the install ACTUALLY is."""
+    from . import game_versions as gv
+    root = Path(game_root)
+    build_id = gv.detect_build_id(root)
+    dataver = gv.detect_dataver(root)          # reads Data/PC/ — robust even off-registry
+    return {
+        "path": root,
+        "build_id": build_id,
+        "dataver": dataver,
+        "format": "compat" if dataver == "99" else "public",
+        "branch": gv.branch_for_build(build_id),
+        "display": gv.display_name(build_id) if build_id else None,
+    }
 
 
 def find_steam_profile_dirs(appid: str = RUSE_COMPAT_APPID) -> list:

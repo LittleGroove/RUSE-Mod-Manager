@@ -627,12 +627,111 @@ def convert_rmod(mod, from_build: str, to_build: str, sources, *,
                  maps_dir=DATA_DIR, regenerate: bool = False, include_og: bool = True):
     """Produce `mod` NATIVELY in `to_build` coordinates (rewrite mode).
 
-    Rewrites each patch group's dat data-version path, translates NDF paths across
-    the OG->remaster jump, and remaps every positional _index match and ObjRef inst
-    value via the EXACT computed per-build-pair map (no hardcoded offsets). Works in
-    ANY direction (forward composes steps; backward inverts them). Mutates `mod` in
-    place and returns a report; changes whose target was deleted are dropped+flagged.
+    Two paths, chosen by data-version:
+      - SAME format (same data-version, i.e. any two MODERN builds): use the DIRECT
+        all-pairs version map (ruse_mod_engine/version_map.py). Direct A->B is exact —
+        no chaining through intermediate builds, which was proven to accumulate
+        transient noise (issue: version_mappings_redesign).
+      - CROSS format (the OG/compat data-version 99 <-> remaster jump): fall back to
+        the chained migration maps below, which also translate dat/NDF paths across
+        the format change. The direct maps deliberately exclude OG (needs NDF-path
+        translation first).
+
+    Mutates `mod` in place and returns the standard report.
     """
+    from . import game_versions as _gv
+    if str(from_build) == str(to_build):
+        # Already native for the target build: nothing to remap. Clear any stale
+        # cross-build index_map and stamp the version (matches the chained path's
+        # same-build behaviour); never look up a nonexistent v<x>_v<x> map.
+        report = {"from": str(from_build), "to": str(to_build), "groups": 0,
+                  "reindexed": 0, "dropped": 0, "review": []}
+        for pg in mod.patches:
+            report["groups"] += 1
+            pg.index_map = {}
+        mod.game_version = str(to_build)
+        return report
+    from_dv = _gv.dataver_for_build(str(from_build))
+    to_dv = _gv.dataver_for_build(str(to_build))
+    if from_dv is not None and to_dv is not None and from_dv == to_dv:
+        return _convert_rmod_direct(mod, str(from_build), str(to_build))
+    # A build RETIRES out of the shipped registry the moment a game update replaces it, so its
+    # data-version reads as None — but its direct maps keep shipping. A direct map exists only
+    # between same-format builds, so treat its presence as the format proof the registry can no
+    # longer give. Without this, every mod stamped for the just-retired public build failed to
+    # convert onto the new one ("not in timeline") by falling to the OG cross-format path.
+    if (from_dv is None or to_dv is None):
+        from . import version_map as _vm
+        if _vm.has_map(str(from_build), str(to_build)):
+            return _convert_rmod_direct(mod, str(from_build), str(to_build))
+    return _convert_rmod_chained(mod, from_build, to_build, sources,
+                                 maps_dir=maps_dir, regenerate=regenerate, include_og=include_og)
+
+
+def _convert_rmod_direct(mod, from_build: str, to_build: str):
+    """Same-format native conversion via the DIRECT version map. Remaps positional
+    _index matches and ObjRef inst values into to_build coordinates, drops changes
+    whose target no longer exists, and flags (but keeps) changes whose target VALUE
+    moved between the builds. Same-data-version, so dat/NDF paths are untouched."""
+    from . import version_map as _vm
+    report = {"from": from_build, "to": to_build, "groups": 0, "reindexed": 0,
+              "dropped": 0, "review": []}
+
+    def flag(sev, where, reason):
+        report["review"].append({"severity": sev, "where": where, "reason": reason})
+
+    try:
+        vmap = _vm.load(from_build, to_build)
+    except Exception as e:  # noqa: BLE001 - a shipped map that won't parse (truncated/corrupt install)
+        report["error"] = f"could not read the version map for v{from_build} -> v{to_build}: {e}"
+        flag("SCRIPT", "map", report["error"])
+        return report
+    if vmap is None:
+        report["error"] = (f"no direct version map for v{from_build} -> v{to_build}; "
+                           "run tools/test_scripts/build_version_maps.py for this pair")
+        flag("SCRIPT", "map", report["error"])
+        return report
+
+    for pg in mod.patches:
+        report["groups"] += 1
+        remap = vmap.remap_for(pg.dat, pg.ndf, from_build)
+        removed = vmap.removed_for(pg.dat, pg.ndf, from_build)
+        kept = []
+        for ch in pg.changes:
+            m = ch.match or {}
+            oi = None
+            if "_index" in m:
+                try:
+                    oi = int(m["_index"])
+                except (TypeError, ValueError):
+                    oi = None
+                if oi is not None and oi in removed:
+                    report["dropped"] += 1
+                    flag("REVIEW", f"{pg.ndf}:_index {oi}",
+                         "target instance does not exist in the destination build; change dropped")
+                    continue
+            # Flag value-moved targets on the ORIGINAL (pre-remap) match — target_changed
+            # reads from-build coordinates, so this must run before _index is rewritten.
+            if ch.action in ("patch", "delete_props") and vmap.target_changed(pg.dat, pg.ndf, m):
+                flag("REVIEW", f"{pg.ndf}",
+                     "target value changed between these builds; review this edit")
+            if oi is not None and oi in remap and remap[oi] != oi:
+                ch.match["_index"] = str(remap[oi]); report["reindexed"] += 1
+            for vd in (ch.set_props or {}).values():
+                report["reindexed"] += _vm._remap_objref_insts(getattr(vd, "value", None), remap)
+            kept.append(ch)
+        pg.changes = kept
+        pg.index_map = {}                                   # native; no apply-time translation
+
+    mod.game_version = to_build
+    return report
+
+
+def _convert_rmod_chained(mod, from_build: str, to_build: str, sources, *,
+                          maps_dir=DATA_DIR, regenerate: bool = False, include_og: bool = True):
+    """Cross-format (OG/compat <-> remaster) native conversion via the chained migration
+    maps. Rewrites each patch group's dat data-version path, translates NDF paths across
+    the OG->remaster jump, and remaps positional _index matches and ObjRef inst values."""
     from . import path_map as _pm
     report = {"from": from_build, "to": to_build, "groups": 0, "reindexed": 0,
               "dropped": 0, "review": []}

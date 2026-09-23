@@ -101,7 +101,11 @@ class ScenarioBinding:
 
 
 # ── linkage helpers ──────────────────────────────────────────────────────────────
-_REACH_RE = re.compile(r"Scenario\\([^\\]+)\\(scenario[^\\]*)\\ClusterMap", re.I)
+# NOTE on the map-dir groups in this file: a map dir can be NESTED (`flat\afrique`, `flat\ia`, ... — ten of
+# them ship, in both DataMap and the glad dat).  These patterns used to match a single path segment, which
+# dropped every one of those maps from the registry entirely.  The map group is therefore greedy `.+` and
+# the FINAL segment is the scenario folder / stem.
+_REACH_RE = re.compile(r"Scenario\\(.+)\\(scenario[^\\]*)\\ClusterMap", re.I)
 
 
 def _guid_hex(ndf, inst, prop="GUID") -> Optional[str]:
@@ -133,7 +137,7 @@ def folder_to_stem(folder: str) -> str:
 
 
 _CLUSTERMAP_RE = re.compile(
-    r"genglad\\patchable\\scenario\\([^\\]+)\\([^\\]+)\\clustermap\.cpp\.gladndfbin$", re.I)
+    r"genglad\\patchable\\scenario\\(.+)\\([^\\]+)\\clustermap\.cpp\.gladndfbin$", re.I)
 
 
 def _clustermap_index(gd) -> Dict[tuple, str]:
@@ -185,9 +189,28 @@ def _datamap_paths(map_dir: str, stem: str) -> dict:
     }
 
 
-def _script_path(map_dir: str, stem: str, buildid: str = "10000") -> str:
+def _script_path(map_dir: str, stem: str, buildid: str) -> str:
+    """Archive path of a scenario's mission script.  `buildid` is DISCOVERED from the dat, never assumed —
+    the shipped public build uses `genpython\\1000\\`, and a hardcoded guess simply finds nothing, which
+    presents as 'this scenario has no script' rather than as an error."""
     suffix = stem[len("leveldesign"):] if stem.startswith("leveldesign") else ""
     return "genpython\\%s\\test\\map\\%s\\scripting%s\\effetmap.xyz" % (buildid, map_dir, suffix)
+
+
+def script_buildid(ia) -> str:
+    """The `genpython\\<buildid>\\` segment this dat set uses (see scenario_chain.discover_script_buildid)."""
+    try:
+        names = ia.list() if hasattr(ia, "list") else list(ia)
+    except Exception:
+        return SCRIPT_BUILDID_FALLBACK
+    for p in names:
+        parts = p.replace("/", "\\").lower().split("\\")
+        if len(parts) >= 2 and parts[0] == "genpython" and parts[1].isdigit():
+            return parts[1]
+    return SCRIPT_BUILDID_FALLBACK
+
+
+SCRIPT_BUILDID_FALLBACK = "1000"
 
 
 def _pack_index_for_info(g_ndf, rk: RegistryKind, info_idx: int) -> Optional[int]:
@@ -207,7 +230,7 @@ def _scenario_files(dm) -> List[tuple]:
     out = []
     for vp in dm.list():
         v = vp.replace("/", "\\")
-        m = re.match(r"test\\map\\([^\\]+)\\([^\\]+)\.scenario$", v, re.I)
+        m = re.match(r"test\\map\\(.+)\\([^\\]+)\.scenario$", v, re.I)
         if m:
             out.append((m.group(1), m.group(2), vp))
     return sorted(out)
@@ -231,8 +254,10 @@ def build_bindings(m_ndf, g_ndf, dm, gd=None, ia=None) -> Dict[str, List[Scenari
     (handles irregular maps like supercrossroads4). Without it we fall back to the folder-name
     convention (which mis-binds those maps). `ia` (IA_Common.dat) populates has_script."""
     ia_set = None
+    buildid = SCRIPT_BUILDID_FALLBACK
     if ia is not None:
         ia_set = {p.replace("/", "\\").lower() for p in ia.list()}
+        buildid = script_buildid(ia)
     # existing scenario files (for disambiguating multi-candidate clustermaps)
     dm_files = {(mp.lower(), st.lower()) for mp, st, _ in _scenario_files(dm)}
     cl_index = _clustermap_index(gd) if gd is not None else {}
@@ -300,7 +325,7 @@ def build_bindings(m_ndf, g_ndf, dm, gd=None, ia=None) -> Dict[str, List[Scenari
     for map_dir, stem, vp in _scenario_files(dm):
         key = (map_dir.lower(), stem.lower())
         regs = reg_by_file.get(key, [])
-        out.setdefault(map_dir, []).append(_make_binding(map_dir, stem, regs, True, ia_set))
+        out.setdefault(map_dir, []).append(_make_binding(map_dir, stem, regs, True, ia_set, buildid))
         if regs:
             seen_reg.add(key)
 
@@ -309,7 +334,7 @@ def build_bindings(m_ndf, g_ndf, dm, gd=None, ia=None) -> Dict[str, List[Scenari
         if key in seen_reg:
             continue
         out.setdefault(regs[0]["map"], []).append(
-            _make_binding(regs[0]["map"], regs[0]["stem"], regs, False, ia_set))
+            _make_binding(regs[0]["map"], regs[0]["stem"], regs, False, ia_set, buildid))
 
     return out
 
@@ -326,13 +351,14 @@ def ndf_val(ndf, v):
     return v.raw
 
 
-def _make_binding(map_dir, stem, regs, has_file, ia_set=None) -> ScenarioBinding:
+def _make_binding(map_dir, stem, regs, has_file, ia_set=None,
+                  buildid: str = SCRIPT_BUILDID_FALLBACK) -> ScenarioBinding:
     """Build one binding for a scenario file from ALL the registry records (regs) that point at it.
     The PRIMARY identity is the highest-priority typed record (campaign > operation > mp > unbound)."""
     regs = regs or []
     primary = max(regs, key=lambda r: _KIND_PRIORITY.get(r["kind"], 0)) if regs else None
     files = _datamap_paths(map_dir, stem)
-    script = _script_path(map_dir, stem)
+    script = _script_path(map_dir, stem, buildid)
     files["script"] = script
     has_script = (script.lower() in ia_set) if ia_set is not None else False
     p = primary or {}

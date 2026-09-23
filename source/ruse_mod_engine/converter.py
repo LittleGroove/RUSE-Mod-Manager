@@ -168,7 +168,7 @@ def val_to_rmod(ndf, val, new_inst_indices=None, orig_ndf=None):
             # TGfxDescriptorBoneOperatorDispatcher->TBoneAlgorithmBase between builds).  version_map only
             # remaps ObjRef INST indices, not the class, so a migrated raw class points at the WRONG class on
             # the target build and the engine lazily constructs the wrong type -> crash (see
-            # RE_DATA/EVIDENCE_DOSSIER.md root cause).  Emit the class NAME too so the applier resolves it to
+            # our internal RE notes root cause).  Emit the class NAME too so the applier resolves it to
             # the TARGET build's index (identity same-build = lossless; correct cross-build).
             _cls_name = ndf.classes[cls_idx].name if 0 <= cls_idx < len(ndf.classes) else None
             def _oref(**kw):
@@ -548,18 +548,31 @@ def _impr_expr_differ(orig_ndf, mod_ndf) -> bool:
 
     The import/export tables are trees of path components; two files' imports differ
     iff their resolved path SETS differ (order/ordinal reshuffles don't count)."""
-    ia, ir, ea, er = _diff_import_export(orig_ndf, mod_ndf)
+    ia, ir, ea, er, _tgt = _diff_import_export(orig_ndf, mod_ndf)
     return bool(ia or ir or ea or er)
 
 
 def _ndf_semantic_equal(a, b) -> bool:
-    """True if two NDFs are equal in the ways an rmod can express: same import/export
-    PATH sets, same instance count, and no residual instance diff."""
+    """True if two NDFs are equal in the ways an rmod can express: same import PATH set,
+    same export ordinal->path MAP, same instance count, and no residual instance diff.
+
+    Exports are compared as the whole ordinal->path map, not just the set of paths.  An
+    EXPORT ordinal is the INSTANCE INDEX of the exported object, so two files can carry an
+    identical set of export paths while those paths point at completely different objects.
+    Comparing only the paths passed exactly that case: a mod adding 21 units shipped with
+    every export pointing at the wrong instance — 14 silently resolving to the wrong unit
+    and the 15th to a non-top-object, which crashed the game on map load.  See
+    our internal crash notes.
+
+    Imports stay a path-set comparison: import ordinals are a dense 0..N-1 sequence that
+    `applier._finalize_ref_edits` deliberately reassigns, so their numbering is not
+    expected to match.
+    """
     if set(ndfbin_mod.ref_ordinal_paths(ndfbin_mod.parse_ref_tree(a.import_list), a.trans).values()) \
        != set(ndfbin_mod.ref_ordinal_paths(ndfbin_mod.parse_ref_tree(b.import_list), b.trans).values()):
         return False
-    if set(ndfbin_mod.ref_ordinal_paths(ndfbin_mod.parse_ref_tree(a.export_list), a.trans).values()) \
-       != set(ndfbin_mod.ref_ordinal_paths(ndfbin_mod.parse_ref_tree(b.export_list), b.trans).values()):
+    if ndfbin_mod.ref_ordinal_paths(ndfbin_mod.parse_ref_tree(a.export_list), a.trans) \
+       != ndfbin_mod.ref_ordinal_paths(ndfbin_mod.parse_ref_tree(b.export_list), b.trans):
         return False
     if len(a.instances) != len(b.instances):
         return False
@@ -591,7 +604,11 @@ def _surgical_ndf_roundtrips(orig_bytes, mod_ndf, pg_dict, warn_fn) -> bool:
         # _finalize_ref_edits — the stale name made every self-check raise and silently fall the
         # whole NDF back to a raw file patch: issue #18.)
         applier._apply_ref_adds(ndf, pg, result)
-        applier._apply_changes_to_ndf(pg.changes, ndf, result)
+        # Pass the GROUP, not just its changes: the export phase runs inside
+        # _apply_changes_to_ndf (after the creates, since an export ordinal is an instance index),
+        # and routing through the same function is what keeps this self-check in step with the
+        # real apply path.
+        applier._apply_changes_to_ndf(pg.changes, ndf, result, pg)
         applier._finalize_ref_edits(ndf, pg, result)
         return _ndf_semantic_equal(ndf, mod_ndf)
     except Exception as e:  # noqa: BLE001
@@ -600,10 +617,15 @@ def _surgical_ndf_roundtrips(orig_bytes, mod_ndf, pg_dict, warn_fn) -> bool:
 
 
 def _diff_import_export(orig_ndf, mod_ndf):
-    """Return (import_add, import_remove, export_add, export_remove) as sorted path lists.
+    """Return (import_add, import_remove, export_add, export_remove, export_targets).
 
     Imports/exports are compared by their resolved full paths ('$/IA/Cluster/PackMesh_All'),
-    which are build-independent — so these edits migrate across builds unchanged."""
+    which are build-independent — so these edits migrate across builds unchanged.
+
+    `export_targets` maps each ADDED export path to the local_id of the instance it names
+    ("inst_<index in the modded NDF>", the same id the matching `create` change carries).
+    A path alone cannot express an export: the ordinal IS the instance index, so without
+    this the applier has to invent one and the export lands on an arbitrary object."""
     def _paths(ndf, lst):
         try:
             return set(ndfbin_mod.ref_ordinal_paths(ndfbin_mod.parse_ref_tree(lst), ndf.trans).values())
@@ -616,8 +638,24 @@ def _diff_import_export(orig_ndf, mod_ndf):
             return set()
     o_imp = _paths(orig_ndf, orig_ndf.import_list); m_imp = _paths(mod_ndf, mod_ndf.import_list)
     o_exp = _paths(orig_ndf, orig_ndf.export_list); m_exp = _paths(mod_ndf, mod_ndf.export_list)
+    exp_add = sorted(m_exp - o_exp)
+
+    # Bind each added export to the instance it names, read straight off the modded NDF's own
+    # export table (ordinal -> path, and the ordinal is the instance index).
+    targets = {}
+    try:
+        mod_exp = ndfbin_mod.ref_ordinal_paths(
+            ndfbin_mod.parse_ref_tree(mod_ndf.export_list), mod_ndf.trans)
+        by_path = {p: o for o, p in mod_exp.items()}
+        for p in exp_add:
+            o = by_path.get(p)
+            if o is not None:
+                targets[p] = "inst_%d" % o
+    except Exception:
+        _log.warning("could not bind added exports to their instances", exc_info=True)
+
     return (sorted(m_imp - o_imp), sorted(o_imp - m_imp),
-            sorted(m_exp - o_exp), sorted(o_exp - m_exp))
+            exp_add, sorted(o_exp - m_exp), targets)
 
 
 def _diff_dic(orig_bytes, mod_bytes):
@@ -663,6 +701,50 @@ def _surgical_dic_roundtrip(orig_bytes, mod_bytes, entries) -> bool:
         return dict(dic_mod.read(blob)) == dict(dic_mod.read(mod_bytes))
     except Exception:
         return False
+
+
+def _diff_container(orig_bytes, mod_bytes, container_path, warn_fn):
+    """Diff two NESTED edata archives into per-file patches, or None to fall back to raw.
+
+    An .ipk/.ppk/.mpk/.apk/.gpk entry of a .dat is itself an archive.  A mod that adds unit
+    classes changes ONE script inside genpython/eugenpatchable.ipk; shipping the container whole
+    means two such mods replace each other entirely.  Returning per-file patches keeps them
+    composable and usually much smaller.
+
+    Returns None (→ raw whole-container patch, always lossless) when the container cannot be read,
+    when a file was REMOVED from it (a file patch cannot express a removal), or when nothing inside
+    it actually differs — in the last case the bytes differ for some reason we do not model, so
+    shipping the container verbatim is the safe answer.
+    """
+    ao = am = None
+    try:
+        a, ao = edata_mod.open_container(orig_bytes)
+        b, am = edata_mod.open_container(mod_bytes)
+        pa = {e.path.replace("\\", "/").lower(): e.path for e in a._entries}
+        pb = {e.path.replace("\\", "/").lower(): e.path for e in b._entries}
+        if set(pa) - set(pb):
+            warn_fn(f"  {container_path}: file(s) removed from the nested archive — shipping it whole")
+            return None
+        out = []
+        for key, mod_path in sorted(pb.items()):
+            new = b.get(mod_path)
+            old = a.get(pa[key]) if key in pa else None
+            if old == new:
+                continue
+            out.append({"container": container_path,
+                        "path": mod_path.replace("\\", "/"),
+                        "data": base64.b64encode(new).decode("ascii")})
+        return out or None
+    except Exception as e:  # noqa: BLE001
+        warn_fn(f"  {container_path}: nested archive not readable ({e}) — shipping it whole")
+        return None
+    finally:
+        for tmp in (ao, am):
+            if tmp:
+                try:
+                    os.remove(tmp)
+                except OSError:
+                    pass
 
 
 def _diff_sdb(orig_win, mod_win):
@@ -818,11 +900,12 @@ def convert_dat_pair(mod_dat: Path, orig_dat: Path, rmod_dat_path: str,
                 orig_ndf = ndfbin_mod.read(orig_bytes)
                 mod_ndf  = ndfbin_mod.read(mod_bytes)
                 changes = diff_ndf(orig_ndf, mod_ndf, warn_fn)
-                imp_add, imp_rem, exp_add, exp_rem = _diff_import_export(orig_ndf, mod_ndf)
+                imp_add, imp_rem, exp_add, exp_rem, exp_tgt = _diff_import_export(orig_ndf, mod_ndf)
                 pg = {"dat": rmod_dat_path, "ndf": entry_fwd, "changes": changes}
                 if imp_add: pg["import_add"] = imp_add
                 if imp_rem: pg["import_remove"] = imp_rem
                 if exp_add: pg["export_add"] = exp_add
+                if exp_tgt: pg["export_targets"] = exp_tgt
                 if exp_rem: pg["export_remove"] = exp_rem
                 has_edits = bool(changes or imp_add or imp_rem or exp_add or exp_rem)
                 # Verify the surgical patch is LOSSLESS: replay it onto orig and compare to
@@ -878,6 +961,15 @@ def convert_dat_pair(mod_dat: Path, orig_dat: Path, rmod_dat_path: str,
             # diff so scenario placement edits stay small and compose with other mods' edits.
             log_fn(f"  Scenario NDF: {entry_fwd.split('/')[-1]} — {len(_scn)} change(s)")
             scenario_groups.append({"dat": rmod_dat_path, "scenario": entry_fwd, "changes": _scn})
+        elif (orig_bytes is not None
+              and edata_mod.is_container(orig_bytes) and edata_mod.is_container(mod_bytes)
+              and (_inner := _diff_container(orig_bytes, mod_bytes, entry_fwd, warn_fn)) is not None):
+            # The entry is itself an edata archive (.ipk/.ppk/.mpk/.apk/.gpk).  Ship only the files
+            # inside it that changed, so two mods editing different files in one container compose
+            # instead of replacing each other's whole container.
+            log_fn(f"  Nested archive: {entry_fwd.split('/')[-1]} — "
+                   f"{len(_inner)} of its files changed")
+            raw_file_patches.extend(_inner)
         else:
             label = "New file" if orig_bytes is None else "Changed (non-NDF)"
             log_fn(f"  {label}: {entry_fwd.split('/')[-1]}")
@@ -1003,11 +1095,12 @@ def surgicalize_ndf_file_patches(mod, clean_game_root, log_fn=lambda *_: None,
                 warn_fn(f"  parse failed {fp.path}: {e} — kept raw")
                 remaining.append(fp); report["kept_raw"] += 1; continue
             changes = diff_ndf(orig_ndf, mod_ndf, warn_fn)
-            ia, ir, ea, er = _diff_import_export(orig_ndf, mod_ndf)
+            ia, ir, ea, er, tgt = _diff_import_export(orig_ndf, mod_ndf)
             pgd = {"dat": fg.dat, "ndf": fp.path, "changes": changes}
             if ia: pgd["import_add"] = ia
             if ir: pgd["import_remove"] = ir
             if ea: pgd["export_add"] = ea
+            if tgt: pgd["export_targets"] = tgt
             if er: pgd["export_remove"] = er
             if _surgical_ndf_roundtrips(orig_bytes, mod_ndf, pgd, warn_fn):
                 mod.patches.append(_mf._parse_patch_group(pgd, len(mod.patches)))

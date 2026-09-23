@@ -90,7 +90,7 @@ def operation_registration(reg: OperationReg,
     briefs = (list(reg.brief_hashes) + [reg.name_hash] * 4)[:4]
     sp: Dict[str, ModValueDef] = {
         "CategoryId": _v("Int32", reg.category_id),
-        "Guid": _v("Guid", reg.guid),
+        "GUID": _v("Guid", reg.guid),   # property is 'GUID' (uppercase) in the data; applier is case-sensitive
         "Description": _v("LocHash", reg.name_hash),
         "LongDescription1": _v("LocHash", briefs[0]),
         "LongDescription2": _v("LocHash", briefs[1]),

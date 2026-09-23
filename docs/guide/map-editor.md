@@ -61,7 +61,6 @@ The window has a strip along the top that's always there, plus two tabs below it
 | **Map:** dropdown | Pick a map. Lists every map the game has. |
 | **Scenario:** dropdown | Pick one of that map's scenarios. |
 | binding banner | Tells you what *type* the scenario is — Multiplayer / Campaign / Operation / not-set. |
-| **New scenario…** | Make a fresh scenario by copying an existing one (reuses the same terrain, zones, and script). |
 | **Revert** | Throw away unsaved changes and reload the scenario. |
 | **Save to mod** | Save *all* your pending changes into the mod project. |
 
@@ -109,6 +108,10 @@ The left **PLACEMENTS** panel controls the placed objects and how you edit them:
 | **Show placements** | Turn the placement markers on the map on or off. |
 | **Edit placements (drag)** | The main edit switch. When ON, you can drag markers and the Details panel becomes editable. When OFF, everything is view-only. |
 | **Auto snap to roads** | While you drag a depot or HQ, snap it neatly next to the nearest road (the way the game's own maps place them). |
+| **Icon size** | How big the markers are drawn: Small, Medium, Large, or **Off (dots)** if a very busy map gets too crowded. |
+| **Icon key** | Open the list of every marker and what it means. |
+| **Show nation flags on icons** | Put the little round flags on the corners (see below). |
+| **Show camp number on icons** | Put the camp number on the bottom-right corner. |
 | **+ Placement** | Open the *Add Placement* popup to make a new placement. |
 | **Delete sel** | Delete the placement you have selected. |
 | status line | A live count, plus how big the scenario file is (a bigger file fits more spawns; the rough limit is about 600). |
@@ -116,23 +119,69 @@ The left **PLACEMENTS** panel controls the placed objects and how you edit them:
 To edit: turn on **Edit placements (drag)**, click a marker to select it, drag it to
 move it, and change its fields in the **Details** panel. Then click **Save to mod**.
 
+### Reading the map
+
+Every placement is drawn as a small picture of what it actually is, so you can look at
+a map and see the shape of the battle: where the tanks are, which buildings are real
+and which are decoys, where the guns point.
+
+The pictures follow one simple pattern:
+
+| Part of the picture | What it tells you |
+| --- | --- |
+| **The tile colour** | Which family it belongs to — green for infantry, teal for airborne, amber for tanks, rust for artillery, purple for anti-air, blue for aircraft, navy for ships, grey for buildings, dark red for bunkers and gun positions, pink for nuclear. |
+| **The shape on the tile** | What it does — a tank, a towed gun, a parachute, a hangar, a pillbox, a truck, and so on. |
+| **The small bars along the top** | How heavy it is: one bar light, two medium, three heavy, four super-heavy. A Sherman has two bars, a Tiger has three, a Maus has four. |
+| **The mark in the top-right corner** | One extra fact: a **star** for the upgraded version, an **atom** for nuclear, a **crossed circle** for a decoy (a fake building), a **chevron** for anything delivered by air. |
+| **The flag on the top-left corner** | The nation the unit itself is from. A Tiger is always German. |
+| **The flag on the bottom-left corner** | The nation of the camp that **controls** it. |
+| **The number on the bottom-right corner** | Which camp owns it. **N** means neutral (nobody owns it until it is captured) and **X** means it is set to despawn. A placement with **no camp set** shows **0**, because that is what the game treats it as — the first camp. An **HQ** shows **A1**, **A2** and so on, because an HQ belongs to an *alliance* (a team), not a camp — several camps can share one alliance. |
+
+So light, heavy, recon and anti-tank infantry all look different, and paratroopers look
+different again. Click **Icon key** for the full list with a short description of each
+one.
+
+The two flags are separate on purpose: **who a unit is** and **who is fighting with it**
+are not the same thing. A camp can be handed units from another country, so you might see
+a German Grenadier with a German flag top-left and an American flag bottom-left. That
+tells you at a glance which side of the battle it is actually on.
+
+An HQ shows its alliance's nation only when every camp in that alliance is the same
+nation. In many missions they are not (one alliance can hold three different countries),
+and in that case no flag is shown rather than a guess at one of them.
+
+Only campaign missions, operations and challenges have nations, because the nation is set
+in the mission script. Multiplayer maps have no script — their camps are just lobby slots
+with a side, no country — so no bottom-left flag appears on them. The flags also take a
+second to show up when you open a scenario, because the script has to be read first.
+
+If a placement is set to a camp *number* that the mission script never defines, the
+Details panel says so: **the game silently skips it, so that unit never appears in play.**
+That is different from a placement with **no camp set at all** — those are fine, and
+belong to the first camp (usually the player's side). Whatever you select is also named in the **Details** panel, under **Type** — handy
+when a unit's internal name doesn't tell you much.
+
+Two kinds draw more than a marker: a **circular zone** shows its real radius and a
+**rectangular zone** its real width and height, with the icon at the centre. An **HQ**
+shows a dashed line to its resting camera.
+
 ### Placement kinds
 
-Every placement is an object with a position, an optional rotation, and a type. The
-type decides what kind of placement it is. Here are the kinds:
+Underneath the pictures, every placement is one of a small number of kinds. The kind
+decides which fields it has:
 
-| Kind | Marker | What it is |
-| --- | --- | --- |
-| **Depot** | blue | Supply depot. |
-| **Unit** | tan | A pre-placed unit (for campaigns / operations). |
-| **Building** | dark red | A pre-placed building or defence. |
-| **Spawn (other)** | purple | Any other object owned by a camp (side). |
-| **HQ** | red | A player's start / HQ, plus its resting camera. |
-| **City label** | green | A city name label. |
-| **Mountain label** | sand | A mountain name label. |
-| **Named point** | grey-blue | A plain marker the script can point to by name. |
-| **Circular zone** | violet | A round trigger / detection zone. |
-| **Rect zone** | violet | A rectangular trigger / detection zone. |
+| Kind | What it is |
+| --- | --- |
+| **Depot** | Supply depot. |
+| **Unit** | A pre-placed unit (for campaigns / operations). |
+| **Building** | A pre-placed building or defence — **including the real HQ buildings** (`Building_Headquarter`, and the German / British / Soviet / French / Italian / Japanese versions). Pick this, not *Player start*, when you want an actual HQ standing on the map for a particular side. |
+| **Spawn (other)** | Any other object owned by a camp (side). |
+| **Player start** | Where a player's HQ appears when the match begins, plus its resting camera. It is a *marker*, not a building — the game puts the right HQ there for whatever nation that team is playing, which is why it has no camp of its own. |
+| **City label** | A city name label. |
+| **Mountain label** | A mountain name label. |
+| **Named point** | A plain marker the script can point to by name. |
+| **Circular zone** | A round trigger / detection zone. |
+| **Rect zone** | A rectangular trigger / detection zone. |
 
 ### Details panel fields per kind
 

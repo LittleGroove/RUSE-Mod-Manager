@@ -213,10 +213,13 @@ The tab has three panes:
 
 1. **NDF Files** — every NDF file in the current dat.
 2. **Instances** — every object in the selected file, labelled `[index] ClassName
-   (ClassNameForDebug)`, with a **Filter:** box to narrow the list by typing.
+   (ClassNameForDebug)`, with a **Filter:** box to narrow the list by typing. Under the
+   list are buttons to **Add** and **Delete** an object, and **Find refs** (see
+   below).
 3. **Properties** — the selected object's properties, in a table with **Property**,
    **Type**, **Value**, and an *edited* (`✎`) marker column. Properties you've changed
-   are highlighted in gold.
+   are highlighted in gold. Above the table are **Edit Value**, **Follow ref**, **Add
+   prop**, and **Del prop**.
 
 ### Editing a value
 
@@ -226,14 +229,81 @@ The tab has three panes:
    property's current type), see the **Current** value, and type the **New value**.
 4. Click **Apply**.
 
-You can edit whole-number, decimal, true/false, text, path, color, and multi-number
-value types. Multi-number types (like a position or a color) are typed as numbers
-separated by commas (brackets are optional, e.g. `1.0, 0.5, 0.0`). Text and path
-values are stored back for you automatically.
+You can now edit **every kind of value the game uses** — whole numbers, decimals,
+true/false, text, path, colors, positions, GUIDs, hashes, raw byte blobs, times, and
+matrices. Multi-number types (like a position or a color) are typed as numbers
+separated by commas (brackets are optional, e.g. `1.0, 0.5, 0.0`). A little grey hint
+under the box tells you the format for the type you picked. Text and path values are
+stored back for you automatically. If the value doesn't fit the type, the dialog tells
+you what's wrong and nothing is changed.
 
-Your change is read in, written onto the object's property, marked as unsaved in the
-project, and the row gets its `✎` marker. If the value doesn't fit the chosen type, the
-dialog tells you what's wrong and nothing is changed.
+### Object references (links between objects)
+
+Some properties don't hold a number — they **point at another object** (shown as
+`ObjRef(inst=…, ClassName)`). These used to be read-only. Now:
+
+- **Edit Value** on a reference opens a **target picker**. Filter by class, search by
+  name, pick the object you want it to point at, and click **Select**. The link is
+  repointed for you — and the editor always sets the link's class to match the object
+  you chose, so it can't point at the wrong kind of thing.
+- **Follow ref** jumps the Instances list straight to the object a reference points at,
+  so you can walk the links.
+- **Find refs** (under the Instances list) lists **every property anywhere in the file
+  that points at the selected object**. Double-click a result to jump to it. Use this
+  before you change or delete an object, so you can see what depends on it.
+
+Trans (import) references can be repointed to a different import path the same way.
+
+### Lists, maps, and pairs
+
+Properties that hold a **list**, a **map** (key → value pairs), or a **pair** now open
+their own editor. You can **Add**, **Edit**, **Duplicate**, **Delete**, and reorder
+items — including lists of object references and nested lists. When you add an item you
+pick its type (any value type, or an object reference).
+
+### Adding and deleting objects
+
+- **Add** makes a brand-new, empty object of a class you pick. Say yes to "top-level
+  object" for a normal standalone object. Then use **Add prop** to give it values.
+- **Delete** removes the selected object. The editor re-numbers every link that shifts,
+  and warns you if anything was pointing *at* the object you deleted.
+
+### Localization (LocHash) — changing the words that show in‑game
+
+Some properties don't hold text directly — they hold a **LocHash**, an 8‑byte *key* into
+the game's text tables. The words themselves live in the game's localization files
+(`.dic`, one per language). A unit's menu name, a multiplayer map's name, and an
+operation's objective text are all stored this way.
+
+So editing the raw bytes is almost never what you want. **Edit Value** on a LocHash now
+opens a **localization manager** that works with the real words:
+
+- It **resolves** the key and shows the string in **every language** it exists in.
+- **Save text** — edit the string per language (this is the usual case: e.g. rename a
+  unit). The key stays the same; only the words change.
+- **Mint new…** — type a brand‑new string. It creates a **new** entry in the language
+  files (every language, so it works no matter the player's language) and points the
+  property at it, then tells you the key it made and how many files it wrote. Use this to
+  give something its own name. (You can then translate each language with **Save text**.)
+- **Re‑point…** — point the property at an **existing** string instead. The browser shows
+  each entry written in your **configured language** (from Settings). Type to filter
+  (search matches any language's text or the key).
+- **Raw hex…** — the old byte editor, kept for advanced use.
+
+Localization files live in a different `.dat` than most game objects, so the manager
+reads and writes them for you across that boundary. As always, nothing is written until
+you **Save** the mod.
+
+### Adding and removing properties
+
+- **Add prop** adds a property to the selected object. Pick a name (the box suggests
+  names the object's class already uses) and author its value.
+- **Del prop** removes the selected property from the object.
+
+Every one of these edits is held in the project and only written to the mod's `.dat`
+when you **Save** — nothing touches disk until then. All of the value types round-trip
+safely, so an edit itself never corrupts the file (proven by
+`tools/test_scripts/test_raweditor_alltypes_roundtrip.py`).
 
 ---
 
@@ -289,7 +359,13 @@ above) — it hands the changes back up to the parent instead of writing to disk
 | Add a new file at a path you choose | Browse / Files | Add File… |
 | Edit a pack that's inside a dat | Browse / Files | Open as nested .dat → |
 | Fold a nested pack's edits back up | (nested window) | Apply into parent .dat |
-| Hand-edit a single NDF property | NDF Vars | Edit Value / double-click |
+| Hand-edit a single NDF property (any type) | NDF Vars | Edit Value / double-click |
+| Repoint an object reference (link) | NDF Vars | Edit Value on the reference |
+| Jump to what a reference points at | NDF Vars | Follow ref |
+| See everything that points at an object | NDF Vars | Find refs |
+| Edit a list / map / pair | NDF Vars | Edit Value on it |
+| Add / delete an object | NDF Vars | Add / Delete |
+| Add or remove a property | NDF Vars | Add prop / Del prop |
 | Find objects across the whole dat | Search | Search |
 | Save everything into the mod | (any tab) | Save mod (.dat) |
 

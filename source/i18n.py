@@ -96,8 +96,18 @@ def detect_os_language() -> str:
             lcid = ctypes.windll.kernel32.GetUserDefaultUILanguage()
             code = _WIN.get(lcid & 0x3ff, "us")
         else:
+            # POSIX: the environment IS the source of truth (LC_ALL > LC_MESSAGES > LANG), e.g.
+            # "de_DE.UTF-8" -> "de".  locale.getdefaultlocale() is deprecated (slated for removal) and
+            # locale.getlocale() needs a prior setlocale, so read the env first and only fall back.
             import locale
-            primary = ((locale.getdefaultlocale()[0] or "en").split("_")[0].lower())
+            env = (os.environ.get("LC_ALL") or os.environ.get("LC_MESSAGES")
+                   or os.environ.get("LANG") or "")
+            primary = env.split(".")[0].split("@")[0].split("_")[0].lower()
+            if not primary or primary in ("c", "posix"):
+                try:
+                    primary = ((locale.getlocale()[0] or "en").split("_")[0].lower())
+                except Exception:
+                    primary = "en"
             code = _POSIX.get(primary, "us")
     except Exception:
         code = "us"

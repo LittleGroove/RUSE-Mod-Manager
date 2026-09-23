@@ -81,6 +81,11 @@ def _payload(rmod: dict):
     scen = eff = None
     for fp in rmod.get("file_patches", []) or []:
         for f in fp.get("files", []) or []:
+            if f.get("container"):
+                # Addressed inside a nested archive (.ipk/.ppk/...).  An operation's .scenario and
+                # effetmap.xyz are always direct entries of the .dat, so a same-named file inside a
+                # container is something else entirely and must not be mistaken for the payload.
+                continue
             path = (f.get("path") or "").replace("\\", "/")
             data = f.get("data")
             if data is None:

@@ -98,6 +98,26 @@ untouched), re-encodes the quadtree, and recomputes both SDB and mapinfo.win md5
 Whole-file content (KDT meshes, scenarios, anything not handled above) ships via "file_patches" (a raw,
 lossless full-file replacement) — e.g. a copied .kdt for a new map is packaged whole, not edited surgically.
 
+Nested archives (file_patches "container") — one file inside an .ipk/.ppk/.mpk/.apk/.gpk
+----------------------------------------------------------------------------------------
+Some entries of a .dat are THEMSELVES edata archives: compiled Python (.ipk), resource packs (.ppk),
+sound (.mpk), animation (.apk) and Flash (.gpk) — 217 of them in build 24087620, all v1.  A mod that
+adds new unit CLASSES changes one script inside genpython/eugenpatchable.ipk; shipping the whole
+container would make two such mods replace each other wholesale.  Set "container" and "path" then
+addresses a file INSIDE that archive:
+
+  "file_patches": [
+    { "dat": "Data/PC/190852/ZZ_Win.dat",
+      "files": [
+        { "container": "genpython/eugenpatchable.ipk",
+          "path": "genpython/1000/codeia/python/eugenpatchable/parametres/classes.xyz",
+          "data": "<base64>" } ] } ]
+
+The applier collects every patch for one container, rebuilds it once (inner offset chain and dict
+checksum included, exactly as for an outer archive), then stores the result back as a single .dat
+entry.  Omit "container" and "path" means an entry of the .dat itself — the original behaviour, and
+what every existing rmod keeps doing.
+
 Supported actions
 -----------------
   "patch"        — find matching instance(s), update their properties.  A property the target class
@@ -183,14 +203,29 @@ class ModPatchGroup:
     import_remove: List[str] = field(default_factory=list)
     export_add: List[str] = field(default_factory=list)
     export_remove: List[str] = field(default_factory=list)
+    # Which INSTANCE each added export names: {export path -> local_id}.  An export ordinal is the
+    # instance INDEX of the exported object, so a path alone is not enough to add an export — without
+    # this the applier had to invent an ordinal, and the export then pointed at an arbitrary instance
+    # (silently the wrong unit, or a crash when it landed on a non-top-object).  local_id matches the
+    # `create` change that makes the instance ("inst_<index in the modded NDF>"); for an export of an
+    # instance that already exists, that index is still valid because creates only ever append.
+    export_targets: Dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
 class ModFilePatch:
-    """Replaces an entire file inside a .dat archive with new binary content."""
+    """Replaces an entire file inside a .dat archive with new binary content.
+
+    With ``container`` set, ``path`` names a file inside a NESTED archive (an .ipk/.ppk/
+    .mpk/.apk/.gpk entry of the .dat, which is itself an edata archive) rather than an entry
+    of the .dat.  The applier rebuilds that container and stores it back as one .dat entry,
+    so two mods editing different files inside the same container compose instead of
+    replacing each other's whole container.
+    """
     dat: str    # relative to game Data/
-    path: str   # path inside .dat (forward slashes)
+    path: str   # path inside .dat, or inside `container` when that is set (forward slashes)
     data: bytes # replacement file contents
+    container: str = ""   # optional: path of the nested archive within the .dat
 
 
 @dataclass
@@ -389,7 +424,9 @@ def _parse_patch_group(raw: dict, idx: int) -> ModPatchGroup:
     return ModPatchGroup(dat=dat, ndf=ndf, changes=changes,
                          create_if_missing=create_if_missing, index_map=index_map,
                          import_add=_strlist("import_add"), import_remove=_strlist("import_remove"),
-                         export_add=_strlist("export_add"), export_remove=_strlist("export_remove"))
+                         export_add=_strlist("export_add"), export_remove=_strlist("export_remove"),
+                         export_targets={str(k): str(v) for k, v
+                                         in (raw.get("export_targets") or {}).items()})
 
 
 def _parse_file_group(raw: dict, idx: int) -> ModFileGroup:
@@ -407,7 +444,8 @@ def _parse_file_group(raw: dict, idx: int) -> ModFileGroup:
             data = base64.b64decode(data_b64)
         except Exception as e:
             raise ModFormatError(f"{fctx}: invalid base64 in 'data': {e}")
-        files.append(ModFilePatch(dat=dat, path=path, data=data))
+        container = str(f.get("container", "")).replace("\\", "/")
+        files.append(ModFilePatch(dat=dat, path=path, data=data, container=container))
     return ModFileGroup(dat=dat, files=files)
 
 
@@ -582,6 +620,8 @@ def dump(mod: RuseMod) -> str:
             pg_obj["import_remove"] = pg.import_remove
         if pg.export_add:
             pg_obj["export_add"] = pg.export_add
+        if pg.export_targets:
+            pg_obj["export_targets"] = pg.export_targets
         if pg.export_remove:
             pg_obj["export_remove"] = pg.export_remove
         pg_obj["changes"] = [_change_to_obj(ch) for ch in pg.changes]
@@ -616,12 +656,18 @@ def dump(mod: RuseMod) -> str:
     if mod.file_patches:
         obj["file_patches"] = []
         for fg in mod.file_patches:
+            def _file_obj(fp: ModFilePatch) -> Dict[str, Any]:
+                o: Dict[str, Any] = {"path": fp.path,
+                                     "data": base64.b64encode(fp.data).decode("ascii")}
+                if fp.container:
+                    # Only written when set, so an rmod that touches no nested archive stays
+                    # byte-identical to what earlier versions produced.
+                    o["container"] = fp.container
+                return o
+
             fg_obj: Dict[str, Any] = {
                 "dat": fg.dat,
-                "files": [
-                    {"path": fp.path, "data": base64.b64encode(fp.data).decode("ascii")}
-                    for fp in fg.files
-                ],
+                "files": [_file_obj(fp) for fp in fg.files],
             }
             obj["file_patches"].append(fg_obj)
 

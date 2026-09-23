@@ -79,6 +79,28 @@ class VersionMap:
                 return True
         return False
 
+    def removed_for(self, dat: str, ndf: str, from_build: str) -> set:
+        """FROM-coordinate positional indices of instances that DON'T exist in the other build.
+        Going a->b those are the 'only_a' instances; going b->a they are 'only_b'."""
+        entry = self._entry(dat, ndf)
+        only = entry.get("only_a" if str(from_build) == str(self.a) else "only_b")
+        if not isinstance(only, dict):
+            return set()
+        try:
+            return {int(i) for i in only.get("p", [])}
+        except (TypeError, ValueError):
+            return set()
+
+
+def has_map(a: str, b: str, override: Optional[str] = None) -> bool:
+    """Does a direct map ship for this pair? Existence only — no parse, no decompress.
+
+    Direct maps are only ever built between two SAME-FORMAT (same data-version) builds, so
+    a map's presence is proof the pair is same-format. That's what lets the migrator route a
+    build the shipped registry no longer knows (a RETIRED build) down the direct path."""
+    p = map_path(a, b, override)
+    return os.path.isfile(p + ".gz") or os.path.isfile(p)
+
 
 def load(a: str, b: str, override: Optional[str] = None) -> Optional[VersionMap]:
     p = map_path(a, b, override)

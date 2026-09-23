@@ -16,6 +16,12 @@ Silently skipped when:
   - the latest tag is <= our embedded version
   - the latest release is missing the expected RUSE_ModManager_v<X>.exe asset
 
+Two channels.  By default only STABLE releases are considered, because GitHub keeps prereleases out
+of /releases/latest.  When the user ticks "beta updates" in Settings, the check reads the releases
+LIST instead and takes whichever is higher across stable and beta — so a beta tester still gets a
+stable release when that one is newer.  Turning the setting back off never downgrades anyone: the
+stable release is simply older, so nothing is offered until stable passes the beta they are on.
+
 The version is embedded by build.py via _version.py (gitignored, regenerated each build).
 """
 import json
@@ -41,7 +47,33 @@ except ImportError:
 
 REPO = "LittleGroove/RUSE-Mod-Manager"
 RELEASES_API = f"https://api.github.com/repos/{REPO}/releases/latest"
-ASSET_NAME_TEMPLATE = "RUSE_ModManager_v{version}.exe"
+# The LIST endpoint, used ONLY when the user has opted into betas in Settings.  GitHub defines
+# /releases/latest as the newest NON-prerelease release, so a beta can never appear there — which is
+# exactly what keeps betas invisible to everyone else.  Opting in means reading the full list and
+# picking the highest version across both channels ourselves.  per_page=30 is the API default,
+# stated outright: releases come back newest-first and our version counter only ever goes up, so the
+# newest 30 always contain the highest version.
+RELEASES_LIST_API = f"https://api.github.com/repos/{REPO}/releases?per_page=30"
+
+
+def _platform_suffix():
+    """The OS tag used in the release-asset / local-binary filename. Windows keeps the historical
+    '.exe' (existing Windows releases must keep updating); Linux/macOS get an OS tag. One codebase,
+    OS-aware, so the updater grabs the right program on each platform."""
+    if sys.platform == "win32":
+        return ".exe"
+    if sys.platform == "darwin":
+        return "_macos"
+    return "_linux_x86_64"
+
+
+def platform_asset_name(version):
+    """Release-asset / binary basename for THIS OS — e.g. RUSE_ModManager_v1.2.3.exe (Windows) or
+    RUSE_ModManager_v1.2.3_linux_x86_64 (Linux). build.py names the built binary the SAME way, so
+    sys.executable, the GitHub asset, the download target, and cleanup all agree on one name."""
+    return f"RUSE_ModManager_v{version}{_platform_suffix()}"
+
+
 API_TIMEOUT = 4         # seconds — caps how long startup waits for GitHub
 DOWNLOAD_TIMEOUT = 30   # seconds — initial-connect timeout for the asset download
 DOWNLOAD_CHUNK = 64 * 1024
@@ -61,9 +93,14 @@ def current_version():
         return None
 
 
-def fetch_latest():
+def _fetch_json(url):
+    """GET `url` as JSON, or None on ANY failure (offline, timeout, rate limit, garbage body).
+
+    A rate-limit 403 arrives as HTTPError, a subclass of URLError, so it is caught here too and the
+    startup check simply skips — same as being offline.
+    """
     req = urllib.request.Request(
-        RELEASES_API,
+        url,
         headers={"Accept": "application/vnd.github+json", "User-Agent": "RUSE-ModManager"},
     )
     try:
@@ -71,6 +108,17 @@ def fetch_latest():
             return json.load(resp)
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
         return None
+
+
+def fetch_latest():
+    """The newest STABLE release. GitHub excludes prereleases from /releases/latest for us."""
+    return _fetch_json(RELEASES_API)
+
+
+def fetch_releases():
+    """Up to the 30 newest releases, newest-first, INCLUDING prereleases. None on any failure."""
+    data = _fetch_json(RELEASES_LIST_API)
+    return data if isinstance(data, list) else None
 
 
 _VER_RE = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)")
@@ -86,8 +134,51 @@ def is_newer(latest, current):
     return bool(a and b and a > b)
 
 
+def bare_version(tag_version):
+    """'1.2.3-beta' -> '1.2.3'.  A plain '1.2.3' comes back unchanged.
+
+    Beta releases are TAGGED v<X.Y.Z>-beta but their assets keep the plain
+    RUSE_ModManager_v<X.Y.Z>.exe name, because both channels attach the very same built artifact.
+    Everything downstream keys off that bare number — the asset lookup, the filename we save as,
+    the stale-exe sweep (_name_version) and the shortcut repoint — so the suffix has to come off
+    before any of them see it, or a beta user ends up with a file none of them recognise.
+    """
+    m = _VER_RE.match((tag_version or "").strip())
+    return ".".join(m.groups()) if m else tag_version
+
+
+def pick_release(releases, include_prerelease):
+    """The highest-version release in `releases`, or None.
+
+    Drafts are always skipped; prereleases only count when the user opted in.  The version comes
+    from the tag via _parse, which matches by PREFIX, so 'v1.2.3-beta' reads as (1, 2, 3) and a beta
+    competes on the SAME counter as stable — which is what makes "whichever is higher wins" work
+    across the two channels.
+
+    A tie (stable v1.2.3 and beta v1.2.3-beta both published at a full release) resolves to the
+    STABLE entry.  It makes no practical difference — the two carry an identical asset — but it
+    makes the choice deterministic instead of dependent on GitHub's list order.
+    """
+    best, best_key = None, None
+    for rel in releases or []:
+        if not isinstance(rel, dict) or rel.get("draft"):
+            continue
+        pre = bool(rel.get("prerelease"))
+        if pre and not include_prerelease:
+            continue
+        v = _parse((rel.get("tag_name") or "").lstrip("v"))
+        if v is None:
+            continue
+        key = (v, 0 if pre else 1)          # same version -> stable wins
+        if best_key is None or key > best_key:
+            best, best_key = rel, key
+    return best
+
+
 def _find_exe_asset(release, version):
-    target = ASSET_NAME_TEMPLATE.format(version=version)
+    """The download URL of the release asset for THIS platform (the .exe on Windows, the Linux binary
+    on Linux), or None if this release doesn't carry one for us."""
+    target = platform_asset_name(version)
     for asset in release.get("assets") or []:
         if asset.get("name") == target:
             return asset.get("browser_download_url")
@@ -336,11 +427,14 @@ def _repoint_shortcuts(new_exe, old_exe=None):
         ole32.CoUninitialize()
 
 
-_NAME_VER_RE = re.compile(r"^RUSE_ModManager_v(\d+\.\d+\.\d+)\.exe(\.tmp)?$", re.IGNORECASE)
+# Matches THIS platform's binary name (…​.exe on Windows, …_linux_x86_64 on Linux), plus a .tmp partial.
+_NAME_VER_RE = re.compile(
+    r"^RUSE_ModManager_v(\d+\.\d+\.\d+)" + re.escape(_platform_suffix()) + r"(\.tmp)?$",
+    re.IGNORECASE)
 
 
 def _name_version(name):
-    """The (major, minor, patch) tuple encoded in a RUSE_ModManager_v<X>.exe filename, or None."""
+    """The (major, minor, patch) tuple encoded in a platform binary filename, or None."""
     m = _NAME_VER_RE.match(name)
     return _parse(m.group(1)) if m else None
 
@@ -378,7 +472,7 @@ def cleanup_old_exes():
         return
 
     def _sweep():
-        for p in exe_dir.glob("RUSE_ModManager_v*.exe*"):
+        for p in exe_dir.glob(f"RUSE_ModManager_v*{_platform_suffix()}*"):
             name = p.name
             try:
                 if p.resolve() == cur:
@@ -399,7 +493,7 @@ def download_and_relaunch(parent, asset_url, latest_version):
     """Yes-path. Download, atomic-swap into final filename, spawn relauncher, exit."""
     exe_path = Path(sys.executable).resolve()
     exe_dir = exe_path.parent
-    new_name = ASSET_NAME_TEMPLATE.format(version=latest_version)
+    new_name = platform_asset_name(latest_version)
     tmp_path = exe_dir / (new_name + ".tmp")
     final_path = exe_dir / new_name
 
@@ -408,6 +502,10 @@ def download_and_relaunch(parent, asset_url, latest_version):
         if final_path.exists():
             final_path.unlink()
         tmp_path.rename(final_path)
+        # Downloaded files aren't executable on Unix; the freshly-downloaded binary must be +x before
+        # we can relaunch it (no-op concept on Windows, where the .exe is runnable as-is).
+        if sys.platform != "win32":
+            final_path.chmod(0o755)
     except Exception as e:
         try:
             tmp_path.unlink(missing_ok=True)
@@ -425,8 +523,10 @@ def download_and_relaunch(parent, asset_url, latest_version):
         sys.exit(1)
 
     # Repoint any Desktop / Start Menu / Pinned-to-taskbar shortcuts at the new exe BEFORE we hand
-    # off (the old exe gets cleaned up shortly, so stale shortcuts would otherwise break).
-    _repoint_shortcuts(final_path, old_exe=exe_path)
+    # off (the old exe gets cleaned up shortly, so stale shortcuts would otherwise break). Windows-only:
+    # those shortcut types + the Win32 shell APIs don't exist on Linux/macOS.
+    if sys.platform == "win32":
+        _repoint_shortcuts(final_path, old_exe=exe_path)
 
     # Hand the launch to the running shell so the new exe starts OUTSIDE this process/job — silently
     # (no cmd window — the old .bat flashed one and alarmed users) and without pinning our temp dir.
@@ -456,8 +556,11 @@ def heal_shortcuts():
     """On startup, silently repair any of OUR Desktop / Start Menu / taskbar shortcuts whose target or
     icon drifted to a version that's no longer here, pointing them at the exe running right now — no
     recreation, no deletion.  This fixes shortcuts left stale by updates from before the icon-repoint
-    existed, without waiting for the next update.  Best-effort, off the main thread; no-op from source."""
-    if not getattr(sys, "frozen", False):
+    existed, without waiting for the next update.  Best-effort, off the main thread; no-op from source.
+
+    Windows-only: Desktop / Start-Menu / taskbar .lnk shortcuts (and the Win32 ctypes shell APIs
+    _repoint_shortcuts uses) don't exist on Linux/macOS, so this is a no-op there."""
+    if not getattr(sys, "frozen", False) or sys.platform != "win32":
         return
     try:
         cur = Path(sys.executable).resolve()
@@ -477,7 +580,7 @@ def run_startup_housekeeping():
     heal_shortcuts()   # repair shortcuts whose icon/target drifted to a gone version (non-destructive)
 
 
-def check_for_update(app):
+def check_for_update(app, include_prerelease=False):
     """Window-safe update check.  MUST be scheduled via ``after()`` to run AFTER the main window is shown
     and the event loop is live (see ModManagerApp.__init__) — NOT before the window is deiconified.
 
@@ -491,21 +594,35 @@ def check_for_update(app):
     Skips silently on any prerequisite failure (offline, dev run, no newer release, missing asset).  On
     Yes it downloads + relaunches + exits; on No it closes the app; otherwise it returns and the app
     keeps running.  The ``sys.exit`` on the Yes/No paths propagates out of the Tk callback and ends
-    ``mainloop`` (tkinter's CallWrapper re-raises SystemExit)."""
+    ``mainloop`` (tkinter's CallWrapper re-raises SystemExit).
+
+    ``include_prerelease`` is the user's Settings opt-in (mod_manager passes
+    ``settings["beta_updates"]``).  It defaults to False so the untouched path — and every existing
+    caller — makes exactly the /releases/latest call it always has."""
     try:
         current = current_version()
         if not current:
             return
-        release = fetch_latest()   # bounded by API_TIMEOUT; typically well under a second
+        if include_prerelease:
+            # One request, same API_TIMEOUT budget as the stable path.  Deliberately NO fallback to
+            # /releases/latest when this fails: it is the same host, so if the list call didn't come
+            # back the other wouldn't either, and a second timeout would stall startup for twice as
+            # long right when the window has just appeared.
+            release = pick_release(fetch_releases(), include_prerelease=True)
+        else:
+            release = fetch_latest()   # bounded by API_TIMEOUT; typically well under a second
         if not release:
             return
         latest = (release.get("tag_name") or "").lstrip("v")
         if not latest or not is_newer(latest, current):
             return
+        # A beta's tag is v<X.Y.Z>-beta but its ASSET is the plain RUSE_ModManager_v<X.Y.Z>.exe, so
+        # drop the suffix now that the comparison is done.  On the stable path this is a no-op.
+        latest = bare_version(latest)
         asset_url = _find_exe_asset(release, latest)
         if not asset_url:
             print(f"[auto_update] release v{latest} has no "
-                  f"{ASSET_NAME_TEMPLATE.format(version=latest)} asset; skipping")
+                  f"{platform_asset_name(latest)} asset; skipping")
             return
         if not app.winfo_exists():                 # window torn down before the deferred check ran
             return

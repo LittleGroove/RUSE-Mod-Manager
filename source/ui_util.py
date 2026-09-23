@@ -10,6 +10,10 @@ to the character units Tk wants, so a box fits its content in every language.  U
 for dropdowns and ``chars_for`` when you need the raw width for any character-width widget.
 """
 import math
+import os
+import shutil
+import subprocess
+import sys
 import tkinter as tk
 import tkinter.font as tkfont
 from tkinter import ttk
@@ -19,6 +23,139 @@ try:                                     # dialogs want translated button labels
 except Exception:                        # i18n not importable (isolated tests) → identity fallback
     def _t(key, /, **fmt):
         return key.format(**fmt) if fmt else key
+
+
+# ── OS file manager ───────────────────────────────────────────────────────────
+# "Open folder" buttons must hand off to the REAL file manager on every OS. os.startfile is
+# Windows-only, and the historical `else:` branch just popped a dialog showing the path — which on
+# Linux looked like the app refusing to open anything. Linux uses xdg-open (the desktop's standard
+# "open with the default handler"), so it lands in Nautilus/Dolphin/Thunar/whatever the user runs.
+
+def system_env() -> dict:
+    """Environment for spawning SYSTEM binaries (zenity, xdg-open, a file manager, steam) from this app.
+
+    CRITICAL when frozen: PyInstaller repoints LD_LIBRARY_PATH at its own bundled libs, and a system
+    binary that inherits it typically fails to start on library-version conflicts — which is why a
+    native dialog could silently never appear. PyInstaller saves the pre-launch values as ``*_ORIG``,
+    so restore those (or drop the vars entirely) before launching anything outside the bundle.
+    """
+    env = dict(os.environ)
+    for var in ("LD_LIBRARY_PATH", "LD_PRELOAD", "DYLD_LIBRARY_PATH", "DYLD_INSERT_LIBRARIES"):
+        orig = env.pop(var + "_ORIG", None)
+        if orig is not None:
+            env[var] = orig
+        else:
+            env.pop(var, None)
+    return env
+
+
+def _is_wsl() -> bool:
+    """True under WSL, where xdg-open is patched to hand paths to WINDOWS Explorer. Reasonable for a
+    WSL user, but when we want genuine Linux behaviour we prefer a real Linux file manager there."""
+    if os.environ.get("WSL_DISTRO_NAME"):
+        return True
+    try:
+        with open("/proc/version", encoding="utf-8", errors="ignore") as f:
+            return "microsoft" in f.read().lower()
+    except OSError:
+        return False
+
+
+# The file managers a built-out distro is likely to ship, in rough order of desktop popularity.
+_LINUX_FILE_MANAGERS = ("nautilus", "dolphin", "nemo", "thunar", "pcmanfm", "caja", "dde-file-manager")
+
+
+def open_in_file_manager(path) -> bool:
+    """Open a folder in the OS file manager. Windows: Explorer. macOS: Finder. Linux: the desktop's
+    file manager. Returns True if something was launched — callers show a fallback dialog only on False.
+
+    On a normal Linux desktop xdg-open is preferred because it respects the user's CHOSEN file manager.
+    Under WSL that same xdg-open opens Windows Explorer, so there we go straight to a Linux file manager
+    and only use xdg-open as a last resort."""
+    p = str(path)
+    try:
+        if sys.platform == "win32":
+            os.startfile(p)                      # noqa: S606 — Windows-only API
+            return True
+        env = system_env()
+        if sys.platform == "darwin":
+            subprocess.Popen(["open", p], env=env, close_fds=True)
+            return True
+        managers = [[fm, p] for fm in _LINUX_FILE_MANAGERS]
+        cands = managers + [["xdg-open", p]] if _is_wsl() else [["xdg-open", p]] + managers
+        for cmd in cands:
+            if shutil.which(cmd[0]) is None:
+                continue
+            subprocess.Popen(cmd, env=env, close_fds=True,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return True
+        return False                             # nothing installed to show a folder
+    except Exception:
+        return False
+
+
+def ask_directory(parent=None, *, title: str = "", initialdir: str = "") -> str:
+    """Folder picker that uses the DESKTOP'S OWN dialog when one is available, else Tk's built-in.
+
+    Windows/macOS already give Tk a native chooser, so they go straight to tkinter.  Linux has no single
+    "the" file dialog — it belongs to whatever desktop the user runs — so we ask via the conventional
+    helpers a non-GTK/Qt app is expected to use: ``kdialog`` on KDE, ``zenity`` on the GTK desktops
+    (GNOME/XFCE/Cinnamon/MATE).  On modern GNOME zenity itself routes through xdg-desktop-portal, the
+    desktop-agnostic standard, so this lands on the user's real dialog.  If neither helper is installed
+    (minimal install / no desktop), Tk's dialog still works everywhere — hence the fallback.
+
+    Returns the chosen path, or "" if the user cancelled.
+    """
+    from tkinter import filedialog
+    if sys.platform in ("win32", "darwin"):
+        return filedialog.askdirectory(parent=parent, title=title, initialdir=initialdir or None) or ""
+    for cmd in (
+        ["kdialog", "--getexistingdirectory", (initialdir or os.path.expanduser("~"))]
+            + (["--title", title] if title else []),
+        ["zenity", "--file-selection", "--directory"]
+            + ([f"--title={title}"] if title else [])
+            + ([f"--filename={os.path.join(initialdir, '')}"] if initialdir else []),
+    ):
+        if shutil.which(cmd[0]) is None:
+            continue
+        try:
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=600,
+                                 env=system_env())   # frozen app: don't poison it with bundled libs
+        except Exception:
+            break                           # helper unusable -> Tk
+        if res.returncode == 0:
+            picked = (res.stdout or "").strip()
+            if picked:
+                return picked
+            break                           # said OK but gave nothing -> Tk
+        if res.returncode == 1:
+            return ""                       # 1 == the user genuinely cancelled
+        break                               # any other code is an ERROR (e.g. 255): fall back to Tk
+                                            # rather than silently doing nothing, which looked broken.
+    return filedialog.askdirectory(parent=parent, title=title, initialdir=initialdir or None) or ""
+
+
+def reveal_in_file_manager(path) -> bool:
+    """Show a FILE in the OS file manager, highlighted where the platform supports it (so it's ready
+    to drag). Windows: explorer /select. macOS: open -R. Linux: the common file managers take a
+    select flag; otherwise fall back to just opening the containing folder."""
+    p = os.path.abspath(str(path))
+    try:
+        if sys.platform == "win32":
+            subprocess.Popen(f'explorer.exe /select,"{os.path.normpath(p)}"')
+            return True
+        env = system_env()
+        if sys.platform == "darwin":
+            subprocess.Popen(["open", "-R", p], env=env, close_fds=True)
+            return True
+        for cmd in (["nautilus", "--select", p], ["dolphin", "--select", p], ["nemo", p]):
+            if shutil.which(cmd[0]):
+                subprocess.Popen(cmd, env=env, close_fds=True,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return True
+        return open_in_file_manager(os.path.dirname(p))   # no selecting FM → open the folder
+    except Exception:
+        return False
 
 
 def notes_section(parent, save, *, panel_bg, widget_bg, text_fg, dim_fg, gold,
@@ -986,3 +1123,106 @@ def show_text(parent, title, message, body, *, ok_label=None, height=16, width=7
 
     return _run_dialog(parent, "info", title, message,
                        [(ok_label or _t("common.ok"), True, True)], build_extra=build, min_width=440)
+
+
+# ── The guided-walk chrome ────────────────────────────────────────────────────────────────────────────
+#
+# The scenario tabs are a WALK along the chain that takes a map from the main menu to a playable mission:
+# menu entry -> load & files -> placements -> mission script -> text.  Each tab is one step, and each one
+# has to answer the same three questions for a user who does not hold the whole model in their head:
+#
+#     where am I        which step this is, and what this file decides
+#     is it right       a status line that names the specific reason when it is not
+#     what is next      move to the adjacent step, or jump to whichever tab owns a thing referenced here
+#
+# This lives here rather than in each tab so the walk is ONE component: five copies would drift, and the
+# drift would be exactly the kind of "looks consistent, isn't" that the tabs are being rebuilt to escape.
+
+STEP_OK, STEP_WARN, STEP_BAD, STEP_IDLE = "ok", "warn", "bad", "idle"
+
+
+class WalkStep:
+    """The banner + status line + navigation strip at the top of one scenario tab.
+
+    Usage from a tab::
+
+        self.step = ui_util.WalkStep(self, index=5, total=5, title="Text",
+                                     decides="what the player reads, in every language",
+                                     on_go=host.show_tab)
+        ...
+        self.step.set_status(ui_util.STEP_BAD, "no scenario selected")
+        self.step.set_status(ui_util.STEP_OK, "29 entries across 11 languages")
+
+    `on_go(step_index)` is the host callback that switches tabs; omit it and the nav buttons are hidden
+    (useful when a tab is shown standalone, e.g. in a test harness)."""
+
+    def __init__(self, parent, *, index, total, title, decides, on_go=None,
+                 palette=None, translate=None):
+        import theme as _th
+        self._t = translate or (lambda s, **k: s.format(**k) if k else s)
+        self.index, self.total, self.on_go = index, total, on_go
+        p = palette or {}
+        bg = p.get("panel", _th.PANEL)
+        self._colours = {
+            STEP_OK:   p.get("ok", _th.GREEN),
+            STEP_WARN: p.get("warn", _th.GOLD),
+            STEP_BAD:  p.get("bad", _th.RED),
+            STEP_IDLE: p.get("dim", _th.DIM),
+        }
+
+        self.frame = tk.Frame(parent, background=bg)
+        head = tk.Frame(self.frame, background=bg)
+        head.pack(fill="x", padx=8, pady=(6, 0))
+
+        # "Step 5 of 5  ·  Text" — position first, so the walk is legible before the content is.
+        tk.Label(head, text=self._t("walk.step_of", n=index, total=total),
+                 background=bg, foreground=_th.DIM, font=_th.FS).pack(side="left")
+        tk.Label(head, text=title, background=bg, foreground=_th.GOLD_BRT,
+                 font=_th.FHEAD).pack(side="left", padx=(8, 0))
+
+        if on_go is not None:
+            nav = tk.Frame(head, background=bg)
+            nav.pack(side="right")
+            if index < total:
+                self._btn(nav, self._t("walk.next"), lambda: on_go(index + 1)).pack(side="right", padx=2)
+            if index > 1:
+                self._btn(nav, self._t("walk.previous"), lambda: on_go(index - 1)).pack(side="right", padx=2)
+
+        # What this step decides — one plain sentence, always visible, never a tooltip.
+        tk.Label(self.frame, text=decides, background=bg, foreground=_th.TEXT, font=_th.F,
+                 anchor="w", justify="left", wraplength=980).pack(fill="x", padx=8, pady=(2, 0))
+
+        row = tk.Frame(self.frame, background=bg)
+        row.pack(fill="x", padx=8, pady=(3, 6))
+        self._dot = tk.Label(row, text="\u25cf", background=bg, foreground=self._colours[STEP_IDLE],
+                             font=_th.FB)
+        self._dot.pack(side="left")
+        self._status = tk.Label(row, text="", background=bg, foreground=_th.DIM, font=_th.F,
+                                anchor="w", justify="left", wraplength=940)
+        self._status.pack(side="left", fill="x", expand=True, padx=(6, 0))
+
+    @staticmethod
+    def _btn(parent, text, command):
+        import theme as _th
+        return tk.Button(parent, text=text, command=command, background=_th.BTN,
+                         foreground=_th.GOLD_BRT, activebackground=_th.BTN_ACT,
+                         font=_th.FB, relief="flat", padx=8)
+
+    def pack(self, **kw):
+        kw.setdefault("side", "top")
+        kw.setdefault("fill", "x")
+        self.frame.pack(**kw)
+        return self
+
+    def set_status(self, state, message):
+        """State drives the dot colour; the message must name the SPECIFIC reason, not 'invalid'."""
+        import theme as _th
+        text_fg = {STEP_OK: _th.TEXT, STEP_WARN: _th.GOLD, STEP_BAD: _th.RED}.get(state, _th.DIM)
+        self._dot.config(foreground=self._colours.get(state, self._colours[STEP_IDLE]))
+        self._status.config(text=message, foreground=text_fg)
+
+    def link(self, parent, label, step_index):
+        """A jump-to-the-tab-that-owns-this button, for a thing referenced from this step."""
+        if self.on_go is None:
+            return None
+        return self._btn(parent, label, lambda: self.on_go(step_index))

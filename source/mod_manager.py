@@ -22,6 +22,7 @@ import hashlib
 import json
 import logging
 import os
+import queue
 import re
 import shutil
 import subprocess
@@ -51,6 +52,10 @@ _BUNDLED_MODS_DIR = (Path(_BUNDLE_ROOT) / "bundled_mods") if _BUNDLE_ROOT else N
 # before everything else on every Deploy, never appear in the manager list, and aren't toggleable.
 # In dev (no _MEIPASS) we read straight from the repo's predeploy/ folder.
 _PREDEPLOY_DIR = (Path(_BUNDLE_ROOT) / "predeploy") if _BUNDLE_ROOT else (_LAUNCH_DIR / "predeploy")
+# R.U.S.E.'s Steam app id (branches like public/compat are betas of this ONE app — see
+# ruse_mod_engine.game_versions.RUSE_APPID).  Used to launch the game through Steam on Linux/macOS,
+# where RUSE.exe is a Windows binary that only runs under Proton.
+_RUSE_APPID = "21970"
 
 import i18n
 from i18n import t          # every user-facing string is t("English") — see i18n.py
@@ -245,11 +250,42 @@ class _TextHandler(logging.Handler):
     def __init__(self, root):
         super().__init__()
         self._root = root
+        self._pending = queue.SimpleQueue()
+        self._drain_on()
+
+    def _drain_on(self):
+        """Main-thread pump for records logged off-thread (see emit)."""
+        try:
+            self._root.after(400, self._drain)
+        except Exception:
+            pass
+
+    def _drain(self):
+        for _ in range(200):                       # bounded so a flood can't stall the UI
+            try:
+                msg, level = self._pending.get_nowait()
+            except Exception:
+                break
+            self._append(msg, level)
+        self._drain_on()
 
     def emit(self, record):
-        msg = self.format(record)
-        level = record.levelname
-        self._root.after(0, self._append, msg, level)
+        # emit() is called from WHATEVER THREAD logged — Pillow emits DEBUG lines on every
+        # Image.open (pil_log keeps them deliberately), and the map editor decodes images on
+        # background threads. Tk may only be touched from the main thread: root.after() from a
+        # worker raises "main thread is not in main loop", and that exception propagates out of
+        # whatever background work was logging. That is what silently killed the map editor's
+        # terrain load — the decode thread died inside Image.open, not in its own code.
+        # So: hand straight to Tk only on the main thread, and queue otherwise for _drain.
+        try:
+            msg = self.format(record)
+            level = record.levelname
+            if threading.current_thread() is threading.main_thread():
+                self._root.after(0, self._append, msg, level)
+            else:
+                self._pending.put((msg, level))
+        except Exception:
+            pass                                   # a log line must never break its caller
 
     def _append(self, msg, level):
         tag = {"WARNING": "warn", "ERROR": "err"}.get(level, "info")
@@ -433,7 +469,8 @@ class ModManagerApp(tk.Tk):
         # foreground parent — never the withdrawn window that used to let the prompt open buried and hang.
         # A short delay lets the window paint first; the check is a silent no-op unless a newer release
         # exists (dev runs / offline / up-to-date all return immediately).
-        self.after(200, lambda: auto_update.check_for_update(self))
+        self.after(200, lambda: auto_update.check_for_update(
+            self, include_prerelease=bool(self._settings.get("beta_updates", False))))
 
     # ── Bootstrap ─────────────────────────────────────────────────────────────
 
@@ -645,6 +682,9 @@ class ModManagerApp(tk.Tk):
     def _load_settings(self) -> dict:
         d = {
             "game_root":   "",
+            # Opt in to BETA releases at the startup update check. Off by default: without it the
+            # app asks GitHub only for the latest STABLE release, exactly as it always has.
+            "beta_updates": False,
         }
         saved = {}
         if _SETTINGS_FILE.exists():
@@ -664,6 +704,10 @@ class ModManagerApp(tk.Tk):
         # game_root (e.g. someone typed a bare number) would crash _game_version's Path(game_root).
         if not isinstance(d.get("game_root"), str):
             d["game_root"] = ""
+        # Same defensive coercion for the beta opt-in: a hand-edited "beta_updates": "no" is a
+        # TRUTHY string, which would silently switch someone onto the beta channel.
+        if not isinstance(d.get("beta_updates"), bool):
+            d["beta_updates"] = False
         # First launch (no language ever chosen): follow the OS UI language, falling back to English
         # for anything we don't ship.  The resolved choice is then persisted, and any later change in
         # Settings overrides it.  `_lang_autodetected` tells __init__ to save it once.
@@ -1864,10 +1908,10 @@ class ModManagerApp(tk.Tk):
                 t("mgr.share_mod"),
                 t("mgr.couldn_t_open_web_browser", url=url))
             return
-        # Reveal the .rmod in Explorer, highlighted, so it's ready to drag onto the upload page.
+        # Reveal the .rmod in the file manager, highlighted, so it's ready to drag onto the upload page.
+        # (Explorer on Windows; Nautilus/Dolphin/Nemo --select on Linux, else its containing folder.)
         try:
-            if sys.platform == "win32":
-                subprocess.Popen(f'explorer.exe /select,"{os.path.normpath(path)}"')
+            ui_util.reveal_in_file_manager(path)
         except Exception:
             pass
         _log(self._mgr_log,
@@ -2456,9 +2500,7 @@ class ModManagerApp(tk.Tk):
         base = Path(self._settings.get("mods_folder", str(_LAUNCH_DIR / "mods")))
         try:
             base.mkdir(parents=True, exist_ok=True)
-            if hasattr(os, "startfile"):
-                os.startfile(str(base))               # Windows: open in Explorer
-            else:
+            if not ui_util.open_in_file_manager(base):   # Explorer / Finder / xdg-open
                 ui_util.info(self, t("mgr.folder"), str(base))
         except Exception as e:
             ui_util.error(self, t("mgr.open_failed"),
@@ -2606,6 +2648,7 @@ class ModManagerApp(tk.Tk):
         # would read clean source from an incomplete backup, and Restore Clean would leave the un-backed-up
         # dats still modded — the opposite of what the button promises.
         tmp = bd.with_name(bd.name + ".tmp")
+        cur = None   # file being copied when a failure hits — lets the error name the exact file
         try:
             _log(self._mgr_log, t("mgr.creating_backup_game_root_bd", game_root=game_root, bd=bd), "head")
             if tmp.exists():
@@ -2619,6 +2662,7 @@ class ModManagerApp(tk.Tk):
                 for src in src_root.rglob("*"):
                     if src.is_file():
                         rel  = src.relative_to(game_root)     # e.g. Data\PC\190852\X.dat, Maps\PC\Y.dat
+                        cur  = rel
                         dest = tmp / rel
                         dest.parent.mkdir(parents=True, exist_ok=True)
                         # Show each file BEFORE copying it, so the user sees activity — especially the
@@ -2632,6 +2676,12 @@ class ModManagerApp(tk.Tk):
                 shutil.rmtree(bd)
             os.replace(tmp, bd)                               # atomic publish — partial backups never appear
             _log(self._mgr_log, t("mgr.backup_complete_count_files", count=count), "ok")   # DONE = green
+        except PermissionError as e:
+            # Almost always a locked file, not a code fault: R.U.S.E./Steam still holding a handle, or an
+            # antivirus scan of the freshly-updated .dat.  Name the exact file and tell the user what to do,
+            # since "[Errno 13] Permission denied" alone gives them nothing to act on.
+            fname = cur.name if cur is not None else str(e)
+            _log(self._mgr_log, t("mgr.backup_error_locked_file", file=fname), "err")
         except Exception as e:
             _log(self._mgr_log, t("mgr.backup_error_e", e=e), "err")
             try:
@@ -2765,7 +2815,24 @@ class ModManagerApp(tk.Tk):
                 t("mgr.could_not_find_ruse_exe", game_root=game_root))
             return
         try:
-            subprocess.Popen([str(exe)], cwd=game_root)
+            if sys.platform == "win32":
+                subprocess.Popen([str(exe)], cwd=game_root)
+            else:
+                # RUSE.exe is a WINDOWS binary — on Linux/macOS it only runs under Proton/Wine, which
+                # Steam sets up (compat tool + prefix). Exec'ing the .exe directly would just fail, so
+                # ask Steam to launch the app; it applies the user's configured Proton for us.
+                import shutil as _sh
+                # system_env(): a frozen build's LD_LIBRARY_PATH points at OUR bundled libs, which
+                # breaks system binaries like steam if they inherit it.
+                _env = ui_util.system_env()
+                if _sh.which("steam"):
+                    subprocess.Popen(["steam", "-applaunch", _RUSE_APPID], env=_env, close_fds=True,
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                else:
+                    # No steam on PATH (Flatpak/Snap install): use the registered steam:// URL handler.
+                    subprocess.Popen(["xdg-open", f"steam://rungameid/{_RUSE_APPID}"], env=_env,
+                                     close_fds=True,
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             _log(self._mgr_log, t("mgr.launched_r_u_s_e_2", exe=exe), "ok")
             self._mgr_foot.set(t("mgr.launched_r_u_s_e"))
         except Exception as ex:
@@ -3463,8 +3530,8 @@ class ModManagerApp(tk.Tk):
 
 
     def _cv_browse_mod(self):
-        d = filedialog.askdirectory(
-            parent=self,
+        d = ui_util.ask_directory(                     # desktop-native chooser on Linux, Tk elsewhere
+            self,
             title=t("mgr.select_mod_root_mirrors_game_2"))
         if not d:
             return
@@ -4074,9 +4141,7 @@ class ModManagerApp(tk.Tk):
         base = self._editor_mods_dir()
         try:
             base.mkdir(parents=True, exist_ok=True)
-            if hasattr(os, "startfile"):
-                os.startfile(str(base))               # Windows: open in Explorer
-            else:
+            if not ui_util.open_in_file_manager(base):   # Explorer / Finder / xdg-open
                 ui_util.info(self, t("mgr.folder"), str(base))
         except Exception as e:
             ui_util.error(self, t("mgr.open_failed"), t("mgr.could_not_open_path_e", path=base, e=e))
@@ -4872,6 +4937,20 @@ class ModManagerApp(tk.Tk):
                   foreground=_R_TEXT_DIM, font=_F_LOG, justify="left", wraplength=580
                   ).pack(anchor="w", padx=8, pady=(0, 6))
 
+        # ── Updates (beta channel opt-in) ───────────────────────────────────────
+        upd = ttk.LabelFrame(p, text=t("mgr.updates"))
+        upd.pack(fill="x", **pad)
+        # Deliberately NOT in self._set_vars: that dict is STRING-only — _set_do_save and _on_close
+        # both call .get().strip() over every member, which a BooleanVar has no method for.  Own var
+        # plus a command= callback that saves immediately, the same shape as _on_default_language.
+        self._beta_updates_var = tk.BooleanVar(value=bool(self._settings.get("beta_updates", False)))
+        ttk.Checkbutton(upd, text=t("mgr.include_beta_releases"),
+                        variable=self._beta_updates_var,
+                        command=self._on_beta_updates).pack(anchor="w", padx=8, pady=(6, 2))
+        ttk.Label(upd, text=t("mgr.beta_releases_explainer"),
+                  foreground=_R_TEXT_DIM, font=_F_LOG, justify="left", wraplength=580
+                  ).pack(anchor="w", padx=8, pady=(0, 6))
+
         # ── About & Legal (non-affiliation, no-warranty, privacy) ───────────────
         about = ttk.LabelFrame(p, text=t("mgr.about_legal"))
         about.pack(fill="x", **pad)
@@ -4922,6 +5001,16 @@ class ModManagerApp(tk.Tk):
             pass
         ui_util.error(self, t("mgr.couldn_t_open_browser"),
                       t("mgr.please_open_link_yourself_url", url=url))
+
+    def _on_beta_updates(self):
+        """Persist the beta-channel opt-in as soon as it's ticked.
+
+        Its own BooleanVar with its own save — NOT self._set_vars, which holds string vars only (see
+        the note at the Checkbutton).  Nothing is downloaded here and there's nothing to restart for:
+        the setting is read by the update check on the next startup.
+        """
+        self._settings["beta_updates"] = bool(self._beta_updates_var.get())
+        self._save_settings()
 
     def _on_default_language(self, _=None):
         code = _dic_mod.LANG_CODE.get(self._lang_var.get(), "us")
@@ -4998,10 +5087,59 @@ class ModManagerApp(tk.Tk):
     def _add_start_menu_shortcut(self):
         self._create_app_shortcut("Programs")   # WScript.Shell name for Start Menu\Programs
 
+    def _create_desktop_entry(self, where: str):
+        """Linux/macOS counterpart of the Windows .lnk: write a freedesktop ``.desktop`` entry.
+
+        ``where``: "Desktop" -> ~/Desktop, "Programs" -> ~/.local/share/applications (the app menu).
+        Also extracts the embedded PNG icon to ~/.local/share/icons so ``Icon=`` resolves — that's what
+        gives the app a real icon in the menu/dock/launcher instead of a generic placeholder."""
+        import base64
+        name = "R.U.S.E. Mod Manager"
+        home = Path.home()
+        dest_dir = (home / "Desktop") if where == "Desktop" else (home / ".local" / "share" / "applications")
+        try:
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            # icon on disk (Icon= can't read embedded data)
+            icon_path = ""
+            if _ICON_B64:
+                icon_dir = home / ".local" / "share" / "icons"
+                icon_dir.mkdir(parents=True, exist_ok=True)
+                icon_file = icon_dir / "ruse-mod-manager.png"
+                icon_file.write_bytes(base64.b64decode(_ICON_B64))
+                icon_path = str(icon_file)
+            if getattr(sys, "frozen", False):
+                exec_line = f'"{Path(sys.executable).resolve()}"'
+            else:
+                exec_line = f'"{sys.executable}" "{Path(__file__).resolve()}"'
+            entry = dest_dir / "ruse-mod-manager.desktop"
+            entry.write_text(
+                "[Desktop Entry]\n"
+                "Type=Application\n"
+                f"Name={name}\n"
+                "Comment=Manage and deploy R.U.S.E. mods\n"
+                f"Exec={exec_line}\n"
+                + (f"Icon={icon_path}\n" if icon_path else "")
+                + f"Path={_LAUNCH_DIR}\n"
+                "Terminal=false\n"
+                "Categories=Game;Utility;\n",
+                encoding="utf-8")
+            entry.chmod(0o755)          # desktop files must be executable to be launchable/trusted
+            _log(self._mgr_log, t("mgr.created_shortcut_path_2", path=str(entry)), "ok")
+            ui_util.info(self, t("mgr.shortcut_created"),
+                         t("mgr.created_shortcut_path", path=str(entry)))
+        except Exception as e:
+            _log(self._mgr_log, t("mgr.shortcut_failed_err", err=str(e)), "err")
+            ui_util.error(self, t("mgr.shortcut_failed"), str(e))
+
     def _create_app_shortcut(self, where: str):
-        """Create a Windows .lnk to this app in the user's Desktop or Start-Menu Programs folder.
-        ``where`` is a WScript.Shell SpecialFolders name ("Desktop" or "Programs").  Targets the
-        packaged .exe when frozen; in a dev run it points pythonw at this script."""
+        """Create a shortcut to this app in the user's Desktop or app menu.
+
+        Windows: a .lnk via WScript.Shell, targeting the packaged .exe when frozen (a dev run points
+        pythonw at this script).  Everything else: a freedesktop .desktop entry (_create_desktop_entry)
+        — the PowerShell/WScript path below is Windows-only and would simply fail on Linux.
+        ``where`` is "Desktop" or "Programs"."""
+        if sys.platform != "win32":
+            return self._create_desktop_entry(where)
         import subprocess, tempfile
         if getattr(sys, "frozen", False):
             target, args, icon = sys.executable, "", sys.executable
@@ -5059,9 +5197,10 @@ class ModManagerApp(tk.Tk):
                     pass
 
     def _set_browse_game_root(self):
-        d = filedialog.askdirectory(
-            parent=self,
-            title=t("mgr.select_r_u_s_e"))
+        d = ui_util.ask_directory(                     # desktop-native chooser on Linux, Tk elsewhere
+            self,
+            title=t("mgr.select_r_u_s_e"),
+            initialdir=self._set_vars["game_root"].get())
         if d: self._set_vars["game_root"].set(d)
 
     def _set_open_folder(self, key: str):
@@ -5079,9 +5218,7 @@ class ModManagerApp(tk.Tk):
             ui_util.error(self, t("mgr.not_found"), t("mgr.folder_does_not_exist_path", path=path))
             return
         try:
-            if hasattr(os, "startfile"):
-                os.startfile(str(path))               # Windows: open in Explorer
-            else:
+            if not ui_util.open_in_file_manager(path):   # Explorer / Finder / xdg-open
                 ui_util.info(self, t("mgr.folder"), str(path))
         except Exception as e:
             ui_util.error(self, t("mgr.open_failed"), t("mgr.could_not_open_path_e", path=path, e=e))

@@ -19,10 +19,16 @@ from .ndfbin import T, NdfInstance, NdfClass, NdfProperty, NdfPropertyValue, Ndf
 
 # ── value decoders / domains (curated overlay) ───────────────────────────────────
 def camp_label(v):
-    """Camp Int32 meaning. -1 = neutral/visible; None = no Camp (engine default); N = camp N
-    (camps are defined in the paired .xyz script; the number ties a placement to one)."""
+    """Camp Int32 meaning. -1 = neutral/visible; None = camp 0; N = camp N (camps are defined in the
+    paired .xyz script; the number ties a placement to one).
+
+    None is labelled "camp 0 (none)" because that is what it IS: an absent Camp property makes the
+    engine read the NDF integer default and resolve as camp 0 (see ruse_mod_engine/camp_resolver).
+    Calling it "(no camp)" implied an unowned placement, which it is not. There is no separate
+    explicit 0 to confuse it with — 0 occurs in none of the 102 shipped scenarios and isn't offered
+    below."""
     if v is None:
-        return "(no camp)"
+        return "camp 0 (none)"
     if v == -1:
         return "-1 (neutral)"
     if v == -2:
@@ -40,7 +46,13 @@ def supply_label(v):
         return str(v)
 
 
-CAMP_CHOICES = [None, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9]              # Camp / AllianceNum domain
+# Camp dropdown, ordered the way a designer reads it: neutral, then camp 0 (what an absent Camp
+# resolves to), then the numbered camps. None sits in the 0 slot because it IS camp 0 — see camp_label.
+CAMP_CHOICES = [-1, None, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+# AllianceNum is a DIFFERENT AXIS: a direct team id on an HQ (Team 1's HQ is AllianceNum=1), not the
+# offset Camp encoding. Kept on its own list so the Camp dropdown's order and labels can change
+# without silently reordering or relabelling the HQ's Alliance field.
+ALLIANCE_CHOICES = [None, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 PRIORITY_CHOICES = [None, 1, 2, 3, 4, 5, 6, 7, 8]                 # AlliancePriority (None = FFA/solo seat)
 WARMUP_CHOICES = [None] + ["Warmup_J%d" % n for n in range(1, 9)]
 
@@ -142,7 +154,9 @@ SCHEMA = {
     "building": PlacementClassSchema(
         "building", "TGameDesignAddOn_Spawn", py_prefix="Building_",
         fields=[_pyclass(), _camp(), _name(), _champinteger_raw(), _champtexte(), _rotation()],
-        note="Pre-placed building/defence (incl. scripted HQs as Building_Headquarter*)."),
+        note="Pre-placed building or defence. This is also where the REAL, nation-specific HQ "
+             "buildings live — Building_Headquarter / _GR / _UK / _URSS / _FR / _ITA / _JAP (73 ship). "
+             "Unlike a Player start, these carry a Camp and their own nationality."),
     "spawn": PlacementClassSchema(
         "spawn", "TGameDesignAddOn_Spawn",
         fields=[_pyclass(), _camp(), _name(), _rotation()],
@@ -151,8 +165,9 @@ SCHEMA = {
         "hq", "TGameDesignAddOn_StartingPoint",
         fields=[
             PlacementFieldSpec("AllianceNum", T.Int32, "camp", "Alliance", required=True, addable=True,
-                               default=1, choices=CAMP_CHOICES,
-                               help="Team/alliance number this start belongs to."),
+                               default=1, choices=ALLIANCE_CHOICES,
+                               help="Team/alliance number this start belongs to. NOT the same axis "
+                                    "as a spawn's Camp: several camps can share one alliance."),
             PlacementFieldSpec("AlliancePriority", T.Int32, "priority", "Priority (slot)", addable=True,
                                default=1, choices=PRIORITY_CHOICES,
                                help="Slot within the team. Absent = FFA / solo seat (vanilla encoding)."),
@@ -165,7 +180,11 @@ SCHEMA = {
                                addable=False, help="Resting-camera world position (moves with the HQ)."),
             _name(help="Optional name (some campaign HQs are named, e.g. HQ_Joueur)."),
         ],
-        note="Player start / HQ. Team modes use (Alliance, Priority); FFA/solo omit Priority."),
+        note="PLAYER START, not a building. The engine hands this to add_starting_point_for_alliance() "
+             "and spawns the right HQ there at runtime from the camp's nation — which is why it has "
+             "no Camp and no nationality of its own. 309 ship. For an HQ BUILDING placed on the map "
+             "(nation-specific, with its own Camp) choose Building and pick a Building_Headquarter* "
+             "class instead. Team modes use (Alliance, Priority); FFA/solo omit Priority."),
     "ville": PlacementClassSchema(
         "ville", "TGameDesignAddOn_LabelVille",
         fields=[PlacementFieldSpec("ChampTexte", T.WideStr, "widestr", "City label", addable=True,

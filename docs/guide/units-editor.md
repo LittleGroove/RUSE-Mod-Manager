@@ -18,21 +18,13 @@ For a big-picture look at the Mod Manager and how mod projects work, see the
 
 > ## ⚠️ Read this first — what does NOT work yet
 >
-> Two things are **not finished yet — please don't use them**:
->
-> - **"Duplicate this unit"** (making a copy of a unit).
-> - **Changing a unit's faction/nation** — either with the **"Migrate to
->   nation…"** button *or* by typing a new `Nationalite` value by hand.
->
-> These do not make a unit that actually works in the game yet.
+> **Don't change a unit's faction/nation** by typing a new `Nationalite` value
+> by hand. It does not make a unit that works in the game yet. The `Nationalite`
+> field is still shown so you can see what a unit is.
 >
 > **Editing units that already exist works fine.** You can safely change their
 > stats, weapons, in-game names, upgrade chains, and where they show up in a
 > building's menu — as long as you keep the unit in its own faction.
->
-> The Duplicate and Migrate buttons are still there (and the `Nationalite` field
-> is still shown) so the team can test them. But treat any unit you copy or move
-> to another nation as broken in-game for now.
 
 ---
 
@@ -184,11 +176,11 @@ it shaped like this:
 The raw `Nationalite` number is shown next to the friendly nation name so you
 can double-check exactly what's set on the unit.
 
-Three buttons sit under the header:
+Two buttons sit under the header:
 
 - **Apply changes to this unit** — locks in this panel's edits into the project.
-- **Duplicate this unit** — ⚠️ see the warning above; don't rely on it.
-- **Migrate to nation…** — ⚠️ see the warning above; don't rely on it.
+- **Reset to defaults** — puts this unit's values back to the game's originals.
+  Nothing is saved until you save the mod.
 
 Below that is a scrollable panel of fields, split into sections.
 

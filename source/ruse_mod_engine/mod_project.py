@@ -431,16 +431,24 @@ class ModProject:
         key = (dat_key, self._norm(ndf_path))
         if key in self._ndf_cache:
             return self._ndf_cache[key]
-        src = self.read_source(dat_key)
-        if not Path(src).is_file():
-            raise FileNotFoundError(
-                f"Cannot load '{self._fname(dat_key)}' — it isn't in the mod folder and no clean "
-                f"copy was found in the backup or game. Create a backup in the Mod Manager tab, "
-                f"or set the Game Root in Settings.")
-        arc = _edata.open_dat(str(src))
-        raw = arc.get(ndf_path)
+        # Staged bytes win over what is on disk. set_raw drops the parsed object precisely so the new
+        # bytes take effect, but re-reading the archive here would have handed back the OLD content and
+        # quietly undone that. It matters most for a whole-file replacement: creating an operation stages
+        # a rewritten mapinfo.cpp and globals.cpp, and a reader that skipped them saw a game with no map
+        # slot and no menu entry for the thing it had just made. save_all prefers the parsed object, so
+        # anything edited through here still overrides the staged bytes it came from.
+        raw = self._raw_cache.get(key)
         if raw is None:
-            raise KeyError(f"{ndf_path} not found in {Path(src).name}")
+            src = self.read_source(dat_key)
+            if not Path(src).is_file():
+                raise FileNotFoundError(
+                    f"Cannot load '{self._fname(dat_key)}' — it isn't in the mod folder and no clean "
+                    f"copy was found in the backup or game. Create a backup in the Mod Manager tab, "
+                    f"or set the Game Root in Settings.")
+            arc = _edata.open_dat(str(src))
+            raw = arc.get(ndf_path)
+            if raw is None:
+                raise KeyError(f"{ndf_path} not found in {Path(src).name}")
         ndf = _ndfbin.read(raw)
         self._ndf_cache[key] = ndf
         return ndf
@@ -520,14 +528,48 @@ class ModProject:
         self._dirty.add(key)
 
     def entry_paths(self, dat_key: str, suffix: str = "") -> list:
-        """List archive entry paths in a dat (from the mod folder copy or clean source), optionally
-        filtered to those ending with `suffix` (case-insensitive). [] if the dat isn't available."""
+        """List archive entry paths in a dat, INCLUDING files staged by set_raw but not yet saved.
+
+        The staged part matters: creating a scenario adds brand-new entries (its .scenario, cluster,
+        script and per-language .dic files), and until save_all() runs they exist only in the raw cache.
+        Listing only what is on disk made a freshly-created scenario look like every one of its files was
+        missing — get_raw and read_many already honour staged entries, so a lister that did not was
+        simply inconsistent with them.
+        """
+        paths = []
         src = self.read_source(dat_key)
-        if not Path(src).is_file():
-            return []
-        paths = _edata.open_dat(str(src)).list()
+        if Path(src).is_file():
+            paths = list(_edata.open_dat(str(src)).list())
+        have = {self._norm(p) for p in paths}
+        for (dk, npath), orig in self._raw_origpath.items():
+            if dk == dat_key and npath not in have:
+                paths.append(orig)
+                have.add(npath)
         s = suffix.lower()
-        return [p for p in paths if p.lower().endswith(s)] if s else list(paths)
+        return [p for p in paths if p.lower().endswith(s)] if s else paths
+
+    def read_many(self, dat_key: str, paths) -> dict:
+        """Bulk-read several entries from ONE archive open (get_raw re-opens the .dat per call, which is
+        far too slow for the ~1000 .dic files the LocHash manager scans).  Honors staged edits in the
+        raw cache and populates it for the misses.  Returns {path: bytes} for entries that exist."""
+        out = {}
+        need = []
+        for p in paths:
+            key = (dat_key, self._norm(p))
+            if key in self._raw_cache:
+                out[p] = self._raw_cache[key]
+            else:
+                need.append(p)
+        if need:
+            src = self.read_source(dat_key)
+            if Path(src).is_file():
+                arc = _edata.open_dat(str(src))
+                for p in need:
+                    raw = arc.get(p)
+                    if raw is not None:
+                        self._raw_cache[(dat_key, self._norm(p))] = raw
+                        out[p] = raw
+        return out
 
     # ── dirty tracking ──────────────────────────────────────────────────────────
 

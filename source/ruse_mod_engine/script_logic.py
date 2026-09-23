@@ -17,16 +17,25 @@ API:
 import os
 import re
 import subprocess
+import sys
 
 from . import xyz_compile
 
 _ENGINE_DIR = os.path.dirname(os.path.abspath(__file__))
 _PY251_DIR = os.path.join(_ENGINE_DIR, "python251")
+# The COMPILE WORKER (compile_worker.py) is platform-independent and always lives in python251/.
+# Only the interpreter BINARY differs by OS: Windows ships python251/python.exe; a native Linux
+# build ships python251-linux/bin/python2.5 (produced by docker export — see docker/README.md).
+_PY251_LINUX_DIR = os.path.join(_ENGINE_DIR, "python251-linux")
 
 
 # ── the game's own Python 2.5.1 (engine-loadable emit) ────────────────────────────
 def _py251_interpreter():
-    p = os.path.join(_PY251_DIR, "python.exe")
+    if sys.platform == "win32":
+        p = os.path.join(_PY251_DIR, "python.exe")
+    else:
+        # native Linux/macOS 2.5.1 built + exported from docker/ (python251-linux/bin/python2.5)
+        p = os.path.join(_PY251_LINUX_DIR, "bin", "python2.5")
     return p if os.path.isfile(p) else None
 
 
@@ -50,14 +59,34 @@ def _launch_exe():
     base = _py251_interpreter()
     if base is None:
         return None
-    alias = os.path.join(_PY251_DIR, "ruse_compile251.exe")
+    # Rename to a non-"python" basename to dodge pydevd. Keep the copy in the SAME directory as the
+    # interpreter so relative stdlib resolution still works (matters on Linux, where python2.5 finds
+    # its Lib/ next to the binary). Windows keeps the .exe suffix; Linux has none.
+    ext = ".exe" if sys.platform == "win32" else ""
+    alias = os.path.join(os.path.dirname(base), "ruse_compile251" + ext)
     try:
         import shutil
+        _ensure_exec(base)   # PyInstaller extracts bundled data files WITHOUT the exec bit (Linux)
         if not os.path.isfile(alias) or os.path.getmtime(alias) < os.path.getmtime(base):
             shutil.copy2(base, alias)
+        _ensure_exec(alias)
         return alias
     except Exception:
+        _ensure_exec(base)
         return base
+
+
+def _ensure_exec(path):
+    """On non-Windows, make `path` executable. The bundled Linux python2.5 is extracted from the frozen
+    app as a DATA file, which loses its exec bit — without this it can't be spawned. No-op on Windows."""
+    if sys.platform == "win32" or not path:
+        return
+    try:
+        import stat
+        mode = os.stat(path).st_mode
+        os.chmod(path, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    except OSError:
+        pass
 
 
 def _clean_env():
@@ -77,8 +106,9 @@ def compile_source(source_text, co_filename="effetmap.py", timeout=60):
     Raises FileNotFoundError if 2.5.1 isn't installed, RuntimeError(stderr) on a compile error."""
     exe = _launch_exe()
     if exe is None:
+        want = "python251/python.exe" if sys.platform == "win32" else "python251-linux/bin/python2.5"
         raise FileNotFoundError(
-            "ruse_mod_engine/python251/python.exe not found - see ruse_mod_engine/python251/README.md")
+            "bundled Python 2.5.1 not found (%s) - see ruse_mod_engine/python251/README.md" % want)
     # -E ignore PYTHON* env vars, -S skip site.py — both block a parent debugger's pydevd auto-attach,
     # together with the renamed exe (_launch_exe) and the cleaned env.
     proc = subprocess.run([exe, "-E", "-S", _worker_path(), co_filename],
@@ -237,9 +267,20 @@ def _balanced(s, i):
     return len(s) - 1
 
 
-# Any `IR_N = some.dotted.ClassName(...)` call (descriptors, conditions, operators, variables, effects).
-_ASSIGN = re.compile(r"(?m)^(IR_\d+)\s*=\s*([\w.]+)\(")
-_VALUE = r"(-?\d+L|-?\d+\.\d+|-?\d+|True|False|None|IR_\d+|u?'(?:[^'\\]|\\.)*')"
+# Any top-level `Name = some.dotted.ClassName(...)` call (descriptors, conditions, operators, variables,
+# effects, tags). It used to require the name be literally `IR_<n>`, which is only ONE of the naming schemes
+# in play: shipped scripts also use `IT_<n>` for the map tags (TagPosition / TagZoneDetection — the whole
+# script-to-placement binding layer) and `ER_<n>` for the root, and scripts this app generates use readable
+# names (GameRules, Camp_Player, WIN_7). Measured over the 82 shipped .xyz, matching any top-level assignment
+# finds 77,733 where `IR_` alone found 65,658 — and changes NONE of the 65,658, so it is a strict widening.
+_ASSIGN = re.compile(r"(?m)^([A-Za-z_]\w*)\s*=\s*([\w.]+)\(")
+# A kwarg value: a number, a keyword, a quoted string, or a REFERENCE to another assignment by name.
+# The reference used to be `IR_\d+` only, for the same reason _ASSIGN was — so `Group=IT_3` (a tag) and
+# `Condition=CND_16` (a generated script) read as no value at all. `\b(?![.(])` is load-bearing: without it
+# the bare-name branch would backtrack inside a dotted enum like `_enum_for_game_play.TPopCapConfig.PopCapSolo`
+# and match the prefix `_enum_for_game_pla`, inventing a value where the enum branch should handle it.
+_REF = r"[A-Za-z_]\w*\b(?![.(])"
+_VALUE = r"(-?\d+L|-?\d+\.\d+|-?\d+|True|False|None|u?'(?:[^'\\]|\\.)*'|" + _REF + r")"
 _SCALAR = re.compile(r"(\w+)\s*=\s*" + _VALUE)
 
 
@@ -259,6 +300,18 @@ def ir_assignments(src):
 def scalar_kwargs(body):
     """{kwarg: value_str} for simple scalar / IR-ref kwargs in a Class(...) body (nested lists skipped)."""
     return {m.group(1): m.group(2) for m in _SCALAR.finditer(body)}
+
+
+def enum_kwargs(body):
+    """{kwarg: dotted_value} for the ENUM kwargs in a Class(...) body.
+
+    scalar_kwargs deliberately cannot see these — a dotted value like
+    `_enum_for_game_play.Nationalite.EU` is excluded from its value pattern so a bare-name reference cannot
+    swallow an enum's prefix. That is right for it, but it means a caller using only scalar_kwargs never
+    sees a block's nation, difficulty, AI level or behaviour, which are among the most useful things to be
+    able to change. Pair the two to get the whole set of a block's simple fields.
+    """
+    return {m.group(1): m.group(2) for m in _ENUM_KW.finditer(body)}
 
 
 _LISTVARS = re.compile(r"List(?:Variables|Timers)(?:ForFoldedText)?\s*=\s*\[([^\]]*)\]")
@@ -515,8 +568,10 @@ _NUM = re.compile(r"^-?\d+(?:\.\d+)?L?$")
 
 
 def _subactions(body):
+    """The names listed in a SubActions=[...] — any assignment name, not just IR_<n>, so the flow tree
+    follows a generated script's readable names as well as the shipped IR_/IT_/ER_ ones."""
     m = re.search(r"SubActions\s*=\s*\[([^\]]*)\]", body)
-    return re.findall(r"IR_\d+", m.group(1)) if m else []
+    return re.findall(r"[A-Za-z_]\w*", m.group(1)) if m else []
 
 
 def resolve_actions(irs, action_ir, _seen=None):
@@ -589,8 +644,17 @@ _ACTION_LABEL = {
 
 
 def flow_root(src):
-    """The IR of the operation's flow root — the LaunchEffetMap's `EffetMap` (an ER_ assignment, so read the
-    raw source). None if not found."""
+    """The name of the operation's flow root — the LaunchEffetMap's `EffetMap` argument. None if not found.
+
+    Read out of the LaunchEffetMap call rather than by searching the whole file for `EffetMap=`, because a
+    generated script also NAMES its root `EffetMap`, and a raw search would hit that module-level assignment
+    first and return the class path instead of the root.
+    """
+    for name, info in ir_assignments(src).items():
+        if "LaunchEffetMap" in info["type"]:
+            m = re.search(r"\bEffetMap\s*=\s*(" + _REF + r")", info["body"])
+            if m:
+                return m.group(1)
     m = re.search(r"\bEffetMap\s*=\s*(IR_\d+)", src)
     return m.group(1) if m else None
 

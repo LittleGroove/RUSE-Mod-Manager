@@ -1,0 +1,4676 @@
+{
+  "source": "shipped effetmap.xyz scripts in IA_Common.dat",
+  "effetmaps_decoded": 45,
+  "distinct_classes": 345,
+  "counts_by_family": {
+    "Unit": 181,
+    "Building": 102,
+    "Avion": 62
+  },
+  "by_family": {
+    "Unit": {
+      "France": [
+        "Unit_155mm_GPF",
+        "Unit_25mm_CA_mle_1938",
+        "Unit_75mm_mle_1897",
+        "Unit_ARL_40",
+        "Unit_ARL_44",
+        "Unit_B1_Bis",
+        "Unit_FCM_F1",
+        "Unit_Hotchkiss_H_39",
+        "Unit_Laffly_W15_TCC",
+        "Unit_Lorraine_37_L",
+        "Unit_Panhard_178",
+        "Unit_Panhard_EBR_75",
+        "Unit_SA_25mm_L_1934",
+        "Unit_SA_47mm_1937",
+        "Unit_Sau_40",
+        "Unit_Soldat_FR_Leger",
+        "Unit_Soldat_FR_Lourd",
+        "Unit_Soldat_FR_Para",
+        "Unit_Somua_S_35",
+        "Unit_Tourelle_Light_FR",
+        "Unit_Tourelle_Maginot_FR"
+      ],
+      "Italie": [
+        "Unit_20mm_Breda",
+        "Unit_210mm_Obice_da_M1935_L_23_8",
+        "Unit_75mm_Canonne_da_75_27",
+        "Unit_88mm_Flak",
+        "Unit_Autoblinda_40",
+        "Unit_Autoblinda_43",
+        "Unit_Breda_Dovunque_90_53",
+        "Unit_Cannone_da_47_32_M35",
+        "Unit_Carro_Armato_M11_39",
+        "Unit_Carro_Armato_M13_40",
+        "Unit_Carro_Armato_M15_42",
+        "Unit_Carro_Armato_P_26_40",
+        "Unit_Carro_Veloce",
+        "Unit_L6_40_Lanciafiamme",
+        "Unit_M_15_AA_Tank",
+        "Unit_Semovente_M_40_75_18",
+        "Unit_Semovente_M_43_105_25",
+        "Unit_Semovente_M_90_53",
+        "Unit_Soldat_ITA_Leger",
+        "Unit_Soldat_ITA_Leger_SOLO",
+        "Unit_Soldat_ITA_Lourd",
+        "Unit_Soldat_ITA_Para",
+        "Unit_Soldat_ITA_Recon",
+        "Unit_Soldat_ITA_Recon_SOLO",
+        "Unit_Tourelle_AT_ITA"
+      ],
+      "Allemagne": [
+        "Unit_150mm_sFH_18_L_30",
+        "Unit_20mm_FlaK_30_L_112",
+        "Unit_210mm_Morser",
+        "Unit_75mm_le_FK_38_L_34",
+        "Unit_88mm_FlaK_36L_56",
+        "Unit_GER_37mm_Pak36",
+        "Unit_Jagdpanther",
+        "Unit_KingTigerAS",
+        "Unit_Kubelwagen",
+        "Unit_Marder_II",
+        "Unit_Maus",
+        "Unit_PZIV_Wirbelwind",
+        "Unit_PaK_40_75mm_L_48",
+        "Unit_Panzer_III_J",
+        "Unit_Panzer_IV_G",
+        "Unit_Panzer_VI_B_Tigre_II",
+        "Unit_Panzer_VI_Tigre",
+        "Unit_Panzer_V_G_Panther",
+        "Unit_SdKfz_234_2_Puma",
+        "Unit_SdkFz_222",
+        "Unit_Sdkfz251",
+        "Unit_Soldat_Allemand_Antichar",
+        "Unit_Soldat_Allemand_Leger",
+        "Unit_Soldat_Allemand_Leger_SOLO",
+        "Unit_Soldat_Allemand_Lourd",
+        "Unit_Soldat_Allemand_Para",
+        "Unit_Stug_III_B",
+        "Unit_SturmTiger",
+        "Unit_Tourelle_MG_GER",
+        "Unit_Tourelle_Siegfried_GER",
+        "Unit_TransportSoldier_GER",
+        "Unit_V2_launcher",
+        "Unit_V2_nuclear_launcher",
+        "Unit_Wurfrahmen_PV"
+      ],
+      "Angleterre": [
+        "Unit_140mm_5_5_Inch_BL_Mk_III_L_30",
+        "Unit_40mm_M1_Bofors_L_60_UK",
+        "Unit_87mm_QF_25_pounder",
+        "Unit_Archer",
+        "Unit_Char_DCA_M4_SKINK",
+        "Unit_Churchill_A22",
+        "Unit_Churchill_AVRE",
+        "Unit_Coventry_armoured_car",
+        "Unit_Cruiser_A13",
+        "Unit_Cruiser_A27_Cromwell",
+        "Unit_Daimler_AC_MK_1",
+        "Unit_Matilda",
+        "Unit_QF_17_pounder_76mm",
+        "Unit_QF_2_pounder_40_mm",
+        "Unit_Sexton",
+        "Unit_Sherman_Firefly",
+        "Unit_Soldat_UK_Leger",
+        "Unit_Soldat_UK_Lourd",
+        "Unit_Soldat_UK_Para",
+        "Unit_Tourelle_AT_UK",
+        "Unit_Tourelle_Artillerie_UK",
+        "Unit_Tourelle_Outpost_UK",
+        "Unit_Vickers"
+      ],
+      "USA": [
+        "Unit_155mm_M1_Long_Tom_L_45",
+        "Unit_40mm_M1_Bofors_L_60",
+        "Unit_Battleship",
+        "Unit_Destroyer",
+        "Unit_Heavy_Cruiser",
+        "Unit_LCVP",
+        "Unit_LST",
+        "Unit_Long_Tom_nuke",
+        "Unit_M10_Wolverine",
+        "Unit_M16_GMC",
+        "Unit_M19_GMC_Twin_40mm",
+        "Unit_M1_57mm_L_50",
+        "Unit_M1_57mm_L_50_SOLO",
+        "Unit_M24_Chaffee",
+        "Unit_M26_Pershing",
+        "Unit_M36_Jackson",
+        "Unit_M3A1_Stuart",
+        "Unit_M3_Lee",
+        "Unit_M40_GMC",
+        "Unit_M4_Sherman",
+        "Unit_M5_76mm_L_50",
+        "Unit_M7_Priest",
+        "Unit_M8_Greyhound",
+        "Unit_Sherman_Calliope",
+        "Unit_Sherman_lance_flammes",
+        "Unit_Soldat_US_Leger",
+        "Unit_Soldat_US_Leger_SOLO",
+        "Unit_Soldat_US_Lourd",
+        "Unit_Soldat_US_Para",
+        "Unit_Super_Pershing",
+        "Unit_Super_Pershing_DEMO",
+        "Unit_T28",
+        "Unit_Tourelle_AT_US",
+        "Unit_Tourelle_DCA_US",
+        "Unit_Tourelle_MG_US",
+        "Unit_TransportCanon",
+        "Unit_TransportHQ",
+        "Unit_TransportSoldier",
+        "Unit_Unite_Vide_B",
+        "Unit_Willis_MB"
+      ],
+      "URSS": [
+        "Unit_152mm_howitzer",
+        "Unit_203mm_howitzer",
+        "Unit_37mm_AA",
+        "Unit_45mm_L46",
+        "Unit_76mm_ZIS_3",
+        "Unit_BA_11",
+        "Unit_IS2",
+        "Unit_IS3",
+        "Unit_KV1",
+        "Unit_Katyusha",
+        "Unit_SU_100",
+        "Unit_SU_122",
+        "Unit_SU_85",
+        "Unit_Soldat_Russe_Leger",
+        "Unit_Soldat_Russe_Lourd",
+        "Unit_Soldat_Russe_Para",
+        "Unit_T26",
+        "Unit_T34",
+        "Unit_ZSU_37"
+      ],
+      "Japon": [
+        "Unit_47mm_AT",
+        "Unit_75mm_Type88",
+        "Unit_Giretsu_Kuteitai",
+        "Unit_Konoe_Shidan",
+        "Unit_Kurogane",
+        "Unit_OI_Heavy_Tank",
+        "Unit_Pionnier_Genie",
+        "Unit_Sniper",
+        "Unit_TaSe_20mm",
+        "Unit_Teishin_Shudan",
+        "Unit_Type1_AOV",
+        "Unit_Type2_75mm_KuSe",
+        "Unit_Type2_HoRi",
+        "Unit_Type3_ChiNu",
+        "Unit_Type4_HaTo",
+        "Unit_Type5_47mm_HoRu",
+        "Unit_Type5_ChiRi",
+        "Unit_Type95_HaGo",
+        "Unit_Type97_ChiHa"
+      ]
+    },
+    "Building": {
+      "France": [
+        "Building_AeroportFR",
+        "Building_BatimentAdministratifFR",
+        "Building_BatimentDepotFR",
+        "Building_CaserneFR",
+        "Building_DefenseLegereFR",
+        "Building_DefenseMaginotFR",
+        "Building_ExperimentalFactoryFR",
+        "Building_HeadquarterFR",
+        "Building_TruckFactoryFR",
+        "Building_UsineAutomoteurFR",
+        "Building_Usine_CanonFR",
+        "Building_VehiculeFactoryFR"
+      ],
+      "Italie": [
+        "Building_AeroportITA",
+        "Building_AeroportLeurreITA",
+        "Building_BatimentAdministratifITA",
+        "Building_BatimentDepotITA",
+        "Building_CaserneITA",
+        "Building_DefenseATITA",
+        "Building_ExperimentalFactoryITA",
+        "Building_ExperimentalFactoryLeurreITA",
+        "Building_HeadquarterITA",
+        "Building_Headquarter_M03_Italie",
+        "Building_TruckFactoryITA",
+        "Building_UsineAutomoteurITA",
+        "Building_UsineAutomoteurLeurreITA",
+        "Building_Usine_CanonITA",
+        "Building_VehiculeFactoryITA"
+      ],
+      "Allemagne": [
+        "Building_AeroportGR",
+        "Building_AeroportLeurreGR",
+        "Building_BatimentAdministratifGR",
+        "Building_BatimentDepotGR",
+        "Building_CaserneGR",
+        "Building_CaserneLeurreGR",
+        "Building_DefenseMGNestGER",
+        "Building_DefenseMGNestGERLeurre",
+        "Building_DefenseSiegfriedGER",
+        "Building_DefenseSiegfriedGERLeurre",
+        "Building_ExperimentalFactoryGR",
+        "Building_ExperimentalFactoryLeurreGR",
+        "Building_HeadquarterGR",
+        "Building_TruckFactoryGR",
+        "Building_UsineAutomoteurGER",
+        "Building_UsineAutomoteurLeurreGER",
+        "Building_Usine_CanonGR",
+        "Building_Usine_CanonLeurreGR",
+        "Building_VehiculeFactoryGR",
+        "Building_VehiculeFactoryLeurreGR"
+      ],
+      "Angleterre": [
+        "Building_AeroportUK",
+        "Building_BatimentAdministratifUK",
+        "Building_BatimentDepotUK",
+        "Building_CaserneLeurreUK",
+        "Building_CaserneUK",
+        "Building_DefenseArtillerieDCAUK",
+        "Building_DefenseDCAMGATNestUK",
+        "Building_ExperimentalFactoryUK",
+        "Building_HeadquarterUK",
+        "Building_PosteAlerteAvanceUK",
+        "Building_TruckFactoryUK",
+        "Building_UsineAutomoteurUK",
+        "Building_Usine_CanonUK",
+        "Building_VehiculeFactoryUK"
+      ],
+      "USA": [
+        "Building_Aeroport",
+        "Building_AeroportLeurre",
+        "Building_BatimentAdministratif",
+        "Building_BatimentDepot",
+        "Building_Caserne",
+        "Building_DefenseAT",
+        "Building_DefenseDCA",
+        "Building_DefenseDCAMGATNest",
+        "Building_DefenseDCAMGNest",
+        "Building_ExperimentalFactory",
+        "Building_Headquarter",
+        "Building_TruckFactory",
+        "Building_UsineAutomoteur",
+        "Building_Usine_Canon",
+        "Building_VehiculeFactory"
+      ],
+      "URSS": [
+        "Building_AeroportURSS",
+        "Building_ArtillerieFieldLeger",
+        "Building_ArtillerieFieldLourd",
+        "Building_BatimentAdministratifURSS",
+        "Building_BatimentDepotURSS",
+        "Building_CaserneLeurreURSS",
+        "Building_CaserneURSS",
+        "Building_ExperimentalFactoryURSS",
+        "Building_HeadquarterURSS",
+        "Building_TruckFactoryURSS",
+        "Building_UsineAutomoteurURSS",
+        "Building_Usine_CanonURSS",
+        "Building_VehiculeFactoryLeurreURSS",
+        "Building_VehiculeFactoryURSS"
+      ],
+      "Japon": [
+        "Building_Aeroport_JAP",
+        "Building_BatimentAdministratifJAP",
+        "Building_BatimentDepot_JAP",
+        "Building_Caserne_JAP",
+        "Building_Def_Bunker_enterre_JAP",
+        "Building_Def_Position_DCA_JAP",
+        "Building_ExperimentalFactory_JAP",
+        "Building_HeadquarterJAP",
+        "Building_TruckFactoryJAP",
+        "Building_UsineAutomoteur_JAP",
+        "Building_Usine_Canon_JAP",
+        "Building_VehiculeFactory_JAP"
+      ]
+    },
+    "Avion": {
+      "France": [
+        "Avion_Amiot_143",
+        "Avion_Breguet_693_Guppy",
+        "Avion_Dewoitine_D520",
+        "Avion_MS_406",
+        "Avion_Potez_63_11",
+        "Avion_Potez_650_Para"
+      ],
+      "Italie": [
+        "Avion_CR_42_Falco",
+        "Avion_Caproni_314_Para",
+        "Avion_Macchi_MC_200",
+        "Avion_Macchi_MC_205V",
+        "Avion_Piaggio_P108",
+        "Avion_SM_79_Sparviero"
+      ],
+      "Allemagne": [
+        "Avion_Ar234",
+        "Avion_Ar234_PV",
+        "Avion_HE_111",
+        "Avion_HE_111_High_PV",
+        "Avion_HE_111_PV",
+        "Avion_Ju_52_Para",
+        "Avion_Junkers_87",
+        "Avion_Junkers_87_PV",
+        "Avion_Junkers_87_Rudel",
+        "Avion_ME109_GR",
+        "Avion_ME109_PV",
+        "Avion_ME262",
+        "Avion_Storch_GR"
+      ],
+      "Angleterre": [
+        "Avion_Avro_Anson",
+        "Avion_C47_Para_RU",
+        "Avion_Hawker_Hurricane",
+        "Avion_Hawker_Typhoon",
+        "Avion_Lancaster",
+        "Avion_Spitfire",
+        "Avion_Wellington",
+        "Avion_Wellington_PV"
+      ],
+      "USA": [
+        "Avion_B17",
+        "Avion_B17_Atomic_bomber",
+        "Avion_B17_High_PV",
+        "Avion_B17_PV",
+        "Avion_B25",
+        "Avion_B25_PV",
+        "Avion_C47_Para",
+        "Avion_C47_Para_PV",
+        "Avion_C47_Para_solo",
+        "Avion_Grasshopper",
+        "Avion_Junkers_87_GR",
+        "Avion_P40Warhawk",
+        "Avion_P47Thunderbolt",
+        "Avion_P47Thunderbolt_PV",
+        "Avion_P51_PV"
+      ],
+      "URSS": [
+        "Avion_C47_Para_URSS",
+        "Avion_IL2_Sturmovik",
+        "Avion_Nieman_R10",
+        "Avion_Petlyakov_Atomic_bomber",
+        "Avion_Petlyakov_Pe8",
+        "Avion_Polikarpov_I16",
+        "Avion_Yak_3"
+      ],
+      "Japon": [
+        "Avion_Aichi_Susie",
+        "Avion_Kyushu_Shinden",
+        "Avion_Mitsubishi_Ki_57",
+        "Avion_Mitsubishi_Ki_57_reco",
+        "Avion_Mitsubishi_Zero",
+        "Avion_Nakajima_Renzan",
+        "Avion_Yokosuka_Judy"
+      ]
+    }
+  },
+  "airport_classes": [
+    "Building_Aeroport",
+    "Building_AeroportFR",
+    "Building_AeroportGR",
+    "Building_AeroportITA",
+    "Building_AeroportLeurre",
+    "Building_AeroportLeurreGR",
+    "Building_AeroportLeurreITA",
+    "Building_AeroportUK",
+    "Building_AeroportURSS",
+    "Building_Aeroport_JAP"
+  ],
+  "classes": {
+    "Avion_Aichi_Susie": {
+      "family": "Avion",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Avion_Amiot_143": {
+      "family": "Avion",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 12,
+      "sources": [
+        "scripting_challenge",
+        "scripting_narvik"
+      ]
+    },
+    "Avion_Ar234": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 28,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Avion_Ar234_PV": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 72,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Avion_Avro_Anson": {
+      "family": "Avion",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 19,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Avion_B17": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 43,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_B17_Atomic_bomber": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 22,
+      "sources": [
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_B17_High_PV": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Avion_B17_PV": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 29,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Avion_B25": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 36,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_B25_PV": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 118,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Avion_Breguet_693_Guppy": {
+      "family": "Avion",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_narvik"
+      ]
+    },
+    "Avion_C47_Para": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 38,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Avion_C47_Para_PV": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 39,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Avion_C47_Para_RU": {
+      "family": "Avion",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 52,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Avion_C47_Para_URSS": {
+      "family": "Avion",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 83,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Avion_C47_Para_solo": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_chapter2"
+      ]
+    },
+    "Avion_CR_42_Falco": {
+      "family": "Avion",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Avion_Caproni_314_Para": {
+      "family": "Avion",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_challenge",
+        "scripting_coop"
+      ]
+    },
+    "Avion_Dewoitine_D520": {
+      "family": "Avion",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter4",
+        "scripting_narvik"
+      ]
+    },
+    "Avion_Grasshopper": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 37,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Avion_HE_111": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 46,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Avion_HE_111_High_PV": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter3"
+      ]
+    },
+    "Avion_HE_111_PV": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter3"
+      ]
+    },
+    "Avion_Hawker_Hurricane": {
+      "family": "Avion",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 35,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Avion_Hawker_Typhoon": {
+      "family": "Avion",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Avion_IL2_Sturmovik": {
+      "family": "Avion",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 24,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_Ju_52_Para": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 74,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Avion_Junkers_87": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 43,
+      "sources": [
+        "scripting_3v3_demointel",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Avion_Junkers_87_GR": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 33,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_Junkers_87_PV": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 18,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter3"
+      ]
+    },
+    "Avion_Junkers_87_Rudel": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 13,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik"
+      ]
+    },
+    "Avion_Kyushu_Shinden": {
+      "family": "Avion",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Avion_Lancaster": {
+      "family": "Avion",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 21,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Avion_ME109_GR": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 109,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coop"
+      ]
+    },
+    "Avion_ME109_PV": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 80,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Avion_ME262": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 34,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Avion_MS_406": {
+      "family": "Avion",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_narvik"
+      ]
+    },
+    "Avion_Macchi_MC_200": {
+      "family": "Avion",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Avion_Macchi_MC_205V": {
+      "family": "Avion",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Avion_Mitsubishi_Ki_57": {
+      "family": "Avion",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_challengeorbraves"
+      ]
+    },
+    "Avion_Mitsubishi_Ki_57_reco": {
+      "family": "Avion",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_challengeorbraves"
+      ]
+    },
+    "Avion_Mitsubishi_Zero": {
+      "family": "Avion",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves"
+      ]
+    },
+    "Avion_Nakajima_Renzan": {
+      "family": "Avion",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Avion_Nieman_R10": {
+      "family": "Avion",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_P40Warhawk": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 76,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter4",
+        "scripting_testauto"
+      ]
+    },
+    "Avion_P47Thunderbolt": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 64,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_P47Thunderbolt_PV": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 52,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_testauto"
+      ]
+    },
+    "Avion_P51_PV": {
+      "family": "Avion",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 20,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Avion_Petlyakov_Atomic_bomber": {
+      "family": "Avion",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 10,
+      "sources": [
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_Petlyakov_Pe8": {
+      "family": "Avion",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 39,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_Piaggio_P108": {
+      "family": "Avion",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter3"
+      ]
+    },
+    "Avion_Polikarpov_I16": {
+      "family": "Avion",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_Potez_63_11": {
+      "family": "Avion",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter4",
+        "scripting_narvik"
+      ]
+    },
+    "Avion_Potez_650_Para": {
+      "family": "Avion",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1"
+      ]
+    },
+    "Avion_SM_79_Sparviero": {
+      "family": "Avion",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Avion_Spitfire": {
+      "family": "Avion",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 35,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Avion_Storch_GR": {
+      "family": "Avion",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 30,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Avion_Wellington": {
+      "family": "Avion",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 29,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Avion_Wellington_PV": {
+      "family": "Avion",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 12,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Avion_Yak_3": {
+      "family": "Avion",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 45,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coldwar"
+      ]
+    },
+    "Avion_Yokosuka_Judy": {
+      "family": "Avion",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 9,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_Aeroport": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 38,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Building_AeroportFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_narvik"
+      ]
+    },
+    "Building_AeroportGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_AeroportITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_challenge",
+        "scripting_coop"
+      ]
+    },
+    "Building_AeroportLeurre": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_AeroportLeurreGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Building_AeroportLeurreITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Building_AeroportUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 21,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_AeroportURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Building_Aeroport_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_ArtillerieFieldLeger": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 23,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar"
+      ]
+    },
+    "Building_ArtillerieFieldLourd": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 22,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_BatimentAdministratif": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 33,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scriptingplayable"
+      ]
+    },
+    "Building_BatimentAdministratifFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scriptingplayable"
+      ]
+    },
+    "Building_BatimentAdministratifGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_coop",
+        "scriptingplayable"
+      ]
+    },
+    "Building_BatimentAdministratifITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting_challenge",
+        "scriptingplayable"
+      ]
+    },
+    "Building_BatimentAdministratifJAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves"
+      ]
+    },
+    "Building_BatimentAdministratifUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scriptingplayable"
+      ]
+    },
+    "Building_BatimentAdministratifURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar",
+        "scriptingplayable"
+      ]
+    },
+    "Building_BatimentDepot": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 88,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Building_BatimentDepotFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 23,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_BatimentDepotGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 102,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_BatimentDepotITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 32,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Building_BatimentDepotUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_BatimentDepotURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 45,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Building_BatimentDepot_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_Caserne": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 41,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Building_CaserneFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_CaserneGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 21,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_CaserneITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_coop"
+      ]
+    },
+    "Building_CaserneLeurreGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Building_CaserneLeurreUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter2"
+      ]
+    },
+    "Building_CaserneLeurreURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter3"
+      ]
+    },
+    "Building_CaserneUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_CaserneURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 9,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_Caserne_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_Def_Bunker_enterre_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_banzai"
+      ]
+    },
+    "Building_Def_Position_DCA_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_banzai"
+      ]
+    },
+    "Building_DefenseAT": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 23,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_DefenseATITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coop"
+      ]
+    },
+    "Building_DefenseArtillerieDCAUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_DefenseDCA": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Building_DefenseDCAMGATNest": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_DefenseDCAMGATNestUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 21,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Building_DefenseDCAMGNest": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 27,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Building_DefenseLegereFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 16,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter4",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_DefenseMGNestGER": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 66,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_DefenseMGNestGERLeurre": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Building_DefenseMaginotFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 13,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_DefenseSiegfriedGER": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 81,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_DefenseSiegfriedGERLeurre": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Building_ExperimentalFactory": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 22,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Building_ExperimentalFactoryFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_ExperimentalFactoryGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 15,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_ExperimentalFactoryITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_challenge",
+        "scripting_coop"
+      ]
+    },
+    "Building_ExperimentalFactoryLeurreGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Building_ExperimentalFactoryLeurreITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Building_ExperimentalFactoryUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 12,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_ExperimentalFactoryURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 10,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_ExperimentalFactory_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves"
+      ]
+    },
+    "Building_Headquarter": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 36,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scriptingplayable"
+      ]
+    },
+    "Building_HeadquarterFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2"
+      ]
+    },
+    "Building_HeadquarterGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scriptingplayable"
+      ]
+    },
+    "Building_HeadquarterITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Building_HeadquarterJAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves"
+      ]
+    },
+    "Building_HeadquarterUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_HeadquarterURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 15,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_Headquarter_M03_Italie": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting",
+        "scripting_chapter1"
+      ]
+    },
+    "Building_PosteAlerteAvanceUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 16,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop",
+        "scripting_narvik"
+      ]
+    },
+    "Building_TruckFactory": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Building_TruckFactoryFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_TruckFactoryGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_TruckFactoryITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Building_TruckFactoryJAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_banzai"
+      ]
+    },
+    "Building_TruckFactoryUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_TruckFactoryURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 10,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3"
+      ]
+    },
+    "Building_UsineAutomoteur": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 33,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Building_UsineAutomoteurFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_UsineAutomoteurGER": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_UsineAutomoteurITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_UsineAutomoteurLeurreGER": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Building_UsineAutomoteurLeurreITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Building_UsineAutomoteurUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_UsineAutomoteurURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 15,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Building_UsineAutomoteur_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_banzai"
+      ]
+    },
+    "Building_Usine_Canon": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 24,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_Usine_CanonFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_Usine_CanonGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 18,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_Usine_CanonITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Building_Usine_CanonLeurreGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Building_Usine_CanonUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 12,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_Usine_CanonURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 18,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Building_Usine_Canon_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_banzai"
+      ]
+    },
+    "Building_VehiculeFactory": {
+      "family": "Building",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 35,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_VehiculeFactoryFR": {
+      "family": "Building",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 9,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_VehiculeFactoryGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter4"
+      ]
+    },
+    "Building_VehiculeFactoryITA": {
+      "family": "Building",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_VehiculeFactoryLeurreGR": {
+      "family": "Building",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Building_VehiculeFactoryLeurreURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter3"
+      ]
+    },
+    "Building_VehiculeFactoryUK": {
+      "family": "Building",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 25,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Building_VehiculeFactoryURSS": {
+      "family": "Building",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Building_VehiculeFactory_JAP": {
+      "family": "Building",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_140mm_5_5_Inch_BL_Mk_III_L_30": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_150mm_sFH_18_L_30": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 54,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_152mm_howitzer": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 40,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_155mm_GPF": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter3",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_155mm_M1_Long_Tom_L_45": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 40,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_203mm_howitzer": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 45,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_20mm_Breda": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_20mm_FlaK_30_L_112": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 79,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_210mm_Morser": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 39,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_210mm_Obice_da_M1935_L_23_8": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_25mm_CA_mle_1938": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 13,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_37mm_AA": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 56,
+      "sources": [
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_40mm_M1_Bofors_L_60": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 41,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Unit_40mm_M1_Bofors_L_60_UK": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 29,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_45mm_L46": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 22,
+      "sources": [
+        "scripting_challenge_3945",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_47mm_AT": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_banzai",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_75mm_Canonne_da_75_27": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge"
+      ]
+    },
+    "Unit_75mm_Type88": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_banzai",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_75mm_le_FK_38_L_34": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 29,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_75mm_mle_1897": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 12,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_76mm_ZIS_3": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 27,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_87mm_QF_25_pounder": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_88mm_FlaK_36L_56": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 42,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_88mm_Flak": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_ARL_40": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_ARL_44": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Archer": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 28,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Autoblinda_40": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Autoblinda_43": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Unit_B1_Bis": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 28,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_BA_11": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 44,
+      "sources": [
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Battleship": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Breda_Dovunque_90_53": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Cannone_da_47_32_M35": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge"
+      ]
+    },
+    "Unit_Carro_Armato_M11_39": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 40,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Carro_Armato_M13_40": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 32,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Carro_Armato_M15_42": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 20,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Carro_Armato_P_26_40": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Unit_Carro_Veloce": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 13,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter2"
+      ]
+    },
+    "Unit_Char_DCA_M4_SKINK": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Churchill_A22": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 16,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Churchill_AVRE": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 18,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Coventry_armoured_car": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Cruiser_A13": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 29,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Cruiser_A27_Cromwell": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 30,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter4",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Daimler_AC_MK_1": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Destroyer": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_FCM_F1": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 12,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_GER_37mm_Pak36": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 20,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_Giretsu_Kuteitai": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves"
+      ]
+    },
+    "Unit_Heavy_Cruiser": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Hotchkiss_H_39": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 38,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_ostfriesland",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_IS2": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 43,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_IS3": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 41,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_Jagdpanther": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 34,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Unit_KV1": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 32,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Katyusha": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_KingTigerAS": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 15,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Konoe_Shidan": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 10,
+      "sources": [
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Kubelwagen": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 49,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_Kurogane": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_L6_40_Lanciafiamme": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 9,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_LCVP": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_LST": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Laffly_W15_TCC": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 13,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_Long_Tom_nuke": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 12,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Lorraine_37_L": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 9,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3"
+      ]
+    },
+    "Unit_M10_Wolverine": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 52,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_M16_GMC": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 32,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_M19_GMC_Twin_40mm": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 34,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_M1_57mm_L_50": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 43,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_M1_57mm_L_50_SOLO": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter4",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_M24_Chaffee": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 53,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_M26_Pershing": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 54,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_M36_Jackson": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 33,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_M3A1_Stuart": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 53,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_M3_Lee": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 38,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_M40_GMC": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 30,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coop"
+      ]
+    },
+    "Unit_M4_Sherman": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 139,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_M5_76mm_L_50": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 49,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_M7_Priest": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 42,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_M8_Greyhound": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 50,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_M_15_AA_Tank": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_Marder_II": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 62,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Matilda": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Maus": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 31,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_OI_Heavy_Tank": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_banzai",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_PZIV_Wirbelwind": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 46,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_PaK_40_75mm_L_48": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 51,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_Panhard_178": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 16,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Panhard_EBR_75": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3"
+      ]
+    },
+    "Unit_Panzer_III_J": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 143,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Panzer_IV_G": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 166,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Panzer_VI_B_Tigre_II": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 37,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Panzer_VI_Tigre": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 57,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Panzer_V_G_Panther": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 51,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Pionnier_Genie": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_QF_17_pounder_76mm": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 15,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_QF_2_pounder_40_mm": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_SA_25mm_L_1934": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_SA_47mm_1937": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 16,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_SU_100": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 25,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_SU_122": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 48,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_SU_85": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 12,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3"
+      ]
+    },
+    "Unit_Sau_40": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_SdKfz_234_2_Puma": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 43,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_coldwar",
+        "scripting_coop"
+      ]
+    },
+    "Unit_SdkFz_222": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 81,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Sdkfz251": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 22,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Semovente_M_40_75_18": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Semovente_M_43_105_25": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Unit_Semovente_M_90_53": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 9,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Sexton": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 9,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Sherman_Calliope": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 36,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_Sherman_Firefly": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 14,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Sherman_lance_flammes": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_Sniper": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 17,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Soldat_Allemand_Antichar": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 7,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Soldat_Allemand_Leger": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 142,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Soldat_Allemand_Leger_SOLO": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 34,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter4",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Soldat_Allemand_Lourd": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 73,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coop",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Soldat_Allemand_Para": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 43,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Soldat_FR_Leger": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 31,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Soldat_FR_Lourd": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 39,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Soldat_FR_Para": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3"
+      ]
+    },
+    "Unit_Soldat_ITA_Leger": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 37,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Soldat_ITA_Leger_SOLO": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Soldat_ITA_Lourd": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 13,
+      "sources": [
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Soldat_ITA_Para": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Unit_Soldat_ITA_Recon": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 11,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2"
+      ]
+    },
+    "Unit_Soldat_ITA_Recon_SOLO": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Soldat_Russe_Leger": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 61,
+      "sources": [
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Soldat_Russe_Lourd": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 75,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_Soldat_Russe_Para": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 27,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_Soldat_UK_Leger": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 32,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_narvik",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Soldat_UK_Lourd": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 22,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Soldat_UK_Para": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 44,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter4",
+        "scripting_coop",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Soldat_US_Leger": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 157,
+      "sources": [
+        "scripting",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Soldat_US_Leger_SOLO": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 16,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Soldat_US_Lourd": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 50,
+      "sources": [
+        "scripting",
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_Soldat_US_Para": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 66,
+      "sources": [
+        "scripting",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_Somua_S_35": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 26,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_ostfriesland",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_Stug_III_B": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 94,
+      "sources": [
+        "scripting",
+        "scripting_bh",
+        "scripting_challenge",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coop"
+      ]
+    },
+    "Unit_SturmTiger": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 24,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_coop"
+      ]
+    },
+    "Unit_Super_Pershing": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 20,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_Super_Pershing_DEMO": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_T26": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 30,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_challenge_3945",
+        "scripting_chapter1",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_T28": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 13,
+      "sources": [
+        "scripting",
+        "scripting_challengeorbraves",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_T34": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 31,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_coldwar"
+      ]
+    },
+    "Unit_TaSe_20mm": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_banzai",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Teishin_Shudan": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves"
+      ]
+    },
+    "Unit_Tourelle_AT_ITA": {
+      "family": "Unit",
+      "nation": "Italie",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_bh"
+      ]
+    },
+    "Unit_Tourelle_AT_UK": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_Tourelle_AT_US": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Unit_Tourelle_Artillerie_UK": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_Tourelle_DCA_US": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Unit_Tourelle_Light_FR": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_bh",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_Tourelle_MG_GER": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter1"
+      ]
+    },
+    "Unit_Tourelle_MG_US": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_chapter1"
+      ]
+    },
+    "Unit_Tourelle_Maginot_FR": {
+      "family": "Unit",
+      "nation": "France",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_narvik"
+      ]
+    },
+    "Unit_Tourelle_Outpost_UK": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_narvik"
+      ]
+    },
+    "Unit_Tourelle_Siegfried_GER": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_bh",
+        "scripting_chapter1"
+      ]
+    },
+    "Unit_TransportCanon": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Unit_TransportHQ": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting_challenge",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_TransportSoldier": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Unit_TransportSoldier_GER": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_challenge"
+      ]
+    },
+    "Unit_Type1_AOV": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Type2_75mm_KuSe": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 2,
+      "sources": [
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Type2_HoRi": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Type3_ChiNu": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Type4_HaTo": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Type5_47mm_HoRu": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 1,
+      "sources": [
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Type5_ChiRi": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 4,
+      "sources": [
+        "scripting_banzai",
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Type95_HaGo": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 5,
+      "sources": [
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Type97_ChiHa": {
+      "family": "Unit",
+      "nation": "Japon",
+      "nation_source": "everything.cpp",
+      "count": 6,
+      "sources": [
+        "scripting_challengeorbraves",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Unite_Vide_B": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 47,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_testauto"
+      ]
+    },
+    "Unit_V2_launcher": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_V2_nuclear_launcher": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 3,
+      "sources": [
+        "scripting_chapter3"
+      ]
+    },
+    "Unit_Vickers": {
+      "family": "Unit",
+      "nation": "Angleterre",
+      "nation_source": "everything.cpp",
+      "count": 29,
+      "sources": [
+        "scripting_banzai",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4",
+        "scripting_ostfriesland"
+      ]
+    },
+    "Unit_Willis_MB": {
+      "family": "Unit",
+      "nation": "USA",
+      "nation_source": "everything.cpp",
+      "count": 43,
+      "sources": [
+        "scripting",
+        "scripting_challengeorbraves",
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter3",
+        "scripting_chapter4"
+      ]
+    },
+    "Unit_Wurfrahmen_PV": {
+      "family": "Unit",
+      "nation": "Allemagne",
+      "nation_source": "everything.cpp",
+      "count": 8,
+      "sources": [
+        "scripting",
+        "scripting_chapter1"
+      ]
+    },
+    "Unit_ZSU_37": {
+      "family": "Unit",
+      "nation": "URSS",
+      "nation_source": "everything.cpp",
+      "count": 45,
+      "sources": [
+        "scripting_chapter1",
+        "scripting_chapter2",
+        "scripting_chapter2-ps3",
+        "scripting_chapter3",
+        "scripting_coldwar"
+      ]
+    }
+  },
+  "nation_coverage": {
+    "authoritative_everything_cpp": 345,
+    "name_heuristic_fallback": 0
+  }
+}

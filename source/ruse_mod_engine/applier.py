@@ -15,7 +15,7 @@ Usage (Python API)
     apply_mods(
         mod_paths=["mods/balance.rmod", "mods/cheat.rmod"],
         game_data_dir="C:/Steam/steamapps/common/R.U.S.E/Data",
-        backup=True,   # back up each .dat before modifying
+        backup=False,  # RETIRED: the clean per-build set under output/backups/ is the backup
     )
 
 How it works
@@ -108,7 +108,7 @@ def apply_mod(
     mod_path: str,
     game_data_dir: str,
     *,
-    backup: bool = True,
+    backup: bool = False,   # RETIRED — see the note on `backup` below; passing True raises
     dry_run: bool = False,
     output_dir: Optional[str] = None,
     game_version: str = "compat",
@@ -128,6 +128,13 @@ def apply_mod(
     ``progress`` (optional): a callable ``progress(dat_rel)`` invoked just before each .dat is opened —
     the slow step for large data files.  Lets the caller show live "preparing <dat>…" feedback.
     """
+    if backup:
+        raise ValueError(
+            "backup=True is retired. The clean per-build dat set under output/backups/v<buildid>/ IS the "
+            "backup: it is made once, never written to again, and is what a rollback restores from. The "
+            "old per-deploy <dat>.bak could not work anyway - edata's repack used that exact filename for "
+            "its own rollback copy and deleted it on success, so the backup was destroyed by the very "
+            "deploy it was meant to protect.")
     mod = mod_format.load(mod_path)
     is_compat_mod = Path(mod_path).name.lower().endswith(".compat.rmod")
     # Cross-build deploy: if the mod was made for a DIFFERENT build than we're deploying onto, pre-translate
@@ -149,7 +156,7 @@ def apply_mods(
     mod_paths: List[str],
     game_data_dir: str,
     *,
-    backup: bool = True,
+    backup: bool = False,   # RETIRED — see the note on `backup` below; passing True raises
     dry_run: bool = False,
     output_dir: Optional[str] = None,
     game_version: str = "compat",
@@ -291,6 +298,21 @@ class ApplyResult:
         self.conflicts.append(f)
         log.info("[%s] conflict: %s", self.mod_name, f)
 
+    def claim(self, deploy_state, key, instance_id, prop) -> None:
+        """Stake this mod's claim on one addressable thing, flagging an earlier mod that had it.
+
+        The single place a "who touched this last" claim is recorded, so every kind of edit is
+        covered by the same rule instead of only NDF property patches.  `key` must identify the
+        thing an edit lands on precisely enough that two mods colliding produce the SAME key: an
+        instance+property, a .dic key, a whole archive entry, an SDB layer bit.  Last-writer-wins
+        stays the behaviour — this only makes the superseded edit visible."""
+        if deploy_state is None:
+            return
+        prev = deploy_state.get(key)
+        if prev is not None and prev != self.mod_name:
+            self.flag_conflict(instance_id, prop, prev)
+        deploy_state[key] = self.mod_name
+
     def needs_repair(self) -> bool:
         return len(self.requires_repair) > 0
 
@@ -362,8 +384,6 @@ def _apply(
                 copied_dats.add(dat_rel)
         else:
             work_dat_path = src_dat_path
-            if not dry_run and backup:
-                _make_backup(work_dat_path)
 
         log.info("Opening %s", work_dat_path)
 
@@ -513,7 +533,7 @@ def _apply(
         # paths BEFORE applying instance changes, so TransRef values (stored as portable
         # paths) resolve to a real ordinal. Removals + the dense renumber happen in phase
         # B (after patches) so re-pointed instances are seen before an import is dropped.
-        if _apply_ref_adds(ndf, patch_group, result):
+        if _apply_ref_adds(ndf, patch_group, result, deploy_state):
             changed = True
 
         # Pass 1: creates only — populate create_map so local_id refs resolve in patches.
@@ -558,9 +578,23 @@ def _apply(
             if n > 0:
                 changed = True
                 result.changes_applied += n
+                # Two mods each ADDING units is fine and is the point of stacking them — but two mods
+                # adding a unit under the SAME name is not: both instances end up in the table and the
+                # name/export collides, which is a broken game rather than a superseded stat.  Claim the
+                # name so the second mod's deploy says so.
+                created_name = _create_identity(change)
+                if created_name:
+                    result.claim(deploy_state,
+                                 (result._ctx_dat, result._ctx_ndf, change.table, created_name),
+                                 created_name, "(new instance)")
                 if deferred:
                     inst_idx = create_map.get(change.local_id, (len(ndf.instances) - 1, 0))[0]
                     deferred_objref.append((ndf.instances[inst_idx], change.table, deferred))
+
+        # Exports go on here, not in phase A: an export ordinal is the INSTANCE INDEX of the object
+        # exported, so the instance has to exist and its index be known before the export can name it.
+        if _apply_export_adds(ndf, patch_group, result, create_map, deploy_state):
+            changed = True
 
         # Pass 2: patches, deletes, etc. (create_map is now fully populated).
         # Then apply whole-instance DELETES last, in DESCENDING index order, regardless of the order they
@@ -650,8 +684,6 @@ def _apply(
                 copied_dats.add(dat_rel)
         else:
             work_dat_path = src_dat_path
-            if not dry_run and backup:
-                _make_backup(work_dat_path)
 
         if progress:
             progress(dat_rel)          # about to open this .dat — the slow step for large files
@@ -674,7 +706,17 @@ def _apply(
         to_replace: dict = {}   # {canonical_path: bytes}
         to_add: dict = {}       # {canonical_path: bytes}
 
+        # Split the group: entries of the .dat itself, and files addressed INSIDE a nested
+        # archive (.ipk/.ppk/.mpk/.apk/.gpk).  Direct entries are resolved first so a container
+        # edit layers on top of a whole-container replacement in the same mod rather than being
+        # overwritten by it.
+        nested: dict = {}       # {container path as written: [ModFilePatch, ...]}
+        direct = []
+        rebuilt_containers: set = set()   # outer entries written as a container rebuild, not a patch
         for fp in file_group.files:
+            (nested.setdefault(fp.container, []) if fp.container else direct).append(fp)
+
+        for fp in direct:
             fp_path = fp.path
             if translate_dat_paths:
                 fp_path = path_map_mod.translate_datamap_path(fp_path)
@@ -695,6 +737,97 @@ def _apply(
                 # File doesn't exist in dat — will be added
                 to_add[path_bs] = fp.data
 
+            # A file patch replaces a WHOLE archive entry, so two mods patching the same entry don't
+            # merge — the second silently discards the first entirely.  That is a much bigger loss than
+            # an overwritten property, and it used to pass unreported: conflict detection only ever
+            # looked at NDF property patches.  A new-units mod is largely file/loc patches, so this is
+            # the case that actually matters now.
+            resolved = actual_path or path_bs
+            leaf = resolved.replace("\\", "/").split("/")[-1]
+            result.set_ndf_context(file_group.dat, resolved)
+            result.claim(deploy_state, (dat_rel, "file", resolved.replace("/", "\\").lower()),
+                         leaf, "(whole file)")
+            # Replacing a whole NESTED archive also throws away any surgical edit another mod made
+            # to a file inside it.  That pair keys differently by design (per-container vs per-file),
+            # so it needs its own cross-check or the most damaging collision of the lot stays silent.
+            ckey = resolved.replace("\\", "/").lower()
+            if ckey.endswith(edata_mod.CONTAINER_EXTS):
+                prev = deploy_state.get((dat_rel, "container-any", ckey))
+                if prev is not None and prev != result.mod_name:
+                    result.flag_conflict(leaf, "(replaces the whole archive)", prev)
+                deploy_state[(dat_rel, "container-whole", ckey)] = result.mod_name
+
+        # Each container is rebuilt ONCE, from all of this mod's patches to it, then handed to the
+        # outer batch as an ordinary entry replacement.  Grouping is the point: rebuilding per patch
+        # would make two edits to one container clobber each other, which is exactly what addressing
+        # inside the container exists to stop.
+        for container_path, patches in nested.items():
+            cpath_bs = container_path.replace("/", "\\")
+            actual_container = None
+            for cand in (cpath_bs, container_path):
+                if edat.get(cand) is not None:
+                    actual_container = cand
+                    break
+            if actual_container is None and game_version == "public":
+                actual_container = _find_dat_entry_by_suffix(edat, cpath_bs)
+            if actual_container is None:
+                result.error(f"file_patch: nested archive not found in {work_dat_path.name}: "
+                             f"{container_path}")
+                continue
+
+            blob = to_replace.get(actual_container) or edat.get(actual_container)
+            if not edata_mod.is_container(blob):
+                result.error(f"file_patch: {container_path} is not a nested archive — "
+                             f"cannot address files inside it")
+                continue
+
+            try:
+                inner, inner_tmp = edata_mod.open_container(blob)
+            except Exception as e:
+                result.error(f"file_patch: cannot read nested archive {container_path}: {e}")
+                continue
+            inner_replace: dict = {}
+            inner_add: dict = {}
+            try:
+                for fp in patches:
+                    canon = edata_mod.resolve_container_path(inner, fp.path)
+                    if canon is not None:
+                        inner_replace[canon] = fp.data
+                    else:
+                        inner_add[fp.path.replace("/", "\\")] = fp.data
+                    leaf = fp.path.replace("\\", "/").split("/")[-1]
+                    result.set_ndf_context(file_group.dat, container_path + "!" + fp.path)
+                    # Keyed on the container AND the inner path, so two mods editing DIFFERENT files
+                    # in one container compose silently and only a real same-file collision is
+                    # reported.  Before this addressing existed they always collided.
+                    result.claim(deploy_state,
+                                 (dat_rel, "container", container_path.lower(), fp.path.lower()),
+                                 container_path.split("/")[-1] + " -> " + leaf,
+                                 "(file in archive)")
+                    # The other half of the cross-check above: an edit inside a container that an
+                    # earlier mod already replaced wholesale is an edit that will not survive.
+                    ckey = container_path.lower()
+                    prev = deploy_state.get((dat_rel, "container-whole", ckey))
+                    if prev is not None and prev != result.mod_name:
+                        result.flag_conflict(container_path.split("/")[-1] + " -> " + leaf,
+                                             "(archive was replaced whole)", prev)
+                    deploy_state[(dat_rel, "container-any", ckey)] = result.mod_name
+            finally:
+                try:
+                    os.remove(inner_tmp)
+                except OSError:
+                    pass
+
+            try:
+                to_replace[actual_container] = edata_mod.update_container(
+                    blob, inner_replace, inner_add)
+                rebuilt_containers.add(actual_container)
+                result.changes_applied += len(inner_replace) + len(inner_add)
+                log.info("file_patch: %d change(s) inside %s",
+                         len(inner_replace) + len(inner_add), container_path)
+            except Exception as e:
+                result.error(f"file_patch: rebuilding nested archive {container_path} failed: {e}")
+
         if not to_replace and not to_add:
             continue
 
@@ -710,7 +843,9 @@ def _apply(
 
             log.info("file_patch: applied %d replace(s) and %d add(s) to %s",
                      len(to_replace), len(to_add), work_dat_path.name)
-            result.changes_applied += len(to_replace) + len(to_add)
+            # A rebuilt container is one outer entry, but its inner edits were already counted —
+            # counting the entry too would report a change the mod never described.
+            result.changes_applied += (len(to_replace) - len(rebuilt_containers)) + len(to_add)
         except Exception as e:
             result.error(f"file_patch: batch update failed for {work_dat_path.name}: {e}")
 
@@ -741,8 +876,6 @@ def _apply(
                 copied_dats.add(dat_rel)
         else:
             work_dat_path = src_dat_path
-            if not dry_run and backup:
-                _make_backup(work_dat_path)
         if progress:
             progress(dat_rel)          # about to open this .dat — the slow step for large files
         try:
@@ -785,6 +918,13 @@ def _apply(
                     applied += 1
                 except Exception as ex:
                     result.warn(f"loc_patch: {e.key} in {lg.dic.split('/')[-1]}: {ex}")
+                    continue
+                # Two mods renaming the same unit write the same LocHash in the same dictionary; the
+                # second wins and the first's name vanishes with no sign of it.  Same rule as a
+                # property patch, so say so the same way.
+                result.set_ndf_context(lg.dat, lg.dic)
+                result.claim(deploy_state, (dat_rel, "loc", actual_path.lower(), e.key),
+                             lg.dic.split("/")[-1], e.key)
             to_replace[actual_path] = blob
             result.changes_applied += applied
 
@@ -826,8 +966,6 @@ def _apply(
                 copied_dats.add(dat_rel)
         else:
             work_dat_path = src_dat_path
-            if not dry_run and backup:
-                _make_backup(work_dat_path)
         if progress:
             progress(dat_rel)          # about to open this .dat — the slow step for large files
         try:
@@ -919,8 +1057,6 @@ def _apply(
                 copied_dats.add(dat_rel)
         else:
             work_dat_path = src_dat_path
-            if not dry_run and backup:
-                _make_backup(work_dat_path)
         if progress:
             progress(dat_rel)          # about to open this .dat — the slow step for large files
         try:
@@ -1280,12 +1416,9 @@ def _action_patch(
                 log.info("%s", rec)
                 # Conflict detection: did an EARLIER mod in this deploy already set this instance+prop?
                 # Last-writer-wins is intended, but tell the user the earlier edit was superseded.
-                if deploy_state is not None:
-                    tkey = (result._ctx_dat, result._ctx_ndf, identity, prop_name)
-                    prev = deploy_state.get(tkey)
-                    if prev is not None and prev != result.mod_name:
-                        result.flag_conflict(instance_id, prop_name, prev)
-                    deploy_state[tkey] = result.mod_name
+                result.claim(deploy_state,
+                             (result._ctx_dat, result._ctx_ndf, identity, prop_name),
+                             instance_id, prop_name)
         affected += 1
 
     return affected
@@ -1401,6 +1534,27 @@ def _action_delete_props(
         affected += 1
 
     return affected
+
+
+#: Properties that NAME an instance, best first — the same list `_instance_label` reads back off a
+#: live instance, but read off the rmod's own `set` block, since a create has no instance to look at
+#: until it exists.
+_IDENTITY_PROPS = ("ClassNameForDebug", "AmmunitionId", "_ShortDatabaseName")
+
+
+def _create_identity(change: mod_format.ModChange) -> str:
+    """The name a `create` gives its new instance, or "" when it names it nothing.
+
+    Deliberately does NOT fall back to `local_id`: that is scratch naming private to one rmod, and
+    two mods both using an obvious id like "unit1" for unrelated units would then be reported as
+    colliding.  An unnamed create is simply not something another mod can collide with by name, and
+    silence is the right answer there — two mods each adding their own units is the point of stacking.
+    """
+    for prop in _IDENTITY_PROPS:
+        val = (change.set_props or {}).get(prop)
+        if val is not None and getattr(val, "value", None) not in (None, ""):
+            return str(val.value)
+    return ""
 
 
 def _action_create(
@@ -1540,7 +1694,7 @@ def _make_ndf_value(
 
     ObjRef class selection (target-coercion / portable class_name / stored class) is centralised in
     _objref_value — see it for the precedence and why (a stale, build-specific class index otherwise makes
-    the engine construct the WRONG type and crash; see RE_DATA/EVIDENCE_DOSSIER.md)."""
+    the engine construct the WRONG type and crash; see our internal RE notes)."""
     # Resolve symbolic reference to a created instance
     if val_def.type_name == "$ref":
         if create_map is None or val_def.value not in create_map:
@@ -1573,7 +1727,7 @@ def _make_ndf_value(
         # PROVEN invariant of clean R.U.S.E. data: 0 declared!=actual across 240k+ ObjRefs on both builds
         # (compat-2 & public).  A stale stored class (a compat index, or a class the source mod captured
         # wrong) makes the engine construct the WRONG type over the target's memory and crash on load
-        # (proven root cause: class 246 -> TBoneAlgorithmBase half-built AddRef; see RE_DATA dossier).
+        # (proven root cause: class 246 -> TBoneAlgorithmBase half-built AddRef; see our internal RE notes).
         # Derive the class from the resolved target — identical to the stable_ref path — so the output
         # always satisfies the invariant.  No-op on valid refs (stored already == target); build-agnostic.
         return _objref_value(ndf, idx, val_def.value.get("class"), val_def.value.get("class_name"))
@@ -1715,7 +1869,7 @@ def _resolve_string_refs(
                 # as an IMPR IMPORT ordinal — so this only points correctly when the TRAN index coincidentally
                 # equals the intended import's ordinal on the ORIGIN build; it mis-points after migration/
                 # reconversion on another build. Re-convert the rmod on its origin build to get a portable
-                # '$/...' path. (See RE_DATA/EVIDENCE_DOSSIER.md Evidence #1.) Behaviour unchanged; flagged.
+                # '$/...' path. (See our internal RE notes.) Behaviour unchanged; flagged.
                 log.warning("legacy bare-name TransRef %r resolved via TRAN index — migration-unsafe; "
                             "re-convert this rmod on its origin build for a portable '$/' import path", ref)
                 ndf_val.raw = (marker, ndf.ensure_trans(ref))
@@ -1747,7 +1901,7 @@ def _remove_ref_paths(ndf, kind: str, paths) -> None:
         ndf.export_list = tree
 
 
-def _apply_ref_adds(ndf, patch_group, result) -> bool:
+def _apply_ref_adds(ndf, patch_group, result, deploy_state=None) -> bool:
     """Phase A of the surgical IMPR/EXPR merge — run BEFORE instance patches.
 
     Only *adds* imports/exports (appends new ordinals) so that TransRef values in the
@@ -1756,13 +1910,59 @@ def _apply_ref_adds(ndf, patch_group, result) -> bool:
     patches have re-pointed any TransRef away from a to-be-removed import — otherwise a
     still-referenced import would be dropped and its referrers left dangling."""
     changed = False
+    # This phase runs BEFORE the apply loop sets the NDF context, so set it here: anything flagged
+    # below would otherwise be filed against whichever group ran last.
+    result.set_ndf_context(patch_group.dat, patch_group.ndf)
     try:
         for path in getattr(patch_group, "import_add", []) or []:
             ndf.add_import_path(path); changed = True
-        for path in getattr(patch_group, "export_add", []) or []:
-            ndf.add_export_path(path); changed = True
     except Exception as e:  # noqa: BLE001
-        result.warn(f"import/export add failed: {e}")
+        result.warn(f"import add failed: {e}")
+    return changed
+
+
+def _apply_export_adds(ndf, patch_group, result, create_map, deploy_state=None) -> bool:
+    """Add the patch group's exports, AFTER the creates, pointing at the real instances.
+
+    An EXPORT ordinal is the INSTANCE INDEX of the exported object, so an export cannot be
+    added until the instance it names exists and its index is known.  `export_targets` maps
+    each path to the local_id of that instance ("inst_<index in the modded NDF>"), which the
+    create pass has just resolved to a real index in `create_map`.
+
+    An export whose target cannot be resolved is REFUSED, not guessed: guessing is what
+    pointed a mod's 21 new units at arbitrary instances — silently the wrong unit, and a
+    crash where the index landed on a non-top-object.  A wrong export is worse than a
+    missing one, because the game loads it and behaves incorrectly.
+    """
+    changed = False
+    targets = getattr(patch_group, "export_targets", {}) or {}
+    for path in getattr(patch_group, "export_add", []) or []:
+        local_id = targets.get(path)
+        ordinal = None
+        if local_id and local_id in create_map:
+            ordinal = create_map[local_id][0]                  # the instance we just created
+        elif local_id and local_id.startswith("inst_") and local_id[5:].isdigit():
+            # An export of an instance that already exists: creates only ever append, so the
+            # index the converter recorded is still this instance's index.
+            idx = int(local_id[5:])
+            if 0 <= idx < len(ndf.instances):
+                ordinal = idx
+        if ordinal is None:
+            result.flag_repair(
+                "(export)", {"path": path},
+                "export_add has no resolvable target instance"
+                + ("" if local_id else " (rmod predates 'export_targets' — reconvert it)")
+                + "; refused rather than pointed at a guessed instance")
+            continue
+        # Two mods exporting the same path are two mods claiming one name — the collision a
+        # new-units mod is most likely to hit when stacked with another.
+        result.claim(deploy_state,
+                     (patch_group.dat, patch_group.ndf, "export", path.lower()),
+                     path.split("/")[-1], "(export)")
+        try:
+            ndf.add_export_path(path, ordinal); changed = True
+        except Exception as e:  # noqa: BLE001
+            result.warn(f"export add failed for {path}: {e}")
     return changed
 
 
@@ -1807,13 +2007,21 @@ def _finalize_ref_edits(ndf, patch_group, result) -> bool:
 
 # ── Shared NDF change application ──────────────────────────────────────────────
 
-def _apply_changes_to_ndf(changes, ndf, result) -> bool:
+def _apply_changes_to_ndf(changes, ndf, result, patch_group=None) -> bool:
     """Apply a list of ModChange to an in-memory NdfBinary and return True if anything changed.
 
-    Creates run first (so local_id $refs resolve in later patches), then patches/deletes, then a second
-    pass resolves stable_ref ObjRef props whose targets were only created in this batch.  No
-    compat→public translation — used for already-translated change lists (e.g. the placement NDF
-    embedded inside a .scenario).  Increments result.changes_applied."""
+    Creates run first (so local_id $refs resolve in later patches), then the group's export adds
+    (an export ordinal is an instance INDEX, so the instances must exist first), then
+    patches/deletes, then a second pass resolves stable_ref ObjRef props whose targets were only
+    created in this batch.  No compat→public translation — used for already-translated change
+    lists (e.g. the placement NDF embedded inside a .scenario).  Increments
+    result.changes_applied.
+
+    Pass `patch_group` whenever the changes came from one, so the export phase runs in the same
+    place for every caller.  The converter's surgical self-check replays through here, and it has
+    already been burned once by drifting out of step with the real apply path (issue #18): a phase
+    it failed to mirror made every self-check fail and silently dropped whole NDFs to raw patches.
+    Keeping the ordering in ONE function is what stops that recurring."""
     create_map: dict = {}
     deferred_objref: list = []
     changed = False
@@ -1839,6 +2047,9 @@ def _apply_changes_to_ndf(changes, ndf, result) -> bool:
                 inst_idx = create_map.get(change.local_id, (len(ndf.instances) - 1, 0))[0]
                 deferred_objref.append((ndf.instances[inst_idx], change.table, deferred))
 
+    if patch_group is not None and _apply_export_adds(ndf, patch_group, result, create_map):
+        changed = True
+
     for change in non_creates:
         n = _apply_change(change, ndf, result, create_map)
         if n > 0:
@@ -1862,26 +2073,6 @@ def _apply_changes_to_ndf(changes, ndf, result) -> bool:
 
 # ── Backup helpers ────────────────────────────────────────────────────────────
 
-def _make_backup(dat_path: Path) -> None:
-    backup_path = dat_path.with_suffix(".dat.bak")
-    if not backup_path.exists():
-        shutil.copy2(str(dat_path), str(backup_path))
-        log.info("Backup: %s → %s", dat_path.name, backup_path.name)
-    else:
-        log.debug("Backup already exists: %s", backup_path.name)
-
-
-def restore_backup(dat_path: str) -> bool:
-    """Restore a .dat from its .bak backup if one exists.  Returns True on success."""
-    p = Path(dat_path)
-    backup = p.with_suffix(".dat.bak")
-    if not backup.exists():
-        log.warning("No backup found for %s", p.name)
-        return False
-    shutil.copy2(str(backup), str(p))
-    log.info("Restored: %s from backup", p.name)
-    return True
-
 
 # ── Conflict detection ────────────────────────────────────────────────────────
 
@@ -1890,14 +2081,37 @@ def check_conflicts(
     game_data_dir: str,
 ) -> List[str]:
     """
-    Dry-run all mods and return a list of conflict descriptions where two mods
-    patch the same property on the same instance.
+    Read all mods and return a list of conflict descriptions where two of them edit the
+    same thing — the same instance property, the same new instance name, the same export
+    path, the same localization key, the same whole archive entry, or the same SDB layer.
+
+    Covers every kind of edit an rmod can carry, not only NDF property patches.  A mod that
+    adds units is mostly `create` actions, localization entries and whole-entry file
+    replacements; checking only property patches reported such a mod as conflict-free with
+    another copy of itself, which is the opposite of the truth.  Mirrors the deploy-time rule
+    in `ApplyResult.claim`, so a preview and a deploy agree on what collides.
+
+    Known limit: each category is matched against itself, so one mod DELETING an instance that
+    another mod patches is not reported (the two edits key differently).  That needs resolving both
+    to a clean-build instance identity the way `tools/test_scripts/conflict_scan.py` does, rather
+    than comparing rmod text.
 
     Returns a list of human-readable conflict strings (empty = no conflicts).
     """
-    # Map (dat, ndf, table, match_key, prop_name) → list of mod names
-    patches: dict = {}
+    # Map (kind, address...) → [mod names, in load order].  `what` carries the wording.
+    seen: dict = {}
+    what: dict = {}
     conflicts: List[str] = []
+    # A nested archive can be contested two ways at once: one mod replaces the whole container while
+    # another edits a file inside it.  Those key differently by design (per-container vs per-file),
+    # so they are collected separately and crossed at the end — otherwise the most damaging case of
+    # all, a wholesale replacement silently discarding another mod's surgical edit, goes unreported.
+    replaces_whole: dict = {}    # (dat, container path) → [mod names]
+    edits_inside: dict = {}      # (dat, container path) → [mod names]
+
+    def note(key, label, mod_name):
+        seen.setdefault(key, []).append(mod_name)
+        what.setdefault(key, label)
 
     for mod_path in mod_paths:
         try:
@@ -1906,24 +2120,75 @@ def check_conflicts(
             # A single unreadable/hostile rmod must not crash the whole dry-run conflict preview.
             conflicts.append(f"(could not read {os.path.basename(mod_path)} for conflict check: {e})")
             continue
-        for pg in mod.patches:
+
+        for pg in list(mod.patches) + list(mod.scenario_patches):
+            # scenario patch groups address an embedded NDF by `scenario` rather than `ndf`
+            where = getattr(pg, "ndf", None) or getattr(pg, "scenario", "")
             for ch in pg.changes:
-                if ch.action != "patch":
-                    continue
                 # `match` can be absent on a malformed patch — treat as empty rather than AttributeError.
                 match_key = ";".join(f"{k}={v}" for k, v in sorted((ch.match or {}).items()))
-                for prop_name in ch.set_props:
-                    key = (pg.dat, pg.ndf, ch.table, match_key, prop_name)
-                    if key not in patches:
-                        patches[key] = []
-                    patches[key].append(mod.name)
+                if ch.action == "patch":
+                    for prop_name in ch.set_props:
+                        note((pg.dat, where, ch.table, match_key, prop_name),
+                             f"{ch.table}.{prop_name} [{match_key}] in {where}", mod.name)
+                elif ch.action == "create":
+                    name = _create_identity(ch)
+                    if name:      # an unnamed create can't collide by name — see _create_identity
+                        note((pg.dat, where, "create", ch.table, name),
+                             f"new {ch.table} '{name}' in {where}", mod.name)
+                elif ch.action == "delete":
+                    note((pg.dat, where, "delete", ch.table, match_key),
+                         f"deletion of {ch.table} [{match_key}] in {where}", mod.name)
+                elif ch.action == "delete_props":
+                    for prop_name in (ch.del_props or []):
+                        note((pg.dat, where, ch.table, match_key, prop_name),
+                             f"{ch.table}.{prop_name} [{match_key}] in {where}", mod.name)
+            for path in getattr(pg, "export_add", []) or []:
+                note((pg.dat, where, "export", path.lower()),
+                     f"export '{path}' in {where}", mod.name)
 
-    for key, mod_names in patches.items():
-        if len(mod_names) > 1:
-            dat, ndf, table, match_key, prop_name = key
-            conflicts.append(
-                f"Conflict on {table}.{prop_name} [{match_key}] in {ndf}: "
-                f"{' vs '.join(mod_names)}"
-            )
+        for lg in mod.loc_patches:
+            for e in lg.entries:
+                note((lg.dat, "loc", lg.dic.lower(), e.key),
+                     f"text key {e.key} in {lg.dic.split('/')[-1]}", mod.name)
+
+        for fg in mod.file_patches:
+            for fp in fg.files:
+                if fp.container:
+                    # Addressed inside a nested archive, so the collision is per FILE, not per
+                    # container: two mods editing different scripts in one .ipk do not clash.
+                    note((fg.dat, "container", fp.container.lower(),
+                          fp.path.replace("\\", "/").lower()),
+                         f"{fp.path.split('/')[-1]} inside {fp.container.split('/')[-1]}", mod.name)
+                    edits_inside.setdefault((fg.dat, fp.container.lower()), []).append(mod.name)
+                else:
+                    # A whole-entry replacement does not merge: the later mod discards the earlier
+                    # one entirely, so this is the most destructive collision of the lot.
+                    key = fp.path.replace("\\", "/").lower()
+                    note((fg.dat, "file", key), f"whole file {fp.path}", mod.name)
+                    if key.endswith(edata_mod.CONTAINER_EXTS):
+                        replaces_whole.setdefault((fg.dat, key), []).append(mod.name)
+
+        for sg in mod.sdb_patches:
+            for layer in sg.layers:
+                note((sg.dat, "sdb", sg.win.lower(), layer.bit),
+                     f"AI-terrain layer bit {layer.bit} of {sg.win.split('/')[-1]}", mod.name)
+
+    for key, mod_names in seen.items():
+        # One mod can legitimately address the same thing twice (e.g. two patch groups); only a
+        # collision between DIFFERENT mods is a conflict.
+        distinct = list(dict.fromkeys(mod_names))
+        if len(distinct) > 1:
+            conflicts.append(f"Conflict on {what[key]}: {' vs '.join(distinct)}")
+
+    for key, wholesale in replaces_whole.items():
+        surgical = [m for m in edits_inside.get(key, []) if m not in wholesale]
+        if not surgical:
+            continue
+        name = key[1].split("/")[-1]
+        conflicts.append(
+            f"Conflict on {name}: {' and '.join(dict.fromkeys(wholesale))} "
+            f"replace(s) the whole archive, discarding edits inside it from "
+            f"{' and '.join(dict.fromkeys(surgical))}")
 
     return conflicts

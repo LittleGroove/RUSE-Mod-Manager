@@ -20,6 +20,10 @@ from typing import List, Optional, Any, Dict
 from . import dsl_catalog
 
 # ── enums surfaced from the DSL (_enum_for_game_play) — the values the shipped scripts use ──────────
+# Nationalite enum uses FRENCH abbreviations (EU=USA/Etats-Unis, RU=Britain/Royaume-Uni, URSS=USSR, Japon=Japan,
+# Allemagne=Germany, Italie=Italy). These 7 are the ONLY valid members — "USA"/"UK"/etc. do NOT exist and raise a
+# Python AttributeError that crashes the map at load (RE'd 2026-07-12, our internal scenario notes). See
+# ruse_mod_engine.operation_roster.NATIONALITE for the full name->nation->int table.
 NATIONS = ["EU", "Allemagne", "France", "Italie", "Japon", "RU", "URSS"]
 AI_LEVELS = ["Player", "Scripted", "Easy", "Normal", "Hard"]          # NiveauIA.*
 DIFFICULTES = ["Facile", "Normal", "Difficile"]                       # TDifficultes.*
@@ -47,6 +51,14 @@ class Camp:
     player_name_challenge: bool = False
     activate_full_ai: bool = False        # emit DescriptorIAAll so the AI plays the whole map
     blocked_ruses: List[str] = field(default_factory=list)   # BluffCardEnum names this camp can't use
+    allowed_technos: List[str] = field(default_factory=list)  # WHITELIST: the ONLY parametres.Classes.* names
+    #   this camp CAN build. When set, emits DescriptorBloqueAllTechno + DescriptorDebloqueTechno(TypeUnits=these).
+    #   This is the native roster mechanism shipped ops use (see our internal scenario notes).
+    blocked_technos: List[str] = field(default_factory=list)  # BLACKLIST: parametres.Classes.* names this camp
+    #   can't build -> DescriptorBloqueTechno(Hide=True). Secondary lever; use for an otherwise-unrestricted roster.
+    choose_nation_from: List[str] = field(default_factory=list)  # NATION-PICK: Nationalite enum names offered to
+    #   a HUMAN camp at operation start -> DescriptorShowChooseNationScreen. Game applies the chosen nation + its
+    #   standard roster (see our internal scenario notes). Use XOR allowed_technos per camp.
 
 
 @dataclass
@@ -348,6 +360,40 @@ def generate_source(op: Operation) -> str:
                        "AppliqueAuxCartesDuMemeType=True, Bloque=True, Camp=%s, "
                        "Carte=_enum_for_game_play.BluffCardEnum.%s, ClearCartesActives=False)"
                        % (c.var, card)), post_init=True)
+            boot.append(v)
+        if c.allowed_technos:
+            # WHITELIST model (the native roster mechanism shipped ops use): block EVERYTHING, then
+            # re-allow exactly the listed classes. "Available roster" == allowed_technos. Emit the pair
+            # in order: BloqueAllTechno first, then DebloqueTechno. Order matters (block-all then allow).
+            va = e.tmp("BLOCKALL")
+            e.emit(va, "leveldesignsolo.camps.DescriptorBloqueAllTechno(Camp=%s)" % c.var, post_init=True)
+            boot.append(va)
+            allowed = ", ".join("parametres.Classes.%s" % t for t in c.allowed_technos)
+            vd = e.tmp("ALLOW")
+            e.emit(vd, ("leveldesignsolo.camps.DescriptorDebloqueTechno("
+                        "Camp=%s, TypeUnits=[%s])" % (c.var, allowed)), post_init=True)
+            boot.append(vd)
+        if c.blocked_technos:
+            # BLACKLIST lever: DescriptorBloqueTechno blocks the listed classes from the build menu.
+            # TypeUnits = the classes to block; Hide=True removes/greys them. Secondary to the whitelist
+            # above; meaningful when starting from an unrestricted roster (no BloqueAllTechno).
+            classes = ", ".join("parametres.Classes.%s" % t for t in c.blocked_technos)
+            v = e.tmp("TECHNO")
+            e.emit(v, ("leveldesignsolo.camps.DescriptorBloqueTechno("
+                       "Camp=%s, Hide=True, TypeUnits=[%s])" % (c.var, classes)), post_init=True)
+            boot.append(v)
+        if c.choose_nation_from and c.niveau_ia == "Player":
+            # NATION-PICK: one DescriptorShowChooseNationScreen offers the human camp a choice of nations at
+            # start; the game applies the pick + its standard roster (RE'd from Endless Defence, doc 11).
+            bad = [n for n in c.choose_nation_from if n not in NATIONS]
+            if bad:
+                raise ValueError("invalid Nationalite %s in choose_nation_from; valid = %s "
+                                 "(EU=USA, RU=Britain, URSS=USSR, Japon=Japan)" % (bad, NATIONS))
+            nats = ", ".join("leveldesignsolo.camps.NationaliteEnumElement("
+                             "Nationalite=_enum_for_game_play.Nationalite.%s)" % n for n in c.choose_nation_from)
+            v = e.tmp("CHOOSENAT")
+            e.emit(v, ("leveldesignsolo.camps.DescriptorShowChooseNationScreen("
+                       "Camp=%s, NationList=[%s])" % (c.var, nats)), post_init=True)
             boot.append(v)
     if op.rules.ruse_zones_hud:
         v = e.tmp("HUD")

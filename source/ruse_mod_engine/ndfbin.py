@@ -589,6 +589,123 @@ class NdfBinary:
             self.trans.append(s)
             return len(self.trans) - 1
 
+    # ── Structural mutators for the interactive raw editor ────────────────────────────────────────────
+    # These are NEW, append-only helpers used ONLY by the Raw Asset Editor UI (tools_editor.py).  The
+    # applier/converter do NOT call them, so the deploy path stays byte-identical.  They centralise the
+    # index-shift bookkeeping (ObjRef remap on delete, class coercion on ref-build) that must be correct
+    # to avoid an EDIT-INDUCED crash, mirroring the logic proven in applier._action_delete / _action_create.
+
+    def make_objref(self, target_idx: int) -> "NdfValue":
+        """Build an ObjRef NdfValue pointing at the instance at ``target_idx``, with its declared class
+        COERCED from that target's actual class.  This enforces the proven clean-data invariant
+        'declared class == target instance's real class' (0 violations across 240k+ shipped ObjRefs); a
+        mismatch is what made the engine build the wrong type and crash the main menu.  Raises IndexError
+        if the target is out of range."""
+        if not (0 <= target_idx < len(self.instances)):
+            raise IndexError(
+                f"ObjRef target {target_idx} out of range (0..{len(self.instances) - 1})")
+        cls = self.instances[target_idx].class_index
+        return NdfValue(T.Reference, (OBJ_REF_MARKER, (int(target_idx), int(cls))))
+
+    def create_instance(self, class_name: str, top: bool = False) -> Tuple[int, "NdfInstance"]:
+        """Append a new, EMPTY instance of ``class_name`` (no property values) and return (index, inst).
+        When ``top`` it is also registered as a top object.  Mirrors applier._action_create_deferred's
+        append + top-object registration.  Raises ValueError if the class isn't in this NDF's table."""
+        cls = self.class_by_name(class_name)
+        if cls is None:
+            raise ValueError(f"class {class_name!r} not found in NDF class table")
+        inst = NdfInstance(class_index=cls.index)
+        idx = len(self.instances)
+        self.instances.append(inst)
+        if top:
+            self.top_objects.append(idx)
+        return idx, inst
+
+    def delete_instances(self, indices) -> Tuple[int, int]:
+        """Delete the instances at ``indices`` and remap EVERY index that shifts as a result: top_objects
+        and every inbound ObjRef value (deleting instance N shifts every instance above N down by one, so a
+        Reference pointing above a deletion is now off — the exact bookkeeping proven in
+        applier._action_delete).  Returns (removed_count, dangling_count) where dangling is the number of
+        ObjRefs that pointed AT a deleted instance (their target is genuinely gone).  A no-op for indices
+        that don't exist."""
+        import bisect
+        removed_set = {int(i) for i in indices if 0 <= int(i) < len(self.instances)}
+        if not removed_set:
+            return 0, 0
+        removed_asc = sorted(removed_set)
+        for idx in sorted(removed_set, reverse=True):
+            del self.instances[idx]
+
+        def remap(i):
+            return i - bisect.bisect_left(removed_asc, i)
+
+        self.top_objects = [remap(i) for i in self.top_objects if i not in removed_set]
+        dangling = 0
+        for v in self.iter_values():
+            if (v.type_id == T.Reference and isinstance(v.raw, tuple)
+                    and v.raw[0] == OBJ_REF_MARKER and isinstance(v.raw[1], tuple)):
+                oi, ci = v.raw[1]
+                if isinstance(oi, int) and oi >= 0:
+                    if oi in removed_set:
+                        dangling += 1
+                    new_oi = remap(oi)
+                    if new_oi != oi:
+                        v.raw = (OBJ_REF_MARKER, (new_oi, ci))
+        return len(removed_set), dangling
+
+    def clone_instance(self, idx: int, deep_subobjects: bool = False,
+                       top: Optional[bool] = None) -> int:
+        """Deep-copy the value tree of the instance at ``idx`` into a brand-new instance and return its
+        index.  By default (``deep_subobjects=False``) this is a SHALLOW graph clone: the new instance is
+        independent but its ObjRefs still point at the SAME sub-objects as the original (always safe — no
+        index churn).  With ``deep_subobjects=True`` it also recursively clones the NON-TOP instances the
+        object owns and repoints the clone's refs at the fresh copies (top/library objects stay shared),
+        matching the old modding suite's deep copy.  The clone is registered as a top object iff the source
+        was, unless ``top`` overrides.  Cycles and shared sub-objects are cloned once (visited map)."""
+        import copy
+        if not (0 <= idx < len(self.instances)):
+            raise IndexError(f"clone source {idx} out of range (0..{len(self.instances) - 1})")
+        top_set = set(self.top_objects)          # snapshot of ORIGINAL tops (clones are never in it)
+        mapping: Dict[int, int] = {}             # old_idx -> new_idx (dedupe cycles / shared owned refs)
+
+        def repoint(v: "NdfValue"):
+            t = v.type_id
+            if t == T.Reference and isinstance(v.raw, tuple) and v.raw[0] == OBJ_REF_MARKER \
+                    and isinstance(v.raw[1], tuple):
+                oi, _ci = v.raw[1]
+                if isinstance(oi, int) and 0 <= oi < len(self.instances) and oi not in top_set:
+                    new_oi = clone_one(oi)
+                    v.raw = (OBJ_REF_MARKER, (new_oi, self.instances[new_oi].class_index))
+            elif t == T.List:
+                for it in v.raw:
+                    repoint(it)
+            elif t == T.Map:
+                for k, vv in v.raw:
+                    repoint(k); repoint(vv)
+            elif t == T.Pair:
+                repoint(v.raw[0]); repoint(v.raw[1])
+
+        def clone_one(old_idx: int) -> int:
+            if old_idx in mapping:
+                return mapping[old_idx]
+            src = self.instances[old_idx]
+            new = NdfInstance(
+                class_index=src.class_index,
+                props=[NdfPropertyValue(pv.prop_index, copy.deepcopy(pv.value)) for pv in src.props])
+            new_idx = len(self.instances)
+            self.instances.append(new)
+            mapping[old_idx] = new_idx          # set BEFORE recursing so cycles resolve to this clone
+            if deep_subobjects:
+                for pv in new.props:
+                    repoint(pv.value)
+            return new_idx
+
+        new_root = clone_one(idx)
+        make_top = (idx in top_set) if top is None else top
+        if make_top:
+            self.top_objects.append(new_root)
+        return new_root
+
     # ── import / export tree access (see parse_ref_tree) ─────────────────────
     def _cached_ref_paths(self, which: str, ref_list) -> Dict[int, str]:
         """Memoized ref_ordinal_paths(parse_ref_tree(ref_list), self.trans).
@@ -635,7 +752,7 @@ class NdfBinary:
         origin build; migrating/reconverting on another build breaks that coincidence and mis-points the
         reference (proven: Balanced Realism's MultiRenderTypeMaterialPack SFX_Impact... -> a wrong import on
         public).  Fix: re-convert the rmod on its ORIGIN build so the value becomes a portable '$/...' path.
-        See RE_DATA/EVIDENCE_DOSSIER.md (Evidence #1)."""
+        See our internal RE notes (Evidence #1)."""
         return isinstance(ref, str) and "/" not in ref and not ref.startswith("$")
 
     def add_import_path(self, path: str) -> int:
@@ -653,15 +770,30 @@ class NdfBinary:
         self.import_list = serialize_ref_tree(build_ref_tree(cur, self.ensure_trans))
         return new_ord
 
-    def add_export_path(self, path: str) -> int:
+    def add_export_path(self, path: str, ordinal: Optional[int] = None) -> int:
+        """Export `path`, pointing at instance `ordinal`.  Returns the ordinal used.
+
+        An EXPORT ordinal is the INSTANCE INDEX of the object being exported — the game
+        resolves `$/GFX/Everything/Descriptor_X` by taking the ordinal and indexing the
+        instance table with it.  So `ordinal` must be the index of the instance this path
+        names; callers that have just created that instance pass its new index.
+
+        Omitting `ordinal` falls back to `max(existing) + 1`, which is almost always WRONG
+        and is kept only so an old rmod carrying `export_add` without an `export_targets`
+        binding still applies rather than failing outright.  That fallback is what made a
+        mod's 21 new units export to arbitrary instances — silently the wrong unit, and a
+        crash where the index hit a non-top-object.  See
+        our internal crash notes.
+        """
         cur = dict(self.export_ordinal_paths())  # copy: we mutate, cache dict is shared
         for o, p in cur.items():
             if p == path:
                 return o
-        new_ord = (max(cur) + 1) if cur else 0
-        cur[new_ord] = path
+        if ordinal is None:
+            ordinal = (max(cur) + 1) if cur else 0
+        cur[int(ordinal)] = path
         self.export_list = serialize_ref_tree(build_ref_tree(cur, self.ensure_trans))
-        return new_ord
+        return int(ordinal)
 
     # ── Import/export ordinal maintenance ────────────────────────────────────
 

@@ -382,6 +382,29 @@ class EdataFile:
         start = self._header.file_offset + entry.offset
         return self._data[start:start + entry.size]
 
+    # ── atomic swap ───────────────────────────────────────────────────────────────────────────────────
+    # The rollback copy must NOT be called "<dat>.bak".  That is the name the applier writes the USER's
+    # backup to (applier._make_backup), so a repack used to overwrite that backup with the current dat and
+    # then delete it — leaving the user with no backup at all while restore_backup() reported "not found".
+    # A distinct suffix keeps the crash-safety net without touching anyone else's file, and the rollback is
+    # only ever removed if we were the ones who created it.
+    _ROLLBACK_SUFFIX = ".repack-rollback"
+
+    def _swap_in(self, new_path: str) -> None:
+        """Replace this archive with `new_path`, keeping a rollback copy until the move succeeds."""
+        rollback = self.path + self._ROLLBACK_SUFFIX
+        shutil.copy2(self.path, rollback)
+        try:
+            shutil.move(new_path, self.path)
+        except Exception:
+            shutil.copy2(rollback, self.path)   # put the original back before surfacing the failure
+            raise
+        finally:
+            try:
+                os.remove(rollback)
+            except OSError:
+                pass
+
     def replace(self, virtual_path: str, new_data: bytes) -> None:
         """
         Replace one file inside the archive and write the result back to disk.
@@ -396,10 +419,7 @@ class EdataFile:
         else:
             new_path = self._rebuild_v2(target, new_data)
         # Atomic replace
-        backup = self.path + ".bak"
-        shutil.copy2(self.path, backup)
-        shutil.move(new_path, self.path)
-        os.remove(backup)
+        self._swap_in(new_path)
         # Reload so the in-memory state is consistent
         with open(self.path, "rb") as f:
             self._data = f.read()
@@ -421,10 +441,7 @@ class EdataFile:
                 f"add() is only implemented for v1 archives (this is v{self._header.version})"
             )
         new_path = self._append_files_v1({virtual_path: new_data})
-        backup = self.path + ".bak"
-        shutil.copy2(self.path, backup)
-        shutil.move(new_path, self.path)
-        os.remove(backup)
+        self._swap_in(new_path)
         with open(self.path, "rb") as f:
             self._data = f.read()
         self._parse()
@@ -580,10 +597,7 @@ class EdataFile:
             raise NotImplementedError(f"batch_update() only supported for v1 archives (got v{self._header.version})")
         replace_keys = {p.replace("/", "\\").lower(): b for p, b in to_replace.items()}
         new_path = self._batch_update_v1(replace_keys, to_add)
-        backup = self.path + ".bak"
-        shutil.copy2(self.path, backup)
-        shutil.move(new_path, self.path)
-        os.remove(backup)
+        self._swap_in(new_path)
         with open(self.path, "rb") as f:
             self._data = f.read()
         self._parse()
@@ -898,3 +912,95 @@ class EdataFile:
 def open_dat(path: str) -> EdataFile:
     """Convenience function — open a .dat archive and return an EdataFile."""
     return EdataFile.open(path)
+
+
+# ── Nested containers ─────────────────────────────────────────────────────────
+# Some ENTRIES of a .dat are themselves edata archives: .ipk (compiled Python),
+# .ppk (resource packs), .mpk (sound), .apk (animation), .gpk (Flash).  There are 217 of
+# them in build 24087620, every one v1.  Editing one file inside such a container used to
+# mean shipping the whole container, so two mods touching the same container replaced each
+# other wholesale.  These helpers let a caller open one from memory, change entries, and get
+# the new container bytes back — which the outer archive then stores like any other entry.
+
+CONTAINER_EXTS = (".ipk", ".ppk", ".mpk", ".apk", ".gpk")
+
+
+def is_container(blob) -> bool:
+    """True when these bytes are themselves an edata archive.  None/short input is simply False,
+    so callers can test a lookup result directly."""
+    return bool(blob) and len(blob) >= 8 and blob[:4] == EDATA_MAGIC
+
+
+def open_container(blob: bytes) -> Tuple[EdataFile, str]:
+    """Open a nested archive held in memory.  Returns (archive, temp_path).
+
+    The archive is staged through a temp FILE rather than parsed in memory because every
+    rebuild path (offset chain, dict checksum, atomic swap) is written against a real file
+    and is proven there.  Containers are small — the largest in the game is under 10 MB —
+    so the copy is cheap, and reusing the proven code beats a second implementation of the
+    same format.  The CALLER must remove temp_path.
+    """
+    fd, tmp_path = tempfile.mkstemp(suffix=".container")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(blob)
+        return EdataFile.open(tmp_path), tmp_path
+    except Exception:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
+def update_container(blob: bytes, to_replace: dict, to_add: dict) -> bytes:
+    """Return `blob` (a nested edata archive) with entries replaced and/or added.
+
+    Same batch semantics as `EdataFile.batch_update`, including the offset-chain rewrite —
+    an inner file of a different size shifts every later inner entry exactly as it does in
+    the outer archive.  Raises ValueError if the blob is not an edata archive, and
+    NotImplementedError for a v2 container (none exist in shipped data).
+    """
+    if not is_container(blob):
+        raise ValueError("not an edata container")
+    edat, tmp_path = open_container(blob)
+    try:
+        if edat._header.version != 1:
+            raise NotImplementedError(
+                f"nested container is edata v{edat._header.version}; only v1 is supported")
+        edat.batch_update(to_replace, to_add)
+        with open(edat.path, "rb") as f:
+            out = bytearray(f.read())
+        # Restore the dictionary-checksum field at 0x08 when the source had it zeroed, which every
+        # archive the game ships does — nested containers AND the outer .dat files alike, checked
+        # across all of build 24087620. The engine plainly does not read it: `_multi_replace_v1`
+        # has written a real MD5 into repacked .dat files for years and those mods run. So this is
+        # fidelity, not a fix — it costs nothing, keeps a rebuilt container indistinguishable from
+        # the ones around it, and makes our output byte-identical to what an external tool
+        # produced from the same inputs, which is a far stronger test than "it still loads".
+        # The outer path deliberately keeps recomputing: it is long-proven, and churning it to
+        # match this would be risk with no benefit.
+        if blob[8:24] != out[8:24] and blob[8:24] == b"\x00" * 16:
+            out[8:24] = blob[8:24]
+        return bytes(out)
+    finally:
+        for p in (tmp_path, edat.path):
+            try:
+                if os.path.exists(p):
+                    os.remove(p)
+            except OSError:
+                pass
+
+
+def resolve_container_path(edat: EdataFile, path: str) -> Optional[str]:
+    """The archive's own spelling of `path`, or None when it holds no such entry.
+
+    Accepts either slash direction and any case, the way the outer-archive lookup does.
+    """
+    for cand in (path, path.replace("/", "\\"), path.replace("\\", "/")):
+        if edat.get(cand) is not None:
+            key = cand.replace("\\", "/").lower()
+            entry = edat._entry_map.get(key)
+            if entry is not None:
+                return entry.path
+    return None

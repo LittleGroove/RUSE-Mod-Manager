@@ -27,8 +27,10 @@ from ruse_mod_engine import mod_project as mp_mod  # noqa: E402
 from ruse_mod_engine import ndfbin as ndfbin_mod  # noqa: E402
 from ruse_mod_engine import dic as dic_mod  # noqa: E402
 from ruse_mod_engine import clone as clone_mod  # noqa: E402
+from ndf_value_editor import NdfValueEditorMixin, _type_label  # noqa: E402  — shared NDF value-editing
 from i18n import t  # noqa: E402
 import ui_util  # noqa: E402  — pixel-accurate, language-aware widget sizing
+import features  # noqa: E402  — release hold-backs (CLONING_ENABLED)
 
 # ── Theme (mirrors mod_manager.py palette) ──────────────────────────────────────
 import theme                # single source of truth for the palette; local _R_* names kept unchanged
@@ -94,6 +96,12 @@ _FIELDS = [
     (t("units.upgrade_time_upgradetime"),      "UpgradeTime",        "scalar"),
     (t("units.building_type_typebatiment"),    "TypeBatiment",       "scalar"),
     (t("units.build_menu_id_menu"),            "Menu",               "scalar"),
+    # Newly surfaced stats (were only in the raw "other fields" list). Present only on some classes;
+    # a row that isn't on the selected unit is simply skipped by _render_group.
+    (t("units.ground_taxi_speed_vitesselineaireausol"), "VitesseLineaireAuSol", "scalar"),
+    (t("units.secondary_weapon_ammo_secondaryweaponmax"), "SecondaryWeaponMaxAmmo", "scalar"),
+    (t("units.only_retreat_under_heavy_stress"),
+                                            "ReculeSeulementSiUberstress", "scalar"),
 ]
 
 # Weapon stats (on the shared TAmmunition).
@@ -113,6 +121,9 @@ _AMMO_FIELDS = [
     (t("units.weapon_level_level"),          "Level",                           "scalar"),
     (t("units.weapon_class_arme"),           "Arme",                            "scalar"),
     (t("units.projectile_type_projectiletype"), "ProjectileType",               "scalar"),
+    (t("units.projectile_speed_fx_vitesse_de"), "FX_vitesse_de_depart",       "scalar"),
+    (t("units.projectile_drag_fx_frottement"),   "FX_frottement",                    "scalar"),
+    (t("units.shot_animation_time_tempsanimation"), "TempsAnimation",                "scalar"),
 ]
 
 # Numeric value types that the generic "other fields" section will expose.
@@ -123,7 +134,8 @@ _NUM_TIDS = {ndfbin_mod.T.Bool, ndfbin_mod.T.Int8, ndfbin_mod.T.Int16, ndfbin_mo
 # Nationalite is INTENTIONALLY exposed: the Migrate dialog is the polished path, but power users
 # need to see + tweak the raw int (e.g. set to 7+ to probe what the engine does with unknown nations).
 _OTHER_SKIP = {"DescriptorId", "TrackingId", "AmmunitionId", "IconeType", "Key",
-               "ClassNameForDebug", "UpgradeRequire", "IsUpgrade"}
+               "ClassNameForDebug", "UpgradeRequire", "IsUpgrade",
+               "ArmorDescriptor"}   # ArmorDescriptor has its own friendly level dropdown (_render_armor)
 _COVERED = {p for _, p, _ in _FIELDS} | _OTHER_SKIP
 
 # Standard-unit conversion for distance/speed/accel fields (issue #6).  The raw game value and the
@@ -137,6 +149,7 @@ _UNIT_CONV = {
     "DetectionBase": "distance", "PorteeVisionVolant": "distance",
     "PorteeAttackReflexAir": "distance", "PorteeAttackReflexSol": "distance",
     "PorteeMaximale": "distance", "PorteeMinimale": "distance",
+    "VitesseLineaireAuSol": "speed",
 }
 _CONV_SPECS = {
     "speed":    (130.0,    "km/h", 2),
@@ -152,7 +165,7 @@ def _nation_from_value(raw) -> str:
         return "US"
 
 
-class UnitsEditorWindow(tk.Frame):
+class UnitsEditorWindow(tk.Frame, NdfValueEditorMixin):
     """Embedded as a nested in-tab view (it used to be a Toplevel) — the Mod Editor hosts it and
     provides the Back button, so it carries no window chrome of its own."""
     def __init__(self, master, project: "mp_mod.ModProject", on_change=None, default_lang="us"):
@@ -161,6 +174,11 @@ class UnitsEditorWindow(tk.Frame):
         self._on_change = on_change
         self._name_default_lang = default_lang or "us"
         self.configure(background=_R_BG)
+
+        # Host contract for NdfValueEditorMixin: the project IS the dat store (get_raw/set_raw/
+        # entry_paths/read_many/mark_dirty by dat_key), and the LocHash manager caches here.
+        self._store = project
+        self._loc_index = None
 
         self._ndf = None
         self._descs = []
@@ -210,6 +228,7 @@ class UnitsEditorWindow(tk.Frame):
         self._index_descriptors()
         self._index_buildings()
         self._index_weapons()
+        self._index_armor()
         self._index_clean_defaults()
         self._index_name_dics()
         self._build_ui()
@@ -217,6 +236,11 @@ class UnitsEditorWindow(tk.Frame):
         self._wpn_apply_filter()
 
     # ── data helpers ──────────────────────────────────────────────────────────
+
+    @property
+    def _v_ndf(self):
+        """The NdfBinary the shared NdfValueEditorMixin edits (this editor's everything.cpp)."""
+        return self._ndf
 
     def _prop_index(self, class_index, prop_name):
         p = self._ndf.prop_by_name_and_class(prop_name, class_index)
@@ -548,6 +572,27 @@ class UnitsEditorWindow(tk.Frame):
         return [(i, inst) for i, inst in enumerate(self._ndf.instances)
                 if inst.class_index == cls.index]
 
+    def _index_armor(self):
+        """Map armor LEVEL (TArmorDescriptor.BaseBlindage, 0-10) <-> its instance index, so the per-unit
+        Armor dropdown can offer levels and set the unit's ArmorDescriptor ObjRef to the matching one.
+        BaseBlindage=0 omits the prop (treated as level 0). Empty if the class isn't in this build."""
+        self._armor_by_level = {}     # level int -> instance index
+        self._armor_level_of = {}     # instance index -> level int
+        cls = self._ndf.class_by_name("TArmorDescriptor")
+        if cls is None:
+            return
+        bp = self._ndf.prop_by_name_and_class("BaseBlindage", cls.index)
+        for idx, inst in enumerate(self._ndf.instances):
+            if inst.class_index != cls.index:
+                continue
+            lvl = 0
+            if bp is not None:
+                v = inst.get(bp.index)
+                if v is not None and isinstance(v.raw, int):
+                    lvl = v.raw
+            self._armor_by_level[lvl] = idx
+            self._armor_level_of[idx] = lvl
+
     def _index_descriptors(self):
         self._descs = []
         for cls_name, cls_label, kind in _DESC_CLASSES:
@@ -868,6 +913,9 @@ class UnitsEditorWindow(tk.Frame):
         bottom = tk.Frame(self, background=_R_BG)
         bottom.pack(fill="x", padx=8, pady=(0, 2))
         ttk.Button(bottom, text=t("common.save_mod_dat"), command=self._save_to_mod).pack(side="left")
+        if self._find_armor_matrix() is not None:
+            ttk.Button(bottom, text=t("units.armor_damage_table_2"),
+                       command=self._open_armor_matrix).pack(side="left", padx=(8, 0))
         self._save_status = tk.Label(bottom, text="", background=_R_BG,
                                      foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._save_status.pack(side="right")
@@ -963,10 +1011,13 @@ class UnitsEditorWindow(tk.Frame):
         self._reset_btn.pack(side="left", padx=8)
         self._dup_btn = ttk.Button(btnrow, text=t("units.duplicate_unit"),
                                    command=self._duplicate_unit, state="disabled")
-        self._dup_btn.pack(side="left", padx=8)
         self._mig_btn = ttk.Button(btnrow, text=t("units.migrate_nation"),
                                    command=self._migrate_dialog, state="disabled")
-        self._mig_btn.pack(side="left")
+        # Unit copy + Migrate to nation are held back (features.py). The buttons still exist, so the
+        # enable/disable calls on selection keep working; they are just never packed.
+        if features.CLONING_ENABLED:
+            self._dup_btn.pack(side="left", padx=8)
+            self._mig_btn.pack(side="left")
         self._status = tk.Label(btnrow, text="", background=_R_BG_PANEL,
                                 foreground=_R_TEXT_DIM, font=_F_MAIN)
         self._status.pack(side="right")
@@ -1218,10 +1269,201 @@ class UnitsEditorWindow(tk.Frame):
             any_shown = True
         return any_shown
 
+    def _find_armor_matrix(self):
+        """Locate the damage-vs-armor matrix generically: follow any weapon's StressManager ObjRef to
+        its container (the gameplay TFloatArmeArmureContainer, not an unrelated reuse of the class) and
+        return (container_inst, Values NdfValue) — a Map<Int32 weapon-type, List<Float32>[armor level]>.
+        None if this build/data has no such table."""
+        ndf = self._ndf
+        ac = ndf.class_by_name("TAmmunition")
+        if ac is None:
+            return None
+        sp = ndf.prop_by_name_and_class("StressManager", ac.index)
+        if sp is None:
+            return None
+        ci = None
+        for inst in ndf.instances:
+            if inst.class_index != ac.index:
+                continue
+            v = inst.get(sp.index)
+            if (v is not None and v.type_id == ndfbin_mod.T.Reference and isinstance(v.raw, tuple)
+                    and v.raw[0] == ndfbin_mod.OBJ_REF_MARKER and isinstance(v.raw[1], tuple)):
+                ci = v.raw[1][0]
+                break
+        if ci is None or not (0 <= ci < len(ndf.instances)):
+            return None
+        cont = ndf.instances[ci]
+        vp = ndf.prop_by_name_and_class("Values", cont.class_index)
+        if vp is None:
+            return None
+        vv = cont.get(vp.index)
+        if vv is None or vv.type_id != ndfbin_mod.T.Map:
+            return None
+        return cont, vv
+
+    def _open_armor_matrix(self):
+        """Spreadsheet editor for the damage-vs-armor matrix (rows = weapon type, columns = armor level;
+        cells = damage multipliers).  Edits the real Float32 values in place; applies on Apply."""
+        found = self._find_armor_matrix()
+        if found is None:
+            ui_util.info(self, t("units.armor_damage_table"),
+                         t("units.no_armor_damage_table_found"))
+            return
+        _cont, values = found
+        rows = sorted(values.raw, key=lambda kv: kv[0].raw)     # [(key NdfValue, list NdfValue)]
+        ncols = max((len(lv.raw) for _, lv in rows), default=0)
+
+        dlg = ui_util.themed_toplevel(self, t("units.armor_damage_table"), min_size=(760, 440),
+                                      resizable=True)
+        tk.Label(dlg, text=t("units.rows_weapon_type_columns_armor"),
+                 background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN, wraplength=720,
+                 justify="left").pack(fill="x", padx=8, pady=(8, 2))
+        frame = self._scrollable(dlg)
+        tk.Label(frame, text=t("units.wpn_armor"), background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
+                 font=_F_BOLD, width=11, anchor="e").grid(row=0, column=0, padx=1, pady=1)
+        for j in range(ncols):
+            tk.Label(frame, text=str(j), background=_R_BG_PANEL, foreground=_R_GOLD_BRT, font=_F_BOLD,
+                     width=7).grid(row=0, column=j + 1, padx=1, pady=1)
+        cells = []      # (float NdfValue, StringVar)
+        for i, (kv, lv) in enumerate(rows):
+            tk.Label(frame, text=t("units.type_n", n=kv.raw), background=_R_BG_PANEL, foreground=_R_TEXT,
+                     font=_F_MAIN, width=11, anchor="e").grid(row=i + 1, column=0, padx=1, pady=1)
+            for j, fv in enumerate(lv.raw):
+                var = tk.StringVar(value=("%g" % fv.raw) if isinstance(fv.raw, float) else str(fv.raw))
+                ttk.Entry(frame, textvariable=var, width=7, justify="right").grid(
+                    row=i + 1, column=j + 1, padx=1, pady=1)
+                cells.append((fv, var))
+
+        def save():
+            changed, bad = 0, 0
+            for fv, var in cells:
+                try:
+                    newf = float(var.get().strip())
+                except ValueError:
+                    bad += 1
+                    continue
+                if newf != fv.raw:
+                    fv.raw = newf
+                    changed += 1
+            if changed:
+                self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
+                if self._on_change:
+                    self._on_change()
+            msg = t("units.applied_n_change_s", n=changed)
+            if bad:
+                msg += " " + t("units.b_cell_s_weren_t", b=bad)
+            ui_util.info(dlg, t("units.armor_damage_table"), msg)
+            dlg.destroy()
+
+        bf = tk.Frame(dlg, background=_R_BG_PANEL)
+        bf.pack(fill="x", padx=8, pady=6)
+        ttk.Button(bf, text=t("tools.apply"), command=save).pack(side="left", padx=6)
+        ttk.Button(bf, text=t("common.cancel"), command=dlg.destroy).pack(side="left", padx=6)
+        dlg.bind("<Escape>", lambda *_: dlg.destroy())
+
+    def _render_armor(self, inst):
+        """Per-unit Armor level dropdown.  The unit's ArmorDescriptor ObjRef points at one of the 11
+        TArmorDescriptor levels (BaseBlindage 0-10); this shows the level and repoints the ObjRef to the
+        chosen one (class-coerced via make_objref).  Applies immediately, like the other link edits."""
+        if not getattr(self, "_armor_by_level", None):
+            return
+        pidx = self._prop_index(inst.class_index, "ArmorDescriptor")
+        if pidx is None:
+            return
+        pv = next((p for p in inst.props if p.prop_index == pidx), None)
+        if pv is None or pv.value.type_id != ndfbin_mod.T.Reference or not isinstance(pv.value.raw, tuple):
+            return
+        marker, ref = pv.value.raw
+        if marker != ndfbin_mod.OBJ_REF_MARKER or not isinstance(ref, tuple):
+            return
+        cur_lvl = self._armor_level_of.get(ref[0])
+        levels = sorted(self._armor_by_level)
+        row = tk.Frame(self._fields_frame, background=_R_BG_PANEL)
+        row.pack(fill="x", pady=2)
+        row.grid_columnconfigure(0, weight=1)
+        self._wrap_label(row, t("units.armor_level_higher_tougher"), _R_TEXT)
+        tk.Label(row, text=(t("units.now_n", n=cur_lvl) if cur_lvl is not None else "?"),
+                 anchor="e", background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN
+                 ).grid(row=0, column=2, sticky="e", padx=(0, 12))
+        var = tk.StringVar(value=str(cur_lvl) if cur_lvl is not None else "")
+        cb = ttk.Combobox(row, textvariable=var, values=[str(x) for x in levels], width=6,
+                          state="readonly")
+        cb.grid(row=0, column=3, sticky="e", padx=(0, 4))
+
+        def on_pick(*_):
+            try:
+                lvl = int(var.get())
+            except ValueError:
+                return
+            tgt = self._armor_by_level.get(lvl)
+            if tgt is None:
+                return
+            pv.value = self._ndf.make_objref(tgt)
+            self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
+            if self._on_change:
+                self._on_change()
+        cb.bind("<<ComboboxSelected>>", on_pick)
+        ui_util.apply_row_bg(row, ui_util.row_bg(self._zebra_i, _R_BG_PANEL))
+        self._zebra_i += 1
+
+    def _other_summary(self, val):
+        """Short read-out of a non-numeric property value (ObjRef target, list length, string, hash)."""
+        tid = val.type_id
+        if tid == ndfbin_mod.T.List and isinstance(val.raw, list):
+            return f"List[{len(val.raw)}]"
+        if tid == ndfbin_mod.T.Map and isinstance(val.raw, list):
+            return f"Map{{{len(val.raw)}}}"
+        if tid == ndfbin_mod.T.Reference and isinstance(val.raw, tuple):
+            marker, ref = val.raw
+            if marker == ndfbin_mod.OBJ_REF_MARKER and isinstance(ref, tuple):
+                oi = ref[0]
+                if 0 <= oi < len(self._ndf.instances):
+                    tgt = self._ndf.instances[oi]
+                    sk = self._ndf.stable_key(tgt)
+                    cls = self._ndf.classes[tgt.class_index].name
+                    return f"-> {sk[1]} ({cls})" if sk else f"-> #{oi} ({cls})"
+                return f"-> #{oi} (out of range)"
+            if marker == ndfbin_mod.TRANS_REF_MARKER:
+                return f"trans:{ref}"
+            return f"ref({marker:#x})"
+        if tid in (ndfbin_mod.T.StringRef, ndfbin_mod.T.PathRef) and isinstance(val.raw, int):
+            return f"{self._ndf.get_string(val.raw)!r}"
+        if tid == ndfbin_mod.T.LocHash and isinstance(val.raw, (bytes, bytearray)):
+            return f"hash:{bytes(val.raw).hex()}"
+        return repr(val.raw)[:60]
+
+    def _add_other_edit_row(self, container, name, pvv):
+        """A row for a non-numeric property: name (type) = summary, plus an Edit… button that opens the
+        shared value editor and commits the returned NdfValue onto the property."""
+        tval = _type_label(pvv.value.type_id)
+        row = tk.Frame(container, background=_R_BG_PANEL)
+        row.pack(fill="x", padx=2, pady=1)
+        row.grid_columnconfigure(0, weight=1)
+        lbl = tk.Label(row, text=f"{name} ({tval}) = {self._other_summary(pvv.value)}", anchor="w",
+                       background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
+                       wraplength=520, justify="left")
+        lbl.grid(row=0, column=0, sticky="w")
+        ttk.Button(row, text=t("common.edit"), width=7,
+                   command=lambda: self._edit_other_value(name, pvv)).grid(row=0, column=1, sticky="e")
+        ui_util.apply_row_bg(row, ui_util.row_bg(getattr(self, "_zebra_i", 0), _R_BG_PANEL))
+        self._zebra_i = getattr(self, "_zebra_i", 0) + 1
+
+    def _edit_other_value(self, name, pvv):
+        """Open the shared editor for one non-numeric property; commit the new value + refresh."""
+        nv = self._edit_value_standalone(pvv.value, t("units.edit_name", name=name))
+        if nv is None:
+            return                                  # cancelled (or a .dic-only LocHash text edit)
+        pvv.value = nv
+        self.project.mark_dirty("gameplay", mp_mod.EVERYTHING_PATH)
+        if self._on_change:
+            self._on_change()
+        self._render_fields()                       # re-render so the summary reflects the change
+
     def _render_other(self, container, rows, inst, covered):
         """Expose every remaining numeric (Int/Float/Bool) property by its raw name as editable;
-        list non-numeric props (ObjRef / List / LocHash / String) read-only so the user can see
-        every property the descriptor actually carries (no silent drops)."""
+        the non-numeric props (ObjRef / List / Map / LocHash / String / …) get an Edit… button that
+        opens the SHARED value editor (the same pickers the Raw Asset Editor uses) so nothing is
+        display-only any more."""
         shown = False
         non_numeric = []
         clean_inst = self._clean_match(inst)
@@ -1233,35 +1475,13 @@ class UnitsEditorWindow(tk.Frame):
                 self._add_field_row(container, rows, name, name, "scalar", pvv.value, clean_inst)
                 shown = True
             else:
-                non_numeric.append((name, pvv.value))
+                non_numeric.append((name, pvv))
         if non_numeric:
-            tk.Label(container, text=t("units.non_editable_ref_list_hash"),
+            tk.Label(container, text=t("units.links_lists_text_click_edit"),
                      background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
                      anchor="w").pack(fill="x", padx=2, pady=(6, 1))
-            for name, val in sorted(non_numeric, key=lambda x: x[0].lower()):
-                tval = ndfbin_mod.T.name(val.type_id)
-                if val.type_id == ndfbin_mod.T.List and isinstance(val.raw, list):
-                    summary = f"List[{len(val.raw)}]"
-                elif val.type_id == ndfbin_mod.T.Reference and isinstance(val.raw, tuple):
-                    marker, ref = val.raw
-                    if marker == ndfbin_mod.OBJ_REF_MARKER and isinstance(ref, tuple):
-                        oi = ref[0]
-                        if 0 <= oi < len(self._ndf.instances):
-                            tgt_cls = self._ndf.classes[self._ndf.instances[oi].class_index].name
-                            summary = f"-> #{oi} ({tgt_cls})"
-                        else:
-                            summary = f"-> #{oi} (out of range)"
-                    else:
-                        summary = f"ref({marker:#x})"
-                elif val.type_id == ndfbin_mod.T.StringRef and isinstance(val.raw, int):
-                    summary = f"STR:{self._ndf.get_string(val.raw)!r}"
-                elif val.type_id == ndfbin_mod.T.LocHash and isinstance(val.raw, (bytes, bytearray)):
-                    summary = f"hash:{bytes(val.raw).hex()}"
-                else:
-                    summary = repr(val.raw)[:60]
-                tk.Label(container, text=f"  {name} ({tval}) = {summary}", anchor="w",
-                         background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
-                         wraplength=600, justify="left").pack(fill="x", padx=2)
+            for name, pvv in sorted(non_numeric, key=lambda x: x[0].lower()):
+                self._add_other_edit_row(container, name, pvv)
             shown = True
         if not shown:
             tk.Label(container, text=t("common.none"), background=_R_BG_PANEL,
@@ -1405,6 +1625,7 @@ class UnitsEditorWindow(tk.Frame):
         self._section(self._fields_frame, t("units.unit_building_stats"))
         self._col_header(self._fields_frame)
         self._render_group(self._fields_frame, self._field_rows, inst, _FIELDS)
+        self._render_armor(inst)
 
         self._render_upgrade(inst, d)
 
@@ -1771,9 +1992,12 @@ class UnitsEditorWindow(tk.Frame):
                 elif kind in ("list", "boollist"):
                     elems = val.raw
                     if not isinstance(elems, list) or not elems:
+                        # Was silently dropped before — tell the user why nothing changed (#D).
+                        errors.append(t("units.prop_field_has_no_list", prop=prop))
                         continue
                     parts = [p for p in (s.strip() for s in new_str.replace(";", ",").split(",")) if p]
                     if not parts:
+                        errors.append(t("units.prop_field_has_no_list", prop=prop))
                         continue
 
                     def conv(x):

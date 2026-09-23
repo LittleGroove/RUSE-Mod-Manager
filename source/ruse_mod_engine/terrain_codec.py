@@ -1,17 +1,31 @@
 """RUSE high-def terrain decode — ``highdef.tmst_pc`` index + ``highdef.tmst_chunk_pc`` chunks.
 
-The ``.tmst_chunk_pc`` is a homebrew JPEG-like lossy RGB texture codec (Eugen ~2010): per 128×128
-tile = a TGU1/zlib chunk holding two YCbCr DXT1 endpoints (EP0/EP1) + a selector bank, each stored as
-Adaptive-Rice/Exp-Golomb-coded 4×4-DCT coefficients.  Decode = un-Rice → un-zigzag → dequant → IDCT
-→ DXT1-endpoint interpolate → BT.601 YCbCr→RGB.
+The ``.tmst_chunk_pc`` is a homebrew JPEG-like lossy RGB texture codec (Eugen ~2010) wrapped in the
+same container as a ``.tgv`` texture.  Each index record is::
+
+    record +0x00  u32 x2      (1, 1)
+    record +0x08  u32 w, h    TRUE texture size — 512x512 for every LOD0/1/2 chunk in every ship map
+    record +0x18  u16 x2      mip count, format-string length
+    record +0x1C  char[4]     "DXT1"
+    record +0x20  u32 x2      mip offset (always 0x28) + mip size
+    record +0x28  "TGU1"      the codec block:
+        TGU1 +0x04  u32       version (5)
+        TGU1 +0x08  u32 w, h  ENDPOINT plane size = texture/4 (128x128)
+        TGU1 +0x18  u32       selector block count (= ep_w*ep_h, 16384; a few tiles ship 16357..16383)
+        TGU1 +0x1C  u32       flag 256 (the .tgv textures use 257)
+        TGU1 +0x20  u32       DECOMPRESSED body size, then the zlib stream
+
+So a chunk is literally a 512x512 DXT1 surface: six ``ep_w x ep_h`` endpoint planes (EP0 Y/Cb/Cr then
+EP1 Y/Cb/Cr — one DXT1 endpoint pair per 4x4 output block) followed by a selector bank of ep_w*ep_h
+blocks x 4x4 = ONE 2-bit selector per output pixel.  Every bank is Adaptive-Rice/Exp-Golomb-coded
+4x4-DCT coefficients: un-Rice -> un-zigzag -> dequant -> IDCT.
 
 Reverse-engineered and released CC0 by ProLution (RUSE Modding Database); validated against the real
-game files in Issue #8 (the decode's roads/town/water match the baked minimap).  See
-memory/project_terrain_tmst_codec.md.  This is the decode half, adapted to take BYTES (not file
-paths) so the editor can feed it data extracted from a DataMap dat via edata.
-
-Known limitation: the DXT1 selector scale is a RUNTIME value not stored in the file, so colour is
-auto-scaled (washed-out/bright) — structurally accurate, colour approximate.
+game files in Issue #8 (the decode's roads/town/water match the baked minimap).  Issue #19 (also
+ProLution) established the native 512 px chunk size, and re-deriving the container above showed the
+selector bank had been read at 1/16 its real length — see ``decode_tile`` for what that cost and how
+it decodes now.  This is the decode half, adapted to take BYTES (not file paths) so the editor can
+feed it data extracted from a DataMap dat via edata.
 
 Requires numpy + Pillow.  Callers should guard on availability.
 """
@@ -44,6 +58,20 @@ SCALE_Y = 1.164382815361023
 COEFF_CB_G, COEFF_CB_B = 0.3917617201805115, 2.0172343254089355
 COEFF_CR_R, COEFF_CR_G = 1.5999336242675781, 0.8129687309265137
 TILE_SIZE, BLOCKS_PER_TILE, BLOCK_COLS = 128, 1024, 32
+
+# ── chunk geometry (issue #19; read from the headers, these are only the near-universal defaults) ──
+CHUNK_PX = 512               # native texture size of every LOD0/LOD1/LOD2 chunk in every shipped map
+ENDPOINT_PX = 128            # = CHUNK_PX // 4: one DXT1 endpoint pair per 4x4 output block
+RENDER_PX = (64, 128, 256, 512)   # per-chunk render resolutions the decoder can produce
+
+# Mapping from the decoded selector bank onto DXT1 selector space (0..3).  The bank is NOT stored the
+# way the colour banks are: no DC prediction, and no per-4x4-block transpose.  What comes out is a
+# signed field which maps affinely onto the selectors.  Fitted by regression against a ground truth
+# the LOD pyramid provides for free — a LOD2 tile and the 16 LOD0 tiles of the same grid cell cover
+# the same ground, and those 16 tiles carry 4x4 x 128x128 = 512x512 ENDPOINT pixels, i.e. a
+# selector-free 512x512 reference image aligned pixel-for-pixel with the LOD2 tile's output.  Over 12
+# cells on 3 maps: A = 0.2303 +/- 0.0093, B = 1.962 +/- 0.031 (tools/test_scripts/probe_tmst_*).
+SELECTOR_A, SELECTOR_B = 0.230, 1.96
 
 
 class _BitReader:
@@ -103,8 +131,11 @@ def _rice_decode_value(reader, flags):
     return _zigzag_decode(val)
 
 
-def _decode_macro_bank(body, off, n_blocks=BLOCKS_PER_TILE):
-    """Decode one 128×128 channel → (pixels 128×128, raw 4×4 blocks, new offset)."""
+def _bank_subbands(body, off):
+    """The 17 sub-band descriptors of a macro bank → ([(flags, bits, data_off, data_bytes)], end_off).
+
+    Every sub-band's byte range comes from the descriptor table, so a caller that decodes only some of
+    them still knows where the bank ends and stays aligned with the stream."""
     descs = []
     for _ in range(17):
         d = struct.unpack_from("<I", body, off)[0]
@@ -115,7 +146,11 @@ def _decode_macro_bank(body, off, n_blocks=BLOCKS_PER_TILE):
         db = ((ct + 31) // 32) * 4
         subs.append((fl, ct, off, db))
         off += db
+    return subs, off
 
+
+def _nz_counts(body, subs, n_blocks):
+    """Sub-band 0 = per-block deltas of the nonzero-coefficient count → the running counts."""
     fl0, ct0, o0, d0 = subs[0]
     r = _BitReader(body, o0, d0) if ct0 and d0 else None
     raw_counts = [_rice_decode_value(r, fl0) for _ in range(n_blocks)] if r else [0] * n_blocks
@@ -123,6 +158,20 @@ def _decode_macro_bank(body, off, n_blocks=BLOCKS_PER_TILE):
     for v in raw_counts:
         running += v
         nz_counts.append(max(0, running))
+    return nz_counts
+
+
+def _decode_macro_bank(body, off, n_blocks=BLOCKS_PER_TILE, block_cols=BLOCK_COLS,
+                       transpose=True, dc_predict=True):
+    """Decode one channel bank → (pixel plane, raw 4×4 blocks, new offset).
+
+    ``block_cols`` is how many 4×4 blocks make a row of the plane, so the plane comes out
+    ``(n_blocks // block_cols) * 4`` high by ``block_cols * 4`` wide.  ``transpose`` and
+    ``dc_predict`` are switchable because the SELECTOR bank uses neither while the colour banks use
+    both (issue #19)."""
+    subs, off = _bank_subbands(body, off)
+
+    nz_counts = _nz_counts(body, subs, n_blocks)
 
     sb_vals = {}
     for j in range(1, 17):
@@ -144,8 +193,9 @@ def _decode_macro_bank(body, off, n_blocks=BLOCKS_PER_TILE):
             if si[j] < len(sb_vals[j]):
                 flat[ZIGZAG_ORDER[j - 1]] = sb_vals[j][si[j]]
                 si[j] += 1
-        flat[0] += dc_pred
-        dc_pred = flat[0]
+        if dc_predict:
+            flat[0] += dc_pred
+            dc_pred = flat[0]
         coeffs[b] = flat.reshape(4, 4) * QUANT_TABLE
 
     blocks = np.einsum("ij,bjk,kl->bil", IDCT_BT, coeffs, IDCT_BASIS) / NORM_FACTOR
@@ -155,13 +205,52 @@ def _decode_macro_bank(body, off, n_blocks=BLOCKS_PER_TILE):
     # (measured block-edge/interior step 1.96 → 1.07 on Cotentin once transposed: blocks become
     # seamless and roads/hedgerows flow correctly). ProLution's reference codec had the same bug; it
     # was invisible at LOD2 overviews and only surfaced at the higher LODs the detail dropdown enables
-    # (issue #15). Applied here so BOTH the colour channels and the selector index bank stay consistent.
-    blocks = blocks.transpose(0, 2, 1)
-    pixels = np.zeros((TILE_SIZE, TILE_SIZE))
+    # (issue #15). It applies to the COLOUR banks only — the selector bank is stored untransposed, and
+    # forcing this swap on it costs r 0.981 -> 0.933 against ground truth (issue #19), so callers pass
+    # transpose=False for it.
+    if transpose:
+        blocks = blocks.transpose(0, 2, 1)
+    return _blocks_to_plane(blocks, block_cols), blocks, off
+
+
+def _blocks_to_plane(blocks, block_cols):
+    """[n,4,4] 4×4 blocks in raster order → the (rows*4, block_cols*4) plane they tile.
+
+    A short final row (a few shipped tiles carry 16357..16383 selector blocks instead of 16384) is
+    zero-padded rather than dropped, so the plane always has whole rows."""
+    n = blocks.shape[0]
+    rows = (n + block_cols - 1) // block_cols
+    if n < rows * block_cols:
+        pad = np.zeros((rows * block_cols, 4, 4), dtype=blocks.dtype)
+        pad[:n] = blocks
+        blocks = pad
+    return blocks.reshape(rows, block_cols, 4, 4).transpose(0, 2, 1, 3) \
+                 .reshape(rows * 4, block_cols * 4)
+
+
+def _decode_bank_dc(body, off, n_blocks):
+    """Only the DC coefficient of each block of a bank → (dc [n_blocks], offset after the bank).
+
+    This is exact, not an approximation: rows 1..3 of ``IDCT_BASIS`` each sum to zero, so the MEAN of a
+    decoded 4×4 block is exactly its dequantised DC coefficient.  A render at the endpoint resolution
+    (one pixel per 4×4 block) therefore needs sub-bands 0 and 1 only, and sub-bands 2..16 are skipped
+    entirely — which is what makes the low-resolution steps of the ladder genuinely cheaper rather
+    than just smaller (issue #19)."""
+    subs, end = _bank_subbands(body, off)
+    nz_counts = _nz_counts(body, subs, n_blocks)
+    f1, c1, o1, d1 = subs[1]
+    n_need = sum(1 for c in nz_counts if c >= 1)
+    vals = []
+    if n_need > 0 and c1 > 0 and d1 > 0:
+        r = _BitReader(body, o1, d1)
+        vals = [_rice_decode_value(r, f1) for _ in range(n_need)]
+    dc = np.zeros(n_blocks)
+    k = 0
     for b in range(n_blocks):
-        bx, by = (b % BLOCK_COLS) * 4, (b // BLOCK_COLS) * 4
-        pixels[by:by + 4, bx:bx + 4] = blocks[b]
-    return pixels, blocks, off
+        if nz_counts[b] >= 1 and k < len(vals):
+            dc[b] = vals[k]
+            k += 1
+    return dc, end
 
 
 def _ycbcr_to_rgb(y, cb, cr):
@@ -172,46 +261,75 @@ def _ycbcr_to_rgb(y, cb, cr):
     return np.clip(np.stack([r, g, b], axis=-1) + 0.5, 0, 255).astype(np.uint8)
 
 
-def decode_tile(body, use_index=True):
-    """A decompressed TGU1 body → 128×128×3 uint8 RGB ndarray."""
+def _scale_planes(planes, out_w, out_h):
+    """Box-reduce (or, as a fallback, pixel-replicate) YCbCr planes to out_w × out_h.
+
+    Reducing the float planes rather than the finished RGB avoids a round-trip through uint8, and the
+    factors are always integral here (512→256/128/64, 128→64)."""
+    h, w = planes[0].shape
+    if (w, h) == (out_w, out_h):
+        return planes
+    if w >= out_w and h >= out_h and w % out_w == 0 and h % out_h == 0:
+        kx, ky = w // out_w, h // out_h
+        return [p.reshape(out_h, ky, out_w, kx).mean(axis=(1, 3)) for p in planes]
+    ry, rx = max(1, -(-out_h // h)), max(1, -(-out_w // w))
+    return [np.repeat(np.repeat(p, ry, 0), rx, 1)[:out_h, :out_w] for p in planes]
+
+
+def decode_tile(body, use_index=True, tile_px=TILE_SIZE, ep_w=ENDPOINT_PX, ep_h=ENDPOINT_PX,
+                n_sel=None):
+    """A decompressed TGU1 body → ``tile_px`` wide uint8 RGB ndarray.
+
+    ``ep_w``/``ep_h``/``n_sel`` come from the chunk's TGU1 header (see ``chunk_geometry``); the
+    defaults are what every LOD0/LOD1/LOD2 chunk in every shipped map carries.  The chunk's NATIVE
+    size is ``ep_w * 4`` — 512 px — and ``tile_px`` selects what we render out of it:
+
+      * ``tile_px > ep_w`` (256, 512): decode the whole selector bank and blend per output pixel.
+        This is the real 512 px surface the game holds; 256 is its exact 2× box reduction.
+      * ``tile_px <= ep_w`` (64, 128): the selector's per-block MEAN is enough, and that mean is
+        exactly the bank's DC coefficient, so sub-bands 2..16 are never read.  128 px is therefore
+        the exact box reduction of the 512 px render (bar selector clamping), not a crop of it.
+
+    The selector bank used to be read as 1024 blocks at a 128-wide stride — 1/16 of its real length,
+    laid out over the wrong ground.  Scored against the LOD0-endpoint ground truth described at
+    SELECTOR_A, that render (r 0.932/0.875) came out WORSE than ignoring the selector altogether
+    (0.946/0.905); reading the bank properly gives 0.982/0.966, and restores the contrast that used to
+    be blamed on a missing runtime colour scale (sd 42.1 vs the reference's 42.0)."""
+    n_ep_blocks = (ep_w // 4) * (ep_h // 4)
     off = 4
     channels = []
     for _ in range(6):
-        pixels, _, off = _decode_macro_bank(body, off)
+        pixels, _, off = _decode_macro_bank(body, off, n_ep_blocks, ep_w // 4)
         channels.append(pixels)
 
-    if use_index:
-        aux_count = struct.unpack_from("<I", body, off)[0]
-        off += 4 + aux_count * 4
-        _, idx_blocks, off = _decode_macro_bank(body, off)
-        # DXT1 selectors are BLOCK-LOCAL: each 4×4 block indexes between its own EP0/EP1 pair, so the
-        # selector range must be normalised PER 4×4 BLOCK — not globally per tile. The old per-tile
-        # min/max was the source of the visible chunk seams (issue #15): the decoded index plane carries
-        # a steep per-tile vertical DC ramp (~2284 units vs ~70 across), so a global scale mapped the
-        # tile TOP→EP0 and BOTTOM→EP1, baking a ~23-level vertical brightness sweep into every tile that
-        # stepped at the tile boundaries. Per-block normalisation removes that sweep (vertical seam
-        # 23→2, matching the seamless ground-truth minimap) while keeping the real per-pixel selector
-        # detail; flat blocks (EP0≈EP1) are unaffected since the endpoints are equal there.
-        bmin = idx_blocks.min(axis=(1, 2), keepdims=True)
-        brng = idx_blocks.max(axis=(1, 2), keepdims=True) - bmin
-        idx_norm = np.where(brng > 0, (idx_blocks - bmin) / np.where(brng > 0, brng, 1.0) * 3.0, 1.5)
-        selectors = np.clip(np.round(idx_norm), 0, 3).astype(np.float64)
-        sel_grid = np.zeros((TILE_SIZE, TILE_SIZE))
-        for b in range(BLOCKS_PER_TILE):
-            bx, by = (b % BLOCK_COLS) * 4, (b // BLOCK_COLS) * 4
-            sel_grid[by:by + 4, bx:bx + 4] = selectors[b]
-        w0 = np.where(sel_grid == 0, 1.0,
-             np.where(sel_grid == 1, 2.0 / 3,
-             np.where(sel_grid == 2, 1.0 / 3, 0.0)))
-        w1 = 1.0 - w0
-        y = channels[0] * w0 + channels[3] * w1
-        cb = channels[1] * w0 + channels[4] * w1
-        cr = channels[2] * w0 + channels[5] * w1
-    else:
-        y = (channels[0] + channels[3]) / 2
-        cb = (channels[1] + channels[4]) / 2
-        cr = (channels[2] + channels[5]) / 2
-    return _ycbcr_to_rgb(y, cb, cr)
+    out_w = max(1, int(tile_px))
+    out_h = max(1, int(round(tile_px * ep_h / float(ep_w))))
+
+    if not use_index:
+        planes = [(channels[0] + channels[3]) / 2, (channels[1] + channels[4]) / 2,
+                  (channels[2] + channels[5]) / 2]
+        return _ycbcr_to_rgb(*_scale_planes(planes, out_w, out_h))
+
+    aux_count = struct.unpack_from("<I", body, off)[0]
+    off += 4 + aux_count * 4
+    if n_sel is None:
+        n_sel = ep_w * ep_h
+
+    if out_w > ep_w:                                   # full per-pixel selector detail
+        _, sel_blocks, off = _decode_macro_bank(body, off, n_sel, ep_w,
+                                                transpose=False, dc_predict=False)
+        sel = np.clip(np.round(SELECTOR_A * _blocks_to_plane(sel_blocks, ep_w) + SELECTOR_B), 0, 3)
+        w0 = 1.0 - sel[:ep_h * 4, :ep_w * 4] / 3.0     # sel 0..3 → EP0 weight 1, 2/3, 1/3, 0
+        up = lambda p: np.repeat(np.repeat(p, 4, axis=0), 4, axis=1)
+        planes = [up(channels[i]) * w0 + up(channels[i + 3]) * (1.0 - w0) for i in range(3)]
+    else:                                              # block-mean selector = the bank's DC alone
+        dc, off = _decode_bank_dc(body, off, n_sel)
+        flat = np.zeros(ep_w * ep_h)
+        flat[:min(n_sel, flat.size)] = dc[:flat.size]
+        w0 = 1.0 - np.clip(SELECTOR_A * flat.reshape(ep_h, ep_w) + SELECTOR_B, 0.0, 3.0) / 3.0
+        planes = [channels[i] * w0 + channels[i + 3] * (1.0 - w0) for i in range(3)]
+
+    return _ycbcr_to_rgb(*_scale_planes(planes, out_w, out_h))
 
 
 # ── index (.tmst_pc) + chunk (.tmst_chunk_pc), from BYTES ────────────────────
@@ -225,6 +343,23 @@ def parse_tile_index(data):
     n = (len(data) - 76) // 8
     records = [struct.unpack_from("<II", data, 76 + i * 8) for i in range(n)]
     return grid_w, grid_h, records
+
+
+def chunk_geometry(chunk_bytes, tgu1_pos):
+    """The TGU1 header at ``tgu1_pos`` → (ep_w, ep_h, n_selector_blocks, native_px).
+
+    Read rather than assumed: a handful of shipped tiles carry 16357..16383 selector blocks instead of
+    the usual 16384, and the LOD3 overview record is not square (256×128 … 1024×512).  Falls back to
+    the universal defaults if the header looks wrong, so a malformed chunk degrades to a normal decode
+    attempt instead of raising."""
+    try:
+        ep_w, ep_h = struct.unpack_from("<II", chunk_bytes, tgu1_pos + 8)
+        n_sel = struct.unpack_from("<I", chunk_bytes, tgu1_pos + 24)[0]
+        if not (4 <= ep_w <= 4096 and 4 <= ep_h <= 4096 and 0 < n_sel <= ep_w * ep_h):
+            raise ValueError
+    except Exception:
+        ep_w, ep_h, n_sel = ENDPOINT_PX, ENDPOINT_PX, ENDPOINT_PX * ENDPOINT_PX
+    return ep_w, ep_h, n_sel, ep_w * 4
 
 
 def find_tgu1_positions(data):
@@ -361,7 +496,13 @@ def _encode_macro_bank(pixels_128):
 
 
 def encode_tile(rgb):
-    """Encode a 128×128 RGB uint8 array → decompressed TGU1 body bytes (EP0==EP1, selector 0)."""
+    """Encode a 128×128 RGB uint8 array → decompressed TGU1 body bytes (EP0==EP1, selector 0).
+
+    NOTE (issue #19): this writes a 1024-block selector bank, i.e. a 128 px surface — NOT the 512 px
+    layout the game actually ships (16384 selector blocks, one per output pixel), and it omits the
+    outer .tgv-style record envelope entirely.  It was never game-valid and still isn't; decoding its
+    output needs ``decode_tile(..., n_sel=1024)``.  Left as the starting point for a future terrain
+    write-back, which will need the real container before it can round-trip."""
     rgb = np.asarray(rgb, dtype=np.uint8)
     y, cb, cr = _rgb_to_ycbcr(rgb)
     parts = [struct.pack("<I", 0)]
@@ -392,8 +533,11 @@ def make_tgu1_chunk(body_bytes):
 
 
 def best_lod(grid_w, grid_h, budget=300):
-    """Highest-detail LOD whose tile count stays within `budget` (decode is pure-Python ~0.15 s/tile,
-    so this caps the worst-case first-decode time).  LOD0=16N, LOD1=4N, LOD2=N tiles (N=grid_w·grid_h)."""
+    """Highest-detail LOD whose tile count stays within `budget`, capping worst-case first-decode time.
+    LOD0=16N, LOD1=4N, LOD2=N tiles (N=grid_w·grid_h).
+
+    Measured per-tile decode (issue #19): ~0.095 s at 64/128 px per chunk, ~0.219 s at 256/512 px —
+    so a budget in tiles is only half the story once ``tile_px`` is also a lever."""
     n = grid_w * grid_h
     if 16 * n <= budget:
         return 0
@@ -420,7 +564,7 @@ def enhance(img):
     return out
 
 
-def compose(hd_img, base_img, detail_gain=1.3, blur=6, saturation=1.15):
+def compose(hd_img, base_img, detail_gain=1.3, blur=6, saturation=1.15, destripe=True):
     """Best-quality terrain image (issue #8): inject the high-def tmst's DETAIL onto a clean BASE
     (the baked minimap), so the result has the base's correct colour/brightness — NO per-tile decode
     banding — plus the tmst's fine detail.  ``base_img`` is resized to ``hd_img``.
@@ -428,18 +572,26 @@ def compose(hd_img, base_img, detail_gain=1.3, blur=6, saturation=1.15):
     Why: the raw tmst decode is washed-out + horizontally banded (a runtime colour-scale value isn't
     in the file).  The banding is mostly low-frequency, so we keep only the tmst's HIGH-frequency
     detail (after a destripe pass) and lay it over the minimap's clean low-frequency colour.  Falls
-    back to ``enhance()`` if no base is available."""
+    back to ``enhance()`` if no base is available.
+
+    ``destripe`` subtracts each row's deviation from a vertically median-smoothed row profile.  It is
+    there for the banding the OLD truncated selector read baked into every tile; that cause is fixed
+    (issue #19).  It is also a WHOLE-IMAGE operation, so the tiled path (``terrain_tiles``) turns it
+    off — a row median taken over whatever happens to be on screen would shift as the user pans."""
     if base_img is None:
         return enhance(hd_img)
     hd = hd_img.convert("RGB")
     W, H = hd.size
     base = base_img.convert("RGB").resize((W, H), Image.BILINEAR)
     a = np.asarray(hd).astype(np.float64)
-    rm = a.mean(axis=1)                                   # destripe horizontal seams first
-    p = 7
-    rp = np.pad(rm, ((p, p), (0, 0)), mode="edge")
-    rms = np.median(np.stack([rp[i:i + H] for i in range(2 * p + 1)], 0), axis=0)
-    ds = np.clip(a - (rm - rms)[:, None, :], 0, 255)
+    if destripe:
+        rm = a.mean(axis=1)                               # destripe horizontal seams first
+        p = 7
+        rp = np.pad(rm, ((p, p), (0, 0)), mode="edge")
+        rms = np.median(np.stack([rp[i:i + H] for i in range(2 * p + 1)], 0), axis=0)
+        ds = np.clip(a - (rm - rms)[:, None, :], 0, 255)
+    else:
+        ds = a
     low = np.asarray(Image.fromarray(ds.astype(np.uint8))
                      .filter(ImageFilter.GaussianBlur(blur))).astype(np.float64)
     detail = ds - low                                    # tmst high-frequency detail only
@@ -458,32 +610,37 @@ def decode_worker_count(max_workers=None):
     return max(1, min(cpu - 1, _MAX_DECODE_WORKERS))
 
 
-# Set per worker process via the pool initializer (cheaper than shipping the flag on every task).
+# Set per worker process via the pool initializer (cheaper than shipping the flags on every task).
 _WORKER_USE_INDEX = True
+_WORKER_TILE_PX = TILE_SIZE
 
 
-def _worker_init(use_index):
-    global _WORKER_USE_INDEX
-    _WORKER_USE_INDEX = use_index
+def _worker_init(use_index, tile_px=TILE_SIZE):
+    global _WORKER_USE_INDEX, _WORKER_TILE_PX
+    _WORKER_USE_INDEX, _WORKER_TILE_PX = use_index, tile_px
 
 
 def _decode_tile_job(task):
-    """Worker side: (x, y, compressed_body) → (x, y, rgb-or-None). Mirrors the sequential per-tile
-    try/except so one bad tile returns None instead of killing the whole batch."""
-    x, y, comp = task
+    """Worker side: (x, y, compressed_body, ep_w, ep_h, n_sel) → (x, y, rgb-or-None). Mirrors the
+    sequential per-tile try/except so one bad tile returns None instead of killing the whole batch."""
+    x, y, comp, ep_w, ep_h, n_sel = task
     try:
         body = zlib.decompressobj().decompress(comp)
-        return x, y, decode_tile(body, use_index=_WORKER_USE_INDEX)
+        return x, y, decode_tile(body, _WORKER_USE_INDEX, _WORKER_TILE_PX, ep_w, ep_h, n_sel)
     except Exception:
         return x, y, None
 
 
-def decode_terrain(tmst_bytes, chunk_bytes, lod=1, use_index=True, progress=None, max_workers=None):
+def decode_terrain(tmst_bytes, chunk_bytes, lod=1, use_index=True, progress=None, max_workers=None,
+                   tile_px=TILE_SIZE):
     """Decode + stitch the full terrain at ``lod`` (0=highest … 3=thumbnail) → PIL RGB Image.
 
     Records are a LOD pyramid: rec0=LOD3, then LOD2=N, LOD1=4N, LOD0=16N (N=grid_w·grid_h).
-    ``progress(done, total)`` is called periodically if given (it may raise to ABORT — the abort
-    propagates out and the worker pool is torn down).  Returns None if the data is empty.
+    ``lod`` and ``tile_px`` are the two independent detail levers: the tier says how many chunks cover
+    the map, ``tile_px`` how much of each chunk's native 512 px we render, so the finished image is
+    ``tiles_w * tile_px`` across.  ``progress(done, total)`` is called periodically if given (it may
+    raise to ABORT — the abort propagates out and the worker pool is torn down).  Returns None if the
+    data is empty.
 
     Big maps (≥ _PARALLEL_MIN_TILES tiles) are decoded across a process pool — the per-tile work is
     GIL-bound pure-Python entropy decoding, so processes (not threads) are what parallelise it. If the
@@ -505,10 +662,11 @@ def decode_terrain(tmst_bytes, chunk_bytes, lod=1, use_index=True, progress=None
         3: (1, 1, 0, 1, 1),
     }
     tiles_w, tiles_h, rec_start, tiles_per_group, inner_w = lod_config[lod]
-    canvas = np.zeros((tiles_h * TILE_SIZE, tiles_w * TILE_SIZE, 3), dtype=np.uint8)
+    tile_px = max(1, int(tile_px))
+    canvas = np.zeros((tiles_h * tile_px, tiles_w * tile_px, 3), dtype=np.uint8)
     n_tiles = tiles_w * tiles_h
 
-    # tile work-list: (dst_x, dst_y, compressed_body) for every present tile
+    # tile work-list: (dst_x, dst_y, compressed_body, ep_w, ep_h, n_sel) for every present tile
     tasks = []
     for tile_idx in range(n_tiles):
         ri = rec_start + tile_idx
@@ -520,18 +678,24 @@ def decode_terrain(tmst_bytes, chunk_bytes, lod=1, use_index=True, progress=None
         x, y = gx * inner_w + tx, gy * inner_w + ty
         chunk_idx, rec_size = record_info[ri]
         cp = positions[chunk_idx]
-        tasks.append((x, y, chunk_bytes[cp + 36: cp + 36 + (rec_size - 76)]))
+        ep_w, ep_h, n_sel, _native = chunk_geometry(chunk_bytes, cp)
+        tasks.append((x, y, chunk_bytes[cp + 36: cp + 36 + (rec_size - 76)], ep_w, ep_h, n_sel))
 
     def _place(x, y, rgb):
-        if rgb is not None:
-            canvas[y * TILE_SIZE:(y + 1) * TILE_SIZE, x * TILE_SIZE:(x + 1) * TILE_SIZE] = rgb
+        if rgb is None:
+            return
+        h, w = rgb.shape[:2]
+        y0, x0 = y * tile_px, x * tile_px
+        h, w = min(h, canvas.shape[0] - y0), min(w, canvas.shape[1] - x0)
+        if h > 0 and w > 0:
+            canvas[y0:y0 + h, x0:x0 + w] = rgb[:h, :w]
 
     workers = decode_worker_count(max_workers)
     if workers > 1 and len(tasks) >= _PARALLEL_MIN_TILES:
         ex = None
         try:
             ex = ProcessPoolExecutor(max_workers=workers, initializer=_worker_init,
-                                     initargs=(use_index,))
+                                     initargs=(use_index, tile_px))
         except Exception:
             ex = None                                   # can't spawn → sequential fallback below
         if ex is not None:
@@ -560,9 +724,10 @@ def decode_terrain(tmst_bytes, chunk_bytes, lod=1, use_index=True, progress=None
                 return Image.fromarray(canvas)
             # else: fall through and redo sequentially (overwrites any partial canvas)
 
-    for i, (x, y, comp) in enumerate(tasks):
+    for i, (x, y, comp, ep_w, ep_h, n_sel) in enumerate(tasks):
         try:
-            rgb = decode_tile(zlib.decompressobj().decompress(comp), use_index=use_index)
+            rgb = decode_tile(zlib.decompressobj().decompress(comp), use_index,
+                              tile_px, ep_w, ep_h, n_sel)
         except Exception:
             continue
         _place(x, y, rgb)

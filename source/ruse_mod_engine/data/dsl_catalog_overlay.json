@@ -1,62 +1,4835 @@
 {
  "_comment": "Hand-curated enrichment over dsl_catalog.json. Refines the ~35 highest-value Mission-Logic blocks with friendly labels/help and correct param types/widgets, and COMPLETES enum domains that usage-mining left partial. Param type vocabulary: bool,int,float,text,loc,enum(+enum_domain),unit_type,tag(+tag_kind=pos|zone|unit),camp_ref,ref(+ref_kind=var|group|timer),block_ref(+block_kind=condition|action|operator|constraint),list_of(+elem). replace_params=true means the auto param list was the wrong base-class one and is rebuilt here.",
  "enums": {
-  "NiveauIA": ["Player", "Scripted", "Easy", "Normal", "Hard"],
-  "Nationalite": ["EU", "Allemagne", "France", "Italie", "Japon", "RU", "URSS"],
-  "TDifficultes": ["Facile", "Normal", "Difficile"],
-  "TGameTimerMode": ["E_GAMETIMER_NONE", "E_GAMETIMER_COUNTDOWN", "E_GAMETIMER_STOPWATCH"]
+  "NiveauIA": [
+   "Player",
+   "Scripted",
+   "Easy",
+   "Normal",
+   "Hard"
+  ],
+  "Nationalite": [
+   "EU",
+   "Allemagne",
+   "France",
+   "Italie",
+   "Japon",
+   "RU",
+   "URSS"
+  ],
+  "TDifficultes": [
+   "Facile",
+   "Normal",
+   "Difficile"
+  ],
+  "TGameTimerMode": [
+   "E_GAMETIMER_NONE",
+   "E_GAMETIMER_COUNTDOWN",
+   "E_GAMETIMER_STOPWATCH"
+  ]
  },
  "classes": {
-  "DescriptorSequential": {"label": "Sequence (do in order)", "category": "Control flow", "path": "leveldesign.descriptor", "help": "Run SubActions one after another. Repeat=True loops forever (use for periodic events).", "replace_params": true, "param_order": ["SubActions", "Repeat"], "params": {"SubActions": {"type": "list_of", "elem": "action", "required": true, "help": "Actions run in order."}, "Repeat": {"type": "bool", "default": false, "help": "Loop the sequence forever."}}},
-  "DescriptorSimultaneous": {"label": "Parallel (do at once)", "category": "Control flow", "path": "leveldesign.descriptor", "help": "Run all SubActions simultaneously.", "replace_params": true, "param_order": ["SubActions"], "params": {"SubActions": {"type": "list_of", "elem": "action", "required": true, "help": "Actions run together."}}},
-  "DescriptorCompetition": {"label": "Race (first to finish wins)", "category": "Control flow", "path": "leveldesign.descriptor", "help": "Run SubActions in parallel; the first to complete stops the rest.", "replace_params": true, "param_order": ["SubActions"], "params": {"SubActions": {"type": "list_of", "elem": "action", "required": true}}},
-  "DescriptorWaitCondition": {"label": "Wait until condition", "category": "Control flow", "path": "leveldesign.descriptor", "help": "Block until the condition becomes true.", "params": {"Condition": {"type": "block_ref", "block_kind": "condition", "required": true}}},
-  "DescriptorWaitDuree": {"label": "Wait N seconds", "category": "Control flow", "path": "leveldesign.descriptor", "help": "Pause for a number of seconds.", "params": {"Duree": {"type": "int", "required": true, "default": 5, "help": "Seconds to wait."}}},
-  "DescriptorIfThenElse": {"label": "If / then / else", "category": "Control flow", "path": "leveldesign.descriptor", "help": "Branch on a condition.", "params": {"Condition": {"type": "block_ref", "block_kind": "condition", "required": true}, "EffetIfTrue": {"type": "block_ref", "block_kind": "action"}, "EffetIfFalse": {"type": "block_ref", "block_kind": "action"}}},
-
-  "DescriptorGereObjectifAvecLabel": {"label": "Objective (with label + bonus points)", "category": "Objectives", "help": "A tracked objective shown on the HUD. Set BonusScoreMission for a secondary/bonus objective that grants extra points. Put a victory/defeat block in ActionsReussi to make it win/lose the mission.", "param_order": ["TrackingId", "Label", "Condition", "ConditionEchec", "ActionsReussi", "ActionsEchec", "BonusScoreMission", "ShowOnMap", "ShowNewObjectif"], "params": {"TrackingId": {"type": "text", "help": "Unique id, e.g. CH99_OB01."}, "Label": {"type": "loc", "help": "Objective text shown to the player."}, "Condition": {"type": "block_ref", "block_kind": "condition", "required": true, "help": "Success condition."}, "ConditionEchec": {"type": "block_ref", "block_kind": "condition", "help": "Failure condition (optional)."}, "ActionsReussi": {"type": "block_ref", "block_kind": "action", "help": "Run on success (e.g. Win, give points)."}, "ActionsEchec": {"type": "block_ref", "block_kind": "action", "help": "Run on failure."}, "BonusScoreMission": {"type": "int", "default": 0, "help": "Bonus points (0 = primary; 100-1500 = secondary)."}, "ShowOnMap": {"type": "bool", "default": true}}},
-  "DescriptorDeclencheVictoireChallenge": {"label": "WIN the operation", "category": "Objectives", "help": "Instantly win (operations/challenges). Put inside an objective's ActionsReussi or an event.", "replace_params": true, "params": {}},
-  "DescriptorDeclencheDefaite": {"label": "LOSE the mission", "category": "Objectives", "help": "Instantly lose. Put inside a fail action or an event.", "replace_params": true, "params": {}},
-  "DescriptorDrawLabel": {"label": "Draw map label", "category": "Objectives", "help": "Show a text label on the map.", "params": {"Text": {"type": "loc"}, "Position": {"type": "tag", "tag_kind": "pos"}}},
-
-  "ConditionDetectUnitDansZoneDetection": {"label": "Units in zone?", "category": "Conditions", "help": "True when units (matching Contrainte) are in a detection zone.", "params": {"Detecteur": {"type": "tag", "tag_kind": "zone", "required": true, "help": "The detection zone."}, "Contrainte": {"type": "block_ref", "block_kind": "constraint", "help": "Which units count (optional)."}, "ComparaisonNbUnits": {"type": "block_ref", "block_kind": "operator", "help": "How many (operator vs a count)."}}},
-  "ConditionUnitGroupWithFilter": {"label": "Unit group count (filtered)?", "category": "Conditions", "help": "Compare the count of units in a group (after a filter) against a value.", "params": {"Variable": {"type": "ref", "ref_kind": "group", "required": true}, "Operator": {"type": "block_ref", "block_kind": "operator", "required": true}, "Contrainte": {"type": "block_ref", "block_kind": "constraint"}}},
-  "ConditionTimer": {"label": "Timer elapsed?", "category": "Conditions", "help": "True when a timer reaches 0.", "params": {"Timer": {"type": "ref", "ref_kind": "timer", "required": true}}},
-  "ConditionVariableInteger": {"label": "Integer variable test", "category": "Conditions", "help": "Compare an integer variable against a value via an operator.", "replace_params": true, "param_order": ["Variable", "Operator"], "params": {"Variable": {"type": "ref", "ref_kind": "var", "required": true}, "Operator": {"type": "block_ref", "block_kind": "operator", "required": true}}},
-  "ConditionAnd": {"label": "AND (all true)", "category": "Conditions", "help": "True when every sub-condition is true.", "replace_params": true, "param_order": ["SousConditions"], "params": {"SousConditions": {"type": "list_of", "elem": "condition", "required": true}}},
-  "ConditionOr": {"label": "OR (any true)", "category": "Conditions", "help": "True when any sub-condition is true.", "replace_params": true, "param_order": ["SousConditions"], "params": {"SousConditions": {"type": "list_of", "elem": "condition", "required": true}}},
-  "ConditionNone": {"label": "NONE (all false)", "category": "Conditions", "help": "True when no sub-condition is true.", "replace_params": true, "param_order": ["SousConditions"], "params": {"SousConditions": {"type": "list_of", "elem": "condition", "required": true}}},
-  "ConditionCamp": {"label": "Camp is victorious?", "category": "Conditions", "help": "Check a camp's victory state.", "params": {"Camp": {"type": "camp_ref", "required": true}, "EstVictorieux": {"type": "bool", "default": true}}},
-
-  "DescriptorCreateUnit": {"label": "Spawn units", "category": "Spawning/Production", "help": "Create units at a position for a camp (reinforcements).", "param_order": ["TypeUnit", "Camp", "Position", "NbUnit", "Group"], "params": {"TypeUnit": {"type": "unit_type", "required": true}, "Camp": {"type": "camp_ref", "required": true}, "Position": {"type": "tag", "tag_kind": "pos", "required": true}, "NbUnit": {"type": "int", "default": 1}, "Group": {"type": "ref", "ref_kind": "group", "help": "Add the spawned units to this group (optional)."}, "IsFake": {"type": "bool", "default": false}}},
-  "DescriptorProduitUnits": {"label": "Queue production", "category": "Spawning/Production", "help": "Make a camp produce units through its buildings.", "params": {"TypeUnits": {"type": "list_of", "elem": "unit_type", "required": true}, "Camp": {"type": "camp_ref", "required": true}, "Position": {"type": "tag", "tag_kind": "pos"}, "Gratuit": {"type": "bool", "default": false, "help": "Free (no cost)."}}},
-  "DescriptorParachutage": {"label": "Airdrop (paradrop)", "category": "Spawning/Production", "help": "Parachute a unit group to a position.", "params": {"Group": {"type": "ref", "ref_kind": "group", "required": true}, "Position": {"type": "tag", "tag_kind": "pos", "required": true}}},
-  "DescriptorAddAllCampUnitsToUnitGroup": {"label": "Add camp's units to group", "category": "Spawning/Production", "help": "Populate a unit group with all of a camp's units (for objectives/conditions).", "replace_params": true, "param_order": ["Camp", "Group", "IncludeFake"], "params": {"Camp": {"type": "camp_ref", "required": true}, "Group": {"type": "ref", "ref_kind": "group", "required": true}, "IncludeFake": {"type": "bool", "default": false}}},
-
-  "DescriptorMove": {"label": "Order: move", "category": "Orders/Combat", "help": "Move a unit group along positions.", "params": {"Group": {"type": "ref", "ref_kind": "group", "required": true}, "Positions": {"type": "list_of", "elem": "tag_pos", "required": true}}},
-  "DescriptorAttack": {"label": "Order: attack", "category": "Orders/Combat", "help": "Order a group to attack targets.", "params": {"Group": {"type": "ref", "ref_kind": "group", "required": true}, "Targets": {"type": "list_of", "elem": "tag_zone"}}},
-  "DescriptorDefendZone": {"label": "Order: defend zone", "category": "Orders/Combat", "help": "Order a group to defend a zone.", "params": {"Group": {"type": "ref", "ref_kind": "group", "required": true}, "Detecteur": {"type": "tag", "tag_kind": "zone", "required": true}}},
-  "DescriptorFrappeArtillerie": {"label": "Artillery strike", "category": "Orders/Combat", "help": "Call an artillery strike on a position.", "params": {"Group": {"type": "ref", "ref_kind": "group"}, "Position": {"type": "tag", "tag_kind": "pos", "required": true}}},
-
-  "DescriptorIAAll": {"label": "Enable full AI for camp", "category": "AI directives", "help": "Hand the camp to the full strategic AI (it builds/attacks on its own).", "params": {"Camp": {"type": "camp_ref", "required": true}}},
-  "DescriptorIAObjectifDefense": {"label": "AI: defend zones", "category": "AI directives", "help": "Tell the AI camp to defend a list of zones.", "params": {"Camp": {"type": "camp_ref", "required": true}, "ZoneList": {"type": "list_of", "elem": "tag_zone", "required": true}}},
-  "DescriptorIAObjectifAttaques": {"label": "AI: attack zones", "category": "AI directives", "help": "Tell the AI camp to attack a list of zones (waves).", "params": {"Camp": {"type": "camp_ref", "required": true}, "ZoneList": {"type": "list_of", "elem": "tag_zone", "required": true}, "MinPeriod": {"type": "int", "help": "Min seconds between attack waves."}}},
-  "ModifieParametresIA": {"label": "Tune AI behaviour", "category": "AI directives", "help": "Adjust an AI camp's aggressiveness and unit-type bonuses.", "params": {"Camp": {"type": "camp_ref", "required": true}, "Agressivite": {"type": "int", "help": "0-100."}, "Bonus_Tank": {"type": "int"}, "Bonus_Avion": {"type": "int"}, "Bonus_Artillerie": {"type": "int"}}},
-  "DescriptorIARemoveAllObjectives": {"label": "Clear AI objectives", "category": "AI directives", "help": "Remove all scripted AI objectives from a camp.", "params": {"Camp": {"type": "camp_ref", "required": true}}},
-
-  "DescriptorSetRessourceCamp": {"label": "Set camp money", "category": "Economy/Tech", "help": "Set a camp's resources to an exact amount.", "params": {"Camp": {"type": "camp_ref", "required": true}, "Quantite": {"type": "int", "required": true}}},
-  "DescriptorBloqueCarteBluff": {"label": "Block a RUSE card", "category": "RUSE/Bluff", "help": "Prevent a camp from using a RUSE/bluff card.", "params": {"Camp": {"type": "camp_ref", "required": true}, "Carte": {"type": "enum", "enum_domain": "BluffCardEnum", "required": true}, "Bloque": {"type": "bool", "default": true}}},
-  "DescriptorBloqueTechno": {"label": "Lock units (techno)", "category": "Economy/Tech", "help": "Block a camp from building certain unit types.", "params": {"Camp": {"type": "camp_ref", "required": true}, "TypeUnits": {"type": "list_of", "elem": "unit_type", "required": true}, "Hide": {"type": "bool", "default": true}}},
-  "DescriptorDebloqueTechno": {"label": "Unlock units (techno)", "category": "Economy/Tech", "help": "Allow a camp to build certain unit types.", "params": {"Camp": {"type": "camp_ref", "required": true}, "TypeUnits": {"type": "list_of", "elem": "unit_type", "required": true}}},
-
-  "VariableInteger": {"label": "Integer variable", "category": "Variables/Timers", "help": "A named integer counter.", "params": {"Value": {"type": "int", "default": 0}}},
-  "VariableTimer": {"label": "Timer", "category": "Variables/Timers", "help": "A countdown timer (seconds).", "params": {"Duree": {"type": "int", "default": 600}, "Text": {"type": "text"}}},
-  "VariableUnitGroup": {"label": "Unit group", "category": "Variables/Timers", "help": "A named set of units (filled by Add...ToUnitGroup actions).", "replace_params": true, "params": {"UnitList": {"type": "list_of", "elem": "ref_unit", "default": []}}},
-  "DescriptorStartTimer": {"label": "Start timer", "category": "Variables/Timers", "help": "Start a timer counting down.", "params": {"Timer": {"type": "ref", "ref_kind": "timer", "required": true}, "NouvelleDuree": {"type": "int", "help": "Override duration (optional)."}}},
-  "DescriptorIncrementeVariableInteger": {"label": "Increment variable", "category": "Variables/Timers", "help": "Add to an integer variable.", "params": {"Variable": {"type": "ref", "ref_kind": "var", "required": true}, "Value": {"type": "int", "default": 1}}},
-
-  "OperatorIntegerLessOrEqual": {"label": "<= value", "category": "Operators", "help": "True when the variable is <= Value.", "params": {"Value": {"type": "int", "required": true}}},
-  "OperatorIntegerMoreOrEqual": {"label": ">= value", "category": "Operators", "help": "True when the variable is >= Value.", "params": {"Value": {"type": "int", "required": true}}},
-  "OperatorIntegerEqual": {"label": "== value", "category": "Operators", "help": "True when the variable equals Value.", "params": {"Value": {"type": "int", "required": true}}}
+  "ConditionAnd": {
+   "label": "AND (all true)",
+   "category": "Conditions",
+   "help": "True when every sub-condition is true.",
+   "replace_params": true,
+   "param_order": [
+    "SousConditions"
+   ],
+   "params": {
+    "SousConditions": {
+     "type": "list_of",
+     "elem": "condition",
+     "required": true
+    }
+   }
+  },
+  "ConditionCamp": {
+   "label": "Camp is victorious?",
+   "category": "Conditions",
+   "help": "Check a camp's victory state.",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "EstVictorieux": {
+     "type": "bool",
+     "default": true
+    }
+   }
+  },
+  "ConditionCarteActive": {
+   "label": "Card Active?",
+   "category": "Ruse cards",
+   "path": "leveldesignsolo.manipulation_card",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Position",
+    "Carte"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "default": null
+    },
+    "Carte": {
+     "type": "enum",
+     "enum_domain": "BluffCardEnum",
+     "default": "SilenceRadio"
+    }
+   }
+  },
+  "ConditionDetectUnitDansZoneDetection": {
+   "label": "Units in zone?",
+   "category": "Conditions",
+   "help": "True when units (matching Contrainte) are in a detection zone.",
+   "params": {
+    "Detecteur": {
+     "type": "tag",
+     "tag_kind": "zone",
+     "required": true,
+     "help": "The detection zone."
+    },
+    "Contrainte": {
+     "type": "block_ref",
+     "block_kind": "constraint",
+     "help": "Which units count (optional)."
+    },
+    "ComparaisonNbUnits": {
+     "type": "block_ref",
+     "block_kind": "operator",
+     "help": "How many (operator vs a count)."
+    }
+   }
+  },
+  "ConditionDeviseCamp": {
+   "label": "Devise Camp?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Operator",
+    "Variable"
+   ],
+   "params": {
+    "Operator": {
+     "type": "object",
+     "required": true
+    },
+    "Variable": {
+     "type": "camp_ref",
+     "required": true
+    }
+   }
+  },
+  "ConditionFalse": {
+   "label": "False?",
+   "category": "Conditions",
+   "path": "leveldesign.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "ConditionMenuOuvert": {
+   "label": "Menu Ouvert?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "ConditionNationaliteCamp": {
+   "label": "Nationalite Camp?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "NationList"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "NationList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "ConditionNone": {
+   "label": "NONE (all false)",
+   "category": "Conditions",
+   "help": "True when no sub-condition is true.",
+   "replace_params": true,
+   "param_order": [
+    "SousConditions"
+   ],
+   "params": {
+    "SousConditions": {
+     "type": "list_of",
+     "elem": "condition",
+     "required": true
+    }
+   }
+  },
+  "ConditionOr": {
+   "label": "OR (any true)",
+   "category": "Conditions",
+   "help": "True when any sub-condition is true.",
+   "replace_params": true,
+   "param_order": [
+    "SousConditions"
+   ],
+   "params": {
+    "SousConditions": {
+     "type": "list_of",
+     "elem": "condition",
+     "required": true
+    }
+   }
+  },
+  "ConditionPS3MoveActivated": {
+   "label": "P S3 Move Activated?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "ConditionPointIsRecon": {
+   "label": "Point Is Recon?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Position",
+    "Camp",
+    "CampEnnemi"
+   ],
+   "params": {
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "CampEnnemi": {
+     "type": "camp_ref",
+     "required": true
+    }
+   }
+  },
+  "ConditionProductionListeVide": {
+   "label": "Production Liste Vide?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    }
+   }
+  },
+  "ConditionRechercheTerminee": {
+   "label": "Recherche Terminee?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "TypeUnits"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "TypeUnits": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "ConditionSelectionneRuse": {
+   "label": "Selectionne Ruse?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "AnyCards",
+    "Card"
+   ],
+   "params": {
+    "AnyCards": {
+     "type": "bool",
+     "required": true
+    },
+    "Card": {
+     "type": "enum",
+     "enum_domain": "BluffCardEnum",
+     "default": "SilenceRadio"
+    }
+   }
+  },
+  "ConditionSelectionneUnite": {
+   "label": "Selectionne unit?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "IsProduction",
+    "AnyUnits",
+    "TypeUnit"
+   ],
+   "params": {
+    "IsProduction": {
+     "type": "bool",
+     "required": true
+    },
+    "AnyUnits": {
+     "type": "bool",
+     "required": true
+    },
+    "TypeUnit": {
+     "type": "unit_type",
+     "default": null
+    }
+   }
+  },
+  "ConditionTimer": {
+   "label": "Timer reached a value?",
+   "category": "Conditions",
+   "help": "Compare a timer against a value with an operator. The timer counts DOWN from its duration, so 'less or equal 0' is the usual 'time is up' test.",
+   "replace_params": true,
+   "param_order": [
+    "Variable",
+    "Operator"
+   ],
+   "params": {
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "timer",
+     "required": true,
+     "help": "The timer to look at."
+    },
+    "Operator": {
+     "type": "block_ref",
+     "block_kind": "operator",
+     "required": true,
+     "help": "How to compare it, e.g. less or equal 0."
+    }
+   }
+  },
+  "ConditionUnitCampWithFilter": {
+   "label": "Unit Camp With Filter?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Operator",
+    "Variable",
+    "Contrainte"
+   ],
+   "params": {
+    "Operator": {
+     "type": "object",
+     "required": true
+    },
+    "Variable": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Contrainte": {
+     "type": "object",
+     "required": true
+    }
+   }
+  },
+  "ConditionUnitGroup": {
+   "label": "How many units in a group?",
+   "category": "Conditions",
+   "path": "leveldesignsolo.condition",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Operator",
+    "Variable"
+   ],
+   "params": {
+    "Operator": {
+     "type": "block_ref",
+     "block_kind": "operator",
+     "required": true
+    },
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   },
+   "help": "Compare the NUMBER of units in a group against a value. 'Less or equal 0' is the usual way to ask whether a group has been wiped out."
+  },
+  "ConditionUnitGroupWithFilter": {
+   "label": "How many units in a group, filtered?",
+   "category": "Conditions",
+   "help": "Like the unit group count, but only counts units that pass a filter - for example only the tanks, or only the ones inside a zone.",
+   "params": {
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Operator": {
+     "type": "block_ref",
+     "block_kind": "operator",
+     "required": true
+    },
+    "Contrainte": {
+     "type": "block_ref",
+     "block_kind": "constraint"
+    }
+   }
+  },
+  "ConditionVariableInteger": {
+   "label": "Integer variable test",
+   "category": "Conditions",
+   "help": "Compare an integer variable against a value via an operator.",
+   "replace_params": true,
+   "param_order": [
+    "Variable",
+    "Operator"
+   ],
+   "params": {
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "Operator": {
+     "type": "block_ref",
+     "block_kind": "operator",
+     "required": true
+    }
+   }
+  },
+  "ContrainteOnUnitAllContrainte": {
+   "label": "Only on Unit All Filter",
+   "category": "Conditions",
+   "path": "leveldesignsolo.contrainte_unit",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "ContrainteList"
+   ],
+   "params": {
+    "ContrainteList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "ContrainteOnUnitAnyContrainte": {
+   "label": "Only on Unit Any Filter",
+   "category": "Conditions",
+   "path": "leveldesignsolo.contrainte_unit",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "ContrainteList"
+   ],
+   "params": {
+    "ContrainteList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "ContrainteOnUnitCategory": {
+   "label": "Only units of these kinds",
+   "category": "Conditions",
+   "path": "leveldesignsolo.contrainte_unit",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "IsUberStress",
+    "IsInfanterie",
+    "IsBatiment",
+    "IsTank",
+    "IsAvion",
+    "IsTruck",
+    "IsEnZoneCombat",
+    "IsEnCombat",
+    "IsSousTirArtillerie",
+    "IsUnitFake",
+    "IsBatimentFake",
+    "IsAttacked",
+    "IsEnSilenceRadio",
+    "IsCamoufle",
+    "IsAvionSansMunitionsRestantes",
+    "IsEnForet",
+    "IsVue",
+    "MatchType",
+    "UnitGroup",
+    "IsTruckDevise",
+    "IsTruckConstruction",
+    "IsSelectionnee",
+    "IsAvionEnVol",
+    "IsAvionAuSol"
+   ],
+   "params": {
+    "IsUberStress": {
+     "type": "bool",
+     "required": true
+    },
+    "IsInfanterie": {
+     "type": "bool",
+     "required": true
+    },
+    "IsBatiment": {
+     "type": "bool",
+     "required": true
+    },
+    "IsTank": {
+     "type": "bool",
+     "required": true
+    },
+    "IsAvion": {
+     "type": "bool",
+     "required": true
+    },
+    "IsTruck": {
+     "type": "bool",
+     "required": true
+    },
+    "IsEnZoneCombat": {
+     "type": "bool",
+     "required": true
+    },
+    "IsEnCombat": {
+     "type": "bool",
+     "required": true
+    },
+    "IsSousTirArtillerie": {
+     "type": "bool",
+     "required": true
+    },
+    "IsUnitFake": {
+     "type": "bool",
+     "required": true
+    },
+    "IsBatimentFake": {
+     "type": "bool",
+     "required": true
+    },
+    "IsAttacked": {
+     "type": "bool",
+     "default": false
+    },
+    "IsEnSilenceRadio": {
+     "type": "bool",
+     "default": false
+    },
+    "IsCamoufle": {
+     "type": "bool",
+     "default": false
+    },
+    "IsAvionSansMunitionsRestantes": {
+     "type": "bool",
+     "default": false
+    },
+    "IsEnForet": {
+     "type": "bool",
+     "default": false
+    },
+    "IsVue": {
+     "type": "bool",
+     "default": false
+    },
+    "MatchType": {
+     "type": "int",
+     "default": false
+    },
+    "UnitGroup": {
+     "type": "object",
+     "default": null
+    },
+    "IsTruckDevise": {
+     "type": "bool",
+     "default": false
+    },
+    "IsTruckConstruction": {
+     "type": "bool",
+     "default": false
+    },
+    "IsSelectionnee": {
+     "type": "bool",
+     "default": false
+    },
+    "IsAvionEnVol": {
+     "type": "bool",
+     "default": false
+    },
+    "IsAvionAuSol": {
+     "type": "bool",
+     "default": false
+    }
+   },
+   "help": "A filter, not an action. Ticking boxes narrows which units a group or condition counts - infantry, tanks, aircraft, trucks, buildings, and states like in combat or hidden in woods."
+  },
+  "ContrainteOnUnitNoContrainte": {
+   "label": "Only on Unit No Filter",
+   "category": "Conditions",
+   "path": "leveldesignsolo.contrainte_unit",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "ContrainteList"
+   ],
+   "params": {
+    "ContrainteList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "ContrainteOnUnitTeam": {
+   "label": "Only units on a side",
+   "category": "Conditions",
+   "path": "leveldesignsolo.contrainte_unit",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "OperatorType"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "OperatorType": {
+     "type": "int",
+     "required": true
+    }
+   },
+   "help": "A filter that keeps units by side: the same side as the camp you pick, its allies, or its enemies."
+  },
+  "ContrainteOnUnitType": {
+   "label": "Only this one unit type",
+   "category": "Conditions",
+   "path": "leveldesignsolo.contrainte_unit",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "TypeUnit",
+    "InvertResult"
+   ],
+   "params": {
+    "TypeUnit": {
+     "type": "unit_type",
+     "required": true
+    },
+    "InvertResult": {
+     "type": "bool",
+     "required": true
+    }
+   },
+   "help": "A filter that keeps just one exact unit type. Invert result turns it around, keeping everything EXCEPT that type."
+  },
+  "DescriptorActionBenchmarkCheckResult": {
+   "label": "Action Benchmark Check Result",
+   "category": "Actions (other)",
+   "path": "leveldesign.auto_config",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Name1",
+    "Name2",
+    "DoGroupAverage",
+    "ActionIfFirstIsBetter",
+    "ActionIfSecondIsBetter"
+   ],
+   "params": {
+    "Name1": {
+     "type": "text",
+     "default": ""
+    },
+    "Name2": {
+     "type": "text",
+     "default": ""
+    },
+    "DoGroupAverage": {
+     "type": "bool",
+     "default": false
+    },
+    "ActionIfFirstIsBetter": {
+     "type": "object",
+     "default": null
+    },
+    "ActionIfSecondIsBetter": {
+     "type": "object",
+     "default": null
+    }
+   }
+  },
+  "DescriptorActionEndBenchmark": {
+   "label": "Action End Benchmark",
+   "category": "Actions (other)",
+   "path": "leveldesign.auto_config",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "SaveConfig",
+    "Rollback"
+   ],
+   "params": {
+    "SaveConfig": {
+     "type": "bool",
+     "default": false
+    },
+    "Rollback": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "DescriptorActionLaunchBenchmark": {
+   "label": "Action Launch Benchmark",
+   "category": "Actions (other)",
+   "path": "leveldesign.auto_config",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "BenchName",
+    "Groups",
+    "DurationOrEndCondition"
+   ],
+   "params": {
+    "BenchName": {
+     "type": "text",
+     "default": ""
+    },
+    "Groups": {
+     "type": "text",
+     "default": ""
+    },
+    "DurationOrEndCondition": {
+     "type": "int",
+     "default": 0
+    }
+   }
+  },
+  "DescriptorActionLoadPreset": {
+   "label": "Action Load Preset",
+   "category": "Actions (other)",
+   "path": "leveldesign.auto_config",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "PresetIndex",
+    "PresetIndexVariable",
+    "ActionIfLoadingFail"
+   ],
+   "params": {
+    "PresetIndex": {
+     "type": "int",
+     "default": 0
+    },
+    "PresetIndexVariable": {
+     "type": "object",
+     "default": null
+    },
+    "ActionIfLoadingFail": {
+     "type": "object",
+     "default": null
+    }
+   }
+  },
+  "DescriptorActionSaveGraphicOptions": {
+   "label": "Action Save Graphic Options",
+   "category": "Actions (other)",
+   "path": "leveldesign.auto_config",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "DescriptorActionToggleAutoSettingLoadingScreen": {
+   "label": "Action Toggle Auto Setting Loading Screen",
+   "category": "Actions (other)",
+   "path": "leveldesign.auto_config",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "EnableAutoSettingLoadingScreen"
+   ],
+   "params": {
+    "EnableAutoSettingLoadingScreen": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "DescriptorActiveBluff": {
+   "label": "Active Bluff",
+   "category": "Ruse cards",
+   "path": "leveldesignsolo.manipulation_card",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "BluffActif",
+    "ClearCartesActives",
+    "NbPreChosenCards",
+    "NbCardsToChoose"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "BluffActif": {
+     "type": "bool",
+     "required": true
+    },
+    "ClearCartesActives": {
+     "type": "bool",
+     "required": true
+    },
+    "NbPreChosenCards": {
+     "type": "object",
+     "default": 0
+    },
+    "NbCardsToChoose": {
+     "type": "enum",
+     "default": "GetNbInitialCardsInPoolForAllianceTaille_1()",
+     "enum_domain": "_constantes"
+    }
+   }
+  },
+  "DescriptorActiveCarte": {
+   "label": "Play a ruse card",
+   "category": "Ruse cards",
+   "path": "leveldesignsolo.manipulation_card",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Position",
+    "Carte"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "Carte": {
+     "type": "enum",
+     "enum_domain": "BluffCardEnum",
+     "required": true
+    }
+   },
+   "help": "Use one of the ruse cards for a camp, at a position on the map - the same cards a player plays."
+  },
+  "DescriptorAddAllCampUnitsToUnitGroup": {
+   "label": "Add camp's units to group",
+   "category": "Spawning/Production",
+   "help": "Populate a unit group with all of a camp's units (for objectives/conditions).",
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Group",
+    "IncludeFake"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "IncludeFake": {
+     "type": "bool",
+     "required": true,
+     "help": "Include decoy units. Must be given; normally False."
+    }
+   }
+  },
+  "DescriptorAddCampAeroportToUnitGroup": {
+   "label": "Add Camp Aeroport To Unit Group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Camp",
+    "IncludeFake"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "IncludeFake": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorAddCampCaserneToUnitGroup": {
+   "label": "Add Camp Caserne To Unit Group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Camp",
+    "IncludeFake"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "IncludeFake": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorAddCampHqToUnitGroup": {
+   "label": "Add Camp Hq To Unit Group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Camp",
+    "IncludeFake"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "IncludeFake": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorAddCampUsineCanonToUnitGroup": {
+   "label": "Add Camp Usine Canon To Unit Group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Camp",
+    "IncludeFake"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "IncludeFake": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorAddCampUsineVehiculeToUnitGroup": {
+   "label": "Add Camp Usine Vehicule To Unit Group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Camp",
+    "IncludeFake"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "IncludeFake": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorAddDetectedUnitsToUnitGroup": {
+   "label": "Collect what a detector sees",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Detector"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Detector": {
+     "type": "block_ref",
+     "block_kind": "condition",
+     "required": true
+    }
+   },
+   "help": "Put every unit currently spotted by a detector into a group."
+  },
+  "DescriptorAddScoreCamp": {
+   "label": "Add Score Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Variable",
+    "AddToScore"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "AddToScore": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorAddUnitGroupListToUnitGroup": {
+   "label": "Copy several groups into one",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "ListGroupSource",
+    "GroupDestination",
+    "ConditionKeepUnit"
+   ],
+   "params": {
+    "ListGroupSource": {
+     "type": "list_of",
+     "elem": "ref_group",
+     "required": true
+    },
+    "GroupDestination": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "ConditionKeepUnit": {
+     "type": "object",
+     "required": true
+    }
+   },
+   "help": "Add the units from a list of groups into a single group. Give it a filter to copy only the units that pass."
+  },
+  "DescriptorAddUnitGroupToUnitGroup": {
+   "label": "Copy a group into another",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "GroupSource",
+    "GroupDestination",
+    "ConditionKeepUnit"
+   ],
+   "params": {
+    "GroupSource": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "GroupDestination": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "ConditionKeepUnit": {
+     "type": "object",
+     "required": true
+    }
+   },
+   "help": "Add every unit from one group into another. Give it a filter to copy only the units that pass."
+  },
+  "DescriptorAjoutVariableInteger": {
+   "label": "Ajout Variable Integer",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Variable01",
+    "Variable02"
+   ],
+   "params": {
+    "Variable01": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "Variable02": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    }
+   }
+  },
+  "DescriptorAttacheCamp": {
+   "label": "Attache Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "CampMaitre",
+    "ListCampEsclave"
+   ],
+   "params": {
+    "CampMaitre": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "ListCampEsclave": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "DescriptorAttack": {
+   "label": "Order: attack",
+   "category": "Orders/Combat",
+   "help": "Order a group to attack targets.",
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Targets": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true,
+     "help": "The group to attack. One group, not a list."
+    }
+   }
+  },
+  "DescriptorAtterrir": {
+   "label": "Atterrir",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   }
+  },
+  "DescriptorBloqueAllTechno": {
+   "label": "Block All Techno",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    }
+   }
+  },
+  "DescriptorBloqueCarteBluff": {
+   "label": "Block a RUSE card",
+   "category": "RUSE/Bluff",
+   "help": "Prevent a camp from using a RUSE/bluff card.",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Carte": {
+     "type": "enum",
+     "enum_domain": "BluffCardEnum",
+     "required": true
+    },
+    "Bloque": {
+     "type": "bool",
+     "default": true
+    }
+   }
+  },
+  "DescriptorBloqueTechno": {
+   "label": "Lock units (techno)",
+   "category": "Economy/Tech",
+   "help": "Block a camp from building certain unit types.",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "TypeUnits": {
+     "type": "list_of",
+     "elem": "unit_type",
+     "required": true
+    },
+    "Hide": {
+     "type": "bool",
+     "default": true
+    }
+   }
+  },
+  "DescriptorBloqueZoneForRuseAndOrder": {
+   "label": "Block zone For Ruse And Order",
+   "category": "Ruse cards",
+   "path": "leveldesignsolo.manipulation_card",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Positions"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Positions": {
+     "type": "list_of",
+     "elem": "tag_pos",
+     "required": true
+    }
+   }
+  },
+  "DescriptorBombardement": {
+   "label": "Bombing",
+   "category": "Orders",
+   "path": "leveldesignsolo.missions",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "TousLesBombardiers",
+    "Position",
+    "Blocking",
+    "OrderCancelable",
+    "AvionsEnContinu"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "TousLesBombardiers": {
+     "type": "bool",
+     "required": true
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "Blocking": {
+     "type": "bool",
+     "required": true
+    },
+    "OrderCancelable": {
+     "type": "bool",
+     "required": true
+    },
+    "AvionsEnContinu": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "DescriptorCaptureBatiment": {
+   "label": "Capture building",
+   "category": "Orders",
+   "path": "leveldesignsolo.missions",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Targets",
+    "Blocking",
+    "OrderCancelable",
+    "TacticMovePolicy"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Targets": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Blocking": {
+     "type": "bool",
+     "required": true
+    },
+    "OrderCancelable": {
+     "type": "bool",
+     "required": true
+    },
+    "TacticMovePolicy": {
+     "type": "int",
+     "default": null
+    }
+   }
+  },
+  "DescriptorChangeAllianceCamp": {
+   "label": "Change Alliance Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "NouvelAllianceNum"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "NouvelAllianceNum": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorChangeCamp": {
+   "label": "Hand units to another side",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Camp"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    }
+   },
+   "help": "Move every unit in a group to a different camp. They stop being selectable by whoever held them, so this is how a defection or a capture is done."
+  },
+  "DescriptorChangeCouleurCamp": {
+   "label": "Change Couleur Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Couleur"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Couleur": {
+     "type": "enum",
+     "enum_domain": "colors",
+     "required": true
+    }
+   }
+  },
+  "DescriptorChangeDureeTimer": {
+   "label": "Change Duration Timer",
+   "category": "Variables/Timers",
+   "path": "leveldesignsolo.timer",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Timer",
+    "NouvelleDuree"
+   ],
+   "params": {
+    "Timer": {
+     "type": "ref",
+     "ref_kind": "timer",
+     "required": true
+    },
+    "NouvelleDuree": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorChangeNationaliteCamp": {
+   "label": "Change Nationalite Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Nationalite"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Nationalite": {
+     "type": "enum",
+     "enum_domain": "Nationalite",
+     "required": true
+    }
+   }
+  },
+  "DescriptorChangeStress": {
+   "label": "Change stress",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Value",
+    "Action"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Value": {
+     "type": "int",
+     "required": true
+    },
+    "Action": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorClearUnitGroup": {
+   "label": "Empty a group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   },
+   "help": "Remove every unit from a group. The units are not harmed - only the group is emptied."
+  },
+  "DescriptorCompetition": {
+   "label": "Race (first to finish wins)",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "help": "Run SubActions in parallel; the first to complete stops the rest.",
+   "replace_params": true,
+   "param_order": [
+    "SubActions"
+   ],
+   "params": {
+    "SubActions": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "DescriptorConstruitBatiment": {
+   "label": "Construit building",
+   "category": "Spawning/Production",
+   "path": "leveldesignsolo.production",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "TypeUnits",
+    "Camp",
+    "Gratuit",
+    "Position",
+    "PositionSpawnCamion",
+    "Group",
+    "Blocking",
+    "OrderCancelable",
+    "ProductionEnParrallele_ET_IgnoreTempo"
+   ],
+   "params": {
+    "TypeUnits": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Gratuit": {
+     "type": "bool",
+     "required": true
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "PositionSpawnCamion": {
+     "type": "object",
+     "default": null
+    },
+    "Group": {
+     "type": "object",
+     "default": null
+    },
+    "Blocking": {
+     "type": "bool",
+     "default": true
+    },
+    "OrderCancelable": {
+     "type": "bool",
+     "default": false
+    },
+    "ProductionEnParrallele_ET_IgnoreTempo": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "DescriptorCreateUnit": {
+   "label": "Spawn units",
+   "category": "Spawning/Production",
+   "help": "Put new units on the map at a map point, for a camp. Add them to a group if you want to give them orders or count them later. Decoy units look real to the enemy but cannot fight.",
+   "param_order": [
+    "TypeUnit",
+    "Camp",
+    "Position",
+    "NbUnit",
+    "Group"
+   ],
+   "params": {
+    "TypeUnit": {
+     "type": "unit_type",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "NbUnit": {
+     "type": "int",
+     "default": 1
+    },
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "help": "Add the spawned units to this group (optional)."
+    },
+    "IsFake": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "DescriptorCutsceneDialog": {
+   "label": "Cutscene Dialog",
+   "category": "Presentation",
+   "path": "leveldesignsolo.cutscenes",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Message"
+   ],
+   "params": {
+    "Message": {
+     "type": "int",
+     "default": null
+    }
+   }
+  },
+  "DescriptorCutscenePlayDialogList": {
+   "label": "Cutscene Play Dialog List",
+   "category": "Presentation",
+   "path": "leveldesignsolo.cutscenes",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "DialogList"
+   ],
+   "params": {
+    "DialogList": {
+     "type": "list_of",
+     "elem": "action",
+     "default": null
+    }
+   }
+  },
+  "DescriptorCutsceneSimultaneous": {
+   "label": "Cutscene Simultaneous",
+   "category": "Presentation",
+   "path": "leveldesignsolo.cutscenes",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "SubActions"
+   ],
+   "params": {
+    "SubActions": {
+     "type": "list_of",
+     "elem": "action",
+     "default": null
+    }
+   }
+  },
+  "DescriptorCutsceneStartCameraPath": {
+   "label": "Cutscene Start Camera Path",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camera",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "CameraPathName",
+    "AnimationFlash",
+    "TimeInSecond",
+    "AccelerationDurationInSecond",
+    "DecelerationDurationInSecond",
+    "StartFromCurrentCameraPosition",
+    "Action",
+    "AccelerationActivated",
+    "DecelerationActivated",
+    "SynchronizeEvents",
+    "VisibleByCamp",
+    "BlackStrips",
+    "BlackStripsFadeWhenBegin",
+    "BlackStripsFadeWhenEnd",
+    "BlackStripsSoundMode",
+    "StripsStartAnimation",
+    "StripsStopAnimation",
+    "StopAllUnitOfCampDuJoueur",
+    "Use3DTime"
+   ],
+   "params": {
+    "CameraPathName": {
+     "type": "text",
+     "default": ""
+    },
+    "AnimationFlash": {
+     "type": "object",
+     "default": false
+    },
+    "TimeInSecond": {
+     "type": "int",
+     "default": 30.0
+    },
+    "AccelerationDurationInSecond": {
+     "type": "object",
+     "default": 2.0
+    },
+    "DecelerationDurationInSecond": {
+     "type": "object",
+     "default": 2.0
+    },
+    "StartFromCurrentCameraPosition": {
+     "type": "bool",
+     "default": false
+    },
+    "Action": {
+     "type": "object",
+     "default": null
+    },
+    "AccelerationActivated": {
+     "type": "bool",
+     "default": false
+    },
+    "DecelerationActivated": {
+     "type": "bool",
+     "default": false
+    },
+    "SynchronizeEvents": {
+     "type": "object",
+     "default": true
+    },
+    "VisibleByCamp": {
+     "type": "camp_ref",
+     "default": null
+    },
+    "BlackStrips": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsFadeWhenBegin": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsFadeWhenEnd": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsSoundMode": {
+     "type": "bool",
+     "default": true
+    },
+    "StripsStartAnimation": {
+     "type": "object",
+     "default": true
+    },
+    "StripsStopAnimation": {
+     "type": "object",
+     "default": true
+    },
+    "StopAllUnitOfCampDuJoueur": {
+     "type": "bool",
+     "default": true
+    },
+    "Use3DTime": {
+     "type": "object",
+     "default": false
+    }
+   }
+  },
+  "DescriptorDebloqueTechno": {
+   "label": "Unlock units (techno)",
+   "category": "Economy/Tech",
+   "help": "Allow a camp to build certain unit types.",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "TypeUnits": {
+     "type": "list_of",
+     "elem": "unit_type",
+     "required": true
+    }
+   }
+  },
+  "DescriptorDeclencheDefaite": {
+   "label": "LOSE the mission",
+   "category": "Objectives",
+   "help": "Instantly lose. Put inside a fail action or an event.",
+   "replace_params": true,
+   "params": {}
+  },
+  "DescriptorDeclencheVictoire": {
+   "label": "Trigger victory",
+   "category": "Objectives & endings",
+   "path": "leveldesignsolo.objectif",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "SubAction",
+    "Duree",
+    "MessageVictoire",
+    "IdMapSoloForLadder",
+    "NextMapName",
+    "Chapter",
+    "EffetOverride",
+    "DeclencheCredits"
+   ],
+   "params": {
+    "SubAction": {
+     "type": "object",
+     "default": null
+    },
+    "Duree": {
+     "type": "object",
+     "default": 1
+    },
+    "MessageVictoire": {
+     "type": "object",
+     "default": null
+    },
+    "IdMapSoloForLadder": {
+     "type": "int",
+     "default": -1
+    },
+    "NextMapName": {
+     "type": "object",
+     "default": null
+    },
+    "Chapter": {
+     "type": "int",
+     "default": 1
+    },
+    "EffetOverride": {
+     "type": "object",
+     "default": null
+    },
+    "DeclencheCredits": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "DescriptorDeclencheVictoireChallenge": {
+   "label": "WIN the operation",
+   "category": "Objectives",
+   "help": "Instantly win (operations/challenges). Put inside an objective's ActionsReussi or an event.",
+   "replace_params": true,
+   "params": {}
+  },
+  "DescriptorDeclencheVictoireChallengeForGamesCom": {
+   "label": "Trigger victory Challenge For Games Com",
+   "category": "Presentation",
+   "path": "leveldesign.descriptorspecial",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "DescriptorDecrementeVariableInteger": {
+   "label": "Decremente Variable Integer",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Variable",
+    "Value"
+   ],
+   "params": {
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "Value": {
+     "type": "int",
+     "default": 1
+    }
+   }
+  },
+  "DescriptorDefendZone": {
+   "label": "Order: defend zone",
+   "category": "Orders/Combat",
+   "help": "Order a group to defend a zone.",
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Detecteur": {
+     "type": "tag",
+     "tag_kind": "zone",
+     "required": true
+    }
+   }
+  },
+  "DescriptorDonneCartesBluff": {
+   "label": "Give Cartes Bluff",
+   "category": "Ruse cards",
+   "path": "leveldesignsolo.manipulation_card",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "NbCards"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "NbCards": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorDonneRessourceACamp": {
+   "label": "Give Ressource A Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Quantite"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Quantite": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorDonneTechno": {
+   "label": "Give Techno",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "TypeUnits"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "TypeUnits": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "DescriptorDrawLabel": {
+   "label": "Draw map label",
+   "category": "Objectives",
+   "help": "Show a text label on the map.",
+   "params": {
+    "Text": {
+     "type": "loc"
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos"
+    }
+   }
+  },
+  "DescriptorDrawOrderArrow": {
+   "label": "Draw Order Arrow",
+   "category": "Presentation",
+   "path": "leveldesignsolo.fx",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "PositionBegin",
+    "PositionEnd",
+    "Color",
+    "TransitionTime",
+    "WaitTime",
+    "Scale",
+    "VersJeton"
+   ],
+   "params": {
+    "PositionBegin": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "PositionEnd": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "Color": {
+     "type": "object",
+     "required": true
+    },
+    "TransitionTime": {
+     "type": "int",
+     "required": true
+    },
+    "WaitTime": {
+     "type": "int",
+     "default": -2.0
+    },
+    "Scale": {
+     "type": "int",
+     "default": -1.0
+    },
+    "VersJeton": {
+     "type": "bool",
+     "default": true
+    }
+   }
+  },
+  "DescriptorEmbuscade": {
+   "label": "Embuscade",
+   "category": "Orders",
+   "path": "leveldesignsolo.missions",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "ComportementPolicy",
+    "Blocking",
+    "OrderCancelable",
+    "ToSameZone",
+    "DistanceMax"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "ComportementPolicy": {
+     "type": "enum",
+     "enum_domain": "ComportementAutoPolicy",
+     "required": true
+    },
+    "Blocking": {
+     "type": "bool",
+     "required": true
+    },
+    "OrderCancelable": {
+     "type": "bool",
+     "required": true
+    },
+    "ToSameZone": {
+     "type": "bool",
+     "required": true
+    },
+    "DistanceMax": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorEnableGainScore": {
+   "label": "Enable Gain Score",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "ListCampForGain"
+   ],
+   "params": {
+    "ListCampForGain": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "DescriptorEncapsuleCutscene": {
+   "label": "Encapsule Cutscene",
+   "category": "Presentation",
+   "path": "leveldesignsolo.cutscenes",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "SubActions",
+    "IsLoading"
+   ],
+   "params": {
+    "SubActions": {
+     "type": "list_of",
+     "elem": "action",
+     "default": null
+    },
+    "IsLoading": {
+     "type": "object",
+     "default": false
+    }
+   }
+  },
+  "DescriptorExecuteNamedCallback": {
+   "label": "Execute Named Callback",
+   "category": "Actions (other)",
+   "path": "leveldesign.misc",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "CallbackName"
+   ],
+   "params": {
+    "CallbackName": {
+     "type": "text",
+     "default": ""
+    }
+   }
+  },
+  "DescriptorFocusSurBluff": {
+   "label": "Focus on Bluff",
+   "category": "Spawning/Production",
+   "path": "leveldesignsolo.production",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Carte",
+    "Duree",
+    "Blocking"
+   ],
+   "params": {
+    "Carte": {
+     "type": "enum",
+     "enum_domain": "BluffCardEnum",
+     "required": true
+    },
+    "Duree": {
+     "type": "int",
+     "required": true
+    },
+    "Blocking": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorFocusSurPosition": {
+   "label": "Focus on Position",
+   "category": "Objectives & endings",
+   "path": "leveldesignsolo.objectif",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Orientation",
+    "Duree",
+    "Position",
+    "UnitGroupPosition"
+   ],
+   "params": {
+    "Orientation": {
+     "type": "int",
+     "required": true
+    },
+    "Duree": {
+     "type": "int",
+     "default": 1
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "default": null
+    },
+    "UnitGroupPosition": {
+     "type": "object",
+     "default": null
+    }
+   }
+  },
+  "DescriptorFocusSurProduction": {
+   "label": "Focus on Production",
+   "category": "Spawning/Production",
+   "path": "leveldesignsolo.production",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "TypeUnit",
+    "Duree",
+    "Blocking"
+   ],
+   "params": {
+    "TypeUnit": {
+     "type": "unit_type",
+     "required": true
+    },
+    "Duree": {
+     "type": "int",
+     "required": true
+    },
+    "Blocking": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorFrappeArtillerie": {
+   "label": "Artillery strike",
+   "category": "Orders/Combat",
+   "help": "Call an artillery strike on a position.",
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group"
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    }
+   }
+  },
+  "DescriptorGereObjectifAvecLabel": {
+   "label": "Objective (with label + bonus points)",
+   "category": "Objectives",
+   "help": "A tracked objective shown on the HUD. Set BonusScoreMission for a secondary/bonus objective that grants extra points. Put a victory/defeat block in ActionsReussi to make it win/lose the mission.",
+   "param_order": [
+    "TrackingId",
+    "Label",
+    "Condition",
+    "ConditionEchec",
+    "ActionsReussi",
+    "ActionsEchec",
+    "BonusScoreMission",
+    "ShowOnMap",
+    "ShowNewObjectif"
+   ],
+   "params": {
+    "TrackingId": {
+     "type": "text",
+     "help": "Unique id, e.g. CH99_OB01."
+    },
+    "Label": {
+     "type": "loc",
+     "help": "Objective text shown to the player."
+    },
+    "Condition": {
+     "type": "block_ref",
+     "block_kind": "condition",
+     "required": true,
+     "help": "Success condition."
+    },
+    "ConditionEchec": {
+     "type": "block_ref",
+     "block_kind": "condition",
+     "help": "Failure condition (optional)."
+    },
+    "ActionsReussi": {
+     "type": "block_ref",
+     "block_kind": "action",
+     "help": "Run on success (e.g. Win, give points)."
+    },
+    "ActionsEchec": {
+     "type": "block_ref",
+     "block_kind": "action",
+     "help": "Run on failure."
+    },
+    "BonusScoreMission": {
+     "type": "int",
+     "default": 0,
+     "help": "Bonus points (0 = primary; 100-1500 = secondary)."
+    },
+    "ShowOnMap": {
+     "type": "bool",
+     "default": true
+    }
+   }
+  },
+  "DescriptorGetNbKillsCamp": {
+   "label": "Get Nb Kills Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Variable",
+    "TypeUnitList",
+    "WithCapture"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "TypeUnitList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    },
+    "WithCapture": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorGetNbProductionsCamp": {
+   "label": "Get Nb Productions Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Variable",
+    "TypeUnitList"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "TypeUnitList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "DescriptorGetRessourceCamp": {
+   "label": "Get Ressource Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Variable"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    }
+   }
+  },
+  "DescriptorGetScoreCamp": {
+   "label": "Get Score Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Variable"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    }
+   }
+  },
+  "DescriptorHideTimer": {
+   "label": "Hide Timer",
+   "category": "Variables/Timers",
+   "path": "leveldesignsolo.timer",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Timer"
+   ],
+   "params": {
+    "Timer": {
+     "type": "ref",
+     "ref_kind": "timer",
+     "required": true
+    }
+   }
+  },
+  "DescriptorHudElementsVisibility": {
+   "label": "Hud Elements Visibility",
+   "category": "Camps & sides",
+   "path": "leveldesign.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Manipulation",
+    "Espionnage",
+    "Score",
+    "ScoreAdverse",
+    "Orbat",
+    "Devises",
+    "TimeRemaining",
+    "BuildMenu",
+    "BluffMenu",
+    "PanelObjectif",
+    "PadInfos",
+    "UnitHints",
+    "AlertMessages",
+    "FastStrike",
+    "Highlight",
+    "Selection",
+    "SituationAwareness",
+    "EtiquettesJoueurs",
+    "RuseZones"
+   ],
+   "params": {
+    "Manipulation": {
+     "type": "object",
+     "default": null
+    },
+    "Espionnage": {
+     "type": "object",
+     "default": null
+    },
+    "Score": {
+     "type": "bool",
+     "default": true
+    },
+    "ScoreAdverse": {
+     "type": "bool",
+     "default": false
+    },
+    "Orbat": {
+     "type": "object",
+     "default": true
+    },
+    "Devises": {
+     "type": "bool",
+     "default": true
+    },
+    "TimeRemaining": {
+     "type": "bool",
+     "default": true
+    },
+    "BuildMenu": {
+     "type": "bool",
+     "default": true
+    },
+    "BluffMenu": {
+     "type": "bool",
+     "default": true
+    },
+    "PanelObjectif": {
+     "type": "object",
+     "default": true
+    },
+    "PadInfos": {
+     "type": "bool",
+     "default": true
+    },
+    "UnitHints": {
+     "type": "bool",
+     "default": true
+    },
+    "AlertMessages": {
+     "type": "bool",
+     "default": true
+    },
+    "FastStrike": {
+     "type": "bool",
+     "default": true
+    },
+    "Highlight": {
+     "type": "bool",
+     "default": true
+    },
+    "Selection": {
+     "type": "bool",
+     "default": true
+    },
+    "SituationAwareness": {
+     "type": "bool",
+     "default": true
+    },
+    "EtiquettesJoueurs": {
+     "type": "bool",
+     "default": true
+    },
+    "RuseZones": {
+     "type": "bool",
+     "default": true
+    }
+   }
+  },
+  "DescriptorIAAll": {
+   "label": "Enable full AI for camp",
+   "category": "AI directives",
+   "help": "Hand the camp to the full strategic AI (it builds/attacks on its own).",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    }
+   }
+  },
+  "DescriptorIAObjectifAttaques": {
+   "label": "AI: attack zones",
+   "category": "AI directives",
+   "help": "Tell the AI camp to attack a list of zones (waves).",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "ZoneList": {
+     "type": "list_of",
+     "elem": "tag_zone",
+     "required": true
+    },
+    "MinPeriod": {
+     "type": "int",
+     "help": "Min seconds between attack waves."
+    }
+   }
+  },
+  "DescriptorIAObjectifDefense": {
+   "label": "AI: defend zones",
+   "category": "AI directives",
+   "help": "Tell the AI camp to defend a list of zones.",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "ZoneList": {
+     "type": "list_of",
+     "elem": "tag_zone",
+     "required": true
+    }
+   }
+  },
+  "DescriptorIARemoveAllObjectives": {
+   "label": "Clear AI objectives",
+   "category": "AI directives",
+   "help": "Remove all scripted AI objectives from a camp.",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    }
+   }
+  },
+  "DescriptorIfThenElse": {
+   "label": "If / then / else",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "help": "Branch on a condition.",
+   "params": {
+    "Condition": {
+     "type": "block_ref",
+     "block_kind": "condition",
+     "required": true
+    },
+    "EffetIfTrue": {
+     "type": "block_ref",
+     "block_kind": "action"
+    },
+    "EffetIfFalse": {
+     "type": "block_ref",
+     "block_kind": "action"
+    }
+   }
+  },
+  "DescriptorIgnoreCampsList": {
+   "label": "Ignore Camps List",
+   "category": "AI",
+   "path": "leveldesignsolo.strategic_ia",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "ListeCampsIgnore",
+    "Ignore"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "ListeCampsIgnore": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    },
+    "Ignore": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorIncrementeVariableInteger": {
+   "label": "Increment variable",
+   "category": "Variables/Timers",
+   "help": "Add to an integer variable.",
+   "params": {
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "Value": {
+     "type": "int",
+     "default": 1
+    }
+   }
+  },
+  "DescriptorInitSoundAndMusic": {
+   "label": "Init Sound And Music",
+   "category": "Presentation",
+   "path": "leveldesign.descriptorspecial",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Acknow2Ds",
+    "Acknow3Ds",
+    "MusicAuto",
+    "Ambience"
+   ],
+   "params": {
+    "Acknow2Ds": {
+     "type": "bool",
+     "required": true
+    },
+    "Acknow3Ds": {
+     "type": "bool",
+     "required": true
+    },
+    "MusicAuto": {
+     "type": "bool",
+     "required": true
+    },
+    "Ambience": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorKillAllUnit": {
+   "label": "Destroy a whole group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "CauseMort"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "CauseMort": {
+     "type": "enum",
+     "enum_domain": "CauseMort",
+     "required": true
+    }
+   },
+   "help": "Kill every unit in a group at once. The cause of death decides how they die on screen."
+  },
+  "DescriptorKillAllUnitWithCondition": {
+   "label": "Kill All Unit With Condition",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "ConditionToKill",
+    "Group",
+    "CauseMort"
+   ],
+   "params": {
+    "ConditionToKill": {
+     "type": "object",
+     "required": true
+    },
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "CauseMort": {
+     "type": "enum",
+     "enum_domain": "CauseMort",
+     "required": true
+    }
+   }
+  },
+  "DescriptorKillGame": {
+   "label": "Kill Game",
+   "category": "Actions (other)",
+   "path": "leveldesigntest.testauto",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "DescriptorLaunchBriefing": {
+   "label": "Launch Briefing",
+   "category": "Actions (other)",
+   "path": "leveldesign.objectif",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Actions",
+    "VisibleUnits",
+    "BlackStrips",
+    "BlackStripsFadeWhenBegin",
+    "BlackStripsFadeWhenEnd",
+    "BlackStripsSoundMode",
+    "ActionsClean",
+    "HideActive",
+    "FadeWhenBegin",
+    "FadeWhenEnd",
+    "StopAllUnitOfCampDuJoueur"
+   ],
+   "params": {
+    "Actions": {
+     "type": "block_ref",
+     "block_kind": "action",
+     "required": true
+    },
+    "VisibleUnits": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    },
+    "BlackStrips": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsFadeWhenBegin": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsFadeWhenEnd": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsSoundMode": {
+     "type": "bool",
+     "default": true
+    },
+    "ActionsClean": {
+     "type": "object",
+     "default": null
+    },
+    "HideActive": {
+     "type": "bool",
+     "default": true
+    },
+    "FadeWhenBegin": {
+     "type": "object",
+     "default": true
+    },
+    "FadeWhenEnd": {
+     "type": "object",
+     "default": true
+    },
+    "StopAllUnitOfCampDuJoueur": {
+     "type": "bool",
+     "default": true
+    }
+   }
+  },
+  "DescriptorLaunchEffetMap": {
+   "label": "Launch Effet Map",
+   "category": "Actions (other)",
+   "path": "leveldesign.launcheffetmap",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "CampList",
+    "EffetMap",
+    "PostInit",
+    "TagList",
+    "MapChapterPos",
+    "GameRules",
+    "UnitToSpawnList",
+    "SpawnAllUnit",
+    "CampaignInfo"
+   ],
+   "params": {
+    "CampList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    },
+    "EffetMap": {
+     "type": "block_ref",
+     "block_kind": "action",
+     "required": true
+    },
+    "PostInit": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    },
+    "TagList": {
+     "type": "object",
+     "required": true
+    },
+    "MapChapterPos": {
+     "type": "object",
+     "default": null
+    },
+    "GameRules": {
+     "type": "object",
+     "default": null
+    },
+    "UnitToSpawnList": {
+     "type": "list_of",
+     "elem": "action",
+     "default": null
+    },
+    "SpawnAllUnit": {
+     "type": "object",
+     "default": null
+    },
+    "CampaignInfo": {
+     "type": "object",
+     "default": null
+    }
+   }
+  },
+  "DescriptorLaunchV2": {
+   "label": "Launch V2",
+   "category": "Presentation",
+   "path": "leveldesignsolo.fx",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "PositionBegin",
+    "PositionEnd",
+    "FlyTime",
+    "Radius",
+    "StressRecu",
+    "TimeBeforeDmg"
+   ],
+   "params": {
+    "PositionBegin": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "PositionEnd": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    },
+    "FlyTime": {
+     "type": "int",
+     "required": true
+    },
+    "Radius": {
+     "type": "int",
+     "required": true
+    },
+    "StressRecu": {
+     "type": "int",
+     "required": true
+    },
+    "TimeBeforeDmg": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorLaunchVideoFXByName": {
+   "label": "Launch Video F X By Name",
+   "category": "Presentation",
+   "path": "leveldesignsolo.fx",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "CutScene",
+    "FullScreen",
+    "IsInBriefing"
+   ],
+   "params": {
+    "CutScene": {
+     "type": "text",
+     "required": true
+    },
+    "FullScreen": {
+     "type": "bool",
+     "default": false
+    },
+    "IsInBriefing": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "DescriptorLoadingDone": {
+   "label": "Loading Done",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "DescriptorLoadingDoneForChallengeCoop": {
+   "label": "Loading Done For Challenge Coop",
+   "category": "Presentation",
+   "path": "leveldesign.descriptorspecial",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "DescriptorMaintienEffectifs": {
+   "label": "Maintien Effectifs",
+   "category": "Spawning/Production",
+   "path": "leveldesignsolo.production",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "TypeUnits",
+    "Camp",
+    "Gratuit",
+    "Position",
+    "NbPattern",
+    "Group",
+    "Blocking",
+    "OrderCancelable",
+    "TempoProduction",
+    "StayInAirportIfAvion",
+    "ProductionEnParrallele_ET_IgnoreTempo"
+   ],
+   "params": {
+    "TypeUnits": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Gratuit": {
+     "type": "bool",
+     "required": true
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "default": null
+    },
+    "NbPattern": {
+     "type": "int",
+     "default": 1
+    },
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "default": null
+    },
+    "Blocking": {
+     "type": "object",
+     "default": true
+    },
+    "OrderCancelable": {
+     "type": "bool",
+     "default": false
+    },
+    "TempoProduction": {
+     "type": "int",
+     "default": 0
+    },
+    "StayInAirportIfAvion": {
+     "type": "bool",
+     "default": false
+    },
+    "ProductionEnParrallele_ET_IgnoreTempo": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "DescriptorModifieCadenceTir": {
+   "label": "Change Cadence Tir",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Multiplicateur"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Multiplicateur": {
+     "type": "float",
+     "required": true
+    }
+   }
+  },
+  "DescriptorModifieDegatsInfliges": {
+   "label": "Change how much damage units deal",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Multiplicateur"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Multiplicateur": {
+     "type": "float",
+     "required": true
+    }
+   },
+   "help": "Multiply the damage a group deals. Below 1 weakens them, above 1 makes them hit harder."
+  },
+  "DescriptorModifieDepot": {
+   "label": "Change Depot",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "NbreRestant"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "NbreRestant": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorModifieIncome": {
+   "label": "Change Income",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Multiplicateur",
+    "Blocking"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Multiplicateur": {
+     "type": "int",
+     "required": true
+    },
+    "Blocking": {
+     "type": "bool",
+     "default": true
+    }
+   }
+  },
+  "DescriptorModifieStressRecu": {
+   "label": "Change how much stress units take",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Multiplicateur"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Multiplicateur": {
+     "type": "float",
+     "required": true
+    }
+   },
+   "help": "Multiply the stress a group suffers. Below 1 makes them steadier under fire, above 1 makes them panic sooner."
+  },
+  "DescriptorModifieVitesseUnit": {
+   "label": "Change how fast units move",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Multiplicateur"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Multiplicateur": {
+     "type": "float",
+     "required": true
+    }
+   },
+   "help": "Multiply a group's movement speed. Below 1 slows them down, above 1 speeds them up."
+  },
+  "DescriptorModuloVariableInteger": {
+   "label": "Modulo Variable Integer",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Variable",
+    "Value"
+   ],
+   "params": {
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "Value": {
+     "type": "int",
+     "default": 1
+    }
+   }
+  },
+  "DescriptorMove": {
+   "label": "Order: move",
+   "category": "Orders/Combat",
+   "help": "Move a unit group along positions.",
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Positions": {
+     "type": "list_of",
+     "elem": "tag_pos",
+     "required": true
+    }
+   }
+  },
+  "DescriptorMoveFollowUnit": {
+   "label": "Move Follow Unit",
+   "category": "Orders",
+   "path": "leveldesignsolo.missions",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Target",
+    "Continuous",
+    "Distance",
+    "Force",
+    "ComportementPolicy",
+    "Blocking",
+    "OrderCancelable",
+    "ForceNoRoad"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Target": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Continuous": {
+     "type": "bool",
+     "required": true
+    },
+    "Distance": {
+     "type": "int",
+     "required": true
+    },
+    "Force": {
+     "type": "bool",
+     "required": true
+    },
+    "ComportementPolicy": {
+     "type": "enum",
+     "enum_domain": "ComportementAutoPolicy",
+     "required": true
+    },
+    "Blocking": {
+     "type": "bool",
+     "required": true
+    },
+    "OrderCancelable": {
+     "type": "bool",
+     "required": true
+    },
+    "ForceNoRoad": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorObjectifsPanel": {
+   "label": "Objectifs Panel",
+   "category": "Objectives & endings",
+   "path": "leveldesignsolo.objectif",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "ObjectifsList"
+   ],
+   "params": {
+    "ObjectifsList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "DescriptorParachutage": {
+   "label": "Airdrop (paradrop)",
+   "category": "Spawning/Production",
+   "help": "Parachute a unit group to a position.",
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos",
+     "required": true
+    }
+   }
+  },
+  "DescriptorPauseTimer": {
+   "label": "Pause Timer",
+   "category": "Variables/Timers",
+   "path": "leveldesignsolo.timer",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Timer"
+   ],
+   "params": {
+    "Timer": {
+     "type": "ref",
+     "ref_kind": "timer",
+     "required": true
+    }
+   }
+  },
+  "DescriptorPlayDialogSimplifie": {
+   "label": "Say a line",
+   "category": "Presentation",
+   "path": "leveldesignsolo.cutscenes",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {},
+   "help": "Play one line of dialogue. This is the short way to do it - the game expands it into a full cutscene dialogue behind the scenes."
+  },
+  "DescriptorPlayEffetAfterWait": {
+   "label": "Play Effet After Wait",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "DescriptorPlayEffetWithDureeBornee": {
+   "label": "Play Effet With Duration Bornee",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "DescriptorPlayMusic": {
+   "label": "Play Music",
+   "category": "Presentation",
+   "path": "leveldesign.descriptorspecial",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "DatabaseName",
+    "Loop",
+    "Volume"
+   ],
+   "params": {
+    "DatabaseName": {
+     "type": "text",
+     "required": true
+    },
+    "Loop": {
+     "type": "bool",
+     "default": false
+    },
+    "Volume": {
+     "type": "object",
+     "default": 1
+    }
+   }
+  },
+  "DescriptorPrint": {
+   "label": "Print a debug message",
+   "category": "Actions (other)",
+   "path": "leveldesigntest.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Message",
+    "ObjectList"
+   ],
+   "params": {
+    "Message": {
+     "type": "text",
+     "required": true
+    },
+    "ObjectList": {
+     "type": "list_of",
+     "elem": "action",
+     "default": null
+    }
+   },
+   "help": "Write a message to the game's log. For testing only - players never see it."
+  },
+  "DescriptorProduitUnits": {
+   "label": "Queue production",
+   "category": "Spawning/Production",
+   "help": "Make a camp produce units through its buildings.",
+   "params": {
+    "TypeUnits": {
+     "type": "list_of",
+     "elem": "unit_type",
+     "required": true
+    },
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Position": {
+     "type": "tag",
+     "tag_kind": "pos"
+    },
+    "Gratuit": {
+     "type": "bool",
+     "default": false,
+     "help": "Free (no cost)."
+    }
+   }
+  },
+  "DescriptorReconnaissance": {
+   "label": "Reconnaissance",
+   "category": "Orders",
+   "path": "leveldesignsolo.missions",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Blocking",
+    "OrderCancelable",
+    "Cible",
+    "SuivreLesCibles",
+    "ForceApproche",
+    "ComportementPolicy"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Blocking": {
+     "type": "bool",
+     "required": true
+    },
+    "OrderCancelable": {
+     "type": "bool",
+     "required": true
+    },
+    "Cible": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "SuivreLesCibles": {
+     "type": "bool",
+     "required": true
+    },
+    "ForceApproche": {
+     "type": "bool",
+     "required": true
+    },
+    "ComportementPolicy": {
+     "type": "enum",
+     "enum_domain": "ComportementAutoPolicy",
+     "required": true
+    }
+   }
+  },
+  "DescriptorRemoveUnitFromUnitGroup": {
+   "label": "Take a unit out of a group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "ConditionKeepUnit"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "ConditionKeepUnit": {
+     "type": "object",
+     "required": true
+    }
+   },
+   "help": "Remove one unit from a group. The unit is not harmed."
+  },
+  "DescriptorRepeatSequential": {
+   "label": "Repeat Sequential",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Action",
+    "NbRepeat"
+   ],
+   "params": {
+    "Action": {
+     "type": "block_ref",
+     "block_kind": "action",
+     "required": true
+    },
+    "NbRepeat": {
+     "type": "int",
+     "default": 1
+    }
+   }
+  },
+  "DescriptorResetTimer": {
+   "label": "Reset Timer",
+   "category": "Variables/Timers",
+   "path": "leveldesignsolo.timer",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Timer"
+   ],
+   "params": {
+    "Timer": {
+     "type": "ref",
+     "ref_kind": "timer",
+     "required": true
+    }
+   }
+  },
+  "DescriptorSequential": {
+   "label": "Sequence (do in order)",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "help": "Run SubActions one after another. Repeat=True loops forever (use for periodic events).",
+   "replace_params": true,
+   "param_order": [
+    "SubActions",
+    "Repeat"
+   ],
+   "params": {
+    "SubActions": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true,
+     "help": "Actions run in order."
+    },
+    "Repeat": {
+     "type": "bool",
+     "default": false,
+     "help": "Loop the sequence forever."
+    }
+   }
+  },
+  "DescriptorSetRessourceCamp": {
+   "label": "Set camp money",
+   "category": "Economy/Tech",
+   "help": "Set a camp's resources to an exact amount.",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Quantite": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorSetScoreCamp": {
+   "label": "Set Score Camp",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Score"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Score": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorSetVariableInteger": {
+   "label": "Set a number",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Variable",
+    "Value"
+   ],
+   "params": {
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "Value": {
+     "type": "int",
+     "required": true
+    }
+   },
+   "help": "Put a specific value into a number variable. Use it to remember something happened, or to feed a number the objective text shows."
+  },
+  "DescriptorSetVariableIntegerFromUnitGroup": {
+   "label": "Set Variable Integer From Unit Group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Variable",
+    "Group"
+   ],
+   "params": {
+    "Variable": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   }
+  },
+  "DescriptorShowChooseNationScreen": {
+   "label": "Show Choose Nation Screen",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "NationList"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "NationList": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true
+    }
+   }
+  },
+  "DescriptorSimultaneous": {
+   "label": "Parallel (do at once)",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "help": "Run all SubActions simultaneously.",
+   "replace_params": true,
+   "param_order": [
+    "SubActions"
+   ],
+   "params": {
+    "SubActions": {
+     "type": "list_of",
+     "elem": "action",
+     "required": true,
+     "help": "Actions run together."
+    }
+   }
+  },
+  "DescriptorSoustraitVariableInteger": {
+   "label": "Soustrait Variable Integer",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Variable01",
+    "Variable02"
+   ],
+   "params": {
+    "Variable01": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    },
+    "Variable02": {
+     "type": "ref",
+     "ref_kind": "var",
+     "required": true
+    }
+   }
+  },
+  "DescriptorSplashScreenNewUnit": {
+   "label": "Splash Screen New Unit",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.splashscreen",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "TypeUnit",
+    "TypeSplashScreen"
+   ],
+   "params": {
+    "TypeUnit": {
+     "type": "unit_type",
+     "required": true
+    },
+    "TypeSplashScreen": {
+     "type": "int",
+     "default": 0
+    }
+   }
+  },
+  "DescriptorStartCameraPath": {
+   "label": "Start Camera Path",
+   "category": "Presentation",
+   "path": "leveldesign.camera",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "CameraPathName",
+    "AnimationFlash",
+    "TimeInSecond",
+    "AccelerationDurationInSecond",
+    "DecelerationDurationInSecond",
+    "StartFromCurrentCameraPosition",
+    "Action",
+    "AccelerationActivated",
+    "DecelerationActivated",
+    "SynchronizeEvents",
+    "VisibleByCamp",
+    "BlackStrips",
+    "BlackStripsFadeWhenBegin",
+    "BlackStripsFadeWhenEnd",
+    "BlackStripsSoundMode",
+    "StripsStartAnimation",
+    "StripsStopAnimation",
+    "StopAllUnitOfCampDuJoueur",
+    "Use3DTime"
+   ],
+   "params": {
+    "CameraPathName": {
+     "type": "text",
+     "default": ""
+    },
+    "AnimationFlash": {
+     "type": "object",
+     "default": false
+    },
+    "TimeInSecond": {
+     "type": "int",
+     "default": 30.0
+    },
+    "AccelerationDurationInSecond": {
+     "type": "object",
+     "default": 2.0
+    },
+    "DecelerationDurationInSecond": {
+     "type": "object",
+     "default": 2.0
+    },
+    "StartFromCurrentCameraPosition": {
+     "type": "bool",
+     "default": false
+    },
+    "Action": {
+     "type": "object",
+     "default": null
+    },
+    "AccelerationActivated": {
+     "type": "bool",
+     "default": false
+    },
+    "DecelerationActivated": {
+     "type": "bool",
+     "default": false
+    },
+    "SynchronizeEvents": {
+     "type": "bool",
+     "default": true
+    },
+    "VisibleByCamp": {
+     "type": "object",
+     "default": null
+    },
+    "BlackStrips": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsFadeWhenBegin": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsFadeWhenEnd": {
+     "type": "bool",
+     "default": true
+    },
+    "BlackStripsSoundMode": {
+     "type": "object",
+     "default": true
+    },
+    "StripsStartAnimation": {
+     "type": "object",
+     "default": true
+    },
+    "StripsStopAnimation": {
+     "type": "object",
+     "default": true
+    },
+    "StopAllUnitOfCampDuJoueur": {
+     "type": "bool",
+     "default": true
+    },
+    "Use3DTime": {
+     "type": "object",
+     "default": false
+    }
+   }
+  },
+  "DescriptorStartTimer": {
+   "label": "Start timer",
+   "category": "Variables/Timers",
+   "help": "Reset a timer to its full duration and start it counting down. To resume without resetting, use Resume timer.",
+   "replace_params": true,
+   "param_order": [
+    "Timer"
+   ],
+   "params": {
+    "Timer": {
+     "type": "ref",
+     "ref_kind": "timer",
+     "required": true,
+     "help": "The timer to start."
+    }
+   }
+  },
+  "DescriptorStopActionOfUnit": {
+   "label": "Stop Action Of Unit",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   }
+  },
+  "DescriptorStopMusic": {
+   "label": "Stop Music",
+   "category": "Presentation",
+   "path": "leveldesign.descriptorspecial",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {}
+  },
+  "DescriptorStopTimer": {
+   "label": "Stop Timer",
+   "category": "Variables/Timers",
+   "path": "leveldesignsolo.timer",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Timer"
+   ],
+   "params": {
+    "Timer": {
+     "type": "ref",
+     "ref_kind": "timer",
+     "required": true
+    }
+   }
+  },
+  "DescriptorTransferUnitToUnitGroup": {
+   "label": "Transfer Unit To Unit Group",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "ConditionTransfer",
+    "GroupSource",
+    "GroupDestination",
+    "CopyUnits",
+    "NBToTransfert"
+   ],
+   "params": {
+    "ConditionTransfer": {
+     "type": "object",
+     "required": true
+    },
+    "GroupSource": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "GroupDestination": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "CopyUnits": {
+     "type": "bool",
+     "required": true
+    },
+    "NBToTransfert": {
+     "type": "int",
+     "default": 0
+    }
+   }
+  },
+  "DescriptorUnitCannotBeCaptured": {
+   "label": "Unit Cannot Be Captured",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   }
+  },
+  "DescriptorUnitCannotBeTargeted": {
+   "label": "Unit Cannot Be Targeted",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   }
+  },
+  "DescriptorUnitGroupDesarme": {
+   "label": "Unit Group Desarme",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "ConsidereNonCombattant"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "ConsidereNonCombattant": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorUnitGroupIncontrolable": {
+   "label": "Unit Group Incontrolable",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "UnHighlightable"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "UnHighlightable": {
+     "type": "bool",
+     "required": true
+    }
+   }
+  },
+  "DescriptorUnitGroupInterditAttackReflex": {
+   "label": "Unit Group Interdit Attack Reflex",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   }
+  },
+  "DescriptorUnitGroupMuteUnit": {
+   "label": "Unit Group Mute Unit",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "GroupSource",
+    "TypeUnit",
+    "GroupDestination"
+   ],
+   "params": {
+    "GroupSource": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "TypeUnit": {
+     "type": "unit_type",
+     "required": true
+    },
+    "GroupDestination": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   }
+  },
+  "DescriptorUnitGroupPorteeDeTirLimitee": {
+   "label": "Unit Group Portee De Tir Limitee",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Distance"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Distance": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorUnitGroupVisionLimitee": {
+   "label": "Unit Group Vision Limitee",
+   "category": "Units & groups",
+   "path": "leveldesignsolo.units",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Distance"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Distance": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "DescriptorWaitCondition": {
+   "label": "Wait until condition",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "help": "Block until the condition becomes true.",
+   "params": {
+    "Condition": {
+     "type": "block_ref",
+     "block_kind": "condition",
+     "required": true
+    }
+   }
+  },
+  "DescriptorWaitDuree": {
+   "label": "Wait N seconds",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "help": "Pause for a number of seconds.",
+   "params": {
+    "Duree": {
+     "type": "int",
+     "required": true,
+     "default": 5,
+     "help": "Seconds to wait."
+    }
+   }
+  },
+  "DescriptorWaitForEver": {
+   "label": "Wait forever",
+   "category": "Control flow",
+   "path": "leveldesign.descriptor",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [],
+   "params": {},
+   "help": "Never finishes. Used to park a branch so the things running beside it keep going."
+  },
+  "GameRulesChallenge": {
+   "label": "Game Rules Challenge",
+   "category": "Actions (other)",
+   "path": "leveldesign.launcheffetmap",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "IsMapMulti",
+    "UseScore",
+    "GameTimeMode",
+    "GameTime",
+    "MinScore",
+    "MaxScore",
+    "NoFow",
+    "Fow",
+    "TeleportCameraHQ",
+    "AltitudeCamera",
+    "AzimutCamera",
+    "SiteCamera",
+    "DureeCamera",
+    "ConstructionNecessiteHQ",
+    "ModeFixedRandomSeed",
+    "DisableCapture",
+    "DisableBazooka",
+    "ScoreIgnoreCapture",
+    "PopCap",
+    "PopCapLimit",
+    "AlliancesSharingMoney"
+   ],
+   "params": {
+    "IsMapMulti": {
+     "type": "bool",
+     "default": false
+    },
+    "UseScore": {
+     "type": "bool",
+     "default": true
+    },
+    "GameTimeMode": {
+     "type": "enum",
+     "enum_domain": "TGameTimerMode",
+     "default": "Countdown"
+    },
+    "GameTime": {
+     "type": "enum",
+     "default": "game_duration",
+     "enum_domain": "game"
+    },
+    "MinScore": {
+     "type": "enum",
+     "default": "points_for_lose",
+     "enum_domain": "game"
+    },
+    "MaxScore": {
+     "type": "enum",
+     "default": "points_for_win",
+     "enum_domain": "game"
+    },
+    "NoFow": {
+     "type": "object",
+     "default": false
+    },
+    "Fow": {
+     "type": "int",
+     "default": 1
+    },
+    "TeleportCameraHQ": {
+     "type": "bool",
+     "default": false
+    },
+    "AltitudeCamera": {
+     "type": "int",
+     "default": 1
+    },
+    "AzimutCamera": {
+     "type": "int",
+     "default": 0
+    },
+    "SiteCamera": {
+     "type": "int",
+     "default": 0
+    },
+    "DureeCamera": {
+     "type": "int",
+     "default": 0
+    },
+    "ConstructionNecessiteHQ": {
+     "type": "bool",
+     "default": true
+    },
+    "ModeFixedRandomSeed": {
+     "type": "bool",
+     "default": true
+    },
+    "DisableCapture": {
+     "type": "bool",
+     "default": false
+    },
+    "DisableBazooka": {
+     "type": "bool",
+     "default": false
+    },
+    "ScoreIgnoreCapture": {
+     "type": "bool",
+     "default": false
+    },
+    "PopCap": {
+     "type": "int",
+     "default": -2
+    },
+    "PopCapLimit": {
+     "type": "enum",
+     "enum_domain": "TPopCapConfig",
+     "default": "Undefined"
+    },
+    "AlliancesSharingMoney": {
+     "type": "list_of",
+     "elem": "action",
+     "default": null
+    }
+   }
+  },
+  "GameRulesSkirmish": {
+   "label": "Game Rules Skirmish",
+   "category": "Actions (other)",
+   "path": "leveldesign.launcheffetmap",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "IsMapMulti",
+    "UseScore",
+    "GameTimeMode",
+    "GameTime",
+    "MinScore",
+    "MinScoreDefeat",
+    "MaxScore",
+    "MaxScoreVictory",
+    "NoFow",
+    "Fow",
+    "DefaiteArmy",
+    "TeleportCameraHQ",
+    "AltitudeCamera",
+    "AzimutCamera",
+    "SiteCamera",
+    "DureeCamera",
+    "ConstructionNecessiteHQ",
+    "GameType",
+    "ModeFixedRandomSeed",
+    "DisableCapture",
+    "DisableBazooka",
+    "ScoreIgnoreCapture",
+    "PopCap",
+    "DisableUnableToHide",
+    "PopCapLimit",
+    "IsTestStandard"
+   ],
+   "params": {
+    "IsMapMulti": {
+     "type": "bool",
+     "default": false
+    },
+    "UseScore": {
+     "type": "bool",
+     "default": true
+    },
+    "GameTimeMode": {
+     "type": "enum",
+     "enum_domain": "TGameTimerMode",
+     "default": "Countdown"
+    },
+    "GameTime": {
+     "type": "enum",
+     "default": "game_duration",
+     "enum_domain": "game"
+    },
+    "MinScore": {
+     "type": "enum",
+     "default": "points_for_lose",
+     "enum_domain": "game"
+    },
+    "MinScoreDefeat": {
+     "type": "bool",
+     "default": true
+    },
+    "MaxScore": {
+     "type": "enum",
+     "default": "points_for_win",
+     "enum_domain": "game"
+    },
+    "MaxScoreVictory": {
+     "type": "bool",
+     "default": true
+    },
+    "NoFow": {
+     "type": "object",
+     "default": false
+    },
+    "Fow": {
+     "type": "int",
+     "default": 1
+    },
+    "DefaiteArmy": {
+     "type": "bool",
+     "default": true
+    },
+    "TeleportCameraHQ": {
+     "type": "bool",
+     "default": false
+    },
+    "AltitudeCamera": {
+     "type": "int",
+     "default": 1
+    },
+    "AzimutCamera": {
+     "type": "int",
+     "default": 0
+    },
+    "SiteCamera": {
+     "type": "int",
+     "default": 0
+    },
+    "DureeCamera": {
+     "type": "int",
+     "default": 0
+    },
+    "ConstructionNecessiteHQ": {
+     "type": "bool",
+     "default": true
+    },
+    "GameType": {
+     "type": "int",
+     "default": 0
+    },
+    "ModeFixedRandomSeed": {
+     "type": "bool",
+     "default": true
+    },
+    "DisableCapture": {
+     "type": "bool",
+     "default": false
+    },
+    "DisableBazooka": {
+     "type": "bool",
+     "default": false
+    },
+    "ScoreIgnoreCapture": {
+     "type": "bool",
+     "default": false
+    },
+    "PopCap": {
+     "type": "int",
+     "default": -2
+    },
+    "DisableUnableToHide": {
+     "type": "bool",
+     "default": false
+    },
+    "PopCapLimit": {
+     "type": "enum",
+     "enum_domain": "TPopCapConfig",
+     "default": "Undefined"
+    },
+    "IsTestStandard": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "LocalizedCampName": {
+   "label": "Localized Camp Name",
+   "category": "Camps & sides",
+   "path": "leveldesign.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "TeamName",
+    "AllianceName"
+   ],
+   "params": {
+    "TeamName": {
+     "type": "int",
+     "required": true
+    },
+    "AllianceName": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "ModifieParametresIA": {
+   "label": "Tune AI behaviour",
+   "category": "AI directives",
+   "help": "Adjust an AI camp's aggressiveness and unit-type bonuses.",
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Agressivite": {
+     "type": "int",
+     "help": "0-100."
+    },
+    "Bonus_Tank": {
+     "type": "int"
+    },
+    "Bonus_Avion": {
+     "type": "int"
+    },
+    "Bonus_Artillerie": {
+     "type": "int"
+    }
+   }
+  },
+  "NarrativeEffectScaleEnvelopWithSinus": {
+   "label": "Scale Envelop With Sinus",
+   "category": "Presentation",
+   "path": "leveldesignsolo.fx",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Group",
+    "Style",
+    "Duration",
+    "Forever",
+    "ApplyToMovingUnitsOnly"
+   ],
+   "params": {
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    },
+    "Style": {
+     "type": "int",
+     "required": true
+    },
+    "Duration": {
+     "type": "int",
+     "default": 3
+    },
+    "Forever": {
+     "type": "bool",
+     "default": false
+    },
+    "ApplyToMovingUnitsOnly": {
+     "type": "bool",
+     "default": false
+    }
+   }
+  },
+  "NationaliteEnumElement": {
+   "label": "Nationalite Enum Element",
+   "category": "Actions (other)",
+   "path": "leveldesignsolo.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Nationalite"
+   ],
+   "params": {
+    "Nationalite": {
+     "type": "enum",
+     "enum_domain": "Nationalite",
+     "required": true
+    }
+   }
+  },
+  "ObjectList": {
+   "label": "Object List",
+   "category": "Actions (other)",
+   "path": "leveldesign.helper",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Values"
+   ],
+   "params": {
+    "Values": {
+     "type": "object",
+     "required": true
+    }
+   }
+  },
+  "OperatorIntegerDifferent": {
+   "label": "Integer Different",
+   "category": "Conditions",
+   "path": "leveldesign.operator",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Value",
+    "Variable"
+   ],
+   "params": {
+    "Value": {
+     "type": "int",
+     "default": 0
+    },
+    "Variable": {
+     "type": "object",
+     "default": null
+    }
+   }
+  },
+  "OperatorIntegerEqual": {
+   "label": "== value",
+   "category": "Operators",
+   "help": "True when the variable equals Value.",
+   "params": {
+    "Value": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "OperatorIntegerLessOrEqual": {
+   "label": "<= value",
+   "category": "Operators",
+   "help": "True when the variable is <= Value.",
+   "params": {
+    "Value": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "OperatorIntegerMoreOrEqual": {
+   "label": ">= value",
+   "category": "Operators",
+   "help": "True when the variable is >= Value.",
+   "params": {
+    "Value": {
+     "type": "int",
+     "required": true
+    }
+   }
+  },
+  "OperatorIntegerStrictlyLess": {
+   "label": "Integer Strictly Less",
+   "category": "Conditions",
+   "path": "leveldesign.operator",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Value",
+    "Variable"
+   ],
+   "params": {
+    "Value": {
+     "type": "int",
+     "default": 0
+    },
+    "Variable": {
+     "type": "object",
+     "default": null
+    }
+   }
+  },
+  "OperatorIntegerStrictlyMore": {
+   "label": "Integer Strictly More",
+   "category": "Conditions",
+   "path": "leveldesign.operator",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Value",
+    "Variable"
+   ],
+   "params": {
+    "Value": {
+     "type": "int",
+     "default": 0
+    },
+    "Variable": {
+     "type": "object",
+     "default": null
+    }
+   }
+  },
+  "TagPosition": {
+   "label": "Map point",
+   "category": "Map tags",
+   "path": "leveldesignsolo.helper",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "name"
+   ],
+   "params": {
+    "name": {
+     "type": "text",
+     "required": true
+    }
+   },
+   "help": "A named point on the map. The name must match a placement's Name in the Map Editor - that is the only thing tying the script to the map. Used for spawn points, move targets and label positions."
+  },
+  "TagUnit": {
+   "label": "Map unit",
+   "category": "Map tags",
+   "path": "leveldesignsolo.helper",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "name"
+   ],
+   "params": {
+    "name": {
+     "type": "text",
+     "required": true
+    }
+   },
+   "help": "A named unit already placed on the map. The name must match that placement's Name in the Map Editor. Use it to give orders to a unit the mission starts with, rather than one it spawns."
+  },
+  "TagZoneDetection": {
+   "label": "Map zone",
+   "category": "Map tags",
+   "path": "leveldesignsolo.helper",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "name"
+   ],
+   "params": {
+    "name": {
+     "type": "text",
+     "required": true
+    }
+   },
+   "help": "A named zone on the map, either a circle or a rectangle. The name must match a zone placement's Name in the Map Editor. Conditions use it to ask whether units are inside it."
+  },
+  "TransfertUnitsToIA": {
+   "label": "Transfert Units To I A",
+   "category": "AI",
+   "path": "leveldesignsolo.strategic_ia",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Camp",
+    "Group"
+   ],
+   "params": {
+    "Camp": {
+     "type": "camp_ref",
+     "required": true
+    },
+    "Group": {
+     "type": "ref",
+     "ref_kind": "group",
+     "required": true
+    }
+   }
+  },
+  "UnitToSpawn": {
+   "label": "Unit To Spawn",
+   "category": "Actions (other)",
+   "path": "leveldesign.launcheffetmap",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Chapter",
+    "PositionList"
+   ],
+   "params": {
+    "Chapter": {
+     "type": "int",
+     "required": true
+    },
+    "PositionList": {
+     "type": "list_of",
+     "elem": "tag_pos",
+     "required": true
+    }
+   }
+  },
+  "VariableCamp": {
+   "label": "Camp",
+   "category": "Camps & sides",
+   "path": "leveldesign.camps",
+   "generated": true,
+   "replace_params": true,
+   "param_order": [
+    "Alliance",
+    "Couleur",
+    "Nationalite",
+    "NiveauIA",
+    "PlayerNameChallenge",
+    "PartageCamion",
+    "Message",
+    "AllianceName",
+    "Difficulte",
+    "Profil",
+    "CampNumber",
+    "LocalizedName"
+   ],
+   "params": {
+    "Alliance": {
+     "type": "int",
+     "required": true
+    },
+    "Couleur": {
+     "type": "enum",
+     "enum_domain": "colors",
+     "required": true
+    },
+    "Nationalite": {
+     "type": "enum",
+     "enum_domain": "Nationalite",
+     "required": true
+    },
+    "NiveauIA": {
+     "type": "enum",
+     "enum_domain": "NiveauIA",
+     "required": true
+    },
+    "PlayerNameChallenge": {
+     "type": "bool",
+     "default": false
+    },
+    "PartageCamion": {
+     "type": "bool",
+     "default": true
+    },
+    "Message": {
+     "type": "text",
+     "default": ""
+    },
+    "AllianceName": {
+     "type": "text",
+     "default": ""
+    },
+    "Difficulte": {
+     "type": "enum",
+     "enum_domain": "TDifficultes",
+     "default": "Normal"
+    },
+    "Profil": {
+     "type": "enum",
+     "enum_domain": "TProfils",
+     "default": "ProfilStandard"
+    },
+    "CampNumber": {
+     "type": "int",
+     "default": -1
+    },
+    "LocalizedName": {
+     "type": "object",
+     "default": null
+    }
+   }
+  },
+  "VariableInteger": {
+   "label": "Integer variable",
+   "category": "Variables/Timers",
+   "help": "A named integer counter.",
+   "params": {
+    "Value": {
+     "type": "int",
+     "default": 0
+    }
+   }
+  },
+  "VariableTimer": {
+   "label": "Timer",
+   "category": "Variables/Timers",
+   "help": "A countdown timer (seconds).",
+   "params": {
+    "Duree": {
+     "type": "int",
+     "default": 600
+    },
+    "Text": {
+     "type": "text"
+    }
+   }
+  },
+  "VariableUnitGroup": {
+   "label": "Unit group",
+   "category": "Variables/Timers",
+   "help": "A named set of units (filled by Add...ToUnitGroup actions).",
+   "replace_params": true,
+   "params": {
+    "UnitList": {
+     "type": "list_of",
+     "elem": "ref_unit",
+     "default": [],
+     "required": true,
+     "help": "Units the group starts with. Usually empty - actions add to it later - but it must still be given."
+    }
+   }
+  }
  }
 }

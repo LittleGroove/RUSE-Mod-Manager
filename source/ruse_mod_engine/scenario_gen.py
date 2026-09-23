@@ -429,16 +429,157 @@ def apply_loc_strings(zz, labeled_strings):
     return keys, blobs
 
 
-def _script_paths(map_dir, scenario_name, buildid="10000"):
-    """Paired .xyz script vpath in IA_Common.dat for a scenario (campaign/operation only)."""
-    stub = _scn_stub(scenario_name)            # '' or '_chapter1'
-    return f"genpython\\{buildid}\\test\\map\\{map_dir}\\scripting{stub}\\effetmap.xyz"
+class _IaAdapter:
+    """Give a raw edata archive the entry_paths()/read_many()/get_raw() shape the engine modules expect."""
+    def __init__(self, ia):
+        self._ia = ia
+
+    def entry_paths(self, _dat_key, suffix=""):
+        names = self._ia.list()
+        return [p for p in names if p.lower().endswith(suffix.lower())] if suffix else list(names)
+
+    def read_many(self, _dat_key, paths):
+        # Use the wrapped object's own bulk read when it has one. Looping get() is fine for a raw edata
+        # archive (parsed once, then cheap) but ruinous through a ModProject, where every get_raw
+        # re-opens the .dat - and the LocHash index reads ~1000 .dic files out of a 2.4 GB archive.
+        bulk = getattr(self._ia, "read_many", None)
+        if callable(bulk):
+            try:
+                return bulk(paths)
+            except TypeError:
+                pass
+        out = {}
+        for p in paths:
+            b = self._ia.get(p)
+            if b is not None:
+                out[p] = b
+        return out
+
+    def get_raw(self, _dat_key, path):
+        return self._ia.get(path)
+
+
+def _clone_record_text(zz, g_ndf, info_idx, seed_prefix, skip_props, already=None):
+    """Give a cloned registration record its OWN text keys.
+
+    A cloned record inherits the source's LocHash values, and the menu text tables are SHARED across the
+    whole game — so a duplicated operation does not merely LOOK like the original, it writes through to it:
+    editing the copy's intelligence report rewrites the original's.  Every LocHash property that was not
+    explicitly given new text gets a fresh key carrying a copy of the source's words in every language.
+
+    Returns ({vpath: blob}, {prop: new_key}).  The blobs are keyed by PLAIN archive path to match the
+    rest of the plan — `edits.loc_set_text` keys its result by (dat_key, path) because it can span dats,
+    and merging the two shapes into one dict silently produces entries nothing can write."""
+    from . import edits as _edits
+    idx = _edits.loc_index(_IaAdapter(zz), dat_key="loc")
+    if idx is None:
+        return {}, {}
+    inst = g_ndf.instances[info_idx]
+    # Seed with whatever an earlier pass already staged for the same files (apply_loc_strings writes the
+    # user-supplied name/subtitle/briefing into flash_txt.dic).  Without this the clone-text pass starts
+    # from the pristine blob and silently drops those entries.
+    staged = {("loc", p): b for p, b in (already or {}).items()}
+    minted = {}
+    for pv in list(inst.props):
+        if pv.value.type_id != T.LocHash:
+            continue
+        prop = g_ndf.prop_by_index(pv.prop_index)
+        name = prop.name if prop else str(pv.prop_index)
+        if name in skip_props:
+            continue
+        src_key = bytes(pv.value.raw)
+        if not _edits.loc_langs(idx, src_key):
+            continue          # the source key resolves to no text at all; leave the property alone
+        # `staged` is threaded through so several keys landing in the SAME .dic compose; without it each
+        # call starts from the pristine blob and only the last property survives.
+        new_key, staged = _edits.loc_clone_key(idx, src_key, "%s|%s" % (seed_prefix, name), staged=staged)
+        minted[name] = new_key
+        _set_raw(g_ndf, inst, name, new_key)
+    return {path: blob for (_dat_key, path), blob in staged.items()}, minted
+
+
+def _cluster_scripting_folders(ndf, map_dir: str) -> list:
+    """The trailing folder of every python path the cluster adds THAT BELONGS TO THIS MAP.
+
+    The map filter is essential: a cluster also puts the shared framework packs on the path
+    (`DataDir:\\CodeIA\\Python\\Eugen`, `EugenSolo`, `EugenPatchable`, the sound pack...).  Those are the
+    game's own libraries — re-pointing one at a scenario folder would unload the entire scripting
+    framework.  Only `...\\Test\\map\\<map dir>\\<folder>` is the scenario's own script directory.
+
+    Reading it beats deriving it from the scenario name, which the irregular shipped pairings break."""
+    want = "\\map\\" + map_dir.replace("/", "\\").lower() + "\\"
+    out = []
+    for _i, inst in ndf.find_instances("TClusterAddPythonPath"):
+        p = ndf.prop_by_name_and_class("DirectoryList", inst.class_index) or \
+            ndf.prop_by_name("DirectoryList")
+        v = inst.get(p.index) if p is not None else None
+        if v is None or v.type_id != T.List:
+            continue
+        for item in v.raw:
+            if item.type_id not in (T.StringRef, T.PathRef):
+                continue
+            s = ndf.get_string(item.raw)
+            if not s:
+                continue
+            n = s.replace("/", "\\").rstrip("\\")
+            if want not in (n.lower() + "\\"):
+                continue
+            tail = n.rsplit("\\", 1)[-1]
+            if tail and tail not in out:
+                out.append(tail)
+    return out
+
+
+def _clone_scenario_dicos(zz, map_dir: str, old_folder: str, new_folder: str) -> dict:
+    """Copy every per-language .dic that lives under the scenario's scripting folder to the new folder.
+
+    Without this the cloned cluster names a Localization.dic that does not exist, so every objective line
+    renders blank — the same failure mode as the zero-filled .dic gotcha, just reached a different way."""
+    if old_folder.lower() == new_folder.lower():
+        return {}
+    want = "\\%s\\%s\\" % (map_dir.replace("/", "\\").lower(), old_folder.lower())
+    out = {}
+    for p in zz.list():
+        n = p.replace("/", "\\").lower()
+        if want not in n or not n.endswith(".dic"):
+            continue
+        blob = zz.get(p)
+        if blob is None:
+            continue
+        head, _, tail = p.replace("/", "\\").rpartition("\\")
+        parts = head.split("\\")
+        parts = [new_folder if s.lower() == old_folder.lower() else s for s in parts]
+        out["\\".join(parts) + "\\" + tail] = blob
+    return out
+
+
+def scripting_folder(scenario_name: str) -> str:
+    """CONVENTIONAL scripting-folder name for a scenario stem ('leveldesign_chapter1' ->
+    'Scripting_chapter1').  Only valid for a folder we are CREATING — for an existing scenario, read the
+    real folder off its cluster (scenario_chain.ClusterInfo.scripting_folders), because the shipped data
+    has irregular pairings the convention gets wrong."""
+    return "Scripting" + _scn_stub(scenario_name)
+
+
+def _script_paths(map_dir, scenario_name, buildid):
+    """Paired .xyz script vpath in IA_Common.dat for a scenario (campaign/operation only).
+
+    `buildid` is DISCOVERED from the dat, never assumed: the shipped public build uses `genpython\\1000\\`,
+    and guessing wrong does not error — the lookup simply finds nothing, which used to present as
+    'this scenario has no script' and made the clone ship no script at all."""
+    return "genpython\\%s\\test\\map\\%s\\%s\\effetmap.xyz" % (
+        buildid, map_dir, scripting_folder(scenario_name))
+
+
+def _script_folder_path(map_dir, folder, buildid):
+    return "genpython\\%s\\test\\map\\%s\\%s\\effetmap.xyz" % (buildid, map_dir, folder)
 
 
 def generate_scenario(dm, gd, map_dir, src_scn, new_scn, new_name,
                       tracking_id, kind="mp", game_type=None, nb_players=None, new_guid=None,
                       src_folder=None, new_folder=None, new_description=None, zz=None,
-                      ia=None, set_props=None, op_name=None, op_subtitle=None, op_briefing=None):
+                      ia=None, set_props=None, op_name=None, op_subtitle=None, op_briefing=None,
+                      menu_group="same"):
     """Build a complete new scenario of any kind by cloning an existing one on the same terrain.
 
     dm = DataMap_Win.dat, gd = ZZ_GladPatchableWin.dat (edata). kind = mp|campaign|operation.
@@ -469,21 +610,61 @@ def generate_scenario(dm, gd, map_dir, src_scn, new_scn, new_name,
             continue       # campath/kdt are optional on some scenarios
         datamap_add[new_dp[key]] = b   # reuse geometry/KDT verbatim
 
+    # ── The cluster is not a text substitution.  Rewriting the strings redirects the .scenario reference
+    # (and a pile of dead Editor-only refs) but leaves the SCRIPTING folder pointing at the source, in all
+    # 85 shipped clusters — so the clone would ship a script the game never puts on its python path and
+    # keep running the source's.  The scripting folder is therefore read off the SOURCE cluster and
+    # re-pointed explicitly, through the named link operations in `edits`.
+    from . import edits as _edits
+    from . import scenario_chain as _chain
+
+    src_cluster_bytes = gd.get(src_gp["clustermap"])
+    if src_cluster_bytes is None:
+        raise ValueError(f"source glad clustermap not found: {src_gp['clustermap']}")
+    try:
+        src_folders = _cluster_scripting_folders(ndfbin.read(src_cluster_bytes), map_dir)
+    except Exception:
+        src_folders = []
+    new_script_folder = scripting_folder(new_scn)
+
     glad_add = {}
+    relink = {"script": [], "dico": []}
     for key in ("clustermap", "mapia"):
         b = gd.get(src_gp[key])
         if b is None:
             raise ValueError(f"source glad {key} not found: {src_gp[key]}")
-        out, _ = clone_glad_ndf(b, reps)      # substitutes src_scn -> new_scn (names the new .scenario)
-        glad_add[new_gp[key]] = out
+        ndf = ndfbin.read(b)
+        _subst_strings(ndf, reps)
+        _subst_widestr(ndf, reps)
+        if key == "clustermap":
+            for old_folder in src_folders:
+                if old_folder.lower() != new_script_folder.lower():
+                    relink["script"] += _edits.point_cluster_at_script(
+                        ndf, old_folder, new_script_folder).changes
+                    relink["dico"] += _edits.point_cluster_at_dico(
+                        ndf, old_folder, new_script_folder).changes
+        glad_add[new_gp[key]] = ndfbin.write(ndf, compress=True)
 
-    # campaign/operation: clone the paired mission script verbatim to the new scripting folder.
+    # campaign/operation: clone the paired mission script into the folder the NEW cluster now names.
+    buildid = _chain.discover_script_buildid(_IaAdapter(ia)) if ia is not None else "1000"
     ia_add = {}
     if kind in ("campaign", "operation") and ia is not None:
-        src_xyz = _script_paths(map_dir, src_scn)
-        sb = ia.get(src_xyz) or ia.get(src_xyz.replace("\\", "/"))
-        if sb is not None:
-            ia_add[_script_paths(map_dir, new_scn)] = sb
+        sb = None
+        for folder in (src_folders or [scripting_folder(src_scn)]):
+            p = _script_folder_path(map_dir, folder, buildid)
+            sb = ia.get(p) or ia.get(p.replace("\\", "/"))
+            if sb is not None:
+                break
+        if sb is None:
+            raise ValueError(
+                "no effetmap.xyz found for %s/%s under %s (build id %s) — a campaign or operation cannot "
+                "run without its script" % (map_dir, src_scn, src_folders or "?", buildid))
+        ia_add[_script_folder_path(map_dir, new_script_folder, buildid)] = sb
+
+    # the in-mission text tables live under the scripting folder too, so they move with it
+    loc_add = {}
+    if zz is not None and src_folders:
+        loc_add = _clone_scenario_dicos(zz, map_dir, src_folders[0], new_script_folder)
 
     zz_mod = {}
     loc_props = None
@@ -509,14 +690,43 @@ def generate_scenario(dm, gd, map_dir, src_scn, new_scn, new_name,
     ids = register_cloned_scenario(m_ndf, g_ndf, map_dir, src_scn, new_scn, src_folder, new_folder,
                                    new_name, new_guid, tracking_id, kind=kind, set_props=sp,
                                    new_description=new_description, loc_props=loc_props)
+
+    # Where the copy sits in the menu.  A clone inherits the source's group, which puts custom content in
+    # among the shipped missions; 'new' gives it a group of its own at the end of the list instead
+    # (next_group_value = max existing + 1).  The group key is CategoryId for all three kinds.
+    if menu_group and menu_group != "same":
+        from .scenario_registry import next_group_value, group_prop_for
+        prop = group_prop_for(kind)
+        value = next_group_value(g_ndf, kind, ids[2]) if menu_group == "new" else int(menu_group)
+        _set_raw(g_ndf, g_ndf.instances[ids[1]], prop, value)
+    # Groups are contiguous runs in the pack list, so a record carrying an EXISTING group's key has to sit
+    # inside that run, not after every other group.  This is the normal case for a campaign mission: it
+    # belongs at the end of its own campaign's group, never at the end of the whole chapter list.
+    from . import edits as _edits2
+    _edits2.place_at_end_of_group(g_ndf, kind, ids[2], ids[1])
+    # Every remaining LocHash on the cloned record still points at the SOURCE's text.  Give the copy its
+    # own keys (seeded by its identity, so re-cloning is idempotent) carrying a copy of the source's words
+    # in every language — otherwise editing the copy's briefing rewrites the original's.
+    minted = {}
+    if zz is not None:
+        zz_mod, minted = _clone_record_text(
+            zz, g_ndf, ids[1], "%s\\%s" % (map_dir, new_scn), set(loc_props or {}), already=zz_mod)
+
     glad_mod = {
         MAPINFO_PATH: ndfbin.write(m_ndf, compress=True),
         GLOBALS_PATH: ndfbin.write(g_ndf, compress=True),
     }
     plan = {"datamap_add": datamap_add, "glad_add": glad_add,
-            "glad_mod": glad_mod, "guid": new_guid, "ids": ids}
+            "glad_mod": glad_mod, "guid": new_guid, "ids": ids,
+            "relink": relink, "script_folder": new_script_folder, "buildid": buildid,
+            "text_keys": minted}
     if ia_add:
         plan["ia_add"] = ia_add            # {vpath: .xyz bytes} -> write into IA_Common.dat
+    # The per-language in-mission .dic files move with the scripting folder, so they are ADDS in the same
+    # dat the flash_txt edits land in.  Keep them separate from zz_mod: those are edits to existing files,
+    # these are new entries.
+    if loc_add:
+        plan["zz_add"] = loc_add
     if zz_mod:
         plan["zz_mod"] = zz_mod            # {vpath: flash_txt.dic bytes} -> write into ZZ_Win.dat
     return plan

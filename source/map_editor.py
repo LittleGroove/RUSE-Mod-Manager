@@ -18,11 +18,13 @@ import copy
 import glob
 import io
 import json
+import logging
 import math
 import os
 import re
 import struct
 import sys
+import time
 import tkinter as tk
 from tkinter import ttk, filedialog
 
@@ -34,13 +36,16 @@ from ruse_mod_engine import placement_schema as pschema  # noqa: E402  — typed
 from ruse_mod_engine import scenario_gen  # noqa: E402  — clone-and-register new scenarios (any kind)
 from ruse_mod_engine import xyz_compile as xyzc  # noqa: E402  — .xyz mission-script codec (in-project)
 from ruse_mod_engine import placement_catalog as pcat  # noqa: E402  — full placeable-class universe
+from ruse_mod_engine import placement_roles as proles  # noqa: E402  — per-class icon roles (map symbols)
+from ruse_mod_engine import camp_resolver as cresolve  # noqa: E402  — Camp number -> controlling camp/nation
 from ruse_mod_engine import dic as dicmod  # noqa: E402  — flash_txt.dic (localized menu names)
 import pil_log                                       # noqa: E402  (tags PIL DEBUG as "Map editor")
 from i18n import t                                    # noqa: E402
 import ui_util                                        # noqa: E402  — language-aware widget sizing
+import features  # noqa: E402  — release hold-backs (CLONING_ENABLED)
 
 try:
-    from PIL import Image, ImageTk, ImageDraw
+    from PIL import Image, ImageTk, ImageDraw, ImageFont
     _HAVE_PIL = True
 except Exception:
     _HAVE_PIL = False
@@ -51,6 +56,15 @@ try:
     from ruse_mod_engine import terrain_codec as _terrain_codec
 except Exception:
     _terrain_codec = None
+try:
+    from ruse_mod_engine import terrain_tiles as _terrain_tiles
+except Exception:
+    _terrain_tiles = None
+# Shaded relief from the decoded terrain MESH — shows the landform the painted colour can't.
+try:
+    from ruse_mod_engine import terrain_relief as _terrain_relief
+except Exception:
+    _terrain_relief = None
 
 import threading
 import tempfile
@@ -239,6 +253,10 @@ _PLACE_COL = {
     "unit": (170, 150, 90), "building": (180, 90, 110), "spawn": (140, 100, 170),
     "unknown": (150, 150, 150),
 }
+# Same colours as hex, built once at import. The "#%02x%02x%02x" % rgb formatting was running per
+# marker per frame; there are only a dozen kinds and they never change.
+_PLACE_COL_HEX = {k: "#%02x%02x%02x" % v for k, v in _PLACE_COL.items()}
+
 # Per-kind facing offset (radians) — fallback for non-road-locked kinds (item Rotation is radians).
 _MODEL_FACING_OFFSET = {"depot": -math.pi / 2.0}
 
@@ -300,353 +318,88 @@ def _xyz_compile_source(source_text, timeout=20):
 # Starter Python-2 .xyz template for the Script Editor's "create a new script" path. Skeletal —
 # imports + a single VariableCamp for the player + a stub win condition the user is expected to
 # customise. Two-space indent matches the game's own decompiled .xyz scripts.
-_SCRIPT_TEMPLATE = '''# Minimal .xyz starter — paired with this scenario.
-# See [the help/reference pane] for objective, trigger, and endless-wave patterns.
-import leveldesign.camps
-import leveldesign.descriptor
-import leveldesignsolo.descriptor
-import leveldesignsolo.contrainte_unit
-import _enum_for_game_play
+# The script editor's hand-written reference panel lived here (a ~270-line list of docs, recipes and
+# paste snippets, plus a _SCRIPT_SNIPPETS alias). It went with the popup it fed: the Mission Rules &
+# Script step reads the DSL catalog instead — 1,133 classes with real parameters, types, defaults and
+# enum domains, of which 99.4% of the beats in a shipped script resolve — so the panel is generated from
+# the game's own data rather than maintained by hand.
 
-Camp_Player = leveldesign.camps.VariableCamp(
-    Alliance = 1, AllianceName = u'', CampNumber = -1,
-    Couleur = defines.colors.Color_01_Blue,
-    Difficulte = _enum_for_game_play.TDifficultes.Normal,
-    LocalizedName = None, Message = u'',
-    Nationalite = _enum_for_game_play.Nationalite.EU,
-    NiveauIA = _enum_for_game_play.NiveauIA.Player,
-    PartageCamion = True, PlayerNameChallenge = True,
-    Profil = _enum_for_game_play.TProfils.ProfilStandard)
+# Auto-snap-to-roads: world-unit perpendicular distance a road-bound building sits from the nearest
+# road LINE, in the EDITOR's road-graph frame (read_road_graph + the point→segment distance used by
+# _nearest_road_point). These are MEASURED empirically across ALL shipped scenarios, not guessed and
+# NOT the game's own TBatimentDescriptor.DistanceToRoad (which is measured against the game's true road
+# centerline — depot=5000, hq=11700 — and matches neither our node nor our line metric because the
+# cracked mapinfo.win graph isn't that centerline). See docs/map_editor/placements_and_roads.md §9 and
+# tools/test_scripts/measure_road_offsets.py (writes tools/output/road_offset_report.md).
+#   depot: line-median 11696 over 1554 placements / 31 maps; per-map spread only ~1900u → map-stable.
+#          (node-median 12018 — the node-vs-line choice moves it <350u, so ~11700 is robust.)
+#   hq:    line-median 13580 over 353 placements. Corrects the old 17000, which came from just 2 blitz
+#          HQs; the 353-sample number is ~13600.
+# Only depot + HQ are road-placed consistently enough across scenarios to trust. Other buildings
+# (factories/airfield/barracks/admin/prototype) are pre-placed freely by Operations designers, so they
+# have no reliable scenario-derived offset — when they become editor placements they'll need in-game
+# calibration, not this table. Bunkers/defenses and units/zones are NOT road-bound (absent here on purpose).
+_ROAD_SNAP_OFFSET = {"depot": 11696.0, "hq": 13580.0}
 
-Camp_Enemy = leveldesign.camps.VariableCamp(
-    Alliance = 2, AllianceName = u'', CampNumber = -1,
-    Couleur = defines.colors.Color_02_Red,
-    Difficulte = _enum_for_game_play.TDifficultes.Normal,
-    LocalizedName = None, Message = u'Enemy',
-    Nationalite = _enum_for_game_play.Nationalite.Allemagne,
-    NiveauIA = _enum_for_game_play.NiveauIA.Scripted,
-    PartageCamion = False, PlayerNameChallenge = False,
-    Profil = _enum_for_game_play.TProfils.ProfilStandard)
-
-# TODO: define objectives + win/lose conditions.
-'''
-
-# Reference content for the script editor's right pane. Entries are tuples whose first
-# element selects a renderer:
-#   ('section', title)
-#       → orange/gold section divider header.
-#   ('doc', title, body)
-#       → explanatory paragraph; no paste-able snippet.
-#   ('recipe', title, body, paste_code)
-#       → "what to change in existing code" with an insertable example.
-#   ('snippet', title, body, paste_code)
-#       → paste-able skeleton for adding NEW content.
-#   ('table', title, body, rows)
-#       → enum/value lookup table; rows are (key, description).
+# On-canvas placement icons. icons/map_icons/roles/*.png is one picture PER ROLE — see
+# ruse_mod_engine/placement_roles.py for what a role is and where the classification comes from (the
+# game's own TypeUnitHintToken / NameInMenuToken / Factory fields), and
+# tools/test_scripts/gen_map_icons.py for the drawing.
 #
-# Content is grounded in a corpus scan of the game's decompiled .xyz/.py scripts —
-# value counts per enum are noted below where revealing.
-# (User-asked: the script editor's primary job is editing the PARAMETERS of these
-# factory calls, not writing arbitrary control flow; the reference reflects that.)
-_SCRIPT_REFERENCE = [
-    # ── Overview ─────────────────────────────────────────────────────────────────
-    ('section', "HOW THESE SCRIPTS WORK"),
-    ('doc', "Mission tree", (
-        "A RUSE script is a tree of `Descriptor*` instances. The root descriptor runs at "
-        "match start; each parent runs its `SubActions` either in order "
-        "(`DescriptorSequential`), in parallel (`DescriptorSimultaneous`), or as a race "
-        "(`DescriptorCompetition`). Branches happen via `DescriptorIfThenElse` and "
-        "`DescriptorOnContrainte`. Variables persist state across the tree.")),
-    ('doc', "Tags = scenario references", (
-        "`TagPosition('name')`, `TagUnit('name')` and `TagZoneDetection('name')` pull "
-        "named entities directly from the paired .scenario file (the same items the "
-        "map editor shows). Tags are how scripts reference where to spawn, where to "
-        "attack, which units to watch. To add a new tag target: place the entity in "
-        "the .scenario with `+ Placement`, give it a `Name`, then `TagPosition('that name')` "
-        "in the script.")),
-    ('doc', "Camps drive everything", (
-        "`VariableCamp(...)` defines a faction slot. The slot indexes correspond to the "
-        "`Camp` integer on placements: 1st VariableCamp = the `Camp = null` placements "
-        "(Team 1); 2nd VariableCamp = `Camp = 1` (Team 2); 3rd = `Camp = 2` (Team 3); "
-        "and so on. Exception: an explicit `CampNumber = N` argument pins the slot "
-        "regardless of declaration order (see m08_allemagne for shipped examples).")),
+# Before this, everything but a depot or an HQ was a coloured dot: a Tiger, a paratrooper, an MG nest
+# and a script waypoint were four dots in three colours. Now every placeable class draws as itself.
+# icons/map_icons/*.png (the flat legacy palette) is kept for the older popup UI.
+#
+# Resolved through _MEIPASS when frozen, exactly like i18n does for lang/: __file__ points inside the
+# unpacked bundle for a onefile exe, so a REPO-relative path would miss. (Before this, icons/ wasn't
+# bundled at all — the two icons the editor used just silently fell back to coloured squares in every
+# released build. build.py now ships the folder; see _SRC_DIRS and the spec's datas.)
+def _icon_root():
+    base = getattr(sys, "_MEIPASS", None) if getattr(sys, "frozen", False) else None
+    return os.path.join(base or REPO, "icons", "map_icons")
 
-    # ── Common edits ─────────────────────────────────────────────────────────────
-    ('section', "COMMON EDITS"),
-    ('recipe', "Change enemy difficulty", (
-        "Find the enemy's `VariableCamp(...)` and change `Difficulte`. Observed across "
-        "shipped scripts: Facile (5), Normal (344), Difficile (162). Difficile gives the "
-        "AI faster production, larger force sizes, more aggressive behavior."),
-        "Difficulte = _enum_for_game_play.TDifficultes.Difficile"),
-    ('recipe', "Change enemy faction (nationality)", (
-        "In a `VariableCamp(...)`, change `Nationalite`. This sets the unit roster, "
-        "Rusopedia and ruse cards the camp uses."),
-        "Nationalite = _enum_for_game_play.Nationalite.Allemagne"),
-    ('recipe', "Change AI personality", (
-        "`Profil` swaps the AI's strategic preset. ProfilStandard (445) is balanced; "
-        "ProfilRush (32) goes aggressive early; ProfilAvion (23) prioritises planes; "
-        "ProfilTortue (11) turtles defensively."),
-        "Profil = _enum_for_game_play.TProfils.ProfilRush"),
-    ('recipe', "Change camp colour on the minimap", (
-        "Pick a `defines.colors.Color_*` (see Quick Reference below). Color_Neutre is "
-        "for non-combat factions; pick one of the numbered colours for visible teams."),
-        "Couleur = defines.colors.Color_05_Orange"),
-    ('recipe', "Disable a camp's truck-sharing with allies", (
-        "`PartageCamion = False` means this camp's depots ONLY feed its own units, even "
-        "when same-Alliance. Set True for normal MP alliance economy."),
-        "PartageCamion = False"),
-    ('recipe', "Tweak a mission timer", (
-        "Wherever a `DescriptorWaitDuree(Duree = N.0, ...)` appears, change the `Duree` "
-        "(seconds). Most missions use 30-600 second timers."),
-        "Duree = 120.0"),
 
-    # ── Camp setup snippets ──────────────────────────────────────────────────────
-    ('section', "CAMP SETUP — VariableCamp templates"),
-    ('snippet', "Player camp (human)", (
-        "Marks a VariableCamp as the human player. NiveauIA = Player is the toggle; "
-        "PlayerNameChallenge = True replaces Message with the player's profile name. "
-        "Convention: the LAST VariableCamp in a mission script is usually the player."),
-        ("leveldesign.camps.VariableCamp(\n"
-         "    Alliance = 1, AllianceName = u'', CampNumber = -1,\n"
-         "    Couleur = defines.colors.Color_01_Blue,\n"
-         "    Difficulte = _enum_for_game_play.TDifficultes.Normal,\n"
-         "    LocalizedName = None, Message = u'',\n"
-         "    Nationalite = _enum_for_game_play.Nationalite.EU,\n"
-         "    NiveauIA = _enum_for_game_play.NiveauIA.Player,\n"
-         "    PartageCamion = True, PlayerNameChallenge = True,\n"
-         "    Profil = _enum_for_game_play.TProfils.ProfilStandard)\n")),
-    ('snippet', "Scripted AI enemy", (
-        "NiveauIA = Scripted runs the descriptors in this file rather than the strategic "
-        "AI. Alliance = 2 puts the camp on the enemy side; Message is the on-screen team "
-        "name during the pre-game splash."),
-        ("leveldesign.camps.VariableCamp(\n"
-         "    Alliance = 2, AllianceName = u'', CampNumber = -1,\n"
-         "    Couleur = defines.colors.Color_02_Red,\n"
-         "    Difficulte = _enum_for_game_play.TDifficultes.Normal,\n"
-         "    LocalizedName = None, Message = u'Afrika Korps',\n"
-         "    Nationalite = _enum_for_game_play.Nationalite.Allemagne,\n"
-         "    NiveauIA = _enum_for_game_play.NiveauIA.Scripted,\n"
-         "    PartageCamion = False, PlayerNameChallenge = False,\n"
-         "    Profil = _enum_for_game_play.TProfils.ProfilStandard)\n")),
-    ('snippet', "Neutral / allied AI", (
-        "Color_Neutre + Alliance = 1 (same as player) marks a non-combat ally that "
-        "shares the map. PartageCamion = True lets supply trucks cross alliance lines."),
-        ("leveldesign.camps.VariableCamp(\n"
-         "    Alliance = 1, AllianceName = u'', CampNumber = -1,\n"
-         "    Couleur = defines.colors.Color_Neutre,\n"
-         "    Difficulte = _enum_for_game_play.TDifficultes.Normal,\n"
-         "    LocalizedName = None, Message = u'',\n"
-         "    Nationalite = _enum_for_game_play.Nationalite.EU,\n"
-         "    NiveauIA = _enum_for_game_play.NiveauIA.Scripted,\n"
-         "    PartageCamion = True, PlayerNameChallenge = False,\n"
-         "    Profil = _enum_for_game_play.TProfils.ProfilStandard)\n")),
+ICON_DIR = _icon_root()
+ROLE_ICON_DIR = os.path.join(ICON_DIR, "roles")
+# Nation roundels (icons/nation_icons/*.png) composited onto the corners of a placement
+# icon — see MapEditor._build_overlay_icon. Shipped 64 px; scaled down per use.
+NATION_ICON_DIR = os.path.join(os.path.dirname(ICON_DIR), "nation_icons")
 
-    # ── Objectives & win/lose ────────────────────────────────────────────────────
-    ('section', "OBJECTIVES — WIN / LOSE / ENDLESS"),
-    ('snippet', "Win — destroy all enemy units", (
-        "ContrainteOnUnitTeam returns 0 when Camp_Enemy has no units left. "
-        "DescriptorDeclencheVictoireChallenge fires the victory screen when its "
-        "Contrainte is met."),
-        ("victory_cond = leveldesignsolo.contrainte_unit.ContrainteOnUnitTeam(\n"
-         "    Camp = Camp_Enemy, OperatorType = 0)\n"
-         "win = leveldesign.descriptor.DescriptorDeclencheVictoireChallenge(\n"
-         "    Contrainte = victory_cond)\n")),
-    ('snippet', "Win — survive a timer", (
-        "Wait N seconds, then win. Use DescriptorCompetition with a parallel lose-check "
-        "to make the timer race the player's survival."),
-        ("survive = leveldesign.descriptor.DescriptorSequential(\n"
-         "    SubActions = [\n"
-         "        leveldesign.descriptor.DescriptorWaitDuree(Duree = 300.0),\n"
-         "        leveldesign.descriptor.DescriptorDeclencheVictoireChallenge()])\n")),
-    ('snippet', "Lose — player loses all units", (
-        "Mirror of the destroy-enemy condition. ContrainteOnUnitTeam on the player's "
-        "camp triggers when their unit count drops to 0."),
-        ("lose_cond = leveldesignsolo.contrainte_unit.ContrainteOnUnitTeam(\n"
-         "    Camp = Camp_Player, OperatorType = 0)\n"
-         "lose = leveldesign.descriptor.DescriptorDeclencheDefaiteChallenge(\n"
-         "    Contrainte = lose_cond)\n")),
-    ('snippet', "Endless mode (no win condition)", (
-        "Omit DescriptorDeclencheVictoireChallenge entirely. Pair an infinite "
-        "DescriptorWaitDuree → DescriptorCreateUnit loop via DescriptorSequential "
-        "(or recursive SubActions) for escalating waves. Player wins only by quitting "
-        "to menu, loses by dying."),
-        ("endless_root = leveldesign.descriptor.DescriptorSequential(\n"
-         "    SubActions = [wave_descriptor, wave_descriptor, wave_descriptor])\n")),
+# Icon pixel size per "Icon size" setting. Quantised on purpose: the PhotoImage cache is keyed by
+# size, so a continuously zoom-derived size would rebuild every icon on every wheel notch.
+_ICON_SIZES = {"off": 0, "small": 21, "medium": 28, "large": 37}
+_ICON_SIZE_LABELS = [("off", "map.icons_off"), ("small", "map.icons_small"),
+                     ("medium", "map.icons_medium"), ("large", "map.icons_large")]
 
-    # ── Triggers & timing ────────────────────────────────────────────────────────
-    ('section', "TRIGGERS & TIMING"),
-    ('snippet', "Wait N seconds", (
-        "Sleep for a fixed duration before running the next descriptor. Most common "
-        "timer in shipped scripts (6008 calls)."),
-        "leveldesign.descriptor.DescriptorWaitDuree(Duree = 60.0)"),
-    ('snippet', "Wait until a condition is true", (
-        "DescriptorWaitCondition blocks until its Condition argument returns true. "
-        "Pair with ConditionVariableInteger, ConditionUnitGroup, or one of the "
-        "leveldesignsolo.condition.* classes."),
-        ("leveldesign.descriptor.DescriptorWaitCondition(\n"
-         "    Condition = my_condition)")),
-    ('snippet', "Trigger when units enter a zone", (
-        "ConditionDetectUnitDansZoneDetection fires when a unit of Camp Camp_Player "
-        "enters the zone bound to TagZoneDetection('zone_name')."),
-        ("zone_check = leveldesignsolo.condition.ConditionDetectUnitDansZoneDetection(\n"
-         "    Zone = leveldesignsolo.helper.TagZoneDetection('zone_attack'),\n"
-         "    Camp = Camp_Player, OperatorType = 0)\n")),
-    ('snippet', "Run actions sequentially", (
-        "Most common flow construct (9724 calls). Each SubAction completes before the "
-        "next starts."),
-        ("leveldesign.descriptor.DescriptorSequential(\n"
-         "    SubActions = [action_a, action_b, action_c])")),
-    ('snippet', "Run actions in parallel", (
-        "All SubActions start at once. Parent completes when ALL children complete."),
-        ("leveldesign.descriptor.DescriptorSimultaneous(\n"
-         "    SubActions = [action_a, action_b])")),
-    ('snippet', "Race actions (first to finish)", (
-        "All SubActions start; parent completes as soon as ANY child finishes. Useful "
-        "for 'survive OR destroy enemy = win' mission setups."),
-        ("leveldesign.descriptor.DescriptorCompetition(\n"
-         "    SubActions = [survive_timer, destroy_enemy])")),
-    ('snippet', "Branch on condition", (
-        "Run different SubActions depending on a Condition's truth value."),
-        ("leveldesign.descriptor.DescriptorIfThenElse(\n"
-         "    Condition = my_cond,\n"
-         "    SubActionsIfTrue = [yes_action], SubActionsIfFalse = [no_action])")),
 
-    # ── Spawn & move ─────────────────────────────────────────────────────────────
-    ('section', "SPAWN & UNIT CONTROL"),
-    ('snippet', "Spawn units at a position", (
-        "Creates N copies of each UnitDescriptor at TagPosition. Camp owns them; "
-        "AddToUnitGroup attaches them to a VariableUnitGroup for later orders."),
-        ("leveldesignsolo.production.DescriptorCreateUnit(\n"
-         "    UnitDescriptors = [Unit_Carro_Armato_M11_39],\n"
-         "    Position = leveldesignsolo.helper.TagPosition('spawn_01'),\n"
-         "    Camp = Camp_Enemy,\n"
-         "    AddToUnitGroup = wave_group)\n")),
-    ('snippet', "Move a unit group toward a position", (
-        "Orders Group's units to a destination. OperatorType controls formation."),
-        ("leveldesignsolo.missions.DescriptorMove(\n"
-         "    Group = wave_group,\n"
-         "    Position = leveldesignsolo.helper.TagPosition('attack_target'))")),
-    ('snippet', "Attack a target", (
-        "Group attacks the nearest enemy unit/structure to Position."),
-        ("leveldesignsolo.missions.DescriptorAttack(\n"
-         "    Group = wave_group, Camp = Camp_Player,\n"
-         "    Position = leveldesignsolo.helper.TagPosition('depot_01'))")),
-    ('snippet', "Defend a zone", (
-        "Group holds a zone, engaging anything that enters."),
-        ("leveldesignsolo.missions.DescriptorDefendZone(\n"
-         "    Group = defender_group,\n"
-         "    Zone = leveldesignsolo.helper.TagZoneDetection('zone_defend'))")),
-    ('snippet', "Change camp ownership", (
-        "Reassigns every unit in Group to NewCamp. Useful for capture events."),
-        ("leveldesignsolo.units.DescriptorChangeCamp(\n"
-         "    Group = captured_group, NewCamp = Camp_Player)")),
-    ('snippet', "Kill all units in a group", (
-        "Removes them — cause-of-death goes on the player's stat ledger if you set it."),
-        ("leveldesignsolo.units.DescriptorKillAllUnit(\n"
-         "    Group = wave_group,\n"
-         "    CauseMort = _enum_for_game_play.CauseMort.NonSpecifiee)")),
+def _camp_display(camp):
+    """The camp NUMBER to show for a placement, treating an absent Camp as camp 0.
 
-    # ── Variables & state ────────────────────────────────────────────────────────
-    ('section', "VARIABLES & STATE"),
-    ('snippet', "Declare an integer variable", (
-        "Most scripts track wave counts, kill counts, mission stage via integer vars."),
-        "wave_count = leveldesign.variable.VariableInteger(InitialValue = 0)"),
-    ('snippet', "Set / increment an integer", (
-        "DescriptorSetVariableInteger writes a new value; "
-        "DescriptorIncrementeVariableInteger adds Delta."),
-        ("leveldesign.descriptor.DescriptorIncrementeVariableInteger(\n"
-         "    Variable = wave_count, Delta = 1)")),
-    ('snippet', "Check an integer", (
-        "Use with DescriptorWaitCondition / DescriptorIfThenElse. OperatorIntegerEqual / "
-        "MoreOrEqual / StrictlyMore / LessOrEqual are the common comparators."),
-        ("leveldesign.condition.ConditionVariableInteger(\n"
-         "    Variable = wave_count,\n"
-         "    Operator = leveldesign.operator.OperatorIntegerMoreOrEqual(Value = 5))")),
+    An absent `Camp` property is not "no owner": the engine reads the NDF integer default, so it
+    resolves through camp_dico exactly like any other value and the placement spawns under camp 0
+    (see ruse_mod_engine/camp_resolver). Showing nothing there made a perfectly normal placement
+    look unowned.
 
-    # ── Quick reference tables ───────────────────────────────────────────────────
-    ('section', "QUICK REFERENCE — enum values"),
-    ('table', "Nationalite", "Faction roster (unit pool + Rusopedia + cards):", [
-        ("Allemagne", "German / Wehrmacht"),
-        ("EU",        "Western Allies (US, generic Allied)"),
-        ("RU",        "British / Royaume-Uni"),
-        ("URSS",      "Soviet Union"),
-        ("France",    "Free French"),
-        ("Italie",    "Italian (Regio Esercito)"),
-        ("Japon",     "Imperial Japan"),
-    ]),
-    ('table', "NiveauIA", "Camp control mode:", [
-        ("Player",   "Human player slot — the camp picks ruse cards, manages economy"),
-        ("Scripted", "Story AI — executes descriptors from THIS .xyz file (Strategic / Tactic are NOT real values)"),
-    ]),
-    ('table', "TDifficultes", "Difficulty applied to AI camps:", [
-        ("Facile",    "Easy (rare in shipped — 5 occurrences)"),
-        ("Normal",    "Default (344 occurrences)"),
-        ("Difficile", "Hard (162 — used for campaign veterans / Operations)"),
-    ]),
-    ('table', "TProfils", "AI personality preset:", [
-        ("ProfilStandard", "Balanced (445 — default)"),
-        ("ProfilRush",     "Aggressive early (32)"),
-        ("ProfilAvion",    "Plane-focused (23)"),
-        ("ProfilTortue",   "Defensive turtle (11)"),
-    ]),
-    ('table', "defines.colors.Color_*", "Camp colour on minimap + UI:", [
-        ("Color_01_Blue",   "(player default)"),
-        ("Color_02_Red",    "(enemy default)"),
-        ("Color_03_Teal",   ""),
-        ("Color_04_Purple", ""),
-        ("Color_05_Orange", ""),
-        ("Color_06_Pink",   ""),
-        ("Color_07_Green",  ""),
-        ("Color_08_Brown",  ""),
-        ("Color_09_Black",  ""),
-        ("Color_Neutre",    "(neutral / non-combatant grey)"),
-    ]),
-    ('table', "CauseMort", "Cause of death tag (for kill descriptors):", [
-        ("NonSpecifiee",       "Generic — most common"),
-        ("Capture",            "Captured (buildings)"),
-        ("CaptureFake",        "Fake-capture (fake buildings)"),
-        ("EliminationCamp",    "Camp surrendered"),
-        ("Stress_Moyen",       "Medium stress kill"),
-        ("Stress_Lourd",       "Heavy stress kill"),
-        ("Stress_ExtraLourd",  "Extra-heavy stress kill"),
-        ("Stress_UltraLourd",  "Ultra-heavy stress kill"),
-    ]),
-    ('table', "OperatorType", "Constraint matching mode (most ContrainteOn* calls):", [
-        ("0", "Match — equality / contains (965 occurrences)"),
-        ("1", "Negation — not-match (17 occurrences)"),
-    ]),
-]
-# Backwards-compat name retained briefly so any older code paths that imported the
-# legacy list don't break — points at the reference list so 'insert' still gets a body.
-_SCRIPT_SNIPPETS = [(e[1], e[3] if len(e) > 3 and isinstance(e[3], str) else "")
-                    for e in _SCRIPT_REFERENCE if e[0] in ("snippet", "recipe")]
-
-# Auto-snap-to-roads: world-unit perpendicular distance a depot / HQ sits from the nearest road LINE.
-# Measured from blitz (supercrossroads4) leveldesign_normal — the clean MP reference (map is 1,310,720u
-# across): depots cluster tightly at ~11,478u (median, sd 797 over 12); the 2 HQs average ~17,003u.
-# So the absolute numbers are large only because the maps are huge (~0.9% of the map width).
-_ROAD_SNAP_OFFSET = {"depot": 11500.0, "hq": 17000.0}
-
-# On-canvas placement icons (the map-editor "front-end vocabulary"). icons/map_icons/* are the
-# palette of droppable things; map each placement KIND to its icon. depot=supply depot,
-# hq=factory/admin building. Unit icons (tank/inf/plane/aa/at/arty/reco/truck) + gameplay
-# (cards/nuke/range) are reserved for future per-unit/spawn placement.
-ICON_DIR = os.path.join(REPO, "icons", "map_icons")
-_PLACE_ICON = {"depot": "depot.png", "hq": "base2.png"}
+    Drawing it as 0 is unambiguous because an EXPLICIT 0 cannot occur: it appears in none of the 102
+    shipped scenarios, and the editor's own Camp choices are [none, -1, 1..9] — there is no 0 to
+    pick. So `0` on a marker always means "no Camp property, i.e. the first camp"."""
+    return 0 if camp is None else camp
 
 
 def _camp_str(camp):
     """Decode a TGameDesignAddOn_Spawn `Camp` Int32 value into a human label.
 
-    Encoding: null = Team 1; Camp = N (≥ 1) = Team N + 1; special values −1 (visible neutral)
-    and −2 (Operations despawn). On a depot in an MP scenario, null specifically means
-    despawned at match start; on any other Spawn null means Team 1 — the engine resolves
-    by scenario type, the editor labels both readings so the user can see both.
+    Encoding: null = camp 0 (Team 1); Camp = N (≥ 1) = camp N (Team N + 1); special values −1
+    (visible neutral) and −2 (Operations despawn). On a depot in an MP scenario, null specifically
+    means despawned at match start; on any other Spawn null is camp 0 — the engine resolves by
+    scenario type, the editor labels both readings so the user can see both.
 
-    Known unknown: `Camp = 0` is never observed in shipped data. We label it "Team 1" by
-    applying the N + 1 offset uniformly, but it could equally be "Camp = 0 ≡ null" or a
-    distinct sentinel. See docs/map_editor/placements_and_roads.md §2 (Camp field semantics)
-    for the candidate interpretations and the in-game test that would settle it."""
+    RESOLVED (was "known unknown"): the value is a direct key into the engine's `camp_dico`, so an
+    ABSENT Camp reads the NDF integer default and resolves as camp 0 — it is not a separate
+    "no owner" state, and the placement spawns normally. The map therefore draws it as `0`
+    (see _camp_display). An EXPLICIT 0 cannot be confused with it: 0 occurs in none of the 102
+    shipped scenarios and the editor's Camp choices are [none, −1, 1..9]. See
+    ruse_mod_engine/camp_resolver.py for the engine code this comes from."""
     if camp is None:
         return t("map.null_team_1_despawn_mp")
     if camp == -1:
@@ -666,6 +419,22 @@ def _ndf_prop(ndf, inst, name):
     """NdfValue of property `name` on `inst` (resolved within the instance's class), or None."""
     p = ndf.prop_by_name_and_class(name, inst.class_index)
     return inst.get(p.index) if p is not None else None
+
+
+def script_vpath_in(paths, map_dir, scn_name):
+    """The paired effetmap.xyz virtual path within `paths`, or None.
+
+    Same convention as MapEditor._script_path_for_scn (leveldesign<suffix>.scenario pairs with
+    scripting<suffix>/effetmap.xyz) but matched against a path list instead of built from the live
+    buildid, so callers that already hold the IA_Common listing (and tests) can use it.
+    A None result means the scenario has no script — i.e. it is multiplayer, where camps are lobby
+    slots carrying allegiance only and no nationality exists to resolve."""
+    suffix = scn_name[len("leveldesign"):] if scn_name.startswith("leveldesign") else ""
+    tail = ("test\\map\\%s\\scripting%s\\effetmap.xyz" % (map_dir, suffix)).lower()
+    for p in paths:
+        if p.lower().endswith(tail):
+            return p
+    return None
 
 
 def parse_placements(ndf):
@@ -732,9 +501,17 @@ def parse_placements(ndf):
                         wv = _ndf_prop(ndf, ainst, "Width"); hv = _ndf_prop(ndf, ainst, "Height")
                         extra["w"] = (wv.raw if wv else 0.0); extra["h"] = (hv.raw if hv else 0.0)
                         label = "zone"
+        # Resolve the icon role ONCE, here — _draw_placements runs for every marker on every pan and
+        # zoom frame, so it must not be doing dictionary lookups per placement per frame.
         out.append({"item_idx": ii, "addon_idx": addon_idx, "kind": kind,
                     "pos": tuple(posv.raw), "rot": (rotv.raw if rotv else None),
-                    "label": label, "extra": extra})
+                    "label": label, "extra": extra,
+                    "role": proles.role_for(kind, extra.get("pyclass")),
+                    # The unit's OWN nationality (fixed by its class). The CONTROLLING camp's
+                    # nation is filled in later as `ctrl_nation` — it needs the paired script,
+                    # which is loaded off the UI thread (see MapEditor._load_camp_map_async).
+                    "nation": proles.nation_for(extra.get("pyclass")),
+                    "ctrl_nation": None})
     return out
 
 
@@ -855,20 +632,7 @@ _SECTOR_COLORS = [
 ]
 _HANDLE_R = 5   # px hit radius for boundary-vertex handles
 
-# Terrain preview detail -> terrain_codec.best_lod budget. Higher budget => higher LOD (sharper)
-# but a slower FIRST decode (pure-Python ~0.15 s/tile; the result is cached per-budget afterwards).
-# best_lod => LOD0 if 16N<=budget, LOD1 if 4N<=budget, else LOD2 (N = grid tiles, Cotentin=96).
-#   Quick    300  : old default — LOD2 on big maps (1536x1024 on Cotentin), near-instant.
-#   Balanced 1000 : LOD0 on small maps, LOD1 on Cotentin-class (3072x2048, 4x pixels, ~1 min decode).
-#   Full   99999  : LOD0 everywhere (Cotentin 6144x4096; ~4 min on the biggest maps).
-# See issue #15 / memory/project_terrain_tmst_codec.md.
-_TERRAIN_DETAIL = [("Quick (fast)", 300), ("Balanced", 1000), ("Full detail (slow)", 99999)]
-_TERRAIN_DETAIL_DEFAULT = 1                         # index into _TERRAIN_DETAIL -> "Balanced"
 
-
-class _TerrainAborted(Exception):
-    """Raised from the decode progress callback to abandon a background terrain decode whose map/quality
-    selection is now stale (the user switched away) — avoids burning minutes on a discarded result."""
 
 # KDT triangle->sector ranges, cracked via runtime analysis (contiguous index blocks per
 # sector). Keyed by (map_dir, scenario). Each entry: (start_tri, end_tri_inclusive, a0_zone_idx).
@@ -1012,12 +776,21 @@ class MapEditorWindow(tk.Frame):
         self._pil = None
         self._bbox = None
         self._terrain_token = 0      # bumps per map change; stale background decodes are discarded (#8)
+        self._terrain_result = None  # worker -> main-thread hand-off slot (polled, never after())
+        self._tiles_dirty = False    # a decode worker landed chunks; the poll repaints for it
         self._redraw_scheduled = False  # coalesce pan/zoom/drag redraws onto one idle callback (perf)
         # status bar = one shared line: a MAIN part (map/scenario · cursor · zoom · [view]) plus a live
         # terrain-decode SUFFIX, so the decode % and the cursor/zoom readout no longer clobber each other.
         self._status_main = ""
         self._terrain_status = ""
         self._scn = None            # full scenario dict (editable source of truth)
+        # The virtual path self._scn / self._pndf were actually READ FROM, recorded at load time.
+        # Saving MUST use this, never the live comboboxes: the comboboxes are what the user is
+        # *pointing at*, which is not always what is *loaded* (a cancelled "discard changes?" leaves
+        # the box on the new map while the old scenario is still in memory). Writing loaded-scenario
+        # bytes to a pointed-at path is how a scenario ends up inside the wrong map.
+        self._scn_vpath = None      # e.g. "test\map\supercrossroads4\leveldesign.scenario"
+        self._scn_src = None        # (map_dir, scn) the loaded scenario came from
         self._zones = []            # render dicts (parallel-ish to scn['zones'])
         self._sel = None            # index into self._zones
         self._scale = 1.0
@@ -1043,7 +816,19 @@ class MapEditorWindow(tk.Frame):
         # composite cache (excludes the selected sector so editing it stays cheap)
         self._comp_tk = None
         self._comp_key = None
+        self._panning = False       # a pan drag is live -> slide the cached composite, rebuild on release
+        self._pan_slid = (0.0, 0.0)  # screen offset the drawn frame has been slid since the last
+        #   full redraw; bounded by _pan_slide_budget so the slid-in edge is still covered
+        self._zooming = False       # a wheel burst is live -> rescale the composite, sharpen on settle
+        self._zoom_after = None     # pending after() id for the post-wheel sharp render
+        self._comp_img = None       # the composite as a PIL image (source for the zoom preview)
+        self._comp_scale = 1.0      # the scale _comp_img was rendered at
+        self._comp_src_rect = None  # base-px region _comp_img covers (fixed; _comp_rect can shrink)
+        self._ov_crop_cache = {}    # (layer, box, w, h, id) -> cropped+resized overlay
+        self._last_comp_build = 0.0  # monotonic stamp of the last composite rebuild (pan throttle)
         self._comp_rect = None      # base-pixel region the cached composite covers (viewport render)
+        self._comp_is_preview = False  # current frame is a zoom preview: covers ONLY the viewport,
+        #   with no margin, so a pan may not slide on it (it would expose blank at the leading edge)
         # ── view/data render split (perf): the static overlays are rasterised ONCE into whole-map
         # bitmaps in "overlay space" (base pixels × supersample) and only crop+resized on pan/zoom
         # (a C-level PIL op), instead of redrawing every vector primitive each frame. Two independent
@@ -1055,6 +840,13 @@ class MapEditorWindow(tk.Frame):
         self._ov_vec_key = None
         self._ov_sdb_dirty = True   # SDB raster needs (re)building (paint / layer toggle / load)
         self._ov_vec_dirty = True   # vector raster needs (re)building (sector/KDT/road change / load)
+        # Shaded relief (whole map, its OWN aspect-correct raster — not overlay space, so it never
+        # has to be rebuilt when the base image swaps from minimap to tiles). Built once per map on
+        # a worker and cached to disk; None until that lands, and the toggle just hides it.
+        self._ov_relief = None
+        self._relief_token = 0      # invalidates an in-flight relief build on map change/teardown
+        self._relief_busy = False
+        self._relief_result = None  # worker -> main-thread hand-off slot (polled, never after())
         self._dragging = False      # a sector/KDT vertex drag is live -> freeze the vec overlay (stale
         #   fill is fine; the moving handles/outline are drawn as live canvas items), rebuild on release
         # KDT (mechanics mesh) overlay + global transform preview
@@ -1099,6 +891,20 @@ class MapEditorWindow(tk.Frame):
         self._drag_place = None     # index of placement being dragged
         self._show_places = tk.BooleanVar(value=True)
         self._place_edit = tk.BooleanVar(value=False)
+        # Marker size for the role icons ("off" falls back to the old cheap dots — see
+        # _draw_placements; the value is one of _ICON_SIZES).
+        self._icon_size = tk.StringVar(value="medium")
+        # Corner marks on the placement icons: nationality (the unit's own, top-left; its
+        # controlling camp's, bottom-left) and the camp number (bottom-right).
+        self._show_nations = tk.BooleanVar(value=True)
+        self._show_camps = tk.BooleanVar(value=True)
+        self._camp_map = {}          # camp key -> camp info, from the paired .xyz (see camp_resolver)
+        self._camp_map_key = None    # (map, scenario) the camp map was built for
+        self._camp_map_busy = False
+        self._camp_map_error = None  # why the controlling-nation marks are absent, if they are
+        self._overlay_cache = {}     # (role, unit_nat, ctrl_nat, camp, size) -> PhotoImage
+        self._nation_src = {}        # nation icon basename -> master RGBA
+        self._camp_fonts = {}        # px -> ImageFont for the camp-number chip
         self._snap_roads = tk.BooleanVar(value=True)   # depots/HQ snap to the road-offset while dragging
         self._mode_vars = {m[0]: tk.BooleanVar(value=False) for m in _GAME_MODES}  # game-mode checkboxes
         # HQ alliance/priority/FFA-seat editing happens inline in the DETAILS panel via _det_entry
@@ -1112,7 +918,15 @@ class MapEditorWindow(tk.Frame):
         self._campath_dirty = False
         # road network (from mapinfo.win buffer1) — exact points + edges, RE'd from the game's graph code
         self._roads = None          # {"nodes": [(x,y,deg)], "edges": [(i,j)]}
+        # Memo for _nearest_road_point. Buildings face the nearest road, so EVERY depot/HQ marker
+        # asked for that every frame — a full scan of the road graph each time. On Cotentin that was
+        # 75% of a pan frame (~196 ms of ~260 ms). The answer depends only on the point and the road
+        # graph, and neither changes while panning or zooming, so it is cached and dropped whenever
+        # the graph is replaced.
+        self._road_pt_memo = {}
         self._show_roads = tk.BooleanVar(value=True)
+        # shaded relief from the terrain mesh (elevation the painted colour can't show)
+        self._show_relief = tk.BooleanVar(value=True)
         # forest CONCEALMENT zones (mapinfo.win buffer4 SDB) — where the game grants forest cover
         self._forest = None         # {"cells": [(x0,y0,x1,y1)], "bbox": (...)}
         self._show_forest = tk.BooleanVar(value=True)
@@ -1164,9 +978,13 @@ class MapEditorWindow(tk.Frame):
         self._scn_kind_lbl = tk.Label(top, text="", background=_R_BG_PANEL, foreground=_R_GOLD_BRT,
                                       font=_F_BOLD)
         self._scn_kind_lbl.pack(side="left", padx=(8, 4))
-        tk.Button(top, text=t("map.new_scenario"), command=self._open_create_scenario_popup,
-                  background="#122030", foreground=_R_GOLD_BRT, font=_F_BOLD,
-                  relief="flat").pack(side="left", padx=4)
+        if features.CLONING_ENABLED:    # both copy a scenario; held back until proven in-game
+            tk.Button(top, text=t("neww.title"), command=self._open_new_operation,
+                      background="#122030", foreground=_R_GOLD_BRT, font=_F_BOLD,
+                      relief="flat").pack(side="left", padx=4)
+            tk.Button(top, text=t("map.new_scenario"), command=self._open_create_scenario_popup,
+                      background="#122030", foreground=_R_GOLD_BRT, font=_F_BOLD,
+                      relief="flat").pack(side="left", padx=4)
         tk.Button(top, text=t("map.save_mod"), command=self._save, background="#122030",
                   foreground=_R_GOLD_BRT, font=_F_BOLD, relief="flat").pack(side="right", padx=(4, 8))
         tk.Button(top, text=t("map.revert"), command=self._revert, background="#122030",
@@ -1185,20 +1003,26 @@ class MapEditorWindow(tk.Frame):
             pass
         self._notebook = ttk.Notebook(self, style="Map.TNotebook")
         self._notebook.pack(side="top", fill="both", expand=True)
+        # Tabs go in WALK ORDER (_WALK_STEPS), which is the game's own load order: a menu entry binds to a
+        # map slot, the slot names the files, the files carry the placements, the script decides play, and
+        # the text is what the player reads. Map Editor therefore sits third rather than first — each step
+        # banner says "step N of 5", and numbered steps that ran left-to-right in a different order would
+        # be telling the user two different things about where they are.
+        self._menu_tab = tk.Frame(self._notebook, background=_R_BG)
+        self._notebook.add(self._menu_tab, text=t("menu.step_title"))
+        self._chain_tab = tk.Frame(self._notebook, background=_R_BG)
+        self._notebook.add(self._chain_tab, text=t("chain.step_title"))
         map_tab = tk.Frame(self._notebook, background=_R_BG)
         self._notebook.add(map_tab, text=t("common.map_editor"))
-        self._mission_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._mission_tab, text=t("map.mission_logic"))
+        self._script_tab = tk.Frame(self._notebook, background=_R_BG)
+        self._notebook.add(self._script_tab, text=t("script.step_title"))
         self._names_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._names_tab, text=t("map.names_descriptions"))
-        self._objlogic_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._objlogic_tab, text=t("map.objectives_logic"))
-        self._timeline_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._timeline_tab, text=t("map.timeline"))
-        self._graph_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._graph_tab, text=t("map.node_graph"))
-        self._author_tab = tk.Frame(self._notebook, background=_R_BG)
-        self._notebook.add(self._author_tab, text=t("common.author"))
+        self._notebook.add(self._names_tab, text=t("text.step_title"))
+        # Open ON the map, even though it is now the third step. Ordering the tabs is about making the
+        # chain legible; which one you land on is about what you came for, and this window is opened from
+        # a button called Map Editor. Without this it would open on Menu Entry purely because a notebook
+        # selects whatever was added first.
+        self._notebook.select(map_tab)
 
         # map-editor view toolbar (tab-specific view toggles)
         vbar = tk.Frame(map_tab, background=_R_BG_PANEL); vbar.pack(side="top", fill="x")
@@ -1211,79 +1035,70 @@ class MapEditorWindow(tk.Frame):
         tk.Checkbutton(vbar, text=t("map.sectors"), variable=self._show_sectors, command=self._invalidate_redraw,
                        background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                        font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD).pack(side="left", padx=(6, 0))
-        tk.Checkbutton(vbar, text=t("map.roads"), variable=self._show_roads, command=self._redraw,
+        # roads live in the VECTOR overlay, so the toggle has to mark that raster dirty — plain
+        # _redraw rebuilt the composite from the CACHED overlay and the roads never changed at all
+        tk.Checkbutton(vbar, text=t("map.roads"), variable=self._show_roads, command=self._invalidate_vec,
                        background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
                        font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD).pack(side="left", padx=(10, 0))
+        # relief is its own cached raster, so toggling it only needs a recompose (no re-rasterising)
+        tk.Checkbutton(vbar, text=t("map.relief"), variable=self._show_relief,
+                       command=self._on_relief_toggle,
+                       background=_R_BG_PANEL, foreground=_R_TEXT, selectcolor=_R_BG_WIDGET,
+                       font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD).pack(side="left", padx=(6, 0))
         tk.Button(vbar, text=t("map.reset_view"), command=self._fit_view, background="#122030",
                   foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left", padx=8)
-        # terrain preview detail (issue #15): higher detail = sharper but a slower first decode
-        # (then cached per setting). Lower detail = a smaller image, which also pans more smoothly.
-        tk.Label(vbar, text=t("map.detail"), background=_R_BG_PANEL, foreground=_R_GOLD,
-                 font=_F_BOLD).pack(side="left", padx=(12, 2))
-        self._quality_opts = [(t(lbl), b) for lbl, b in _TERRAIN_DETAIL]
-        self._quality_cb = ttk.Combobox(vbar, state="readonly", width=16, font=_F_MAIN,
-                                        values=[lbl for lbl, _ in self._quality_opts])
-        self._quality_cb.set(self._quality_opts[_TERRAIN_DETAIL_DEFAULT][0])
-        self._quality_cb.pack(side="left", padx=2)
-        self._quality_cb.bind("<<ComboboxSelected>>", self._on_quality_change)
 
         # embed the mission-logic editor into its tab (kind-gated via set_binding on scenario change)
-        self._op_frame = None
-        try:
-            import operation_editor
-            self._op_frame = operation_editor.OperationEditorFrame(
-                self._mission_tab, self.project,
-                on_done=lambda: (self._ensure_bindings(rebuild=True), self._update_scenario_panel()),
-                open_script_cb=self._open_script_editor)
-            self._op_frame.pack(fill="both", expand=True)
-        except Exception:
-            self._op_frame = None
 
         # "Names & Descriptions" tab — author operation text via the operation_authoring engine
+        # "Menu Entry" tab — whether the game lists this at all, where, and the metadata (P4).
+        self._menu_frame = None
+        try:
+            import menu_entry_tab
+            self._menu_frame = menu_entry_tab.MenuEntryFrame(self._menu_tab, self.project,
+                                                             on_go=self._show_walk_step,
+                                                             on_pick=self._select_by_info_idx)
+            self._menu_frame.pack(fill="both", expand=True)
+        except Exception:
+            self._menu_frame = None
+
+        # "Load & Files" tab — the menu-entry -> map-slot -> cluster -> files chain, walked and checked.
+        # Every join here fails SILENTLY in game, so this is where you find out why (P3).
+        self._chain_frame = None
+        try:
+            import load_files_tab
+            self._chain_frame = load_files_tab.LoadFilesFrame(self._chain_tab, self.project,
+                                                              on_go=self._show_walk_step)
+            self._chain_frame.pack(fill="both", expand=True)
+        except Exception:
+            self._chain_frame = None
+
+        # "Mission Rules & Script" tab — the outline, the guided pane and the source, over ONE decompiled
+        # script. Folds in Objectives & Logic, Timeline, Node Graph and Author (P5).
+        self._script_frame = None
+        try:
+            import mission_script_tab
+            self._script_frame = mission_script_tab.MissionScriptFrame(
+                self._script_tab, self.project, on_go=self._show_walk_step)
+            self._script_frame.pack(fill="both", expand=True)
+        except Exception:
+            self._script_frame = None
+
+        # "Text" tab — every LocHash this scenario owns, edited across all languages at once (P2).
+        # Replaces the old Names & Descriptions tab, which edited ONE language per save and hid the
+        # empty FoldedText slots (see our internal scenario notes).
         self._names_frame = None
         try:
-            import names_descriptions_tab
-            self._names_frame = names_descriptions_tab.NamesDescriptionsFrame(self._names_tab, self.project)
+            import text_tab
+            self._names_frame = text_tab.TextFrame(self._names_tab, self.project,
+                                                   on_go=self._show_walk_step)
             self._names_frame.pack(fill="both", expand=True)
         except Exception:
             self._names_frame = None
 
-        # "Objectives & Logic" tab — edit objective score/condition/threshold via the recompile golden path
-        # (script_logic.py + bundled Python 2.5.1). Doc 03 View 3 (forms); Timeline + Graph views to follow.
-        self._objlogic_frame = None
-        try:
-            import objectives_logic_tab
-            self._objlogic_frame = objectives_logic_tab.ObjectivesLogicFrame(self._objlogic_tab, self.project)
-            self._objlogic_frame.pack(fill="both", expand=True)
-        except Exception:
-            self._objlogic_frame = None
-
-        # "Timeline" tab — read-only storyboard of how the operation unfolds (doc 03 View 2)
-        self._timeline_frame = None
-        try:
-            import timeline_tab
-            self._timeline_frame = timeline_tab.TimelineFrame(self._timeline_tab, self.project)
-            self._timeline_frame.pack(fill="both", expand=True)
-        except Exception:
-            self._timeline_frame = None
-
-        # "Node Graph" tab — cause->effect graph of the operation (doc 03 View 1)
-        self._graph_frame = None
-        try:
-            import node_graph_tab
-            self._graph_frame = node_graph_tab.NodeGraphFrame(self._graph_tab, self.project)
-            self._graph_frame.pack(fill="both", expand=True)
-        except Exception:
-            self._graph_frame = None
-
-        # "Author" tab — CREATE new mission logic (WHEN→DO event builder over script_emit)
-        self._author_frame = None
-        try:
-            import author_tab
-            self._author_frame = author_tab.AuthorFrame(self._author_tab, self.project)
-            self._author_frame.pack(fill="both", expand=True)
-        except Exception:
-            self._author_frame = None
+        # Objectives & Logic, Timeline, Node Graph and Author used to be four tabs here. They were four
+        # views of ONE decompiled script (and Author was a WHEN/DO builder with 2 triggers and 4 actions
+        # against a 1,133-class DSL), so they are now one step: mission_script_tab, above.
 
         body = tk.Frame(map_tab, background=_R_BG)
         body.pack(side="top", fill="both", expand=True)
@@ -1398,6 +1213,29 @@ class MapEditorWindow(tk.Frame):
                        background=_R_BG_PANEL, foreground=_R_TEXT,
                        selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
                        activeforeground=_R_GOLD).pack(anchor="w")
+        # Icon size + legend. Every placement draws as a picture of what it is; this row is how you
+        # trade that detail against clutter on a busy map, and how you learn what the pictures mean.
+        icr = tk.Frame(plf, background=_R_BG_PANEL); icr.pack(fill="x", pady=(3, 0))
+        tk.Label(icr, text=t("map.icon_size"), background=_R_BG_PANEL, foreground=_R_TEXT,
+                 font=_F_MAIN).pack(side="left")
+        self._icon_size_labels = {t(k): key for key, k in _ICON_SIZE_LABELS}
+        cb = ttk.Combobox(icr, state="readonly", width=8,
+                          values=[t(k) for _key, k in _ICON_SIZE_LABELS])
+        cb.set(t(dict(_ICON_SIZE_LABELS)["medium"]))
+        cb.bind("<<ComboboxSelected>>", self._on_icon_size)
+        cb.pack(side="left", padx=4)
+        self._icon_size_cb = cb
+        tk.Button(icr, text=t("map.icon_legend"), command=self._open_icon_legend,
+                  background="#122030", foreground=_R_TEXT, font=_F_MAIN,
+                  relief="flat").pack(side="left")
+        tk.Checkbutton(plf, text=t("map.show_nation_flags"), variable=self._show_nations,
+                       command=self._on_overlay_toggle, background=_R_BG_PANEL, foreground=_R_TEXT,
+                       selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
+                       activeforeground=_R_GOLD).pack(anchor="w")
+        tk.Checkbutton(plf, text=t("map.show_camp_numbers"), variable=self._show_camps,
+                       command=self._on_overlay_toggle, background=_R_BG_PANEL, foreground=_R_TEXT,
+                       selectcolor=_R_BG_WIDGET, font=_F_MAIN, activebackground=_R_BG_PANEL,
+                       activeforeground=_R_GOLD).pack(anchor="w")
         self._place_lbl = tk.Label(plf, text="", background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
                                    font=_F_MAIN, anchor="w", justify="left", wraplength=264)
         self._place_lbl.pack(anchor="w", pady=(2, 0))
@@ -1438,15 +1276,15 @@ class MapEditorWindow(tk.Frame):
 
         # ── per-kind metadata panel: shown INSTEAD of GAME MODES for campaign/operation scenarios,
         # whose lobby/objective/camp data is NOT lobby-mode driven. Mission logic (objectives, camps,
-        # victory) lives in the paired .xyz script — edit it via 'Edit script' (authoring lands in a
-        # later phase). This panel is read-only registration metadata from the binding.
+        # victory) lives in the paired .xyz script, edited on the Mission Rules & Script step — the
+        # button below goes there. This panel is read-only registration metadata from the binding.
         self._scn_meta_frame = tk.Frame(bottom_block, background=_R_BG_PANEL)  # packed on demand
         self._scn_meta_lbl = tk.Label(self._scn_meta_frame, text="", background=_R_BG_PANEL,
                                       foreground=_R_TEXT, font=_F_MAIN, anchor="w", justify="left",
                                       wraplength=264)
         self._scn_meta_lbl.pack(anchor="w", fill="x")
         tk.Button(self._scn_meta_frame, text=t("map.edit_mission_logic"),
-                  command=self._open_operation_editor, background="#163048", foreground=_R_GOLD_BRT,
+                  command=self._go_to_mission_script, background="#163048", foreground=_R_GOLD_BRT,
                   font=_F_BOLD, relief="flat").pack(anchor="w", pady=(4, 0))
         self._all_bindings = None     # {map_dir: [ScenarioBinding]} — built lazily, cached per session
 
@@ -1505,6 +1343,30 @@ class MapEditorWindow(tk.Frame):
         self._status.pack(side="bottom", fill="x")
 
     # ── data load ─────────────────────────────────────────────────────────────
+    # Walk step -> notebook tab. The scenario tabs are being rebuilt as a WALK along the chain that takes
+    # a map from the main menu to a playable mission, so a tab can hand the user to the adjacent step (or
+    # to whichever step owns something it references) without knowing the notebook's layout.
+    # Steps not yet rebuilt map to their current tab; the mapping moves as each one lands.
+    _WALK_STEPS = {
+        1: "menu.step_title",         # menu entry (P4 - built)
+        2: "chain.step_title",        # load & files (P3 - built)
+        3: "common.map_editor",       # placements
+        4: "script.step_title",       # mission rules & script (P5 - built)
+        5: "text.step_title",         # text (P2 - built)
+    }
+
+    def _show_walk_step(self, index):
+        """Switch to the tab that owns walk step `index`. Silently ignores an unknown step rather than
+        raising out of a button callback."""
+        want = self._WALK_STEPS.get(index)
+        if not want or self._notebook is None:
+            return
+        label = t(want)
+        for tab_id in self._notebook.tabs():
+            if self._notebook.tab(tab_id, "text") == label:
+                self._notebook.select(tab_id)
+                return
+
     def _maps_src(self) -> str:
         """Path of the DataMap_Win.dat the editor READS from: the mod folder's own copy if this mod has
         already saved map edits, otherwise the clean backup (falling back to the live game file). Reading
@@ -1569,9 +1431,10 @@ class MapEditorWindow(tk.Frame):
         return None
 
     def _terrain_cache_path(self, map_dir):
-        """Generated high-def terrain is cached WITH the mod project, so it persists with it (the
-        project folder is the home for everything created for the mod — like notes.json and the
-        edited dats).  Falls back to the system temp dir only if the project folder isn't writable."""
+        """Where this map's decoded terrain chunks are cached — a DIRECTORY of lossless PNG tiles now,
+        one per chunk, not a single baked image (issue #19).  Kept WITH the mod project, so it persists
+        with it (the project folder is the home for everything created for the mod — like notes.json
+        and the edited dats).  Falls back to the system temp dir only if that isn't writable."""
         safe = re.sub(r"[^A-Za-z0-9_.-]", "_", map_dir)
         try:
             base = os.path.join(str(self.project.folder), "cache", "terrain")
@@ -1581,67 +1444,308 @@ class MapEditorWindow(tk.Frame):
             try:
                 os.makedirs(base, exist_ok=True)
             except Exception:
-                pass
-        # `r3` = terrain decode revision: bump it whenever terrain_codec output changes so stale
-        # cached PNGs are bypassed (r2 = per-4×4-block transpose; r3 = per-block selector seam fix; #15).
-        return os.path.join(base, f"{safe}_b{self._terrain_budget()}_r3_hd.png")
-
-    def _terrain_budget(self):
-        """The terrain_codec.best_lod budget for the current Detail dropdown selection (issue #15).
-        Defaults to Balanced before the toolbar exists / if the label can't be matched."""
-        sel = self._quality_cb.get() if getattr(self, "_quality_cb", None) else None
-        for lbl, b in getattr(self, "_quality_opts", ()):
-            if lbl == sel:
-                return b
-        return _TERRAIN_DETAIL[_TERRAIN_DETAIL_DEFAULT][1]
-
-    def _on_quality_change(self, _=None):
-        """Detail dropdown changed: reload the current map's terrain at the new budget (instant if that
-        detail level is already cached, else a fresh background decode swaps in when ready)."""
-        map_dir = self._sel_map()
-        if map_dir:
-            self._pil = self._load_terrain(map_dir)
-            self._invalidate_redraw()
-            self._fit_view()
+                return None
+        return os.path.join(base, safe)
 
     def _load_terrain(self, map_dir):
-        """The map's display image, REPLACING the baked minimap with the decoded high-def terrain
-        (issue #8).  Returns an image to show NOW — a cached high-def PNG if we have one, else the
-        minimap as an instant placeholder while the tmst high-def decodes on a background thread and
-        swaps in.  Falls back to the minimap if Pillow/numpy/the codec aren't available."""
+        """The map's display surface, REPLACING the baked minimap with the decoded high-def terrain
+        (issue #8, #19).  Returns something to show NOW — the baked minimap — and opens the map's dat
+        on a background thread; a ``TerrainTiles`` swaps in when ready and then sharpens in place as
+        chunks decode.  Falls back to the minimap if Pillow/numpy/the codec aren't available."""
         self._terrain_token += 1
-        self._terrain_status = ""        # reset the decode suffix; a fresh decode below re-sets it
+        self._terrain_status = ""        # reset the decode suffix; the loader below re-sets it
+        self._close_terrain_tiles()
         if not _HAVE_PIL:
             return None
-        cache = self._terrain_cache_path(map_dir)
-        if os.path.isfile(cache):
-            try:
-                return Image.open(cache).convert("RGBA")
-            except Exception:
-                pass
-        if _terrain_codec is not None:
+        if self._show_relief.get():      # independent of the tile source; lands when it lands
+            self._start_relief(map_dir)
+        else:
+            self._relief_token += 1      # drop any relief still building for the previous map
+            self._ov_relief = None
+        if _terrain_tiles is not None:
             src = self._terrain_dat_src(map_dir)
             if src:
                 token = self._terrain_token
-                budget = self._terrain_budget()
                 self._terrain_status = t("map.decoding_high_def_terrain")
                 self._refresh_status()
-                threading.Thread(target=self._decode_terrain_bg,
-                                 args=(src, cache, token, budget), daemon=True).start()
+                # read the dropdown HERE: Tk widgets may only be touched from the main thread, and a
+                # worker doing it raises "main thread is not in main loop"
+                self._terrain_result = None
+                self._tiles_dirty = False
+                threading.Thread(target=self._open_terrain_bg,
+                                 args=(src, self._terrain_cache_path(map_dir), token),
+                                 daemon=True).start()
+                self.after(150, lambda: self._poll_terrain(token))   # scheduled ON the main thread
         return self._load_minimap(map_dir)
 
-    def _terrain_progress(self, pct, token):
-        """Status-bar feedback while a (possibly multi-minute) high-def decode runs in the background.
-        It's a SUFFIX appended to the live status line, so a mouse-move refreshing the cursor readout no
-        longer hides the percentage — both update independently on the one line (issue #15)."""
-        if token == self._terrain_token:
-            self._terrain_status = t("map.decoding_high_def_terrain_pct", pct=pct)
-            self._refresh_status()
+    def _on_relief_toggle(self):
+        """Relief has its own cached raster, so showing/hiding it is just a recompose. If the raster
+        isn't built yet (first time on this map), kick the build off now."""
+        self._ov_crop_cache.clear()
+        if self._show_relief.get() and self._ov_relief is None:
+            self._start_relief(self._sel_map())
+        self._comp_key = None
+        self._redraw()
 
-    def _decode_terrain_bg(self, src, cache, token, budget):
-        """Background: extract the tmst pair, pick the LOD for `budget`, decode + enhance, cache, then
-        swap. Reports progress and aborts early (raising _TerrainAborted from the callback) if the user
-        switches map/detail mid-decode, so a discarded high-detail pass doesn't run on for minutes."""
+    def _relief_cache_file(self, map_dir):
+        base = self._terrain_cache_path(map_dir)
+        if not base:
+            return None
+        try:
+            os.makedirs(base, exist_ok=True)
+        except Exception:
+            return None
+        return os.path.join(base, "relief_%s_e%.1f_s%.2f.png"
+                            % (_terrain_relief.LONG_SIDE, _terrain_relief.DEFAULT_EXAGGERATION,
+                               _terrain_relief.DEFAULT_STRENGTH))
+
+    # ── controlling camp / nationality (from the paired mission script) ──────────
+    def _start_camp_map_load(self, map_dir, scn):
+        """Resolve who CONTROLS each placement, off the UI thread.
+
+        A placement stores only a `Camp` integer; the camp's nationality lives in the paired .xyz,
+        and reading it means decompiling that script (0.03-1.7 s measured across the shipped
+        corpus) — far too slow to do while the user is switching scenarios. So the map draws
+        immediately without the controlling-nation marks and they appear a moment later.
+
+        Multiplayer scenarios have no script at all: their camps are lobby slots that carry
+        allegiance and no nationality, so there is nothing to resolve and nothing is shown."""
+        self._camp_map = {}
+        self._camp_map_key = (map_dir, scn)
+        self._overlay_cache.clear()
+        for pl in self._places or []:
+            pl["ctrl_nation"] = None
+        if not (map_dir and scn and self.project is not None):
+            return
+        self._camp_map_busy = True
+        self._camp_map_result = None
+        self._camp_map_error = None
+        threading.Thread(target=self._load_camp_map_bg, args=((map_dir, scn),),
+                         daemon=True).start()
+        self.after(150, lambda: self._poll_camp_map((map_dir, scn)))
+
+    def _poll_camp_map(self, key):
+        """Main thread: pick up the resolved camp map and repaint with the nation marks."""
+        if key != self._camp_map_key:
+            return                                   # user moved to another scenario
+        try:
+            if not self.winfo_exists():
+                return
+        except Exception:
+            return
+        got = getattr(self, "_camp_map_result", None)
+        if got is not None:
+            self._camp_map_result = None
+            self._apply_camp_map(got, key)
+            return
+        if self._camp_map_busy:
+            self.after(150, lambda: self._poll_camp_map(key))
+
+    def _load_camp_map_bg(self, key):
+        """Worker: read + decompile the paired script and build the camp map. Never touches Tk.
+
+        Any failure is REPORTED, not swallowed. An earlier version logged it at debug and drew no
+        marks, which is how a packaging bug (uncompyle6's runtime-built scanner module missing from
+        the exe — see build.py's collect_all list) reached a release looking like "the feature just
+        doesn't work" instead of naming its own cause."""
+        log = logging.getLogger("map_editor")
+        camp_map, err = {}, None
+        try:
+            map_dir, scn = key
+            raw = None
+            try:
+                raw = self.project.get_raw("scripts", self._script_path_for_scn(map_dir, scn))
+            except Exception as e:
+                log.debug("camp map: no script entry for %s/%s (%r)", map_dir, scn, e)
+                raw = None
+            if raw:
+                marshal_bytes, _h, _s = _xyz_unpack(raw)
+                camp_map = cresolve.parse_camp_map(_xyz_decompile_to_source(marshal_bytes))
+                log.debug("camp map for %s/%s: %d camps", map_dir, scn, len(camp_map))
+                if not camp_map:
+                    err = t("map.camp_map_no_camps")
+        except ImportError as e:
+            # The decompiler stack isn't importable — the signature of a packaging problem.
+            err = t("map.camp_map_decompiler_missing", err=str(e))
+            log.warning("camp map for %s: decompiler unavailable: %r", key, e)
+        except Exception as e:
+            err = t("map.camp_map_failed", err=str(e))
+            log.warning("camp map for %s failed: %r", key, e)
+        self._camp_map_error = err
+        self._camp_map_result = camp_map
+        self._camp_map_busy = False
+
+    def _apply_camp_map(self, camp_map, key):
+        """Main thread: stamp each placement with its controlling nation and repaint."""
+        if key != self._camp_map_key:
+            return
+        self._camp_map = camp_map or {}
+        for pl in self._places or []:
+            if pl["kind"] in ("depot", "unit", "building", "spawn"):
+                pl["ctrl_nation"] = cresolve.camp_nation_icon(self._camp_map,
+                                                              pl["extra"].get("camp"))
+            elif pl["kind"] == "hq":
+                # HQs key off AllianceNum; only unanimous alliances yield a nation (see resolver).
+                pl["ctrl_nation"] = cresolve.alliance_nation_icon(self._camp_map,
+                                                                  pl["extra"].get("alliance"))
+        self._overlay_cache.clear()
+        self._update_place_info()
+        if self._camp_map:
+            self._redraw()
+
+    def _camp_map_status(self):
+        """One line for the Placements panel saying where the controlling-nation marks stand —
+        resolved, still loading, not applicable (multiplayer), or broken and why."""
+        if self._camp_map_busy:
+            return t("map.camp_map_loading")
+        err = getattr(self, "_camp_map_error", None)
+        if err:
+            return err
+        if self._camp_map:
+            return t("map.camp_map_ok", n=len(self._camp_map))
+        return t("map.camp_map_none")
+
+    def _camp_info_for(self, pl):
+        """The controlling camp's info dict for a placement, or None."""
+        if pl["kind"] not in ("depot", "unit", "building", "spawn"):
+            return None
+        camp = pl["extra"].get("camp")
+        if camp == cresolve.NEUTRAL_CAMP:
+            return None
+        return self._camp_map.get(0 if camp is None else camp)
+
+    def _start_relief(self, map_dir):
+        """Build this map's relief overlay on a worker (decode + rasterise is ~1-3 s), or load the
+        cached PNG if we already made it. Never blocks the UI: the map draws without it and it
+        appears when ready."""
+        self._relief_token += 1
+        self._ov_relief = None
+        if _terrain_relief is None or not _HAVE_PIL or not map_dir:
+            return
+        src = self._terrain_dat_src(map_dir)
+        if not src:
+            return
+        token = self._relief_token
+        self._relief_busy = True
+        self._relief_result = None
+        threading.Thread(target=self._build_relief_bg,
+                         args=(src, self._relief_cache_file(map_dir), token),
+                         daemon=True).start()
+        # Collect the result by POLLING from the main thread rather than having the worker call
+        # after() itself. Tk's after() has to createcommand(), which needs the interpreter's main
+        # loop, so calling it off-thread can raise "main thread is not in main loop" and the result
+        # is lost — silently, since the worker can only swallow it. Scheduling the poll here (on the
+        # main thread) keeps every Tk touch on the main thread.
+        self.after(200, lambda: self._poll_relief(token))
+
+    def _poll_relief(self, token):
+        """Main thread: pick up a finished relief raster, or keep waiting for it."""
+        if token != self._relief_token:
+            return                                  # superseded by a newer map/build
+        try:
+            if not self.winfo_exists():
+                return
+        except Exception:
+            return
+        got = self._relief_result
+        if got is not None:
+            img, got_token = got
+            self._relief_result = None
+            self._apply_relief(img, got_token)
+            return
+        if self._relief_busy:
+            self.after(200, lambda: self._poll_relief(token))
+
+    def _build_relief_bg(self, src, cache_file, token):
+        """Worker: decode the terrain mesh and rasterise the relief. Must not touch Tk."""
+        log = logging.getLogger("map_editor")
+        log.debug("relief: worker start token=%s src=%s cache=%s", token, src, cache_file)
+        try:
+            img = None
+            if cache_file and os.path.isfile(cache_file):
+                try:
+                    img = Image.open(cache_file)
+                    img.load()
+                    img = img.convert("RGBA")
+                except Exception:
+                    img = None                      # corrupt/partial cache — just rebuild it
+            if img is None:
+                dat = edata.open_dat(src)
+                blob = None
+                for vp in dat.list():
+                    low = vp.lower()
+                    if low.endswith("highdef.tms"):
+                        blob = dat.get(vp)
+                        break
+                    if low.endswith("lowdef.tms") and blob is None:
+                        blob = dat.get(vp)          # fallback: coarser mesh, same geometry
+                if blob is None:
+                    # Say so. A silent return here is as opaque as a swallowed exception: the
+                    # relief would just never appear, with nothing to explain why.
+                    logging.getLogger("map_editor").warning(
+                        "terrain relief: no highdef/lowdef .tms in %s", src)
+                    self._relief_busy = False
+                    return
+                if token != self._relief_token:     # map changed while the dat was read
+                    self._relief_busy = False
+                    return
+                img = _terrain_relief.build(blob)
+                if cache_file:
+                    try:
+                        img.save(cache_file)
+                    except Exception:
+                        pass                        # cache is an optimisation, not a requirement
+        except Exception:
+            # Same rule as the terrain loader: never swallow this. A worker failing silently would
+            # leave the relief permanently absent with nothing to explain why.
+            logging.getLogger("map_editor").exception("terrain relief build failed for %s", src)
+            self._relief_busy = False
+            return
+        log.debug("relief: worker done token=%s size=%s", token, getattr(img, "size", None))
+        # Publish the result BEFORE clearing the busy flag. The poll stops when it sees "not busy
+        # and nothing there", so clearing first would let a poll landing in between conclude the
+        # build had produced nothing and give up.
+        self._relief_result = (img, token)
+        self._relief_busy = False
+
+    def _apply_relief(self, img, token):
+        if token != self._relief_token:
+            logging.getLogger("map_editor").debug(
+                "relief: dropping stale result token=%s current=%s", token, self._relief_token)
+            return
+        try:
+            if not self.winfo_exists():
+                return
+        except Exception:
+            return
+        self._ov_relief = img
+        self._ov_crop_cache.clear()
+        self._comp_key = None
+        self._redraw()
+
+    def _close_terrain_tiles(self):
+        """Shut down the previous map's tile source so its worker/pool doesn't outlive the view."""
+        old = getattr(self, "_pil", None)
+        if hasattr(old, "close"):
+            try:
+                old.close()
+            except Exception:
+                pass
+
+    def destroy(self):
+        """Tk teardown — make sure the terrain worker/pool goes with the window."""
+        self._terrain_token += 1                 # invalidate any in-flight load
+        self._relief_token += 1                  # ...and any in-flight relief build
+        self._close_terrain_tiles()
+        return super().destroy()
+
+    def _open_terrain_bg(self, src, cache_dir, token):
+        """Background: pull the tmst pair + baked minimap out of the dat and build the tile source.
+
+        Only the container is read here — no chunk is decoded until a view asks for one, so this
+        finishes in about the time it takes to read the dat, whatever the map's size.
+
+        Runs OFF the main thread, so it must not touch Tk — everything it needs is passed in."""
         try:
             dat = edata.open_dat(src)
             tmst = chunk = png = None
@@ -1655,47 +1759,91 @@ class MapEditorWindow(tk.Frame):
                     png = dat.get(vp)
             if not (tmst and chunk):
                 return
-            gw, gh, _recs = _terrain_codec.parse_tile_index(tmst)
-            lod = _terrain_codec.best_lod(gw, gh, budget=budget)   # detail dropdown drives the LOD (#15)
-
-            def _prog(done, total):
-                if token != self._terrain_token:          # map/detail changed -> abandon this decode
-                    raise _TerrainAborted()
-                self.after(0, lambda: self._terrain_progress(int(done * 100 / max(1, total)), token))
-
-            img = _terrain_codec.decode_terrain(tmst, chunk, lod=lod, use_index=True, progress=_prog)
-            if img is None:
+            if token != self._terrain_token:            # user switched maps while the dat was read
                 return
-            # Lay the tmst's fine DETAIL over the clean minimap colour base — kills the per-tile
-            # banding and restores true colour (see terrain_codec.compose).
             base = Image.open(io.BytesIO(png)).convert("RGB") if png else None
-            img = _terrain_codec.compose(img, base)
-            try:
-                img.save(cache)
-            except Exception:
-                pass
-            rgba = img.convert("RGBA")
-        except _TerrainAborted:
-            return
+            tiles = _terrain_tiles.TerrainTiles(
+                tmst, chunk, base_img=base, cache_dir=cache_dir,
+                finest_lod=0,          # the tier follows the zoom; nothing caps it
+                on_ready=lambda: self._on_tiles_ready(token))
         except Exception:
+            # Do NOT fail silently: this ran on a worker, so an exception here leaves the editor
+            # showing the baked minimap forever with nothing to explain why. A swallowed
+            # "main thread is not in main loop" from reading a Tk widget off-thread did exactly that.
+            logging.getLogger("map_editor").exception(
+                "terrain tile source failed to open for %s", src)
             return
-        self.after(0, lambda: self._apply_terrain(rgba, token))
+        # Hand off through a slot the MAIN thread polls, not after(). after() has to createcommand(),
+        # which needs the interpreter's main loop, so off-thread it can raise "main thread is not in
+        # main loop" — and a worker can only swallow that, leaving the baked minimap up forever with
+        # nothing to explain why. Exactly the failure the comment above warns about, one line down.
+        self._terrain_result = (tiles, token)
 
-    def _apply_terrain(self, rgba, token):
-        if token != self._terrain_token:      # user switched maps meanwhile — discard
+    def _poll_terrain(self, token):
+        """Main thread: pick up the finished tile source, and keep repainting while chunks land."""
+        if token != self._terrain_token:
             return
         try:
             if not self.winfo_exists():
                 return
         except Exception:
             return
-        self._pil = rgba
-        self._terrain_status = ""          # decode finished — drop the suffix; _redraw re-renders the line
+        got = self._terrain_result
+        if got is not None:
+            tiles, got_token = got
+            self._terrain_result = None
+            self._apply_terrain(tiles, got_token)
+        if self._tiles_dirty:                           # chunks landed since the last poll
+            self._tiles_dirty = False
+            self._tiles_repaint(token)
+        if token == self._terrain_token:
+            self.after(200, lambda: self._poll_terrain(token))
+
+    def _on_tiles_ready(self, token):
+        """A worker finished some chunks — flag it; _poll_terrain repaints on the main thread.
+
+        Called FROM a decode worker, so it must not touch Tk at all (see _poll_terrain)."""
+        if token != self._terrain_token:
+            return
+        self._tiles_dirty = True
+
+    def _tiles_repaint(self, token):
+        if token != self._terrain_token:
+            return
+        try:
+            if not self.winfo_exists():
+                return
+        except Exception:
+            return
+        tiles = self._pil
+        st = tiles.stats() if hasattr(tiles, "stats") else {}
+        pending = st.get("queued", 0) + st.get("inflight", 0)
+        self._terrain_status = t("map.decoding_high_def_terrain") if pending else ""
+        # only the base image changed — _recompose re-crops without re-rasterising the (heavy) SDB
+        # and vector overlays, which matters because chunks land continuously while panning
+        self._recompose()
+
+    def _apply_terrain(self, tiles, token):
+        if token != self._terrain_token:      # user switched maps meanwhile — discard
+            if hasattr(tiles, "close"):
+                tiles.close()
+            return
+        try:
+            if not self.winfo_exists():
+                if hasattr(tiles, "close"):
+                    tiles.close()
+                return
+        except Exception:
+            return
+        self._pil = tiles
+        self._terrain_status = ""          # container is up; chunks fill in behind the redraw
         self._invalidate_redraw()
         self._fit_view()
 
     def _on_map_change(self, _=None, force=False):
         if not force and not self._confirm_discard():
+            # Keep-editing: undo the combobox's own move (see _on_scn_change for why).
+            self._restore_selection()
             return
         map_dir = self._sel_map()
         scns = list_scenarios(self._dm, map_dir)
@@ -1705,6 +1853,7 @@ class MapEditorWindow(tk.Frame):
         win = self._dm.get(f"datasmap\\{map_dir}\\mapinfo.win")
         self._bbox = read_bbox(win) if win else None
         self._roads = read_road_graph(win) if win else None
+        self._road_pt_memo = {}                 # different map -> different graph; drop the memo
         self._forest = read_forest_zones(win) if win else None
         self._sdb_map_dir = map_dir
         self._sdb_win = win
@@ -1816,10 +1965,20 @@ class MapEditorWindow(tk.Frame):
 
     def _on_scn_change(self, _=None, force=False):
         if not force and not self._confirm_discard():
+            # The user chose to KEEP editing. The combobox has ALREADY moved itself to the new
+            # value by the time this handler runs, so put it back on what is actually loaded --
+            # otherwise the box points at one scenario while memory holds another, and the next
+            # save writes the loaded scenario's bytes over whatever the box points at.
+            self._restore_selection()
             return
         map_dir = self._sel_map()
         scn = self._scn_cb.get()
-        raw = self._dm.get(f"test\\map\\{map_dir}\\{scn}.scenario") if scn else None
+        vpath = f"test\\map\\{map_dir}\\{scn}.scenario" if scn else None
+        raw = self._dm.get(vpath) if vpath else None
+        # Remember what we actually LOADED. _save writes back to this path, never to the live
+        # comboboxes -- see the _scn_vpath comment in __init__.
+        self._scn_vpath = vpath if raw else None
+        self._scn_src = (map_dir, scn) if raw else None
         self._scn_size = len(raw) if raw else 0
         self._scn = scenario_mod.read(raw) if raw else None
         self._zones = render_zones_from_scn(self._scn) if self._scn else []
@@ -1844,6 +2003,7 @@ class MapEditorWindow(tk.Frame):
                 except Exception:
                     self._campath = None
         self._link_campaths()
+        self._start_camp_map_load(map_dir, scn)
         self._update_place_info()
         self._sel = None
         self._dirty = False
@@ -2426,7 +2586,9 @@ class MapEditorWindow(tk.Frame):
         choices = list(choices)
         if cur is not None and cur not in choices:
             choices = choices + [cur]      # surface an out-of-domain existing value rather than hide it
-        labels = ["(none)" if c is None else (decode(c) if decode else str(c)) for c in choices]
+        # Let a field's own decode() name the None entry too — the Camp field calls it "camp 0
+        # (none)" because that is what an absent Camp resolves to, and a hardcoded "(none)" hid that.
+        labels = [(decode(c) if decode else ("(none)" if c is None else str(c))) for c in choices]
         self._detail.insert("end", "  %s : " % key.ljust(13))
         cb = ttk.Combobox(self._detail, values=labels, state="readonly", width=width, font=_F_MAIN)
         try:
@@ -2540,7 +2702,11 @@ class MapEditorWindow(tk.Frame):
             x, y, z_ = pl["pos"]
             ex = pl["extra"]
             kind = pl["kind"]
-            editing = self._place_edit.get()
+            # The DETAILS panel is ALWAYS editable — it edits the placement itself, so its fields
+            # never lock. The "Edit placements (drag)" checkbox now ONLY enables dragging the marker
+            # on the map (see _on_press); it no longer gates field editing.
+            editing = True
+            drag_on = self._place_edit.get()
             # Resolve the live NdfInstance handles so the inline-edit closures don't have to
             # re-look them up by index every keystroke (the instances themselves are stable
             # across _rebuild_places; only their indices in self._places shift).
@@ -2552,6 +2718,32 @@ class MapEditorWindow(tk.Frame):
             # PLACEMENT header — kind + label, so you can see at a glance what's selected.
             self._det_head(t("map.placement_kind_label",
                              kind=kind, label=("  ·  " + pl["label"]) if pl["label"] else ""))
+            # ...then say in words what the icon on the map is saying in a picture. A class name
+            # like Unit_Semovente_M_43_105_25 doesn't tell you it's heavy self-propelled artillery.
+            role = proles.role(pl.get("role"))
+            if role is not None:
+                self._det_kv(t("map.role"), role.label)
+                if role.desc:
+                    self._det_hint("    " + role.desc)
+            # Who it IS vs who OWNS it — the two can differ (a French camp can field German tanks),
+            # which is exactly why the icon carries both flags.
+            if pl.get("nation"):
+                self._det_kv(t("map.unit_nation"),
+                             cresolve.NATION_LABEL.get(pl["nation"], pl["nation"]))
+            ci = self._camp_info_for(pl)
+            if ci is not None:
+                self._det_kv(t("map.controlled_by"),
+                             t("map.camp_nation_ia", nation=cresolve.NATION_LABEL.get(
+                                 cresolve.NATION_ICON.get(ci.get("nation")), ci.get("nation") or "?"),
+                               ia=ci.get("ia") or "?"))
+            elif kind in ("depot", "unit", "building", "spawn"):
+                camp = pl["extra"].get("camp")
+                if camp == cresolve.NEUTRAL_CAMP:
+                    self._det_hint("    " + t("map.camp_is_neutral"))
+                elif self._camp_map and camp not in self._camp_map and camp is not None:
+                    # The engine drops a placement whose Camp has no camp behind it (see
+                    # camp_resolver) — it never spawns. Worth saying out loud.
+                    self._det_hint("    " + t("map.camp_missing_never_spawns", camp=camp))
 
             # All per-kind fields are now rendered from placement_schema (typed widgets, add/remove of
             # nil fields, decoded meanings + help). Replaces the old hardcoded SPAWN/HQ/ville/zone blocks.
@@ -2580,7 +2772,7 @@ class MapEditorWindow(tk.Frame):
             self._det_head(t("map.edit"))
             if road_locked:
                 self._det_hint(t("map.facing_auto_snaps_nearest_road"))
-            if not editing:
+            if not drag_on:
                 self._det_hint(t("map.toggle_edit_placements_above_edit"))
             elif kind == "hq":
                 self._det_hint(t("map.drag_hq_move_camera_follows"))
@@ -2624,6 +2816,27 @@ class MapEditorWindow(tk.Frame):
     def _world_to_screen(self, x, y):
         bx, by = self._world_to_base(x, y)
         return bx * self._scale + self._ox, by * self._scale + self._oy
+
+    def _screen_xform(self):
+        """The world->screen transform as four floats: sx = x*kx + cx, sy = y*ky + cy.
+
+        World->screen is affine, so a draw loop can collapse it to two multiply-adds per point
+        instead of calling _world_to_screen. That matters because _world_to_base reads
+        `self._flip_y` — a Tk variable — on EVERY call: at 1088 markers that was ~1350 method calls
+        and ~1350 Tk global-variable reads per frame, purely to recompute the same constants.
+        Callers must recompute this whenever scale/offset/bbox/flip change (i.e. once per frame)."""
+        minx, miny, maxx, maxy = self._bbox
+        w, h = self._pil.size
+        sc, ox, oy = self._scale, self._ox, self._oy
+        kx = w / (maxx - minx) * sc
+        cx = -minx * kx + ox
+        if self._flip_y.get():
+            ky = -h / (maxy - miny) * sc
+            cy = maxy * (h / (maxy - miny)) * sc + oy
+        else:
+            ky = h / (maxy - miny) * sc
+            cy = -miny * ky + oy
+        return kx, cx, ky, cy
 
     def _screen_to_world(self, sx, sy):
         minx, miny, maxx, maxy = self._bbox
@@ -3339,6 +3552,57 @@ class MapEditorWindow(tk.Frame):
     def _set_map(self, map_dir):
         self._map_cb.set(getattr(self, "_map_disp_by_dir", {}).get(map_dir, map_dir))
 
+    def _goto(self, map_dir, scn):
+        """Jump the whole editor to (map_dir, scn) -- the ONLY way other tabs should move the
+        selection. Setting the two comboboxes and calling _on_scn_change is not enough: everything
+        loaded per-MAP (terrain, bbox, road graph, forest zones, the SDB layer and its writeback
+        path, the scenario list) would stay on the previous map. That mix is silent, and it saves
+        one map's SDB into another map's mapinfo.win. So when the map changes, go through the map
+        change; only then pick the scenario.
+
+        Honours the unsaved-changes prompt. Returns True if the editor moved.
+        """
+        if not self._confirm_discard():
+            return False
+        # confirmed discard -- clear every flag so the nested handlers don't re-prompt
+        self._dirty = self._campath_dirty = self._kdt_dirty = False
+        if getattr(self, "_sdb", None):
+            self._sdb["dirty"] = False
+        if self._sel_map() != map_dir:
+            self._set_map(map_dir)
+            self._on_map_change(force=True)     # reloads terrain / bbox / roads / SDB / scn list
+        if scn and self._scn_cb.get() != scn:
+            self._scn_cb.set(scn)
+            self._on_scn_change(force=True)
+        elif self._sel_map() == map_dir and scn and self._scn_src != (map_dir, scn):
+            self._on_scn_change(force=True)
+        return True
+
+    def _restore_selection(self):
+        """Put both comboboxes back on the map/scenario that is actually LOADED.
+
+        A ttk Combobox commits the new value before <<ComboboxSelected>> fires, so a handler that
+        bails out (the user answered "keep editing" to the discard prompt) leaves the widget
+        showing a map/scenario that was never loaded. Everything downstream that asks the widget
+        "which map am I on?" then gets the wrong answer -- most damagingly the save, which used to
+        write the in-memory scenario to the pointed-at path and so dropped one map's scenario into
+        another map's folder.
+        """
+        src = getattr(self, "_scn_src", None)
+        if not src:
+            return
+        map_dir, scn = src
+        try:
+            if self._sel_map() != map_dir:
+                self._set_map(map_dir)
+                scns = list_scenarios(self._dm, map_dir)
+                self._scn_cb["values"] = scns
+                ui_util.fit_combobox(self._scn_cb, minimum=24, maximum=44)
+            if self._scn_cb.get() != scn:
+                self._scn_cb.set(scn)
+        except Exception:
+            pass
+
     _KIND_LABEL = {"mp": "Multiplayer", "campaign": "Campaign",
                    "operation": "Operation", "unbound": "Unbound"}
 
@@ -3366,14 +3630,56 @@ class MapEditorWindow(tk.Frame):
         lines.append(t("map.paired_script_s", s=t("map.present") if b.has_script else t("map.none_yet")))
         return "\n".join(str(x) for x in lines)
 
-    def _open_operation_editor(self):
-        """Switch to the embedded Mission Logic tab for the loaded scenario (the editor lives there now)."""
+    def _select_by_info_idx(self, info_idx):
+        """Select the scenario owning menu record `info_idx`. True if the selection actually moved.
+
+        Clicking a row on the Menu Entry step comes through here, because the selection belongs to the
+        window, not to one step — changing it here is what makes all five steps follow. A record is
+        matched against every registration a scenario carries, not just its primary one: one scenario file
+        can be listed as an operation AND a multiplayer map, so matching only the primary would fail to
+        find rows that are really there.
+        """
+        bindings = self._ensure_bindings() or {}
+        for map_dir, blist in bindings.items():
+            for b in blist:
+                idxs = {r.get("info_idx") for r in (b.registrations or [])}
+                idxs.add(b.info_idx)
+                if info_idx in idxs and b.scenario_name:
+                    try:
+                        return self._goto(map_dir, b.scenario_name)
+                    except Exception:
+                        return False
+        return False
+
+    def _go_to_mission_script(self):
+        """Take the user to where a mission's logic is now edited: the Mission Rules & Script step.
+        (The old Mission Logic tab is gone — its listing half became the Menu Entry step, its text half
+        the Text step, and its generator the New Operation wizard on the top strip.)"""
+        self._show_walk_step(4)
+
+    def _open_new_operation(self):
+        """The New Operation wizard. It CREATES rather than edits, so it belongs on the top strip beside
+        New scenario rather than as a step in the walk."""
         try:
-            if getattr(self, "_op_frame", None) is not None:
-                self._op_frame.set_binding(self._current_binding())
-            self._notebook.select(self._mission_tab)
-        except Exception:
-            pass
+            import new_operation_wizard
+        except Exception as e:
+            ui_util.error(self, t("neww.title"), str(e))
+            return
+
+        def created(map_dir, stem):
+            self._all_bindings = None
+            try:
+                # the wizard just wrote the new scenario into the project; nothing to keep here
+                self._dirty = self._campath_dirty = self._kdt_dirty = False
+                if getattr(self, "_sdb", None):
+                    self._sdb["dirty"] = False
+                self._goto(map_dir, stem)
+            except Exception:
+                pass
+            self._show_walk_step(1)      # start the user at the first step of the walk
+
+        new_operation_wizard.open_wizard(self, self.project, self._ensure_bindings() or {},
+                                         on_created=created)
 
     def _update_scenario_panel(self):
         """Set the binding banner and show the right controls for this scenario's KIND:
@@ -3382,31 +3688,24 @@ class MapEditorWindow(tk.Frame):
             return
         b = self._current_binding()
         self._scn_kind_lbl.config(text=self._binding_banner_text(b))
-        if getattr(self, "_op_frame", None) is not None:
-            self._op_frame.set_binding(b)      # keep the Mission Logic tab in sync with the selection
         if getattr(self, "_names_frame", None) is not None:
             try:
-                self._names_frame.set_binding(b)   # Names & Descriptions follows the selection too
+                self._names_frame.set_binding(b)   # the Text tab follows the selection too
             except Exception:
                 pass
-        if getattr(self, "_objlogic_frame", None) is not None:
+        if getattr(self, "_chain_frame", None) is not None:
             try:
-                self._objlogic_frame.set_binding(b)   # Objectives & Logic follows the selection too
+                self._chain_frame.set_binding(b)   # Load & Files follows the selection too
             except Exception:
                 pass
-        if getattr(self, "_timeline_frame", None) is not None:
+        if getattr(self, "_script_frame", None) is not None:
             try:
-                self._timeline_frame.set_binding(b)   # Timeline storyboard follows the selection too
+                self._script_frame.set_binding(b)  # Mission Rules & Script follows the selection too
             except Exception:
                 pass
-        if getattr(self, "_graph_frame", None) is not None:
+        if getattr(self, "_menu_frame", None) is not None:
             try:
-                self._graph_frame.set_binding(b)      # Node Graph follows the selection too
-            except Exception:
-                pass
-        if getattr(self, "_author_frame", None) is not None:
-            try:
-                self._author_frame.set_binding(b)     # Author follows the selection too
+                self._menu_frame.set_binding(b)    # Menu Entry follows the selection too
             except Exception:
                 pass
         is_mp_like = (b is None) or b.kind in ("mp", "unbound")
@@ -3425,9 +3724,11 @@ class MapEditorWindow(tk.Frame):
 
     def _stage_scenario_plan(self, plan):
         """Write a scenario_gen plan into the mod project's dats (never the live game). Plan sections
-        map to project dat keys: datamap_add/glad_add/glad_mod/ia_add/zz_mod -> maps/gameplay/scripts/loc."""
+        map to project dat keys: datamap_add/glad_add/glad_mod/ia_add/zz_add/zz_mod ->
+        maps/gameplay/scripts/loc.  `zz_add` carries the per-language in-mission .dic files copied to the
+        clone's own scripting folder — miss it and every objective line renders blank."""
         sections = [("datamap_add", "maps"), ("glad_add", "gameplay"), ("glad_mod", "gameplay"),
-                    ("ia_add", "scripts"), ("zz_mod", "loc")]
+                    ("ia_add", "scripts"), ("zz_add", "loc"), ("zz_mod", "loc")]
         n = 0
         for sect, dk in sections:
             for vp, b in (plan.get(sect) or {}).items():
@@ -3900,7 +4201,7 @@ class MapEditorWindow(tk.Frame):
                  font=_F_BOLD).pack(anchor="w", padx=8, pady=(8, 2))
         kg = tk.Frame(win, background=_R_BG_PANEL); kg.pack(anchor="w", padx=8)
         KINDS = [("depot", t("map.depot")), ("unit", t("map.unit")), ("building", t("map.building")),
-                 ("spawn", t("map.spawn_other")), ("hq", t("map.hq")),
+                 ("spawn", t("map.spawn_other")), ("hq", t("map.player_start")),
                  ("ville", t("map.city_label")), ("montagne", t("map.mountain_label")),
                  ("name", t("map.named_point")), ("circle", t("map.circular_zone")),
                  ("rect", t("map.rect_zone"))]
@@ -3910,6 +4211,9 @@ class MapEditorWindow(tk.Frame):
                            font=_F_MAIN, activebackground=_R_BG_PANEL, activeforeground=_R_GOLD,
                            command=lambda: _refresh_fields()
                            ).grid(row=i // 5, column=i % 5, sticky="w", padx=(0, 8))
+        kind_note = tk.Label(win, text="", background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
+                             font=_F_MAIN, justify="left", wraplength=520, anchor="w")
+        kind_note.pack(anchor="w", padx=8, pady=(4, 0))
 
         # ── ENTITY-CLASS picker — the COMPREHENSIVE roster (placement_catalog), shown for Spawn-derived
         #    kinds. Lists EVERY unit/building/plane the game defines — not just what's in this scenario —
@@ -4003,6 +4307,11 @@ class MapEditorWindow(tk.Frame):
             for w in kf.winfo_children():
                 w.destroy()
             kind = kind_var.get()
+            # What this kind IS, from the schema — the same note the Details panel shows. Surfaced
+            # here because the confusion happens at CREATION: "HQ" reads as "the HQ building", when
+            # it is the player START and the real HQ buildings live under Building.
+            _sch = pschema.schema_for(kind)
+            kind_note.config(text=(_sch.note if _sch and _sch.note else ""))
             # Show/hide the PyClass picker.
             if kind in ("depot", "unit", "building", "spawn"):
                 if not py_frame.winfo_ismapped():
@@ -4154,295 +4463,6 @@ class MapEditorWindow(tk.Frame):
         return "genpython\\%s\\test\\map\\%s\\scripting%s\\effetmap.xyz" % (
             self._script_buildid_prefix(), map_dir, suffix)
 
-    def _open_script_editor(self):
-        """Open a Toplevel that edits the paired Python-2 .xyz script for the current scenario.
-
-        Read flow: bytes from IA_Common.dat → _xyz_unpack (strip XYZ0 container) →
-        _xyz_decompile_to_source (xdis.unmarshal + uncompyle6) → display.
-
-        Save flow: text → test_output/script_drafts/<map>_<scn>.py. Compiling back to a
-        loadable XYZ0 needs Python-2 source compilation that has no clean Python-3 shim,
-        so direct save into IA_Common is **not yet implemented** — the user runs an
-        external Python-2 toolchain on the exported draft and drops the resulting .xyz
-        into their mod project manually. The right pane carries explicit instructions."""
-        if self._pndf is None or not self._scn_cb.get():
-            ui_util.info(self, t("map.no_scenario"), t("map.load_scenario_first"))
-            return
-        map_dir = self._sel_map()
-        scn_name = self._scn_cb.get()
-        script_path = self._script_path_for_scn(map_dir, scn_name)
-
-        def _read_source():
-            """Return (source_text, status_str). status_str is empty on success, otherwise
-            a human-readable explanation rendered above the editor."""
-            try:
-                raw = self.project.get_raw("scripts", script_path)
-            except Exception:
-                raw = None
-            if raw is None:
-                return None, t("map.new_not_yet_dat_use")
-            # XYZ0 binary → decompiled Python source. Both stages can fail (corrupted .xyz,
-            # uncompyle6 stumbling on an unusual instruction sequence) — bubble those up as
-            # readable banners in the editor instead of crashing the popup.
-            try:
-                marshal_bytes, _h, _sz = _xyz_unpack(raw)
-            except Exception as e:
-                return ("# Could not unpack the XYZ0 container.\n"
-                        "# %s\n"
-                        "# Raw payload: %d bytes." % (e, len(raw)),
-                        t("map.xyz0_unpack_failed_editor_showing"))
-            try:
-                return _xyz_decompile_to_source(marshal_bytes), t("map.decompiled_from_xyz0_read_only")
-            except Exception as e:
-                return ("# Decompile failed — the .xyz contains valid Python-2.6 bytecode\n"
-                        "# but uncompyle6 couldn't render it back to source:\n"
-                        "#   %s\n"
-                        "# (Marshal payload: %d bytes.)\n" % (e, len(marshal_bytes)),
-                        t("map.decompile_failed_see_banner"))
-
-        source, init_status = _read_source()
-        is_new = source is None
-        if is_new:
-            source = _SCRIPT_TEMPLATE
-
-        win = ui_util.themed_toplevel(self, t("map.script_map_scn", map=map_dir, scn=scn_name),
-                                      size=(1200, 720), modal=False, resizable=True)
-
-        # Top bar — virtual path + dirty/new indicator + status message.
-        top = tk.Frame(win, background=_R_BG_PANEL); top.pack(fill="x", padx=8, pady=(6, 2))
-        path_lbl = tk.Label(top, text=script_path, background=_R_BG_PANEL,
-                            foreground=_R_TEXT_DIM, font=_F_MAIN, anchor="w")
-        path_lbl.pack(side="left", fill="x", expand=True)
-        status_lbl = tk.Label(top, text=init_status,
-                              background=_R_BG_PANEL, foreground=_R_GOLD, font=_F_MAIN)
-        status_lbl.pack(side="right")
-
-        # Status banner — switches its message + colour based on whether the bundled Python 2.5.1
-        # interpreter is present. With 2.5.1 in place the Save button writes a real .xyz
-        # into IA_Common.dat; without it, we fall back to draft-export.
-        py251 = _xyz_compiler_path()
-        if py251 is not None:
-            warn_text = t("map.python_2_5_1_detected",
-                          p=py251)
-            warn_bg, warn_fg = "#18302a", "#a0e0c0"
-        else:
-            warn_text = t("map.xyz_files_are_xyz0_magic")
-            warn_bg, warn_fg = "#3a2a18", "#ffd7a0"
-        warn = tk.Label(win, anchor="w", justify="left", wraplength=1180,
-                        background=warn_bg, foreground=warn_fg, font=_F_MAIN,
-                        text=warn_text)
-        warn.pack(fill="x", padx=8, pady=(2, 4))
-
-        # Body — left = code editor with scrollbar; right = reference panel (notebook of snippets).
-        body = tk.Frame(win, background=_R_BG_PANEL); body.pack(fill="both", expand=True, padx=8, pady=4)
-        # Left: scrollable Text editor.
-        left = tk.Frame(body, background=_R_BG_PANEL); left.pack(side="left", fill="both", expand=True)
-        sb = tk.Scrollbar(left, orient="vertical")
-        sb.pack(side="right", fill="y")
-        editor = tk.Text(left, background=_R_BG_WIDGET, foreground=_R_TEXT,
-                         font=("Consolas", 11), insertbackground=_R_GOLD_BRT,
-                         relief="flat", highlightthickness=0, borderwidth=0,
-                         wrap="none", undo=True, tabs=("2c",),
-                         yscrollcommand=sb.set)
-        editor.pack(side="left", fill="both", expand=True)
-        sb.config(command=editor.yview)
-        # Very lightweight syntax tinting — keywords + strings + comments via tags.
-        editor.tag_configure("kw", foreground="#88bbff")
-        editor.tag_configure("str", foreground="#cca070")
-        editor.tag_configure("cmt", foreground="#7a8aa0", font=("Consolas", 11, "italic"))
-        _PY_KW = ("import", "from", "def", "class", "return", "if", "else", "elif",
-                  "for", "while", "in", "is", "not", "and", "or", "True", "False", "None")
-        def _retint(*_):
-            editor.tag_remove("kw", "1.0", "end")
-            editor.tag_remove("str", "1.0", "end")
-            editor.tag_remove("cmt", "1.0", "end")
-            text = editor.get("1.0", "end")
-            for kw in _PY_KW:
-                idx = "1.0"
-                while True:
-                    idx = editor.search(r"\m%s\M" % kw, idx, stopindex="end", regexp=True)
-                    if not idx: break
-                    end = "%s+%dc" % (idx, len(kw))
-                    editor.tag_add("kw", idx, end)
-                    idx = end
-            # Strings (single/double-quoted, single-line) + line comments.
-            for pat, tag in ((r"'[^'\n]*'", "str"), (r'"[^"\n]*"', "str"),
-                             (r"#[^\n]*", "cmt")):
-                idx = "1.0"
-                while True:
-                    idx = editor.search(pat, idx, stopindex="end", regexp=True)
-                    if not idx: break
-                    m_end = editor.index("%s lineend" % idx)
-                    # search the substring length manually since editor.search returns just start
-                    sub = editor.get(idx, m_end)
-                    import re as _re
-                    rm = _re.match(pat, sub)
-                    end = "%s+%dc" % (idx, len(rm.group(0))) if rm else m_end
-                    editor.tag_add(tag, idx, end)
-                    idx = end
-
-        editor.insert("1.0", source)
-        _retint()
-        editor.bind("<KeyRelease>", _retint)
-
-        # Right: reference panel — categorized docs + edit recipes + paste-able snippets +
-        # enum lookup tables. The user said the primary use is tweaking parameters of
-        # existing calls (not writing arbitrary code), so the panel leads with
-        # overview docs + 'COMMON EDITS' recipes before any paste-snippet section.
-        right = tk.Frame(body, background=_R_BG_PANEL, width=460)
-        right.pack(side="right", fill="y", padx=(8, 0))
-        right.pack_propagate(False)
-        tk.Label(right, text=t("map.reference"),
-                 background=_R_BG_PANEL, foreground=_R_GOLD, font=_F_BOLD,
-                 wraplength=440, justify="left").pack(anchor="w")
-        tk.Label(right,
-                 text=t("map.top_down_how_scripts_work"),
-                 background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
-                 wraplength=440, justify="left").pack(anchor="w", pady=(0, 4))
-        # Scrollable container.
-        rsc_outer = tk.Frame(right, background=_R_BG_PANEL); rsc_outer.pack(fill="both", expand=True)
-        rsb = tk.Scrollbar(rsc_outer, orient="vertical")
-        rsb.pack(side="right", fill="y")
-        rsc = tk.Canvas(rsc_outer, background=_R_BG_PANEL, highlightthickness=0,
-                        borderwidth=0, yscrollcommand=rsb.set)
-        rsc.pack(side="left", fill="both", expand=True)
-        rsb.config(command=rsc.yview)
-        rsf = tk.Frame(rsc, background=_R_BG_PANEL)
-        rsc_win = rsc.create_window(0, 0, anchor="nw", window=rsf)
-        def _resize_inner(_=None):
-            rsc.itemconfig(rsc_win, width=rsc.winfo_width())
-            rsc.config(scrollregion=rsc.bbox("all"))
-        rsf.bind("<Configure>", _resize_inner)
-        rsc.bind("<Configure>", _resize_inner)
-
-        def _make_inserter(body_text):
-            def _go():
-                editor.insert("insert", body_text)
-                _retint()
-            return _go
-
-        # Entry renderers — one per kind. Wraplength tuned to 420px so long enum
-        # descriptions don't overflow the 460-wide right pane.
-        for entry in _SCRIPT_REFERENCE:
-            kind = entry[0]
-            if kind == "section":
-                _, title = entry
-                tk.Label(rsf, text=title, background=_R_BG_PANEL, foreground="#ffc774",
-                         font=_F_BOLD, anchor="w").pack(fill="x", pady=(10, 2))
-                tk.Frame(rsf, background="#3a2a18", height=1).pack(fill="x", pady=(0, 4))
-            elif kind == "doc":
-                _, title, body = entry
-                tk.Label(rsf, text=title, background=_R_BG_PANEL, foreground=_R_GOLD,
-                         font=_F_BOLD, anchor="w").pack(fill="x", pady=(4, 1))
-                tk.Label(rsf, text=body, background=_R_BG_PANEL, foreground=_R_TEXT,
-                         font=_F_MAIN, anchor="w", justify="left",
-                         wraplength=420).pack(fill="x", padx=4)
-            elif kind in ("recipe", "snippet"):
-                _, title, body, code = entry
-                head_row = tk.Frame(rsf, background=_R_BG_PANEL); head_row.pack(fill="x", pady=(6, 1))
-                tk.Label(head_row, text=title, background=_R_BG_PANEL, foreground=_R_GOLD,
-                         font=_F_BOLD, anchor="w").pack(side="left", fill="x", expand=True)
-                tk.Button(head_row, text=t("map.insert"), command=_make_inserter(code),
-                          background="#122030", foreground=_R_TEXT, font=_F_MAIN,
-                          relief="flat").pack(side="right")
-                tk.Label(rsf, text=body, background=_R_BG_PANEL, foreground=_R_TEXT,
-                         font=_F_MAIN, anchor="w", justify="left",
-                         wraplength=420).pack(fill="x", padx=4)
-                tk.Label(rsf, text=code, background=_R_BG_WIDGET, foreground=_R_TEXT_DIM,
-                         font=("Consolas", 9), anchor="w", justify="left",
-                         wraplength=440).pack(fill="x", padx=2, pady=(2, 0))
-            elif kind == "table":
-                _, title, body, rows = entry
-                tk.Label(rsf, text=title, background=_R_BG_PANEL, foreground=_R_GOLD,
-                         font=_F_BOLD, anchor="w").pack(fill="x", pady=(4, 1))
-                tk.Label(rsf, text=body, background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
-                         font=_F_MAIN, anchor="w", justify="left",
-                         wraplength=420).pack(fill="x", padx=4)
-                table_frame = tk.Frame(rsf, background=_R_BG_WIDGET)
-                table_frame.pack(fill="x", padx=4, pady=(2, 0))
-                for k, v in rows:
-                    row = tk.Frame(table_frame, background=_R_BG_WIDGET); row.pack(fill="x")
-                    tk.Label(row, text=k, background=_R_BG_WIDGET, foreground="#a0c0e0",
-                             font=("Consolas", 9), anchor="w", width=18).pack(side="left")
-                    tk.Label(row, text=v, background=_R_BG_WIDGET, foreground=_R_TEXT,
-                             font=_F_MAIN, anchor="w", justify="left",
-                             wraplength=290).pack(side="left", fill="x", expand=True)
-
-        # Bottom buttons — Reload (re-read+decompile) / Save draft as .py (export to
-        # test_output/script_drafts/) / Close. The path under the buttons shows where the
-        # next 'Save draft' will land so the user can find the file for external compilation.
-        bar = tk.Frame(win, background=_R_BG_PANEL); bar.pack(fill="x", padx=8, pady=(4, 8))
-        REPO_ = os.path.dirname(os.path.abspath(__file__))
-        draft_path = os.path.join(REPO_, "test_output", "script_drafts",
-                                  "%s_%s.py" % (map_dir, scn_name))
-
-        def _reload():
-            fresh, st = _read_source()
-            if fresh is None:
-                if not ui_util.confirm(win, t("map.reload"),
-                                           t("map.no_script_dat_yet_reset")):
-                    return
-                fresh = _SCRIPT_TEMPLATE
-            editor.delete("1.0", "end")
-            editor.insert("1.0", fresh)
-            _retint()
-            status_lbl.config(text=st or t("map.reloaded"))
-
-        def _save_draft():
-            os.makedirs(os.path.dirname(draft_path), exist_ok=True)
-            text = editor.get("1.0", "end-1c")
-            try:
-                with open(draft_path, "w", encoding="utf-8") as f:
-                    f.write(text)
-            except OSError as e:
-                ui_util.error(win, t("map.save_draft_failed"),
-                                     t("map.could_not_write_draft_e", e=e))
-                return
-            status_lbl.config(text=t("map.draft_saved_path", path=draft_path))
-
-        def _save_to_mod():
-            """Full source → Python 2.5.1 marshal → XYZ0 → mod project's IA_Common.dat."""
-            text = editor.get("1.0", "end-1c")
-            try:
-                marshal_bytes = _xyz_compile_source(text)
-            except FileNotFoundError:
-                ui_util.error(win, t("map.python_2_5_1_missing"),
-                                     t("map.ruse_mod_engine_python251_python"))
-                return
-            except RuntimeError as e:
-                ui_util.error(win, t("map.compile_failed"),
-                                     t("map.python_2_reported_e", e=str(e)))
-                return
-            try:
-                xyz_bytes = _xyz_pack(marshal_bytes)
-                self.project.set_raw("scripts", script_path, xyz_bytes)
-            except Exception as e:
-                ui_util.error(win, t("common.save_failed"),
-                                     t("map.could_not_stage_xyz0_into", e=e))
-                return
-            status_lbl.config(text=t("map.saved_mod_project_s_ia"))
-
-        # Primary button switches behaviour based on Python 2.5.1 availability — when present,
-        # "Save to mod project" runs the full compile pipeline; otherwise we expose
-        # only the draft export so users don't think a missing-interpreter save did anything.
-        if _xyz_compiler_path() is not None:
-            tk.Button(bar, text=t("map.save_mod_project"), command=_save_to_mod,
-                      background="#163048", foreground=_R_GOLD_BRT,
-                      font=_F_BOLD, relief="flat").pack(side="left")
-            tk.Button(bar, text=t("map.save_draft_as_py"), command=_save_draft,
-                      background="#122030", foreground=_R_TEXT,
-                      font=_F_BOLD, relief="flat").pack(side="left", padx=4)
-        else:
-            tk.Button(bar, text=t("map.save_draft_as_py"), command=_save_draft,
-                      background="#163048", foreground=_R_GOLD_BRT,
-                      font=_F_BOLD, relief="flat").pack(side="left")
-        tk.Button(bar, text=t("map.reload_from_dat"), command=_reload, background="#122030",
-                  foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="left", padx=4)
-        tk.Button(bar, text=t("common.close"), command=win.destroy, background="#122030",
-                  foreground=_R_TEXT, font=_F_BOLD, relief="flat").pack(side="right")
-        tk.Label(win, text=t("map.draft_target_path", path=draft_path),
-                 background=_R_BG_PANEL, foreground=_R_TEXT_DIM, font=_F_MAIN,
-                 anchor="w").pack(fill="x", padx=8, pady=(0, 6))
 
     def _delete_selected_place(self):
         pi = self._place_sel
@@ -4539,9 +4559,29 @@ class MapEditorWindow(tk.Frame):
             self._sector_node_move(*self._screen_to_world(e.x, e.y))
             self._recompose()                               # vec overlay frozen; outline drawn live
         else:                                               # pan
-            self._ox = ox0 + (e.x - x0)
-            self._oy = oy0 + (e.y - y0)
-            self._schedule_redraw()                          # coalesce the motion flood (perf)
+            nox = ox0 + (e.x - x0)
+            noy = oy0 + (e.y - y0)
+            dx, dy = nox - self._ox, noy - self._oy
+            self._ox, self._oy = nox, noy
+            self._panning = True
+            if not dx and not dy:
+                return
+            # A pan translates EVERY drawn item by the same screen offset — the terrain image, the
+            # markers, the handles, all of them. So the correct new frame is the current one moved
+            # by (dx, dy), and Tk can do that natively in one call. Redrawing instead (delete all +
+            # re-create every item) cost ~43 ms a frame here, which is why the map lagged the cursor
+            # and then jumped to catch up.
+            #
+            # It stays valid only while the exposed edge is still covered: the composite carries a
+            # margin and the markers are culled with a matching pad, so once the accumulated slide
+            # runs past that budget we fall back to a real redraw (which resets the accumulator).
+            budget = self._pan_slide_budget()
+            if (abs(self._pan_slid[0] + dx) <= budget and abs(self._pan_slid[1] + dy) <= budget
+                    and self._comp_tk is not None and not self._comp_is_preview):
+                self._pan_slid = (self._pan_slid[0] + dx, self._pan_slid[1] + dy)
+                self._canvas.move("all", dx, dy)
+            else:
+                self._schedule_redraw()                      # coalesce the motion flood (perf)
 
     def _press_release(self, e):
         if self._painting:                                  # finish a concealment paint stroke
@@ -4571,6 +4611,9 @@ class MapEditorWindow(tk.Frame):
             if pi is not None:
                 self._select_place(pi)
         self._press = None
+        if self._panning:                       # pan finished — refresh the region we slid into
+            self._panning = False
+            self._recompose()
 
     def _soft_move(self, wx, wy):
         """Move the grabbed corner to (wx,wy); nearby vertices follow with a smooth falloff over
@@ -4604,16 +4647,95 @@ class MapEditorWindow(tk.Frame):
                 sz["vertices"][vi] = (nx, ny, old[2], old[3], old[4])
         self._dirty = True
 
+    _ZOOM_STEP = 1.25          # per notch; 1.1 needed a lot of spinning to get anywhere
+    _ZOOM_SETTLE_MS = 110      # quiet time after the last notch before the sharp render
+    # How far the preview may magnify what it already has. There is no cap worth having: the only
+    # alternative to a blocky preview is a frame drawn at the wrong SCALE (which slides the map) or
+    # a mid-burst rebuild (which stalls it), and both are worse than a coarse picture that lives
+    # ~100 ms before the sharp render replaces it. Kept as a named constant so the intent is
+    # explicit rather than implied by its absence.
+    _PREVIEW_MAG = float("inf")
+
     def _wheel(self, e):
+        """Zoom about the cursor.
+
+        The step is exponential in WHEEL NOTCHES (delta/120) rather than a fixed multiply per event,
+        so a high-resolution wheel or a trackpad that sends many small deltas zooms by the same amount
+        per physical movement as a notched wheel — that proportionality is what makes it feel steady
+        instead of lurching.
+
+        The exact re-render costs ~70 ms, so doing it per notch made a zoom burst crawl. Instead the
+        view transform is applied immediately and drawn by rescaling the composite we already have
+        (_zoom_preview, a few ms), with the sharp rebuild once the wheel goes quiet."""
         if not self._pil:
             return
-        factor = 1.1 if e.delta > 0 else (1 / 1.1)
+        notches = (e.delta / 120.0) if e.delta else (1.0 if getattr(e, "num", 5) == 4 else -1.0)
+        factor = self._ZOOM_STEP ** max(-4.0, min(4.0, notches))
         bx = (e.x - self._ox) / self._scale
         by = (e.y - self._oy) / self._scale
         self._scale *= factor
         self._ox = e.x - bx * self._scale
         self._oy = e.y - by * self._scale
+        self._zooming = True
+        if self._zoom_after is not None:
+            try:
+                self.after_cancel(self._zoom_after)
+            except Exception:
+                pass
+        self._zoom_after = self.after(self._ZOOM_SETTLE_MS, self._zoom_settled)
         self._recompose()           # zoom is a view change only — reuse both cached overlays
+
+    def _zoom_settled(self):
+        """Wheel has gone quiet — replace the rescaled preview with the exact render."""
+        self._zoom_after = None
+        self._zooming = False
+        self._recompose()
+
+    def _zoom_preview(self):
+        """Draw the composite we already have, rescaled to the new zoom. True if a preview was made.
+
+        Only the VISIBLE rect is produced, at canvas size — not the whole margined composite scaled
+        up. That matters more than it sounds: ImageTk.PhotoImage dominates a repaint, so its cost
+        tracks output pixels, and a first attempt that rescaled the entire margined composite came out
+        no cheaper than just rebuilding properly. Cropping to the viewport is ~3-4x fewer pixels.
+
+        Refuses to magnify the source more than 3x, where the blur would be worse than a short wait.
+
+        The crop is measured against _comp_src_rect — the region _comp_img ACTUALLY covers — never
+        against _comp_rect, which this function overwrites with the smaller previewed region so
+        _redraw positions it correctly. Reading the origin back out of _comp_rect meant the second and
+        every later notch of a burst cropped against the previous preview's rect while the pixels
+        still had the original origin, so the view darted somewhere else and the error compounded
+        until the sharp render landed."""
+        try:
+            cx0, cy0, cx1, cy1 = self._comp_src_rect
+            vx0, vy0, vx1, vy1 = self._visible_base_rect()
+            if vx1 <= vx0 or vy1 <= vy0:
+                return False
+            vx0 = max(vx0, cx0); vy0 = max(vy0, cy0)
+            vx1 = min(vx1, cx1); vy1 = min(vy1, cy1)
+            if vx1 - vx0 < 1 or vy1 - vy0 < 1:
+                return False
+            cs = self._comp_scale
+            src = ((vx0 - cx0) * cs, (vy0 - cy0) * cs, (vx1 - cx0) * cs, (vy1 - cy0) * cs)
+            dw = max(1, int(round((vx1 - vx0) * self._scale)))
+            dh = max(1, int(round((vy1 - vy0) * self._scale)))
+            if dw > (src[2] - src[0]) * self._PREVIEW_MAG or \
+               dh > (src[3] - src[1]) * self._PREVIEW_MAG:
+                return False
+            # NEAREST, not BILINEAR: this frame exists only until the wheel goes quiet, and the
+            # filter was the single biggest cost in a zoom burst (57% of it, ~14 ms a notch). The
+            # sharp render lands _ZOOM_SETTLE_MS later and is the one the user actually reads, so
+            # paying for smooth interpolation on a frame that lives ~100 ms buys nothing and is
+            # exactly what made zooming feel spiky. Magnifying is the common case in a burst and
+            # NEAREST magnification is blocky rather than blurry — no worse a stand-in.
+            img = self._comp_img.resize((dw, dh), Image.NEAREST, box=src)
+            self._set_comp_image(img)
+            self._comp_rect = (vx0, vy0, vx1, vy1)   # preview covers only what is on screen
+            self._comp_is_preview = True             # no margin -> a pan must not slide on this
+            return True
+        except Exception:
+            return False
 
     def _set_status(self, main):
         """Set the MAIN status text (cursor/zoom/map/scenario/[view] or a transient action note) and
@@ -4714,9 +4836,41 @@ class MapEditorWindow(tk.Frame):
         return (id(self._zones), round(self._scale, 5), self._sel, self._flip_y.get(),
                 self._pil.size if self._pil else None, self._dirty,
                 self._show_roads.get(), self._show_forest.get(), self._show_sectors.get(),
+                self._show_relief.get(), id(self._ov_relief),
                 self._kdt_show.get(), self._kdt_color.get(), self._kdt_edit.get(), self._kdt_dirty,
                 self._kdt_dx.get(), self._kdt_dy.get(), self._kdt_scale.get(),
                 tuple(v.get() for v in self._sdb_show.values()), self._sdb_rev)
+
+    def _set_comp_image(self, img):
+        """Hand a finished frame to Tk, reusing the PhotoImage when the size is unchanged.
+
+        Building a PhotoImage allocates a whole new Tk image and was ~29% of a zoom frame. During a
+        wheel burst the output is the viewport almost every time, so the size usually repeats and
+        `paste` can refill the existing one instead."""
+        tk_img = self._comp_tk
+        if tk_img is not None and tk_img.width() == img.width and tk_img.height() == img.height:
+            try:
+                tk_img.paste(img)
+                return
+            except Exception:
+                pass                    # mode/state mismatch — fall back to a fresh image
+        self._comp_tk = ImageTk.PhotoImage(img)
+
+    def _pan_slide_budget(self):
+        """How far the drawn frame may be slid before it has to be redrawn for real.
+
+        Both the composite and the markers are rendered with slack around the viewport
+        (``_build_composite``'s margin and ``_place_cull_pad``), so sliding is only honest while the
+        newly exposed edge is inside that slack. Kept at a quarter of the SHORTER side so it is
+        within the composite's margin (a max of the two) on any canvas shape."""
+        cw = max(self._canvas.winfo_width(), 1)
+        ch = max(self._canvas.winfo_height(), 1)
+        return max(96, min(cw, ch) // 4)
+
+    def _place_cull_pad(self):
+        """Screen-space slack around the viewport for marker culling. Has to cover the pan slide
+        budget, or a slid frame would show blank where markers should have come into view."""
+        return self._pan_slide_budget() + 80
 
     def _visible_base_rect(self):
         """The minimap-pixel rectangle currently visible in the canvas (clamped to the minimap)."""
@@ -4736,9 +4890,14 @@ class MapEditorWindow(tk.Frame):
     # of re-running thousands of Python ImageDraw/numpy calls every frame. Two independent caches:
     #   _ov_sdb  — the painted SDB layers (numpy raster; rebuilt by a paint stroke, which is cheap)
     #   _ov_vec  — sectors + KDT mesh + roads (vector raster; the heavy one — frozen during drags)
+    _OV_LONG_SIDE = 2048        # overlay rasters are held at ~this long side, whatever the map size
+
     def _ov_scale_for(self, W, H):
-        # supersample base px so 1px overlay lines render ~1px on screen near zoom 1, capped ~2048px
-        return max(1, min(8, 2048 // max(W, H, 1)))
+        """Base px -> overlay px. Supersamples a SMALL base image so 1px overlay lines still render
+        ~1px on screen near zoom 1, and DOWNSAMPLES a large one so the raster stays bounded: the
+        terrain is now full-detail (issue #19), and at 6144x4096 a 1:1 overlay would be 100 MB per
+        layer. Returns a float — the callers scale by it and round."""
+        return max(0.02, min(8.0, self._OV_LONG_SIDE / float(max(W, H, 1))))
 
     def _ov_world_to_overlay(self, x, y, ovs):
         bx, by = self._world_to_base(x, y)
@@ -4749,7 +4908,7 @@ class MapEditorWindow(tk.Frame):
         the R×R grid → one Image.fromarray + a NEAREST resize per layer (no per-cell Python loop, no
         grid_to_cells). This is what makes a paint stroke refresh in ms instead of ~10s."""
         W, H = self._pil.size; ovs = self._ov_scale
-        OW, OH = max(1, W * ovs), max(1, H * ovs)
+        OW, OH = max(1, int(round(W * ovs))), max(1, int(round(H * ovs)))
         ov = Image.new("RGBA", (OW, OH), (0, 0, 0, 0))
         if self._bbox and self._sdb:
             try:
@@ -4791,13 +4950,14 @@ class MapEditorWindow(tk.Frame):
                     ov = Image.alpha_composite(ov, tile)
         self._ov_sdb = ov
         self._ov_sdb_dirty = False
+        self._ov_crop_cache.clear()
 
     def _build_vec_overlay(self):
         """Rasterise sectors + KDT mesh + roads into _ov_vec (overlay space). Heavy (vector primitives),
         so it is rebuilt ONLY when that geometry/toggles change — never on pan/zoom, and frozen while a
         sector/KDT vertex is being dragged (the moving handles/outline are live canvas items instead)."""
         W, H = self._pil.size; ovs = self._ov_scale
-        OW, OH = max(1, W * ovs), max(1, H * ovs)
+        OW, OH = max(1, int(round(W * ovs))), max(1, int(round(H * ovs)))
         ov = Image.new("RGBA", (OW, OH), (0, 0, 0, 0))
         d = ImageDraw.Draw(ov, "RGBA")
 
@@ -4807,7 +4967,9 @@ class MapEditorWindow(tk.Frame):
         def onscreen(px, py, pad=8):
             return -pad <= px <= OW + pad and -pad <= py <= OH + pad
 
-        lw = max(1, ovs)                                   # 1px-at-zoom-1 line width
+        # PIL's draw width= must be an int, and _ov_scale is a FLOAT now that the overlay raster is
+        # capped independently of the terrain size (issue #19) — round, don't just clamp.
+        lw = max(1, int(round(ovs)))                       # 1px-at-zoom-1 line width
         if self._bbox:
             # scenario AREA-zone polygons = the VISUAL sectors (coloured fill — the EDIT TARGET)
             for zi, z in enumerate(self._zones if self._show_sectors.get() else []):
@@ -4844,7 +5006,7 @@ class MapEditorWindow(tk.Frame):
             if self._show_roads.get() and self._roads:
                 nodes = self._roads["nodes"]
                 bp = [b(x, y) for (x, y, _) in nodes]
-                rw = max(2, 2 * ovs); rr = max(2, ovs + 1)
+                rw = max(2, int(round(2 * ovs))); rr = max(2, int(round(ovs + 1)))
                 for i, j in self._roads["edges"]:
                     if onscreen(*bp[i]) or onscreen(*bp[j]):
                         d.line([bp[i], bp[j]], fill=(214, 142, 64, 255), width=rw)
@@ -4857,6 +5019,7 @@ class MapEditorWindow(tk.Frame):
                     else:
                         d.ellipse([px - rr, py - rr, px + rr, py + rr], fill=(232, 158, 86, 255))
         self._ov_vec = ov
+        self._ov_crop_cache.clear()
         if not self._dragging:                            # while dragging we keep the stale cache
             self._ov_vec_dirty = False
 
@@ -4870,6 +5033,8 @@ class MapEditorWindow(tk.Frame):
         # screen-px slack baked around the viewport so a pan reuses the cached composite (just
         # repositions it) instead of rebuilding. A quarter-viewport of slack covers most drag motions
         # for a ~2.25x-area composite — a small per-rebuild cost for far fewer rebuilds (perf, #15).
+        # Kept at a quarter deliberately: a half-viewport doubled the area and took a rebuild from
+        # ~65 ms to ~154 ms, which is worse than rebuilding slightly more often.
         margin = max(128, cw // 4, ch // 4)
         cx0 = max(0, int(math.floor((-self._ox - margin) / sc)))
         cy0 = max(0, int(math.floor((-self._oy - margin) / sc)))
@@ -4879,7 +5044,12 @@ class MapEditorWindow(tk.Frame):
             cx0, cy0, cx1, cy1 = 0, 0, W, H
         dw = max(1, int(round((cx1 - cx0) * sc))); dh = max(1, int(round((cy1 - cy0) * sc)))
         resample = Image.NEAREST if sc >= 1 else Image.BILINEAR
-        img = self._pil.crop((cx0, cy0, cx1, cy1)).resize((dw, dh), resample)  # _pil is already RGBA
+        if hasattr(self._pil, "crop_resized"):
+            # tiled terrain (issue #19): it picks the LOD tier for this zoom and decodes only the
+            # chunks this view touches, so zooming in keeps resolving real 512 px detail
+            img = self._pil.crop_resized((cx0, cy0, cx1, cy1), (dw, dh), resample)
+        else:
+            img = self._pil.crop((cx0, cy0, cx1, cy1)).resize((dw, dh), resample)
         if img.mode != "RGBA":
             img = img.convert("RGBA")
         # keep the overlay caches in sync (rebuild only when dirty; recompute supersample on map resize)
@@ -4892,27 +5062,81 @@ class MapEditorWindow(tk.Frame):
         if self._ov_vec is None or (self._ov_vec_dirty and not self._dragging):
             self._build_vec_overlay()
         ob = (int(cx0 * ovs), int(cy0 * ovs), int(cx1 * ovs), int(cy1 * ovs))
-        for cache in (self._ov_sdb, self._ov_vec):     # SDB under vectors
+        # Cropping+resizing the two whole-map overlay rasters is a large slice of a rebuild, and it
+        # repeats verbatim whenever the same view is rebuilt (settling a zoom, finishing a pan, a
+        # terrain chunk landing). Cache the finished crops; _invalidate_sdb/_invalidate_vec drop them.
+        # Shaded relief sits UNDER the data overlays: it is terrain, not annotation, so sectors,
+        # roads and painted SDB have to stay legible on top of it. It lives in its own aspect-correct
+        # raster rather than overlay space, so the crop box is computed as a fraction of the map.
+        if self._show_relief.get() and self._ov_relief is not None:
+            rw, rh = self._ov_relief.size
+            rb = (int(cx0 / W * rw), int(cy0 / H * rh),
+                  max(int(cx1 / W * rw), int(cx0 / W * rw) + 1),
+                  max(int(cy1 / H * rh), int(cy0 / H * rh) + 1))
+            ck = ("relief", rb, dw, dh, id(self._ov_relief))
+            crop = self._ov_crop_cache.get(ck)
+            if crop is None:
+                crop = self._ov_relief.crop(rb)
+                if crop.size != (dw, dh):
+                    crop = crop.resize((dw, dh), Image.BILINEAR)
+                if len(self._ov_crop_cache) > 8:
+                    self._ov_crop_cache.clear()
+                self._ov_crop_cache[ck] = crop
+            img.alpha_composite(crop)
+        for name, cache in (("sdb", self._ov_sdb), ("vec", self._ov_vec)):   # SDB under vectors
             if cache is None:
                 continue
-            crop = cache.crop(ob)
-            if crop.size != (dw, dh):
-                crop = crop.resize((dw, dh), Image.BILINEAR)
+            ck = (name, ob, dw, dh, id(cache))
+            crop = self._ov_crop_cache.get(ck)
+            if crop is None:
+                crop = cache.crop(ob)
+                if crop.size != (dw, dh):
+                    crop = crop.resize((dw, dh), Image.BILINEAR)
+                if len(self._ov_crop_cache) > 8:
+                    self._ov_crop_cache.clear()
+                self._ov_crop_cache[ck] = crop
             img.alpha_composite(crop)
-        self._comp_tk = ImageTk.PhotoImage(img)
+        self._comp_img = img
+        self._comp_scale = sc           # px-per-base-px the composite was rendered at (zoom preview)
+        self._comp_src_rect = (cx0, cy0, cx1, cy1)   # what _comp_img covers; _comp_rect may shrink
+        self._set_comp_image(img)
         self._comp_rect = (cx0, cy0, cx1, cy1)
+        self._comp_is_preview = False   # full render, margin included -> safe to slide a pan on
         self._comp_key = self._comp_state()
 
     def _redraw(self):
         c = self._canvas
         c.delete("all")
+        self._pan_slid = (0.0, 0.0)     # everything is drawn at the true offset again
         if not self._pil:
             c.create_text(20, 20, anchor="nw", fill=_R_TEXT_DIM, font=_F_MAIN,
                           text=t("map.no_minimap_terrain_dat_not"))
             return
         vis = self._visible_base_rect()
-        if self._comp_key != self._comp_state() or not self._rect_covers(self._comp_rect, vis):
+        stale = (self._comp_key != self._comp_state()
+                 or not self._rect_covers(self._comp_rect, vis))
+        # A rebuild costs ~65-100 ms, far longer than motion events arrive, so rebuilding per frame
+        # is what made dragging lag the cursor and snap on release. While a pan is live we slide the
+        # cached bitmap instead and refresh at most a few times a second, so the drag stays smooth and
+        # the edges still fill in on a long throw. _press_release does the final, exact rebuild.
+        if stale and self._panning and self._comp_tk is not None:
+            if time.monotonic() - self._last_comp_build < 0.2:
+                stale = False
+        # Mid-zoom the exact rebuild is deferred (see _wheel): rescale the composite we already have
+        # so the view tracks the wheel with no lag, and let _zoom_settled put the sharp one in.
+        if stale and self._zooming and self._comp_img is not None:
+            if self._zoom_preview():
+                stale = False
+            # No "hold the last frame" fallback here, deliberately. _redraw positions the composite
+            # with the CURRENT scale while a reused frame's pixels are still at the scale it was
+            # made at, so reusing one slides the map under the cursor — measured up to 263 px before
+            # the sharp render snapped it back, which is exactly the drift that makes zooming feel
+            # disorienting. A rebuild costs time; a wrong position costs trust. So if the preview
+            # cannot produce a correct frame we rebuild, and _zoom_preview is instead made able to
+            # cover essentially every notch (see _PREVIEW_MAG) so that stays rare.
+        if stale:
             self._build_composite()
+            self._last_comp_build = time.monotonic()
         cx0, cy0 = self._comp_rect[0], self._comp_rect[1]
         c.create_image(cx0 * self._scale + self._ox, cy0 * self._scale + self._oy,
                        anchor="nw", image=self._comp_tk)
@@ -5000,6 +5224,13 @@ class MapEditorWindow(tk.Frame):
         This is the road geometry both the facing and the road-snap use."""
         if not (self._roads and self._roads.get("edges") and self._roads.get("nodes")):
             return None
+        # Cached: this is called once per building marker per repaint, and the markers mostly sit
+        # still, so a pan/zoom is almost all cache hits. Dropped when the road graph is replaced.
+        memo = self._road_pt_memo
+        key = (x, y)
+        hit = memo.get(key)
+        if hit is not None:
+            return hit[0]                       # boxed, so a cached None is still a hit
         nodes, edges = self._roads["nodes"], self._roads["edges"]
         best = None
         for a, b in edges:
@@ -5014,7 +5245,11 @@ class MapEditorWindow(tk.Frame):
             d2 = (x - fx) ** 2 + (y - fy) ** 2
             if best is None or d2 < best[0]:
                 best = (d2, fx, fy)
-        return None if best is None else (best[1], best[2], math.sqrt(best[0]))
+        out = None if best is None else (best[1], best[2], math.sqrt(best[0]))
+        if len(memo) > 8192:                    # dragging a marker feeds a new point every event
+            memo.clear()
+        memo[key] = (out,)
+        return out
 
     def _snap_to_road(self, pl, wx, wy):
         """If Auto-snap-to-roads is on and this is a depot/HQ, return the closest valid position that
@@ -5078,18 +5313,24 @@ class MapEditorWindow(tk.Frame):
         SIZE (~600-entity practical envelope), so the byte budget matters more than a count cap."""
         n = len(self._places or [])
         self._place_lbl.config(text=t("map.n_placements_kb_1f_kb",
-                                      n=n, kb=(self._scn_size or 0) / 1024.0))
+                                      n=n, kb=(self._scn_size or 0) / 1024.0)
+                               + "\n" + self._camp_map_status())
 
-    def _get_icon(self, name, size):
-        """Load+cache a map-editor placement icon (icons/map_icons/<name>) fit to `size` px,
-        aspect-preserved, as an ImageTk.PhotoImage. None if missing/unavailable."""
+    def _get_icon(self, name, size, subdir=None):
+        """Load+cache a map-editor placement icon (icons/map_icons/[subdir/]<name>) fit to `size` px,
+        aspect-preserved, as an ImageTk.PhotoImage. None if missing/unavailable.
+
+        Cached per (name, size, subdir): the canvas rebuilds every marker on every frame, so the
+        resize+PhotoImage conversion has to happen once per distinct icon, not once per draw."""
         if not name or not _HAVE_PIL:
             return None
-        key = (name, size)
+        key = (name, size, subdir)
         if key not in self._icon_cache:
             try:
+                path = os.path.join(ICON_DIR, subdir, name) if subdir \
+                    else os.path.join(ICON_DIR, name)
                 with pil_log.source("Map editor"):
-                    im = Image.open(os.path.join(ICON_DIR, name)).convert("RGBA")
+                    im = Image.open(path).convert("RGBA")
                 w, h = im.size
                 s = size / max(w, h)
                 im = im.resize((max(1, int(w * s)), max(1, int(h * s))), Image.LANCZOS)
@@ -5098,39 +5339,280 @@ class MapEditorWindow(tk.Frame):
                 self._icon_cache[key] = None
         return self._icon_cache[key]
 
+    # Corner overlays, composited ONTO the role icon at draw time rather than baked into icon
+    # variants. They have to be live: the controlling camp is something the author changes at will,
+    # and 105 roles x 7 unit nations x 7 controlling nations x N camps is not a set of files anyone
+    # wants on disk. Composited at the icon's MASTER resolution and downscaled once, so the small
+    # marks stay antialiased instead of turning to mush.
+    #   top-left     the unit's OWN nationality (fixed by its class)
+    #   bottom-left  the nationality of the camp CONTROLLING it (from the paired script)
+    #   bottom-right the camp number
+    #   top-right    already baked into the role icon (advanced / nuclear / decoy / airborne)
+    # The marks are big enough to read at map size; what keeps them from burying the silhouette is
+    # WHERE they sit (centred on the corners, half outside the chip), not shrinking them.
+    _OVERLAY_MASTER = 64            # role PNGs are 64 px; composite there, then resize
+    _NATION_FRAC = 0.42             # nation roundel diameter (INCLUDING its dark ring)
+    _CAMP_W_FRAC = 0.44             # camp-number chip
+    _CAMP_H_FRAC = 0.36
+
+    def _role_icon(self, pl, size, show_nations=None, show_camps=None):
+        """The picture for one placement at `size` px — the role icon plus its live corner marks.
+
+        `show_nations` / `show_camps` are passed in by the draw loop, which reads the Tk variables
+        ONCE per frame: reading them here cost two Tk global-variable lookups per marker per frame
+        (2280 of them a frame at 1088 markers). They fall back to reading the vars for any other
+        caller. None when icons are off or PIL is unavailable."""
+        if not size:
+            return None
+        if show_nations is None:
+            show_nations = self._show_nations.get()
+        if show_camps is None:
+            show_camps = self._show_camps.get()
+        role = pl.get("role") or "unknown"
+        # Only camp-owned kinds have a camp/nation story to tell.
+        owned = pl["kind"] in ("depot", "unit", "building", "spawn")
+        is_hq = pl["kind"] == "hq"
+        show_nat = (owned or is_hq) and show_nations
+        unit_nat = pl.get("nation") if (show_nat and owned) else None
+        ctrl_nat = pl.get("ctrl_nation") if show_nat else None
+        camp = None                       # None here means ONLY "draw no camp chip"
+        if show_camps:
+            if owned:
+                camp = _camp_display(pl["extra"].get("camp"))
+            elif is_hq:
+                # An HQ is keyed by ALLIANCE, not camp — a different axis, so it is badged "A1", not
+                # "1", or a 1 here and a 1 on a tank would look like the same thing.
+                a = pl["extra"].get("alliance")
+                camp = ("A%s" % a) if a is not None else None
+        if not (unit_nat or ctrl_nat or camp is not None):
+            return self._get_icon(proles.icon_name(role), size, "roles")
+        key = (role, unit_nat, ctrl_nat, camp, size)
+        if key not in self._overlay_cache:
+            try:
+                self._overlay_cache[key] = self._build_overlay_icon(
+                    role, unit_nat, ctrl_nat, camp, size)
+            except Exception:
+                self._overlay_cache[key] = self._get_icon(proles.icon_name(role), size, "roles")
+        return self._overlay_cache[key]
+
+    def _nation_png(self, name):
+        """Cached RGBA of a nation roundel at master size (icons/nation_icons/<name>)."""
+        if name not in self._nation_src:
+            try:
+                with pil_log.source("Map editor"):
+                    im = Image.open(os.path.join(NATION_ICON_DIR, name)).convert("RGBA")
+                self._nation_src[name] = im
+            except Exception:
+                self._nation_src[name] = None
+        return self._nation_src[name]
+
+    def _build_overlay_icon(self, role, unit_nat, ctrl_nat, camp, size):
+        """Compose role icon + corner marks, returned as an ImageTk.PhotoImage.
+
+        The marks are CENTRED ON the chip's corners, so each one straddles the edge and hangs half
+        outside. That keeps them clear of the silhouette they annotate (sitting them fully inside
+        buried it) and reads the way a notification badge does.
+
+        Because they overhang, the composite is drawn on a canvas larger than the chip and the
+        result is scaled so the CHIP still measures `size` px. Two placements therefore always show
+        the same size chip whether or not they carry marks — only the marks stick out."""
+        M = self._OVERLAY_MASTER
+        with pil_log.source("Map editor"):
+            base = Image.open(os.path.join(ROLE_ICON_DIR, proles.icon_name(role))).convert("RGBA")
+        if base.size != (M, M):
+            base = base.resize((M, M), Image.LANCZOS)
+
+        d = int(round(M * self._NATION_FRAC))
+        cw = int(round(M * self._CAMP_W_FRAC))
+        ch = int(round(M * self._CAMP_H_FRAC))
+        over = int(round(max(d, cw, ch) / 2.0)) + 1        # how far a mark reaches past the chip
+        C = M + 2 * over
+        img = Image.new("RGBA", (C, C), (0, 0, 0, 0))
+        img.alpha_composite(base, (over, over))
+
+        def roundel(name, cx, cy):
+            src = self._nation_png(name)
+            if src is None:
+                return
+            ring = max(1, int(M * 0.028))
+            inner = d - 2 * ring
+            plate = Image.new("RGBA", (d, d), (0, 0, 0, 0))
+            # dark disc behind the flag so a pale roundel still separates from a pale chip
+            ImageDraw.Draw(plate).ellipse([0, 0, d - 1, d - 1], fill=(10, 16, 26, 240))
+            flag = src.resize((inner, inner), Image.LANCZOS)
+            plate.alpha_composite(flag, (ring, ring))
+            img.alpha_composite(plate, (int(cx - d / 2.0), int(cy - d / 2.0)))
+
+        if unit_nat:
+            roundel(unit_nat, over, over)                        # top-left corner
+        if ctrl_nat:
+            roundel(ctrl_nat, over, over + M)                    # bottom-left corner
+        if camp is not None:
+            self._draw_camp_chip(img, camp, M, over + M, over + M, cw, ch)   # bottom-right corner
+
+        out_px = max(1, int(round(size * C / float(M))))
+        return ImageTk.PhotoImage(img.resize((out_px, out_px), Image.LANCZOS))
+
+    def _draw_camp_chip(self, img, camp, M, cx, cy, w, h):
+        """Camp badge centred on (cx, cy). -1 draws as 'N' (neutral) and -2 as 'X' (despawn):
+        a bare minus sign is one unreadable stroke at map size."""
+        text = "N" if camp == -1 else ("X" if camp == -2 else str(camp))
+        # "A1"-style alliance badges are wider than a digit; shrink to fit rather than overflow.
+        if len(text) > 1:
+            w = int(w * (1.0 + 0.34 * (len(text) - 1)))
+        x0, y0 = int(cx - w / 2.0), int(cy - h / 2.0)
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle([x0, y0, x0 + w, y0 + h], radius=int(h * 0.34),
+                            fill=(12, 18, 28, 242), outline=(238, 244, 250, 255),
+                            width=max(1, int(M * 0.028)))
+        f = self._camp_font(max(6, int(h * 0.80)))
+        try:
+            bb = d.textbbox((0, 0), text, font=f)
+            tw, th = bb[2] - bb[0], bb[3] - bb[1]
+            d.text((x0 + (w - tw) / 2.0 - bb[0], y0 + (h - th) / 2.0 - bb[1]), text,
+                   font=f, fill=(255, 255, 255, 255))
+        except Exception:
+            d.text((x0 + w * 0.28, y0 + h * 0.08), text, font=f, fill=(255, 255, 255, 255))
+
+    def _camp_font(self, px):
+        if px not in self._camp_fonts:
+            fnt = None
+            for name in ("segoeuib.ttf", "arialbd.ttf", "DejaVuSans-Bold.ttf", "arial.ttf"):
+                try:
+                    fnt = ImageFont.truetype(name, px)
+                    break
+                except Exception:
+                    continue
+            if fnt is None:
+                fnt = ImageFont.load_default()
+            self._camp_fonts[px] = fnt
+        return self._camp_fonts[px]
+
+    def _icon_px(self):
+        """Current icon size in pixels — 0 when the user has turned icons off (plain dots).
+
+        Zero DURING a wheel burst as well: a Cotentin-sized scenario is 633 markers, and drawing
+        each as an image instead of a dot took the zoom frame from 18.7 ms mean / 29.1 ms worst to
+        25.9 / 56.4 — over the 33 ms budget, which reads as a stutter. The map already swaps to a
+        cheap rescaled preview mid-zoom for the same reason (_zoom_preview); the markers do the same
+        and come back sharp on _zoom_settled's redraw, a sixth of a second later."""
+        if self._zooming:
+            return 0
+        return _ICON_SIZES.get(self._icon_size.get(), _ICON_SIZES["medium"])
+
+    def _on_icon_size(self, _e=None):
+        self._icon_size.set(self._icon_size_labels.get(self._icon_size_cb.get(), "medium"))
+        self._redraw()
+
+    def _on_overlay_toggle(self):
+        """Nation-flag / camp-number corner marks toggled — the composites are keyed on them."""
+        self._overlay_cache.clear()
+        self._redraw()
+
+    def _open_icon_legend(self):
+        """The key to the map: every icon, what it is, and what it means.
+
+        Grouped by family (the chip colour) and listing the weight pips and badges, because those
+        are the parts of the grammar you can't guess from one icon on its own."""
+        win = ui_util.themed_toplevel(self, t("map.icon_legend_title"), size=(760, 640),
+                                      modal=False, resizable=True, on_escape=True)
+        hdr = tk.Label(win, text=t("map.icon_legend_intro"), background=_R_BG_PANEL,
+                       foreground=_R_TEXT_DIM, font=_F_MAIN, justify="left", wraplength=724)
+        hdr.pack(anchor="w", padx=10, pady=(10, 2))
+        tk.Label(win, text=t("map.icon_corner_key"), background=_R_BG_PANEL,
+                 foreground=_R_TEXT, font=_F_MAIN, justify="left",
+                 wraplength=724).pack(anchor="w", padx=10, pady=(0, 6))
+
+        holder = ui_util.make_scrollable(win, bg=_R_BG_PANEL)
+        self._legend_icons = []                 # keep references — Tk drops unreferenced PhotoImages
+
+        by_family = {}
+        for r in proles.all_roles():
+            by_family.setdefault(r.family, []).append(r)
+        for fam, roles in by_family.items():
+            rgb, fam_desc = proles.FAMILIES[fam]
+            head = tk.Frame(holder, background=_R_BG_PANEL)
+            head.pack(fill="x", padx=8, pady=(10, 2))
+            tk.Frame(head, background="#%02x%02x%02x" % rgb, width=14, height=14).pack(side="left")
+            tk.Label(head, text="  %s — %s" % (fam, fam_desc), background=_R_BG_PANEL,
+                     foreground=_R_GOLD, font=_F_BOLD).pack(side="left")
+            for r in roles:
+                row = tk.Frame(holder, background=_R_BG_PANEL)
+                row.pack(fill="x", padx=18, pady=1)
+                ico = self._get_icon(r.icon, 30, "roles")
+                if ico is not None:
+                    self._legend_icons.append(ico)
+                    tk.Label(row, image=ico, background=_R_BG_PANEL).pack(side="left")
+                txt = tk.Frame(row, background=_R_BG_PANEL)
+                txt.pack(side="left", padx=8, fill="x", expand=True)
+                bits = [r.label]
+                if r.weight:
+                    bits.append(t("map.icon_weight_" + proles.WEIGHT_NAMES[r.weight]))
+                if r.badge:
+                    bits.append(t("map.icon_badge_" + r.badge))
+                tk.Label(txt, text="   ".join(bits), background=_R_BG_PANEL, foreground=_R_TEXT,
+                         font=_F_BOLD, anchor="w").pack(anchor="w")
+                tk.Label(txt, text=r.desc, background=_R_BG_PANEL, foreground=_R_TEXT_DIM,
+                         font=_F_MAIN, anchor="w", justify="left", wraplength=620).pack(anchor="w")
+
     def _draw_placements(self, c):
-        """Draw depot/HQ/label/zone markers as live canvas items (not baked into the composite),
-        so they track drag edits. HQ + depot are oriented footprints (rotate with their Rotation);
-        when selected in edit mode a gold rotation handle lets you set the facing."""
+        """Draw every placement as live canvas items (not baked into the composite), so they track
+        drag edits.
+
+        Each placement draws as its ROLE ICON — a Tiger, a paratrooper, an MG nest and a script
+        waypoint are four different pictures now, not three coloured dots (see ROLE_ICON_DIR and
+        ruse_mod_engine/placement_roles.py). Zones keep their real footprint (the circle's radius,
+        the rectangle's width x height) with the icon at the centre. HQ + depot are also oriented —
+        the gold tick is their facing, draggable when selected in edit mode.
+
+        Icons can be sized down or switched off entirely from the Placements panel: the icons cost
+        more to repaint than a 4 px dot, and a scenario with 600 markers is exactly where someone
+        might want the cheap rendering back."""
         if not (self._show_places.get() and self._places and self._bbox):
             return
         cw = max(c.winfo_width(), 1); ch = max(c.winfo_height(), 1)
+        isz = self._icon_px()
+        # HOIST EVERY FRAME-CONSTANT OUT OF THE LOOP. These are read once per placement otherwise,
+        # and each one is a round trip into Tk: profiling 1088 markers showed _pan_slide_budget
+        # running 1088x per frame (two winfo_* calls each) and 2280 globalgetvar calls per frame from
+        # BooleanVar.get(). None of it changes while a frame is being drawn. Same bug class as the
+        # per-marker road scan fixed earlier — cheap call, murderous frequency.
+        base_pad = self._place_cull_pad()
+        show_nat = self._show_nations.get()
+        show_camp = self._show_camps.get()
+        want_labels = self._lbl_var.get()
+        edit_on = self._place_edit.get()
+        sel_i = self._place_sel
+        w2s = self._world_to_screen
+        kx, cx, ky, cy = self._screen_xform()      # affine: sx = x*kx + cx, sy = y*ky + cy
         for pi, pl in enumerate(self._places):
-            sx, sy = self._world_to_screen(pl["pos"][0], pl["pos"][1])
+            _p = pl["pos"]
+            sx = _p[0] * kx + cx
+            sy = _p[1] * ky + cy
             kind = pl["kind"]
-            col = "#%02x%02x%02x" % _PLACE_COL.get(kind, _PLACE_COL["unknown"])
-            sel = (pi == self._place_sel)
+            sel = (pi == sel_i)
             # Cull markers wholly outside the viewport — a big win on large maps zoomed in, where most
             # placements are off-screen (each one is several canvas items rebuilt every frame). HQ is
             # never culled (its camera link/marker may reach back on-screen); circle/rect use their own
             # screen radius as the pad so a large zone straddling the edge still draws.
             if not sel and kind != "hq":
-                pad = 80
+                pad = base_pad
                 if kind == "circle":
                     rad = pl["extra"].get("radius", 0.0) or 0.0
-                    pad = max(pad, abs(self._world_to_screen(pl["pos"][0] + rad, pl["pos"][1])[0] - sx) + 8)
+                    pad = max(pad, abs(rad * kx) + 8)
                 elif kind == "rect":
-                    w = (pl["extra"].get("w", 0.0) or 0.0) / 2.0
-                    h = (pl["extra"].get("h", 0.0) or 0.0) / 2.0
-                    pad = max(pad, abs(self._world_to_screen(pl["pos"][0] + w, pl["pos"][1])[0] - sx) + 8,
-                              abs(self._world_to_screen(pl["pos"][0], pl["pos"][1] + h)[1] - sy) + 8)
+                    pad = max(pad, abs((pl["extra"].get("w", 0.0) or 0.0) / 2.0 * kx) + 8,
+                              abs((pl["extra"].get("h", 0.0) or 0.0) / 2.0 * ky) + 8)
                 if sx < -pad or sy < -pad or sx > cw + pad or sy > ch + pad:
                     continue
             outline = "#ffffff" if sel else "#001018"
             ow = 2 if sel else 1
+            col = _PLACE_COL_HEX.get(kind) or _PLACE_COL_HEX["unknown"]
+
+            # ── the footprint / linkage layer (drawn UNDER the icon) ────────────────────────
             if kind in ("hq", "depot"):
                 ang = self._facing_screen_angle(pl["pos"][0], pl["pos"][1], self._place_facing(pl))
-                if kind == "hq" and sel and self._place_edit.get() and pl["extra"].get("cam"):
+                if kind == "hq" and sel and edit_on and pl["extra"].get("cam"):
                     R = self._cam_ring_radius(pl)                       # camera-orbit ring (selected + edit only)
                     rxp = abs(self._world_to_screen(pl["pos"][0] + R, pl["pos"][1])[0] - sx)
                     ryp = abs(self._world_to_screen(pl["pos"][0], pl["pos"][1] + R)[1] - sy)
@@ -5140,28 +5622,14 @@ class MapEditorWindow(tk.Frame):
                     c.create_line(sx, sy, cxs, cys, fill="#6688aa", width=1, dash=(3, 2))
                     c.create_rectangle(cxs - 3, cys - 3, cxs + 3, cys + 3, outline="#88bbff", fill="#22364a")
                     c.create_text(cxs, cys - 8, text=t("map.cam"), fill="#88bbff", font=_F_MAIN)
-                isz = 30 if kind == "hq" else 26
-                ico = self._get_icon(_PLACE_ICON.get(kind), isz)
-                # road-facing tick poking out past the icon edge
-                c.create_line(sx + isz * 0.45 * math.cos(ang), sy + isz * 0.45 * math.sin(ang),
-                              sx + isz * 0.80 * math.cos(ang), sy + isz * 0.80 * math.sin(ang),
+                # facing tick, poking out past the icon edge
+                fr = max(isz, 16)
+                c.create_line(sx + fr * 0.45 * math.cos(ang), sy + fr * 0.45 * math.sin(ang),
+                              sx + fr * 0.80 * math.cos(ang), sy + fr * 0.80 * math.sin(ang),
                               fill="#ffd24a", width=2)
-                if sel:
-                    h = isz // 2 + 2
-                    c.create_rectangle(sx - h, sy - h, sx + h, sy + h, outline="#ffffff", width=2)
-                if ico:
-                    c.create_image(sx, sy, image=ico)
-                else:                                                   # fallback if icon missing
-                    c.create_rectangle(sx - 7, sy - 7, sx + 7, sy + 7, fill=col, outline=outline, width=ow)
-                if kind == "hq":
-                    c.create_text(sx, sy + isz // 2 + 7, text=pl["label"], fill="#ffd0d0", font=_F_MAIN)
-            elif kind in ("ville", "montagne"):
-                rr = 5 if sel else 3
-                c.create_oval(sx - rr, sy - rr, sx + rr, sy + rr, fill=col, outline=outline, width=ow)
-                if self._lbl_var.get() and pl["label"]:
-                    c.create_text(sx + 6, sy, text=pl["label"], fill="#a8e0c0",
-                                  font=_F_MAIN, anchor="w")
             elif kind in ("circle", "rect"):
+                # A zone's SIZE is the whole point of it, so the real footprint is always drawn even
+                # when icons are off — the icon only marks the centre.
                 if kind == "circle":
                     rad = pl["extra"].get("radius", 0.0) or 0.0
                     px = abs(self._world_to_screen(pl["pos"][0] + rad, pl["pos"][1])[0] - sx)
@@ -5172,21 +5640,56 @@ class MapEditorWindow(tk.Frame):
                     pxw = abs(self._world_to_screen(pl["pos"][0] + w, pl["pos"][1])[0] - sx)
                     pxh = abs(self._world_to_screen(pl["pos"][0], pl["pos"][1] + h)[1] - sy)
                     c.create_rectangle(sx - pxw, sy - pxh, sx + pxw, sy + pxh, outline=col, width=ow)
-                c.create_oval(sx - 3, sy - 3, sx + 3, sy + 3, fill=col, outline=outline)
+
+            # ── the marker itself ──────────────────────────────────────────────────────────
+            ico = self._role_icon(pl, isz, show_nat, show_camp)
+            if ico:
+                if sel:
+                    h = isz // 2 + 3
+                    c.create_rectangle(sx - h, sy - h, sx + h, sy + h, outline="#ffffff", width=2)
+                c.create_image(sx, sy, image=ico)
             else:
+                # Icons off (or unavailable): the original dot rendering. An outline on a 4 px dot is
+                # near-invisible but almost DOUBLES what the canvas costs to repaint (measured: 600
+                # dots + terrain, 45.9 ms outlined vs 24.1 ms without), so only the selected one —
+                # where the outline is what makes it stand out — pays for it.
                 r = 6 if sel else 4
-                c.create_oval(sx - r, sy - r, sx + r, sy + r, fill=col, outline=outline, width=ow)
+                if sel:
+                    c.create_oval(sx - r, sy - r, sx + r, sy + r, fill=col, outline=outline, width=ow)
+                else:
+                    c.create_oval(sx - r, sy - r, sx + r, sy + r, fill=col, outline="")
+
+            # ── the text layer ─────────────────────────────────────────────────────────────
+            if kind == "hq":
+                c.create_text(sx, sy + max(isz, 14) // 2 + 7, text=pl["label"],
+                              fill="#ffd0d0", font=_F_MAIN)
+            elif kind in ("ville", "montagne") and want_labels and pl["label"]:
+                c.create_text(sx + max(isz, 8) // 2 + 3, sy, text=pl["label"], fill="#a8e0c0",
+                              font=_F_MAIN, anchor="w")
 
     # ── save / revert ─────────────────────────────────────────────────────────
+    def _has_pending_edits(self):
+        """Any unsaved editor state. Switching map or scenario throws ALL of it away (the SDB is
+        re-read per map, the KDT and start camera per scenario), so the prompt has to ask about all
+        of it -- _dirty alone only covers the scenario, which used to let painted terrain, a moved
+        start camera and an edited capture mesh vanish without a word."""
+        return bool(self._dirty
+                    or getattr(self, "_campath_dirty", False)
+                    or getattr(self, "_kdt_dirty", False)
+                    or (getattr(self, "_sdb", None) or {}).get("dirty"))
+
     def _confirm_discard(self):
-        if not self._dirty:
+        if not self._has_pending_edits():
             return True
         return ui_util.confirm(self, t("map.discard_changes"),
                                    t("map.scenario_has_unsaved_edits_discard"))
 
     def _revert(self):
         if self._scn is not None:
-            self._dirty = False
+            self._restore_selection()   # reload what is LOADED, not what the boxes point at
+            self._dirty = self._campath_dirty = self._kdt_dirty = False
+            if getattr(self, "_sdb", None):
+                self._sdb["dirty"] = False
             self._on_scn_change(force=True)
 
     def _save(self):
@@ -5198,8 +5701,15 @@ class MapEditorWindow(tk.Frame):
         staged = []
         # scenario + embedded placement NDF (only when there are scenario/placement edits)
         if self._scn is not None and self._dirty:
-            map_dir = self._sel_map(); scn = self._scn_cb.get()
-            vp = f"test\\map\\{map_dir}\\{scn}.scenario"
+            # The path the scenario was READ from -- never the comboboxes. The widgets show where
+            # the user is pointing, which is not always what is loaded (a cancelled discard prompt,
+            # or a jump driven from another tab); writing loaded bytes to a pointed-at path is how a
+            # scenario ends up saved into the wrong map.
+            vp = self._scn_vpath
+            scn = (self._scn_src or ("", ""))[1]
+            if not vp:                       # nothing was ever loaded -- nothing to write back
+                ui_util.error(self, t("map.no_scenario"), t("map.load_scenario_first"))
+                return
             try:
                 # re-embed the (possibly edited) placement NDF; byte-identical when unchanged
                 if self._pndf is not None:
