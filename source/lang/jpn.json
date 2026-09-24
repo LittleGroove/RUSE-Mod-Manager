@@ -1684,5 +1684,8 @@
  "units.type_n": "種類 {n}",
  "units.now_n": "現在: {n}",
  "units.links_lists_text_click_edit": "リンク・リスト・テキスト（変更するには「編集」をクリック）:",
- "units.prop_field_has_no_list": "{prop}: このフィールドには変更できるリスト項目がありません。"
+ "units.prop_field_has_no_list": "{prop}: このフィールドには変更できるリスト項目がありません。",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "Mod Manager はすでに実行中ですが、ウィンドウがありません。\n\nタスク マネージャー (Ctrl+Shift+Esc) を開き、一覧から RUSE_ModManager を見つけて「タスクの終了」をクリックしてください。その後、Mod Manager をもう一度起動してください。",
+ "mgr.startup_log_saved_to": "ここにレポートを保存しました。不具合の報告に添付してください:\n{path}"
 }

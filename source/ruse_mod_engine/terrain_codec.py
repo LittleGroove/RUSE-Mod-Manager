@@ -31,6 +31,7 @@ Requires numpy + Pillow.  Callers should guard on availability.
 """
 import os
 import struct
+import time
 import zlib
 from concurrent.futures import ProcessPoolExecutor
 
@@ -615,9 +616,51 @@ _WORKER_USE_INDEX = True
 _WORKER_TILE_PX = TILE_SIZE
 
 
+def start_parent_watchdog():
+    """Make THIS worker process exit as soon as its parent does.  Pool initializer (or part of one).
+
+    Without it a decode worker outlives the app forever.  Measured: kill the Mod Manager mid-decode
+    and all 8 workers were still alive 230 s later at roughly 550 MB each, and an aborted run left
+    them running for ~20 minutes (~4.4 GB) until they were killed by hand.  A pool worker blocks in
+    ``call_queue.get()`` and nothing in it ever checks whether the parent is still there, so a
+    parent that dies without a clean ``shutdown()`` -- crash, taskkill /F, End Task -- strands every
+    one of them.
+
+    They are also invisible as leaks: in a frozen build ``multiprocessing`` re-launches OUR OWN exe
+    for each worker, so each stranded worker shows up in Task Manager as another
+    ``RUSE_ModManager_vX.Y.Z.exe`` with no window -- indistinguishable from the app itself.
+
+    ``os._exit`` on purpose: the parent is gone, there is no result to hand back and no cleanup worth
+    running.  Polls rather than touching ``parent._sentinel`` so it cannot break on a private detail.
+    Silent no-op when there is no parent process (the in-process fallback path)."""
+    try:
+        import multiprocessing
+        import threading
+        parent = multiprocessing.parent_process()
+    except Exception:
+        return
+    if parent is None:
+        return                       # running in-process, not as a pool worker -- nothing to watch
+
+    def _watch():
+        while True:
+            try:
+                if not parent.is_alive():
+                    os._exit(0)
+            except Exception:
+                return               # can't tell any more; leave the worker alone rather than guess
+            time.sleep(2.0)
+
+    try:
+        threading.Thread(target=_watch, daemon=True).start()
+    except Exception:
+        pass
+
+
 def _worker_init(use_index, tile_px=TILE_SIZE):
     global _WORKER_USE_INDEX, _WORKER_TILE_PX
     _WORKER_USE_INDEX, _WORKER_TILE_PX = use_index, tile_px
+    start_parent_watchdog()
 
 
 def _decode_tile_job(task):

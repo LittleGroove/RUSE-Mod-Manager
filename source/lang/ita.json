@@ -1684,5 +1684,8 @@
  "units.type_n": "tipo {n}",
  "units.now_n": "ora: {n}",
  "units.links_lists_text_click_edit": "Collegamenti, liste e testo (fai clic su « Modifica » per cambiare):",
- "units.prop_field_has_no_list": "{prop}: questo campo non ha voci di lista da cambiare."
+ "units.prop_field_has_no_list": "{prop}: questo campo non ha voci di lista da cambiare.",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "Il Mod Manager è già in esecuzione, ma non ha una finestra.\n\nApri Gestione attività (Ctrl+Maiusc+Esc), trova RUSE_ModManager nell'elenco e fai clic su Termina attività. Poi riavvia il Mod Manager.",
+ "mgr.startup_log_saved_to": "Abbiamo salvato qui un rapporto. Invialo insieme alla tua segnalazione:\n{path}"
 }

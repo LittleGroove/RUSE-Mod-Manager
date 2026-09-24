@@ -1684,5 +1684,8 @@
  "units.type_n": "type {n}",
  "units.now_n": "now: {n}",
  "units.links_lists_text_click_edit": "Links, lists & text (click Edit to change):",
- "units.prop_field_has_no_list": "{prop}: this field has no list entries to change."
+ "units.prop_field_has_no_list": "{prop}: this field has no list entries to change.",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "The Mod Manager is already running, but it has no window.\n\nOpen Task Manager (Ctrl+Shift+Esc), find RUSE_ModManager in the list, and click End task. Then start the Mod Manager again.",
+ "mgr.startup_log_saved_to": "We saved a report about this here. Please send it with your bug report:\n{path}"
 }

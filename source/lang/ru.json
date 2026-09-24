@@ -1684,5 +1684,8 @@
  "units.type_n": "тип {n}",
  "units.now_n": "сейчас: {n}",
  "units.links_lists_text_click_edit": "Ссылки, списки и текст (нажмите «Изменить», чтобы поменять):",
- "units.prop_field_has_no_list": "{prop}: в этом поле нет элементов списка для изменения."
+ "units.prop_field_has_no_list": "{prop}: в этом поле нет элементов списка для изменения.",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "Менеджер модов уже запущен, но у него нет окна.\n\nОткройте Диспетчер задач (Ctrl+Shift+Esc), найдите в списке RUSE_ModManager и нажмите «Снять задачу». Затем запустите Менеджер модов снова.",
+ "mgr.startup_log_saved_to": "Мы сохранили здесь отчёт. Пожалуйста, приложите его к сообщению об ошибке:\n{path}"
 }

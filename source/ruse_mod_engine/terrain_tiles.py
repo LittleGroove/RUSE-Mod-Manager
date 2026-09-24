@@ -255,7 +255,11 @@ class TerrainTiles:
                         continue
                     if pool is None and self._workers > 1:
                         try:
-                            pool = ProcessPoolExecutor(max_workers=self._workers)
+                            # initializer: every worker watches its parent and exits when we do.
+                            # Without it, killing the app mid-decode strands all of them forever
+                            # (see terrain_codec.start_parent_watchdog).
+                            pool = ProcessPoolExecutor(max_workers=self._workers,
+                                                       initializer=tc.start_parent_watchdog)
                         except Exception:
                             pool = False            # can't spawn — decode in this thread instead
                     got = 0

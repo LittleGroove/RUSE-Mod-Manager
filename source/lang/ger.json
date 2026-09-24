@@ -1684,5 +1684,8 @@
  "units.type_n": "Typ {n}",
  "units.now_n": "jetzt: {n}",
  "units.links_lists_text_click_edit": "Verknüpfungen, Listen & Text (zum Ändern auf „Bearbeiten“ klicken):",
- "units.prop_field_has_no_list": "{prop}: Dieses Feld hat keine Listeneinträge zum Ändern."
+ "units.prop_field_has_no_list": "{prop}: Dieses Feld hat keine Listeneinträge zum Ändern.",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "Der Mod Manager läuft bereits, hat aber kein Fenster.\n\nÖffnen Sie den Task-Manager (Strg+Umschalt+Esc), suchen Sie RUSE_ModManager in der Liste und klicken Sie auf Task beenden. Starten Sie den Mod Manager danach erneut.",
+ "mgr.startup_log_saved_to": "Wir haben hier einen Bericht gespeichert. Bitte senden Sie ihn mit Ihrer Fehlermeldung mit:\n{path}"
 }

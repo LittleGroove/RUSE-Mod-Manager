@@ -876,6 +876,34 @@ def center_over(win, parent=None, size=None):
             pass
 
 
+def attach_transient(win, top):
+    """Attach ``win`` to ``top`` as a transient — but ONLY when ``top`` is actually on screen.
+
+    Load-bearing, and the fix for the worst startup bug this app has had.  Tk REFUSES TO MAP a
+    transient window whose master is unmapped: ``deiconify()`` on it is silently ignored and the
+    window never appears.  Measured directly (tools/test_scripts/probe_transient_withdrawn.py)::
+
+        master VISIBLE   + transient   tk_ismapped=1  tk_state=normal      IsWindowVisible=1
+        master WITHDRAWN + transient   tk_ismapped=0  tk_state=withdrawn   IsWindowVisible=0
+        master WITHDRAWN + NO transient tk_ismapped=1 tk_state=normal      IsWindowVisible=1
+
+    Every dialog here ends in ``wait_window()``, so a dialog raised while the main window is still
+    withdrawn (``ModManagerApp.__init__`` runs withdrawn from start to ``deiconify()``) used to block
+    FOREVER on a window that could never be shown — the app sat alive in Task Manager with no window,
+    no taskbar button and no alt-tab entry, and a normal Close (WM_CLOSE) couldn't end it; only End
+    Task could.  That is the "it won't start, it's just running in the background" field report.
+
+    Dropping ``transient`` for that case is what makes the dialog appear at all: the third row above
+    proves a plain toplevel over a withdrawn master maps normally AND gets its own taskbar button, so
+    even if it opens behind something the user can still reach it.  When the master IS mapped nothing
+    changes — the popup stays attached to the app window exactly as before."""
+    try:
+        if top is not None and top.winfo_ismapped():
+            win.transient(top)
+    except Exception:
+        pass    # never let window-manager plumbing stop a dialog from being shown
+
+
 def _reveal_centered(win, top, *, size=None, modal=True, surface=False):
     """The ONE reveal path for every managed popup: centre it (while still withdrawn) → show it →
     optionally grab it modal → optionally force it to the front.  Shared by ``themed_toplevel``,
@@ -883,9 +911,12 @@ def _reveal_centered(win, top, *, size=None, modal=True, surface=False):
     a popup is placed BEFORE it is ever visible, so it can neither flash nor strand at the top-left.
 
     ``size`` is passed straight to :func:`center_over` (needed while withdrawn).  ``surface`` lifts the
-    window to the top with a brief topmost pulse — critical when the parent is itself withdrawn (e.g. the
-    startup prompt before the main window is mapped): a transient of a hidden window has no taskbar
-    button, so without this it could open behind another app and look like a hang."""
+    window to the top with a brief topmost pulse so a freshly-opened dialog can't sit behind another app.
+
+    The pulse is a convenience, NOT the thing that makes a startup dialog visible — it expires after
+    300 ms and was never able to show a window Tk had refused to map.  What makes those dialogs appear
+    is :func:`attach_transient` declining to attach them to a hidden master; read that docstring before
+    changing anything here."""
     if not win.winfo_exists():                         # closed before this (possibly deferred) call ran
         return
     center_over(win, top, size=size)
@@ -933,8 +964,9 @@ def themed_toplevel(parent, title, *, size=None, min_size=None, resizable=False,
         win.geometry(f"{int(size[0])}x{int(size[1])}")
     if min_size:
         win.minsize(int(min_size[0]), int(min_size[1]))
-    if top is not None:
-        win.transient(top)                             # keep the popup attached to the app window
+    attach_transient(win, top)                         # keep the popup attached to the app window —
+                                                       # skipped when that window is still hidden, or
+                                                       # Tk would refuse to show this one at all
     if on_escape:
         win.bind("<Escape>", lambda _e: win.destroy())
         win.protocol("WM_DELETE_WINDOW", win.destroy)
@@ -1021,8 +1053,9 @@ def _run_dialog(parent, kind, title, message, buttons, *, default_index=-1, canc
     win.title(title)
     win.configure(background=th["panel_bg"])
     win.resizable(False, False)
-    if top is not None:
-        win.transient(top)
+    attach_transient(win, top)    # skipped while `top` is hidden — see attach_transient: a transient
+                                  # of an unmapped master can NEVER be shown, and wait_window() below
+                                  # would then block forever on an invisible dialog.
 
     def _close(value):
         result["value"] = value
@@ -1067,8 +1100,9 @@ def _run_dialog(parent, kind, title, message, buttons, *, default_index=-1, canc
     w = max(min_width, win.winfo_reqwidth())
     h = win.winfo_reqheight()
     win.geometry(f"{w}x{h}")                           # enforce the min width; keep natural height
-    # Shared reveal: centre while withdrawn → show → grab → surface to front.  ``surface`` matters here
-    # because a message dialog can be shown while its parent is still withdrawn (startup prompts).
+    # Shared reveal: centre while withdrawn → show → grab → surface to front.  A message dialog can be
+    # raised while its parent is still withdrawn (startup errors); attach_transient above is what lets
+    # it map at all in that case, and ``surface`` then brings it to the front.
     _reveal_centered(win, top, size=(w, h), modal=True, surface=True)
     if focus_btn is not None:
         focus_btn.focus_set()

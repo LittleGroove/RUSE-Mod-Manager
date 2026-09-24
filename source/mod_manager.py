@@ -60,6 +60,7 @@ _RUSE_APPID = "21970"
 import i18n
 from i18n import t          # every user-facing string is t("English") — see i18n.py
 import ui_util              # pixel-accurate, language-aware widget sizing (see ui_util.py)
+import startup_log          # on-disk startup diagnostics (a shipped build has no stderr)
 from ruse_mod_engine import applier as applier_mod
 from ruse_mod_engine import mod_project as mp_project_mod
 from ruse_mod_engine import path_map as path_map_mod
@@ -464,6 +465,7 @@ class ModManagerApp(tk.Tk):
         except Exception:
             pass
         self.deiconify()   # UI is fully built — show the window (paired with withdraw() at top of __init__)
+        startup_log.log("main window shown")
         # Now that the window is mapped and about to enter mainloop, run the in-exe update check (see the
         # split note near the top of __init__).  Deferred so its modal Yes/No prompt has a real, visible,
         # foreground parent — never the withdrawn window that used to let the prompt open buried and hang.
@@ -493,6 +495,7 @@ class ModManagerApp(tk.Tk):
             # below can MASK a plain bug (e.g. an AttributeError) as a "folder" error — leaving a trail
             # makes such early-init bugs diagnosable instead of a mystery hang.
             logging.getLogger(__name__).exception("bootstrap_folders failed")
+            startup_log.exception(f"bootstrap_folders FAILED: {e}")
             # The log widget doesn't exist yet (called before _build_ui), so surface via a dialog.
             try:
                 ui_util.warning(
@@ -742,6 +745,10 @@ class ModManagerApp(tk.Tk):
                 f.flush()
                 os.fsync(f.fileno())   # durable before a restart relaunches and re-reads this file
         except Exception as e:
+            # Logged, not just shown: a failure here is the single likeliest cause of a failed
+            # startup (it is called from __init__ before the window exists) and it repeats on every
+            # launch, because the settings file never gains the key that would stop it being called.
+            startup_log.exception(f"settings save FAILED: {e}")
             ui_util.error(self, t("mgr.save_error"), str(e))
 
     def _auto_detect_game_root(self):
@@ -5643,6 +5650,18 @@ if __name__ == "__main__":
     # decode would fork-bomb the app open. No-op when running from source. (terrain perf, issue #15)
     import multiprocessing
     multiprocessing.freeze_support()
+    # Startup diagnostics, as early as possible so everything below is covered.  A shipped build has
+    # console=False, so sys.stderr is None and the root log handler does not exist until _build_ui —
+    # without this file, a failure to start leaves the user (and us) with nothing to look at at all.
+    # Deliberately AFTER freeze_support, so the decode worker processes that re-launch this exe
+    # short-circuit first and never fight over the log file.
+    try:
+        import auto_update as _au_for_version
+        startup_log.init(_au_for_version.current_version())
+    except Exception:
+        startup_log.init()
+    startup_log.attach_logging()
+    startup_log.log("startup begins")
     # Single-instance guard.  MUST come after freeze_support() (so terrain-decode worker processes,
     # which re-launch this exe, have already short-circuited and never reach here) but before any
     # window is built.  If another live instance already holds the lock we bow out silently — this is
@@ -5650,6 +5669,28 @@ if __name__ == "__main__":
     try:
         import single_instance
         if not single_instance.acquire():
+            # Somebody else holds the lock.  Bowing out is right, but bowing out SILENTLY is not: the
+            # user double-clicked and would see nothing happen at all, forever.  Which of the two
+            # possible reasons it is decides what they need to hear, and the window tells us:
+            #   * a window exists  -> a healthy instance is already running (or is just minimised).
+            #     Raise it — that is what the double-click was asking for — and leave quietly.
+            #   * no window exists -> the holder is wedged with no window, and NOTHING the user can do
+            #     from the desktop will ever start the app again.  Say so, and say how to fix it.
+            #     This is the state field reports describe as "it just won't start any more".
+            startup_log.log("another instance already holds the single-instance lock")
+            if not single_instance.raise_existing_window():
+                try:
+                    _saved = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
+                    _lang = _saved.get("default_language") or "" if isinstance(_saved, dict) else ""
+                except Exception:
+                    _lang = ""
+                try:
+                    i18n.load(_lang or i18n.detect_os_language())
+                except Exception:
+                    pass
+                startup_log.log("that instance has NO window (wedged) — telling the user")
+                single_instance.message_box(t("mgr.already_running_title"),
+                                            t("mgr.already_running_no_window"))
             sys.exit(0)
     except SystemExit:
         raise
@@ -5666,6 +5707,7 @@ if __name__ == "__main__":
     # Banlist gate: bundled exe only.  Refuses to load if any Steam account that
     # has signed in on this machine is listed in the baked-in banlist.txt.
     if getattr(sys, "frozen", False):
+        startup_log.log("checking banlist")
         import banlist
         _ban = banlist.check()
         if _ban is not None:
@@ -5681,6 +5723,7 @@ if __name__ == "__main__":
     # Guard the whole startup.  __init__ withdraws the window and only deiconifies at the very end, so
     # ANY unhandled error in between would otherwise leave a live-but-invisible process ("running in
     # Task Manager, no window").  Surface it as a dialog and exit non-zero instead of vanishing.
+    startup_log.log("constructing the main window")
     try:
         app = ModManagerApp()
     except SystemExit:
@@ -5688,10 +5731,16 @@ if __name__ == "__main__":
     except Exception as _startup_err:
         import traceback
         _tb = traceback.format_exc()
+        startup_log.exception(f"STARTUP FAILED: {_startup_err}")
         try:
             _r = tk.Tk(); _r.withdraw()
-            ui_util.error(_r, t("mgr.startup_failed"),
-                          t("mgr.mod_manager_couldn_t_finish", err=str(_startup_err)))
+            # ui_util.attach_transient keeps this dialog off the withdrawn root, so it can actually
+            # be shown.  Before that it never mapped, and waiting on it was what turned every early
+            # crash into the "alive with no window" hang this handler was written to prevent.
+            _msg = t("mgr.mod_manager_couldn_t_finish", err=str(_startup_err))
+            if startup_log.path():
+                _msg += "\n\n" + t("mgr.startup_log_saved_to", path=startup_log.path())
+            ui_util.error(_r, t("mgr.startup_failed"), _msg)
             _r.destroy()
         except Exception:
             pass
@@ -5700,4 +5749,5 @@ if __name__ == "__main__":
         except Exception:
             pass
         sys.exit(1)
+    startup_log.log("entering the main loop")
     app.mainloop()

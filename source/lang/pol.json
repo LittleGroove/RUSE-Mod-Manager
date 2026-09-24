@@ -1684,5 +1684,8 @@
  "units.type_n": "typ {n}",
  "units.now_n": "teraz: {n}",
  "units.links_lists_text_click_edit": "Powiązania, listy i tekst (kliknij „Edytuj”, aby zmienić):",
- "units.prop_field_has_no_list": "{prop}: to pole nie ma elementów listy do zmiany."
+ "units.prop_field_has_no_list": "{prop}: to pole nie ma elementów listy do zmiany.",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "Mod Manager jest już uruchomiony, ale nie ma okna.\n\nOtwórz Menedżera zadań (Ctrl+Shift+Esc), znajdź RUSE_ModManager na liście i kliknij Zakończ zadanie. Następnie uruchom Mod Manager ponownie.",
+ "mgr.startup_log_saved_to": "Zapisaliśmy tutaj raport. Dołącz go do zgłoszenia błędu:\n{path}"
 }

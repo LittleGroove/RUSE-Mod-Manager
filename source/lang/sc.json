@@ -1684,5 +1684,8 @@
  "units.type_n": "类型 {n}",
  "units.now_n": "当前：{n}",
  "units.links_lists_text_click_edit": "链接、列表和文本（点击“编辑”进行修改）：",
- "units.prop_field_has_no_list": "{prop}：此字段没有可更改的列表条目。"
+ "units.prop_field_has_no_list": "{prop}：此字段没有可更改的列表条目。",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "Mod Manager 已在运行，但没有窗口。\n\n打开任务管理器 (Ctrl+Shift+Esc)，在列表中找到 RUSE_ModManager，然后点击“结束任务”。然后重新启动 Mod Manager。",
+ "mgr.startup_log_saved_to": "我们已将报告保存在这里。请在反馈问题时一并发送：\n{path}"
 }

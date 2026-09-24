@@ -1684,5 +1684,8 @@
  "units.type_n": "typ {n}",
  "units.now_n": "teď: {n}",
  "units.links_lists_text_click_edit": "Odkazy, seznamy a text (pro změnu klikněte na Upravit):",
- "units.prop_field_has_no_list": "{prop}: toto pole nemá žádné položky seznamu ke změně."
+ "units.prop_field_has_no_list": "{prop}: toto pole nemá žádné položky seznamu ke změně.",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "Mod Manager už běží, ale nemá okno.\n\nOtevřete Správce úloh (Ctrl+Shift+Esc), najděte v seznamu RUSE_ModManager a klikněte na Ukončit úlohu. Poté Mod Manager spusťte znovu.",
+ "mgr.startup_log_saved_to": "Uložili jsme sem zprávu. Přiložte ji prosím k hlášení chyby:\n{path}"
 }

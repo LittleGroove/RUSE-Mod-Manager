@@ -1684,5 +1684,8 @@
  "units.type_n": "type {n}",
  "units.now_n": "actuel : {n}",
  "units.links_lists_text_click_edit": "Liens, listes & texte (cliquez sur Modifier pour changer) :",
- "units.prop_field_has_no_list": "{prop} : ce champ n'a aucune entrée de liste à changer."
+ "units.prop_field_has_no_list": "{prop} : ce champ n'a aucune entrée de liste à changer.",
+ "mgr.already_running_title": "R.U.S.E. Mod Manager",
+ "mgr.already_running_no_window": "Le Mod Manager est déjà en cours d'exécution, mais il n'a pas de fenêtre.\n\nOuvrez le Gestionnaire des tâches (Ctrl+Maj+Échap), trouvez RUSE_ModManager dans la liste et cliquez sur Fin de tâche. Relancez ensuite le Mod Manager.",
+ "mgr.startup_log_saved_to": "Nous avons enregistré un rapport ici. Merci de le joindre à votre signalement :\n{path}"
 }

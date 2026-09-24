@@ -20,6 +20,11 @@ Design goals (all failure-safe — a bug here must NEVER stop the app from launc
 import sys
 
 _MUTEX_NAME = "Global\\RuseModManager.FieldOperations.SingleInstance"
+# Title prefix of the main window, used to find an instance that is already running.  Every language
+# keeps this literal prefix (only the part after the dash is translated), so matching on it works on
+# every UI language.  Matching the TITLE — not the process name — is also what lets us tell a healthy
+# instance apart from a wedged one: a wedged instance has no window to find.
+_WINDOW_TITLE_PREFIX = "R.U.S.E. MOD MANAGER"
 _ERROR_ALREADY_EXISTS = 183
 _WAIT_MS_FOR_HANDOFF = 4000     # how long a fresh instance waits for a relaunch predecessor to exit
 _WAIT_STEP_MS = 200
@@ -75,3 +80,92 @@ def acquire(wait_for_handoff: bool = True) -> bool:
         return False       # still held after the grace period → a genuine second instance; bow out
     except Exception:
         return True         # any failure → fail open (launch normally)
+
+
+def find_existing_window():
+    """HWND of a main window belonging to ANOTHER live instance, or ``None`` if there isn't one.
+
+    Used only after :func:`acquire` has already told us somebody else holds the lock, to answer the
+    one question that decides what to tell the user:
+
+      * a window comes back  -> a perfectly healthy instance is already running (they double-clicked
+        twice, or it's minimised and they forgot).  Raise it; that's what they wanted.
+      * nothing comes back   -> the holder is alive but has NO window.  That's the wedged/zombie case,
+        and the only way out is Task Manager — so we have to SAY so instead of vanishing.
+
+    Minimised windows count as found (``IsIconic``): a minimised app is healthy, and restoring it is
+    exactly the right answer.  Our own process is skipped so we can never match ourselves.  Returns
+    ``None`` on non-Windows or any error — the caller then just behaves as it always did."""
+    if sys.platform != "win32":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        me = kernel32.GetCurrentProcessId()
+        hits = []
+
+        WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+
+        def _cb(hwnd, _lparam):
+            # A minimised window reports IsWindowVisible=0, so accept IsIconic too — otherwise we'd
+            # call a minimised (perfectly healthy) instance "wedged" and tell the user to kill it.
+            if not user32.IsWindowVisible(hwnd) and not user32.IsIconic(hwnd):
+                return True
+            pid = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+            if pid.value == me:
+                return True                     # never match our own window
+            n = user32.GetWindowTextLengthW(hwnd)
+            buf = ctypes.create_unicode_buffer(n + 1)
+            user32.GetWindowTextW(hwnd, buf, n + 1)
+            if buf.value.upper().startswith(_WINDOW_TITLE_PREFIX):
+                hits.append(hwnd)
+                return False                    # first match is enough; stop enumerating
+            return True
+
+        user32.EnumWindows(WNDENUMPROC(_cb), 0)
+        return hits[0] if hits else None
+    except Exception:
+        return None
+
+
+def raise_existing_window() -> bool:
+    """Bring an already-running instance's window to the front.  ``True`` if we found one and raised
+    it — the caller can then exit quietly, because the user now has the window they asked for.
+
+    ``False`` means there was no window to raise, which for a bow-out caller means the holder is
+    wedged and the user needs to be told."""
+    hwnd = find_existing_window()
+    if not hwnd:
+        return False
+    try:
+        import ctypes
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        user32.ShowWindow(hwnd, 9)              # SW_RESTORE — un-minimise if it was minimised
+        user32.SetForegroundWindow(hwnd)
+        return True
+    except Exception:
+        return False
+
+
+def message_box(title: str, text: str) -> None:
+    """Show a NATIVE Win32 message box.  Deliberately not a Tk/``ui_util`` dialog: this is called
+    before any window exists, and a Tk dialog with no mapped parent is exactly the thing that wedges
+    the app invisibly (see ``ui_util.attach_transient``).  MB_SETFOREGROUND|MB_TOPMOST so it can't
+    open behind the window that's already there.  Never raises."""
+    if sys.platform != "win32":
+        try:
+            sys.stderr.write(f"{title}: {text}\n")
+        except Exception:
+            pass
+        return
+    try:
+        import ctypes
+        MB_OK, MB_ICONINFORMATION, MB_SETFOREGROUND, MB_TOPMOST = 0x0, 0x40, 0x10000, 0x40000
+        ctypes.windll.user32.MessageBoxW(
+            0, text, title, MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND | MB_TOPMOST)
+    except Exception:
+        pass
